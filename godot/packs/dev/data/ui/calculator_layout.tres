@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="CalculatorLayout" format=3]
+
+[ext_resource type="Script" path="res://src/resources/calculator_layout.gd" id="1_calculator_layout"]
+[ext_resource type="Texture2D" uid="uid://cjav73b1go53" path="res://packs/dev/assets/problem_art/b041/pa_1781.png" id="2_pa_1781"]
+[ext_resource type="Texture2D" uid="uid://dtomaw1ffy5t8" path="res://packs/dev/assets/problem_art/b041/pa_1802.png" id="3_pa_1802"]
+[ext_resource type="Texture2D" uid="uid://drp88hp7e00el" path="res://packs/dev/assets/problem_art/b041/pa_1782.png" id="4_pa_1782"]
+[ext_resource type="Texture2D" uid="uid://d11abui65x767" path="res://packs/dev/assets/problem_art/b041/pa_1783.png" id="5_pa_1783"]
+[ext_resource type="Texture2D" uid="uid://be675wbeou3dw" path="res://packs/dev/assets/problem_art/b041/pa_1784.png" id="6_pa_1784"]
+[ext_resource type="Texture2D" uid="uid://dwamqreo8nmn8" path="res://packs/dev/assets/problem_art/b041/pa_1785.png" id="7_pa_1785"]
+[ext_resource type="Texture2D" uid="uid://bw4mgbxudhjx1" path="res://packs/dev/assets/problem_art/b041/pa_1786.png" id="8_pa_1786"]
+[ext_resource type="Texture2D" uid="uid://n4p7kvw6ljfd" path="res://packs/dev/assets/problem_art/b041/pa_1787.png" id="9_pa_1787"]
+[ext_resource type="Texture2D" uid="uid://c88vks1tmcrc7" path="res://packs/dev/assets/problem_art/b041/pa_1788.png" id="10_pa_1788"]
+[ext_resource type="Texture2D" uid="uid://d31s5ylnpsj52" path="res://packs/dev/assets/problem_art/b041/pa_1789.png" id="11_pa_1789"]
+[ext_resource type="Texture2D" uid="uid://ill2el2o2k4w" path="res://packs/dev/assets/problem_art/b041/pa_1790.png" id="12_pa_1790"]
+[ext_resource type="Texture2D" uid="uid://cevvpr14y4jot" path="res://packs/dev/assets/problem_art/b041/pa_1791.png" id="13_pa_1791"]
+[ext_resource type="Texture2D" uid="uid://upukxg5v0wrd" path="res://packs/dev/assets/problem_art/b041/pa_1792.png" id="14_pa_1792"]
+[ext_resource type="Texture2D" uid="uid://p42wgb5gdajx" path="res://packs/dev/assets/problem_art/b041/pa_1794.png" id="15_pa_1794"]
+[ext_resource type="Texture2D" uid="uid://dhuqdqgmt60tr" path="res://packs/dev/assets/problem_art/b041/pa_1795.png" id="16_pa_1795"]
+[ext_resource type="Texture2D" uid="uid://dv5jo1gtstrd" path="res://packs/dev/assets/problem_art/b041/pa_1796.png" id="17_pa_1796"]
+[ext_resource type="Texture2D" uid="uid://byqcocnjhhdjk" path="res://packs/dev/assets/problem_art/b041/pa_1797.png" id="18_pa_1797"]
+[ext_resource type="Texture2D" uid="uid://cvc7dhpxe5j4o" path="res://packs/dev/assets/problem_art/b041/pa_1798.png" id="19_pa_1798"]
+[ext_resource type="Texture2D" uid="uid://cant7hsmahen8" path="res://packs/dev/assets/problem_art/b041/pa_1799.png" id="20_pa_1799"]
+[ext_resource type="Texture2D" uid="uid://bricl6m3rk2bo" path="res://packs/dev/assets/problem_art/b041/pa_1800.png" id="21_pa_1800"]
+[ext_resource type="Texture2D" uid="uid://eyama0f8jyts" path="res://packs/dev/assets/problem_art/b041/pa_1801.png" id="22_pa_1801"]
+
+[resource]
+script = ExtResource("1_calculator_layout")
+picture = ExtResource("2_pa_1781")
+picture_position = Vector2i(320, 200)
+picture_size = Vector2i(296, 160)
+answer_panel = ExtResource("3_pa_1802")
+answer_position = Vector2i(320, 200)
+answer_size = Vector2i(296, 40)
+key_names = PackedStringArray("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "+", "-", "*", "/", "=", "Enter", "F", "S", "N", "R", "C")
+key_rects = Array[Rect2i]([Rect2i(328, 240, 36, 20), Rect2i(368, 240, 36, 20), Rect2i(408, 240, 36, 20), Rect2i(448, 240, 36, 20), Rect2i(488, 240, 36, 20), Rect2i(328, 264, 36, 20), Rect2i(368, 264, 36, 20), Rect2i(408, 264, 36, 20), Rect2i(448, 264, 36, 20), Rect2i(488, 264, 36, 20), Rect2i(328, 288, 36, 20), Rect2i(368, 288, 36, 20), Rect2i(408, 288, 36, 20), Rect2i(448, 288, 36, 20), Rect2i(488, 288, 36, 20), Rect2i(328, 312, 36, 20), Rect2i(368, 312, 36, 20), Rect2i(408, 312, 36, 20), Rect2i(448, 312, 36, 20), Rect2i(488, 312, 36, 20), Rect2i(328, 336, 36, 20), Rect2i(368, 336, 36, 20)])
+display_origin_calculator = Vector2i(328, 208)
+display_origin_answer = Vector2i(328, 208)
+display_clear_rect = Rect2i(0, 0, 176, 28)
+digits_right = 160
+digit_y = 4
+advance = 16
+point_offset = Vector2i(8, 20)
+fraction_flag_offset = Vector2i(4, 14)
+operator_position = Vector2i(520, 212)
+memory_position = Vector2i(540, 212)
+digit_textures = Array[Texture2D]([ExtResource("4_pa_1782"), ExtResource("5_pa_1783"), ExtResource("6_pa_1784"), ExtResource("7_pa_1785"), ExtResource("8_pa_1786"), ExtResource("9_pa_1787"), ExtResource("10_pa_1788"), ExtResource("11_pa_1789"), ExtResource("12_pa_1790"), ExtResource("13_pa_1791")])
+point_texture = ExtResource("14_pa_1792")
+slash_texture = ExtResource("15_pa_1794")
+minus_texture = ExtResource("16_pa_1795")
+fraction_flag_texture = ExtResource("17_pa_1796")
+memory_texture = ExtResource("18_pa_1797")
+digit_sizes = Array[Vector2i]([Vector2i(14, 20), Vector2i(14, 20), Vector2i(14, 20), Vector2i(14, 20), Vector2i(14, 20), Vector2i(14, 20), Vector2i(14, 20), Vector2i(14, 20), Vector2i(14, 20), Vector2i(14, 20)])
+point_size = Vector2i(6, 6)
+slash_size = Vector2i(14, 20)
+minus_size = Vector2i(14, 20)
+operator_textures = {"+": ExtResource("19_pa_1798"), "-": ExtResource("20_pa_1799"), "*": ExtResource("21_pa_1800"), "/": ExtResource("22_pa_1801")}

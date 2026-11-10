@@ -1,0 +1,30 @@
+{
+ "_doc": "Collectible pieces (bundle 17: pictures 0-2 rock without / with a growing sparkle, 3-4 the canister's red / green flash). DrawProbePieces (0x42dc3b) draws every piece once per game frame (73/6 Hz = one GameClock tick) from ONE counter shared by all pieces that runs 0..15 and wraps, never reset by a screen change. Piece index 0 (id 1) is the data canister: picture 3 + (counter & 1). Every other piece is a rock: picture rock_pictures[counter]. The rule does not depend on the sector or the zone.",
+ "bundle": 17,
+ "period": 16,
+ "canister_piece_index": 0,
+ "canister_pictures": [
+  3,
+  4
+ ],
+ "canister_rule": "3 + (counter & 1)",
+ "rock_pictures": [
+  1,
+  2,
+  1,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0
+ ],
+ "rock_rule": "rock_pictures[counter]"
+}

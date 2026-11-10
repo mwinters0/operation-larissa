@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/supply_station.gd" id="1_station"]
+
+[node name="SupplyStation" type="Node2D"]
+script = ExtResource("1_station")
+
+[node name="Balloon" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+
+[node name="BodyA" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+
+[node name="BodyB" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+
+[node name="BodyC" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Door" type="Sprite2D" parent="."]
+unique_name_in_owner = true

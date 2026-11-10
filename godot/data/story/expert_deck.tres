@@ -1,0 +1,235 @@
+[gd_resource type="Resource" script_class="CutsceneTimeline" format=3]
+
+[ext_resource type="Script" path="res://src/resources/cutscene_timeline.gd" id="1_cutscene_timeline"]
+[ext_resource type="Script" path="res://src/resources/cutscene_track.gd" id="2_cutscene_track"]
+[ext_resource type="Script" path="res://src/resources/cutscene_cue.gd" id="3_cutscene_cue"]
+
+[sub_resource type="Resource" id="Track_1"]
+script = ExtResource("2_cutscene_track")
+actor = &"deck_cable"
+property = &"frame"
+times = PackedFloat64Array(0)
+values = [2]
+
+[sub_resource type="Resource" id="Track_2"]
+script = ExtResource("2_cutscene_track")
+actor = &"deck_sub"
+property = &"position"
+times = PackedFloat64Array(0, 18, 36, 54, 72, 90)
+values = [Vector2(184, 279), Vector2(184, 267), Vector2(184, 255), Vector2(184, 243), Vector2(184, 231), Vector2(184, 219)]
+
+[sub_resource type="Resource" id="Track_3"]
+script = ExtResource("2_cutscene_track")
+actor = &"deck_sub"
+property = &"pose"
+times = PackedFloat64Array(0, 18, 36, 54, 72, 90)
+values = [Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0)]
+
+[sub_resource type="Resource" id="Track_4"]
+script = ExtResource("2_cutscene_track")
+actor = &"deck_artifact"
+property = &"position"
+times = PackedFloat64Array(0, 18, 36, 54, 72, 90)
+values = [Vector2(200, 299), Vector2(200, 287), Vector2(200, 275), Vector2(200, 263), Vector2(200, 251), Vector2(200, 239)]
+
+[sub_resource type="Resource" id="Track_5"]
+script = ExtResource("2_cutscene_track")
+actor = &"deck_artifact"
+property = &"frame"
+times = PackedFloat64Array(0, 18, 36, 54, 72, 90)
+values = [&"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0"]
+
+[sub_resource type="Resource" id="Track_6"]
+script = ExtResource("2_cutscene_track")
+actor = &"deck_cable"
+property = &"extent"
+times = PackedFloat64Array(0, 18, 36, 54, 72, 90)
+values = [295, 283, 271, 259, 247, 235]
+
+[sub_resource type="Resource" id="Track_7"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_0"
+property = &"visible"
+times = PackedFloat64Array(0, 1440)
+values = [false, true]
+
+[sub_resource type="Resource" id="Track_8"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_1"
+property = &"visible"
+times = PackedFloat64Array(0)
+values = [true]
+
+[sub_resource type="Resource" id="Track_9"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_1"
+property = &"position"
+times = PackedFloat64Array(0, 396, 414, 432, 450, 468, 486, 504, 522, 540, 558, 576, 594, 612, 630, 648, 666, 684, 702, 720)
+values = [Vector2(332, 214), Vector2(336, 214), Vector2(340, 214), Vector2(344, 214), Vector2(348, 214), Vector2(352, 214), Vector2(356, 214), Vector2(360, 214), Vector2(364, 214), Vector2(368, 214), Vector2(372, 214), Vector2(376, 214), Vector2(380, 214), Vector2(384, 214), Vector2(388, 214), Vector2(392, 214), Vector2(396, 214), Vector2(400, 214), Vector2(404, 214), Vector2(408, 214)]
+
+[sub_resource type="Resource" id="Track_10"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_1"
+property = &"picture"
+times = PackedFloat64Array(0, 90, 108, 198, 342, 378, 396, 414, 432, 450, 468, 486, 504, 522, 540, 558, 576, 594, 612, 630, 648, 666, 684, 702, 720, 738, 774, 792, 810, 828, 1008, 1026, 1044, 1062, 1242, 1260, 1278, 1296, 2340, 2358, 2376, 2394, 2412, 2430, 2448, 2466)
+values = [&"ui_2036", &"ui_2035", &"ui_2034", &"ui_2035", &"ui_2034", &"ui_2033", &"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2032", &"ui_2030", &"ui_2032", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2033"]
+
+[sub_resource type="Resource" id="Track_11"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_1"
+property = &"mirror"
+times = PackedFloat64Array(0, 396, 738)
+values = [false, true, false]
+
+[sub_resource type="Resource" id="Track_12"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_2"
+property = &"visible"
+times = PackedFloat64Array(0)
+values = [true]
+
+[sub_resource type="Resource" id="Track_13"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_2"
+property = &"position"
+times = PackedFloat64Array(0, 108, 342, 360, 378, 396, 414, 432, 450, 468, 486, 504, 522, 540, 558, 576, 594, 612)
+values = [Vector2(368, 224), Vector2(368, 214), Vector2(372, 214), Vector2(376, 214), Vector2(380, 214), Vector2(384, 214), Vector2(388, 214), Vector2(392, 214), Vector2(396, 214), Vector2(400, 214), Vector2(404, 214), Vector2(408, 214), Vector2(412, 214), Vector2(416, 214), Vector2(420, 214), Vector2(424, 214), Vector2(428, 214), Vector2(432, 214)]
+
+[sub_resource type="Resource" id="Track_14"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_2"
+property = &"picture"
+times = PackedFloat64Array(0, 36, 90, 108, 126, 180, 234, 288, 342, 360, 378, 396, 414, 432, 450, 468, 486, 504, 522, 540, 558, 576, 594, 612, 630, 792, 810, 828, 846, 1026, 1044, 1062, 1080, 1260, 1278, 1296, 1314, 2340, 2358, 2376, 2394, 2412, 2430, 2448, 2466)
+values = [&"ui_2038", &"ui_2037", &"ui_2038", &"ui_2033", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2033", &"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2033"]
+
+[sub_resource type="Resource" id="Track_15"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_2"
+property = &"mirror"
+times = PackedFloat64Array(0, 342, 630)
+values = [false, true, false]
+
+[sub_resource type="Resource" id="Track_16"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_3"
+property = &"visible"
+times = PackedFloat64Array(0, 288, 432)
+values = [true, false, true]
+
+[sub_resource type="Resource" id="Track_17"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_3"
+property = &"position"
+times = PackedFloat64Array(0, 18, 36, 54, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 252, 270, 450, 468, 486, 504, 522, 540, 558, 576, 594, 612)
+values = [Vector2(436, 214), Vector2(440, 214), Vector2(444, 214), Vector2(448, 214), Vector2(452, 214), Vector2(456, 214), Vector2(460, 214), Vector2(464, 214), Vector2(468, 214), Vector2(472, 214), Vector2(476, 214), Vector2(480, 214), Vector2(484, 214), Vector2(488, 214), Vector2(492, 214), Vector2(496, 214), Vector2(492, 214), Vector2(488, 214), Vector2(484, 214), Vector2(480, 214), Vector2(476, 214), Vector2(472, 214), Vector2(468, 214), Vector2(464, 214), Vector2(460, 214), Vector2(456, 214)]
+
+[sub_resource type="Resource" id="Track_18"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_3"
+property = &"picture"
+times = PackedFloat64Array(0, 18, 36, 54, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 252, 270, 432, 450, 468, 486, 504, 522, 540, 558, 576, 594, 612, 630, 810, 828, 846, 864, 1044, 1062, 1080, 1098, 1278, 1296, 1314, 1332, 2340, 2358, 2376, 2394, 2412, 2430, 2448, 2466)
+values = [&"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2032", &"ui_2030", &"ui_2031", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2033"]
+
+[sub_resource type="Resource" id="Track_19"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_3"
+property = &"mirror"
+times = PackedFloat64Array(0, 432)
+values = [true, false]
+
+[sub_resource type="Resource" id="Track_20"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_4"
+property = &"visible"
+times = PackedFloat64Array(0, 612)
+values = [false, true]
+
+[sub_resource type="Resource" id="Track_21"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_5"
+property = &"visible"
+times = PackedFloat64Array(0, 702)
+values = [false, true]
+
+[sub_resource type="Resource" id="Track_22"]
+script = ExtResource("2_cutscene_track")
+actor = &"pod"
+property = &"picture"
+times = PackedFloat64Array(0, 18, 36, 54, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 252, 270, 288, 306, 324, 342, 360, 378, 396, 414, 432, 450, 468, 486, 504, 522, 540, 558, 576, 594, 612, 630, 648, 666, 684, 702, 720, 738, 756, 774, 792, 810, 828, 846, 864, 882, 900, 918, 936, 954, 972, 990, 1008, 1026, 1044, 1062, 1080, 1098, 1116, 1134, 1152, 1170, 1188, 1206, 1224, 1242, 1260, 1278, 1296, 1314, 1332, 1350, 1368, 1386, 1404, 1422, 1440, 1458, 1476, 1494, 1512, 1530, 1548, 1566, 1584, 1602, 1620, 1638, 1656, 1674, 1692, 1710, 1728, 1746, 1764, 1782, 1800, 1818, 1836, 1854, 1872, 1890, 1908, 1926, 1944, 1962, 1980, 1998, 2016, 2034, 2052, 2070, 2088, 2106, 2124, 2142, 2160, 2178, 2196, 2214, 2232, 2250, 2268, 2286, 2304, 2322, 2340, 2358, 2376, 2394, 2412, 2430, 2448, 2466, 2484, 2502, 2520, 2538, 2556, 2574, 2592, 2610)
+values = [&"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1"]
+
+[sub_resource type="Resource" id="Track_23"]
+script = ExtResource("2_cutscene_track")
+actor = &"pod"
+property = &"mirror"
+times = PackedFloat64Array(0, 54, 72, 126, 144, 198, 216, 270, 288, 342, 360, 414, 432, 486, 504, 558, 576, 630, 648, 702, 720, 774, 792, 846, 864, 918, 936, 990, 1008, 1062, 1080, 1134, 1152, 1206, 1224, 1278, 1296, 1350, 1368, 1422, 1440, 1494, 1512, 1566, 1584, 1638, 1656, 1710, 1728, 1782, 1800, 1854, 1872, 1926, 1944, 1998, 2016, 2070, 2088, 2142, 2160, 2214, 2232, 2286, 2304, 2358, 2376, 2430, 2448, 2502, 2520, 2574, 2592)
+values = [false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false]
+
+[sub_resource type="Resource" id="Track_24"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_4"
+property = &"position"
+times = PackedFloat64Array(612, 630, 648, 666, 684)
+values = [Vector2(496, 214), Vector2(492, 214), Vector2(488, 214), Vector2(484, 214), Vector2(480, 214)]
+
+[sub_resource type="Resource" id="Track_25"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_4"
+property = &"picture"
+times = PackedFloat64Array(612, 630, 648, 666, 684, 702, 828, 846, 864, 882, 1062, 1080, 1098, 1116, 1296, 1314, 1332, 1350, 2340, 2358, 2376, 2394, 2412, 2430, 2448, 2466)
+values = [&"ui_2032", &"ui_2030", &"ui_2032", &"ui_2031", &"ui_2032", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2033"]
+
+[sub_resource type="Resource" id="Track_26"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_4"
+property = &"mirror"
+times = PackedFloat64Array(612)
+values = [false]
+
+[sub_resource type="Resource" id="Track_27"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_5"
+property = &"position"
+times = PackedFloat64Array(702, 720, 738)
+values = [Vector2(496, 214), Vector2(500, 214), Vector2(504, 214)]
+
+[sub_resource type="Resource" id="Track_28"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_5"
+property = &"picture"
+times = PackedFloat64Array(702, 720, 738, 756, 846, 864, 882, 900, 1080, 1098, 1116, 1134, 1314, 1332, 1350, 1368, 2340, 2358, 2376, 2394, 2412, 2430, 2448, 2466)
+values = [&"ui_2032", &"ui_2030", &"ui_2032", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2027", &"ui_2026", &"ui_2027", &"ui_2033", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2029", &"ui_2028", &"ui_2033"]
+
+[sub_resource type="Resource" id="Track_29"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_5"
+property = &"mirror"
+times = PackedFloat64Array(702, 756)
+values = [true, false]
+
+[sub_resource type="Resource" id="Track_30"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_0"
+property = &"position"
+times = PackedFloat64Array(1440, 1458, 1476, 1494, 1512, 1530, 1548, 1566, 1584, 1602, 1620, 1638, 1656, 1674, 1692, 1710, 1728, 1746, 1764, 1782, 1800, 1818, 1836, 1854, 1872, 1890, 1908, 1926, 1944, 1962, 1980, 1998, 2016)
+values = [Vector2(496, 214), Vector2(492, 214), Vector2(488, 214), Vector2(484, 214), Vector2(480, 214), Vector2(476, 214), Vector2(472, 214), Vector2(468, 214), Vector2(464, 214), Vector2(460, 214), Vector2(456, 214), Vector2(452, 214), Vector2(448, 214), Vector2(444, 214), Vector2(440, 214), Vector2(436, 214), Vector2(432, 214), Vector2(428, 214), Vector2(424, 214), Vector2(420, 214), Vector2(416, 214), Vector2(412, 214), Vector2(408, 214), Vector2(404, 214), Vector2(400, 214), Vector2(396, 214), Vector2(392, 214), Vector2(388, 214), Vector2(384, 214), Vector2(380, 214), Vector2(376, 214), Vector2(372, 214), Vector2(368, 214)]
+
+[sub_resource type="Resource" id="Track_31"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_0"
+property = &"picture"
+times = PackedFloat64Array(1440, 1458, 1476, 1494, 1512, 1530, 1548, 1566, 1584, 1602, 1620, 1638, 1656, 1674, 1692, 1710, 1728, 1746, 1764, 1782, 1800, 1818, 1836, 1854, 1872, 1890, 1908, 1926, 1944, 1962, 1980, 1998, 2016, 2034, 2106, 2466)
+values = [&"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2024", &"ui_2025", &"ui_2023", &"ui_2022", &"ui_2023"]
+
+[sub_resource type="Resource" id="Track_32"]
+script = ExtResource("2_cutscene_track")
+actor = &"crew_0"
+property = &"mirror"
+times = PackedFloat64Array(1440, 2106, 2466)
+values = [false, true, false]
+
+[resource]
+script = ExtResource("1_cutscene_timeline")
+length = 2628
+tracks = Array[ExtResource("2_cutscene_track")]([SubResource("Track_1"), SubResource("Track_2"), SubResource("Track_3"), SubResource("Track_4"), SubResource("Track_5"), SubResource("Track_6"), SubResource("Track_7"), SubResource("Track_8"), SubResource("Track_9"), SubResource("Track_10"), SubResource("Track_11"), SubResource("Track_12"), SubResource("Track_13"), SubResource("Track_14"), SubResource("Track_15"), SubResource("Track_16"), SubResource("Track_17"), SubResource("Track_18"), SubResource("Track_19"), SubResource("Track_20"), SubResource("Track_21"), SubResource("Track_22"), SubResource("Track_23"), SubResource("Track_24"), SubResource("Track_25"), SubResource("Track_26"), SubResource("Track_27"), SubResource("Track_28"), SubResource("Track_29"), SubResource("Track_30"), SubResource("Track_31"), SubResource("Track_32")])
+provenance = "Original: the deck shot of ExpertClosingSequence: the sub rises into the ship for 6 steps, then six sailors walk and wave for 140 steps (ExpertClosingCrewStep 0x41ceb7 run on docs/data/expert_closing.json) while the control box at the right edge blinks (ExpertClosingDrawPod 0x41cdba). Nothing of it is ours."

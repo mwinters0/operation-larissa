@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ProblemScreenLayout" format=3]
+
+[ext_resource type="Script" path="res://src/resources/problem_screen_layout.gd" id="1_problem_screen_layout"]
+[ext_resource type="Texture2D" uid="uid://cka52bfxxl2x" path="res://packs/dev/assets/problem_art/single/pa_1780.png" id="2_pa_1780"]
+
+[resource]
+script = ExtResource("1_problem_screen_layout")
+background = ExtResource("2_pa_1780")
+background_position = Vector2i(12, 30)
+title_box_x = 20
+title_box_width = 600
+title_y = 36
+message_box = Rect2i(320, 62, 296, 120)
+calculator_position = Vector2i(320, 200)
+font_cell_height = 19
+font_average_width = 7
+line_height = 20
+line_separation = 0
+palette = PackedColorArray(0.0, 0.0, 0.0, 1, 0.0, 0.0, 0.501961, 1, 0.0, 0.501961, 0.0, 1, 0.0, 0.501961, 0.501961, 1, 0.501961, 0.0, 0.0, 1, 0.501961, 0.0, 0.501961, 1, 0.501961, 0.501961, 0.0, 1, 0.752941, 0.752941, 0.752941, 1, 0.501961, 0.501961, 0.501961, 1, 0.0, 0.0, 1.0, 1, 0.0, 1.0, 0.0, 1, 0.0, 1.0, 1.0, 1, 1.0, 0.0, 0.0, 1, 1.0, 0.0, 1.0, 1, 1.0, 1.0, 0.0, 1, 1.0, 1.0, 1.0, 1)

@@ -1,0 +1,19 @@
+; Dev pack - sector 180. The treasure is on the finale screen, 10.
+; The treasure: a creature that does no damage; when the sub touches it, it sets flag 15, which the game reads: with the sub on the
+; sector's finale screen (header field finale_screen) the closing sequence starts. docs/create/FOE_SCRIPTING.md, "The finale: bit 15".
+
+treasure_start:
+    Set_Frame 35
+treasure_idle:
+    Wait_Next_Tick
+    Jump_To treasure_idle
+
+treasure_hit:
+    Set_Flag 15
+    Play_Sound 3
+treasure_stuck:
+    Wait_Next_Tick
+    Jump_To treasure_stuck
+
+treasure_ink:
+    Return

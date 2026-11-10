@@ -1,0 +1,129 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/sign_in.gd" id="1_signin"]
+[ext_resource type="PackedScene" path="res://src/ui/game_menu_bar.tscn" id="3_menu"]
+[ext_resource type="PackedScene" path="res://src/ui/message_box.tscn" id="4_message"]
+
+[node name="SignIn" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 400.0
+script = ExtResource("1_signin")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 400.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Frame" type="TextureRect" parent="."]
+layout_mode = 0
+offset_top = 22.0
+offset_right = 640.0
+offset_bottom = 422.0
+mouse_filter = 2
+
+[node name="LeftLights" type="TextureRect" parent="Frame"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 64.0
+offset_top = 344.0
+offset_right = 164.0
+offset_bottom = 366.0
+mouse_filter = 2
+
+[node name="RightLights" type="TextureRect" parent="Frame"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 476.0
+offset_top = 344.0
+offset_right = 576.0
+offset_bottom = 366.0
+mouse_filter = 2
+
+[node name="ScanAnimation" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+
+[node name="MenuBar" parent="." instance=ExtResource("3_menu")]
+unique_name_in_owner = true
+sign_in_mode = true
+
+[node name="Heading" type="Label" parent="."]
+layout_mode = 0
+offset_left = 72.0
+offset_top = 92.0
+offset_right = 568.0
+offset_bottom = 114.0
+text = "Choose your name and press Start."
+
+[node name="Players" type="Tree" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 72.0
+offset_top = 118.0
+offset_right = 568.0
+offset_bottom = 280.0
+
+[node name="Info" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 72.0
+offset_top = 284.0
+offset_right = 568.0
+offset_bottom = 304.0
+theme_type_variation = &"SmallLabel"
+
+[node name="Packs" type="Button" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 488.0
+offset_top = 285.0
+offset_right = 568.0
+offset_bottom = 305.0
+text = "Packs"
+
+[node name="Buttons" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 72.0
+offset_top = 308.0
+offset_right = 568.0
+offset_bottom = 336.0
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Start" type="Button" parent="Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(88, 0)
+layout_mode = 2
+text = "Start"
+
+[node name="New" type="Button" parent="Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(88, 0)
+layout_mode = 2
+text = "New"
+
+[node name="Practice" type="Button" parent="Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(88, 0)
+layout_mode = 2
+text = "Practice"
+
+[node name="Exit" type="Button" parent="Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(88, 0)
+layout_mode = 2
+text = "Exit"
+
+[node name="Overlay" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+layer = 10
+
+[node name="DialogLayer" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="MessageBox" parent="DialogLayer" instance=ExtResource("4_message")]
+unique_name_in_owner = true

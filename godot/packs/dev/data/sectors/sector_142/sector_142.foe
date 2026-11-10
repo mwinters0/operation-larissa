@@ -1,0 +1,2 @@
+; Dev pack - sector 142 has no creatures.
+; Every creature names three labels of this file (start, hit, ink): see docs/create/FOE_SCRIPTING.md.

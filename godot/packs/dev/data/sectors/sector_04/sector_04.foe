@@ -1,0 +1,24 @@
+; Dev pack - sector 04. The finale.
+; A creature that paces right and left; when the sub touches it a sound plays; an ink pellet freezes it for a moment.
+; foe records name the three entry points: start_label patrol_start, hit_label patrol_hit, ink_label patrol_ink.
+
+patrol_start:
+    Set_Frame_Range 35 36
+walk_right:
+    Move_Foe_Relative_XY 2 0 1
+    Loop_Counter0_Back_To walk_right 9
+walk_left:
+    Move_Foe_Relative_XY -2 0 1 mirrored
+    Loop_Counter0_Back_To walk_left 9
+    Jump_To patrol_start
+
+patrol_hit:
+    Play_Sound 3
+    Return
+
+patrol_ink:
+    Set_Frame 35
+ink_wait:
+    Wait_Next_Tick
+    Loop_Counter1_Back_To ink_wait 30
+    Return

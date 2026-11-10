@@ -1,0 +1,6 @@
+{
+ "comment": "What the OGGs in this folder are, written by tools/dev_pack/audio.py: a synthesized loop (numpy) in a key and tempo per song, after the song's name spoken by Piper.",
+ "set": "General MIDI (bell)",
+ "piper": "1.8.0",
+ "voice": "en_US-lessac-medium"
+}

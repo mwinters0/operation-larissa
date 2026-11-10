@@ -1,0 +1,1 @@
+{"id": "mod_process_spinner", "title": "Spinning process", "version": "1.0", "mod": {"entry": "process_spinner.sgd", "limits": {"execution_timeout": 0}}}

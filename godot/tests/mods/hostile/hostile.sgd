@@ -1,0 +1,150 @@
+# A hostile mod. Every try_* attempts something the sandbox must refuse (a refused call raises, which the game counts); every check_* asks the API for something it must
+# answer with nothing. Adapted from the audit mod of godot-sandbox's examples/modding (BSD-3-Clause).
+var api : Dictionary = {}
+
+func mod_init(a : Dictionary) -> void:
+	api = a
+
+# --- the objects behind the API and the tree ---
+func try_unwrap_callable() -> String:
+	var host = api["log"].get_object()
+	host.call("get_class")
+	return "reached the object behind a granted Callable"
+
+func try_rename_own_node() -> String:
+	set_name("pwned")
+	return "renamed its own node"
+
+func try_reach_parent() -> String:
+	var p = get_parent()
+	p.call("get_class")
+	return "called a method on its parent"
+
+func try_reach_scene_root() -> String:
+	var root = get_node("/root")
+	root.call("get_class")
+	return "called a method on the scene root"
+
+func try_reach_an_autoload() -> String:
+	var game_state = get_node("/root/GameState")
+	return "read an autoload: " + str(game_state.oxygen)
+
+func try_read_root_property() -> String:
+	var root = get_node("/root")
+	return "read a property off the scene root: " + str(root.name)
+
+func try_write_root_property() -> String:
+	var root = get_node("/root")
+	root.name = "pwned"
+	return "wrote a property on the scene root"
+
+func try_quit_the_game() -> String:
+	get_tree().quit()
+	return "quit the game"
+
+func try_make_a_node() -> String:
+	var n = Node.new()
+	n.name = "intruder"
+	return "made a node: " + str(n)
+
+func try_run_the_os() -> String:
+	var out = OS.execute("/bin/true", [])
+	return "ran a program: " + str(out)
+
+func try_read_a_file() -> String:
+	var f = FileAccess.open("/etc/passwd", FileAccess.READ)
+	return "opened a file: " + str(f)
+
+# --- resources: the mod's own load() is refused whatever the path ---
+func try_load_project_resource() -> String:
+	var res = load("res://project.godot")
+	return "loaded a project resource: " + str(res)
+
+func try_load_a_script() -> String:
+	var res = load("res://src/autoload/game_state.gd")
+	return "loaded a script of the game: " + str(res)
+
+func try_load_the_dev_pack() -> String:
+	var res = load("res://packs/dev/pack.json")
+	return "loaded a file of the dev pack: " + str(res)
+
+func try_load_outside_with_dots() -> String:
+	var res = load("res://tests/mods/hostile/../../../project.godot")
+	return "loaded a file by climbing out of the folder: " + str(res)
+
+func try_load_user_path() -> String:
+	var res = load("user://packs/dev/pack.json")
+	return "loaded a file under user://: " + str(res)
+
+func try_load_own_file_by_path() -> String:
+	var res = load("hostile.sgd")
+	return "loaded a file of its own pack by path: " + str(res)
+
+# --- the API: a granted object, and the API itself ---
+func try_write_granted_property() -> String:
+	var t = api["load"].call("pictures/ui_picture/dot.png")
+	t.resource_name = "pwned"
+	return "wrote a property of a granted object"
+
+func try_read_granted_property() -> String:
+	var t = api["load"].call("pictures/ui_picture/dot.png")
+	return "read a property of a granted object: " + str(t.resource_path)
+
+func try_call_granted_method() -> String:
+	var t = api["load"].call("pictures/ui_picture/dot.png")
+	return "called a method of a granted object: " + str(t.get_width())
+
+func try_pass_a_second_pack_id() -> String:
+	var res = api["load"].call("pictures/ui_picture/dot.png", "dev")
+	return "got a file with an id of its own choosing: " + str(res)
+
+func try_smuggle_into_api() -> String:
+	api["smuggled"] = "payload"
+	return "added a key to the API the host is holding"
+
+func try_replace_api_callable() -> String:
+	api["log"] = func(x): return x
+	return "replaced a granted Callable with its own"
+
+func try_erase_api_key() -> String:
+	api.erase("log")
+	return "erased a key from the API"
+
+func try_clear_api() -> String:
+	api.clear()
+	return "emptied the API Dictionary"
+
+# --- the API answers nothing for these (no raise: the answer is null) ---
+# A Callable can be asked what it is bound to: only the mod's own id, a String, because the game binds nothing else.
+func check_bound_arguments() -> Variant:
+	return api["load"].get_bound_arguments()
+
+func check_load_dotdot() -> Variant:
+	return api["load"].call("../mod_hello/hello.sgd")
+
+func check_load_deep_dotdot() -> Variant:
+	return api["load"].call("pictures/../../x.png")
+
+func check_load_absolute() -> Variant:
+	return api["load"].call("/etc/passwd")
+
+func check_load_res_path() -> Variant:
+	return api["load"].call("res://project.godot")
+
+func check_load_user_path() -> Variant:
+	return api["load"].call("user://packs/dev/pack.json")
+
+func check_load_a_script_of_the_pack() -> Variant:
+	return api["load"].call("hostile.sgd")
+
+func check_load_the_manifest() -> Variant:
+	return api["load"].call("pack.json")
+
+func check_load_a_number() -> Variant:
+	return api["load"].call(42)
+
+func check_load_missing() -> Variant:
+	return api["load"].call("pictures/ui_picture/none.png")
+
+func check_load_own_picture() -> Variant:
+	return api["load"].call("pictures/ui_picture/dot.png")

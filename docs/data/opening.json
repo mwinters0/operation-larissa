@@ -1,0 +1,8492 @@
+{
+ "_doc": "Opening animation tables decoded from OPENING.C (ONWIN32.EXE, 0x428f88 .. OpeningSequence 0x42b16b). See the docstring of tools/analysis/ghidra/export_opening.py. Points are window pixels (already doubled).",
+ "tick_hz": 73,
+ "points": [
+  [
+   12,
+   4
+  ],
+  [
+   12,
+   320
+  ],
+  [
+   320,
+   320
+  ],
+  [
+   32,
+   320
+  ],
+  [
+   308,
+   320
+  ],
+  [
+   584,
+   320
+  ],
+  [
+   72,
+   338
+  ],
+  [
+   148,
+   338
+  ],
+  [
+   224,
+   338
+  ],
+  [
+   400,
+   338
+  ],
+  [
+   476,
+   338
+  ],
+  [
+   552,
+   338
+  ],
+  [
+   32,
+   342
+  ],
+  [
+   108,
+   342
+  ],
+  [
+   184,
+   342
+  ],
+  [
+   260,
+   342
+  ],
+  [
+   356,
+   342
+  ],
+  [
+   432,
+   342
+  ],
+  [
+   508,
+   342
+  ],
+  [
+   584,
+   342
+  ],
+  [
+   272,
+   184
+  ],
+  [
+   200,
+   208
+  ],
+  [
+   92,
+   350
+  ],
+  [
+   184,
+   350
+  ],
+  [
+   404,
+   350
+  ],
+  [
+   540,
+   350
+  ],
+  [
+   0,
+   350
+  ],
+  [
+   576,
+   100
+  ],
+  [
+   564,
+   92
+  ],
+  [
+   552,
+   86
+  ],
+  [
+   536,
+   82
+  ],
+  [
+   520,
+   80
+  ],
+  [
+   504,
+   80
+  ],
+  [
+   488,
+   80
+  ],
+  [
+   468,
+   80
+  ],
+  [
+   448,
+   80
+  ],
+  [
+   428,
+   82
+  ],
+  [
+   408,
+   84
+  ],
+  [
+   388,
+   90
+  ],
+  [
+   368,
+   96
+  ],
+  [
+   348,
+   104
+  ],
+  [
+   332,
+   116
+  ],
+  [
+   316,
+   128
+  ],
+  [
+   300,
+   140
+  ],
+  [
+   284,
+   152
+  ],
+  [
+   268,
+   164
+  ],
+  [
+   252,
+   182
+  ],
+  [
+   236,
+   202
+  ],
+  [
+   -400,
+   120
+  ],
+  [
+   -232,
+   192
+  ],
+  [
+   -408,
+   226
+  ],
+  [
+   -432,
+   240
+  ],
+  [
+   24,
+   252
+  ],
+  [
+   0,
+   284
+  ],
+  [
+   -12,
+   248
+  ],
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   284
+  ],
+  [
+   12,
+   80
+  ],
+  [
+   300,
+   80
+  ],
+  [
+   88,
+   46
+  ],
+  [
+   148,
+   112
+  ],
+  [
+   60,
+   172
+  ],
+  [
+   96,
+   378
+  ],
+  [
+   180,
+   340
+  ],
+  [
+   120,
+   80
+  ],
+  [
+   504,
+   304
+  ],
+  [
+   140,
+   96
+  ],
+  [
+   352,
+   192
+  ]
+ ],
+ "point_names": {
+  "map": 0,
+  "console_left": 1,
+  "console_right": 2,
+  "alarm_lights": [
+   3,
+   4,
+   5
+  ],
+  "status_lights": [
+   6,
+   7,
+   8,
+   9,
+   10,
+   11
+  ],
+  "panel_lights": [
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19
+  ],
+  "teletype": 20,
+  "crash_site": 21,
+  "crew": [
+   22,
+   23,
+   24,
+   25,
+   26
+  ],
+  "capsule_trail": [
+   27,
+   47
+  ],
+  "ship_hull": 48,
+  "ship_radar": 49,
+  "ship_hook": 50,
+  "ship_sub": 51,
+  "ship_bow_spray": 52,
+  "waves_front": 53,
+  "splash": 54,
+  "sky": 55,
+  "sea": 56,
+  "cloud_left": 57,
+  "cloud_right": 58,
+  "presents": 59,
+  "operation": 60,
+  "neptune": 61,
+  "copyright_text": 62
+ },
+ "news_cartoon": {
+  "redraw_ticks": 10,
+  "structure": "7 passes of 25 redraws; after passes 1..6 bulletin 0..5 is typed (the box is empty during pass 1); the redraws go on (every 10 ticks, by the clock) while typing",
+  "typing": {
+   "ticks_per_character": 3,
+   "note": "2 ticks wait + 1 tick alarm per character, newline 2 ticks"
+  },
+  "bulletins": [
+   {
+    "id": 10003,
+    "characters": 98,
+    "typing_ticks": 294
+   },
+   {
+    "id": 10004,
+    "characters": 97,
+    "typing_ticks": 291
+   },
+   {
+    "id": 10005,
+    "characters": 95,
+    "typing_ticks": 285
+   },
+   {
+    "id": 10006,
+    "characters": 92,
+    "typing_ticks": 276
+   },
+   {
+    "id": 10007,
+    "characters": 48,
+    "typing_ticks": 144
+   },
+   {
+    "id": 10008,
+    "characters": 57,
+    "typing_ticks": 171
+   }
+  ],
+  "crew": {
+   "pictures": "bundle 9 items 15..25 = pictures 1016..1026: 1016-1019 man from behind (4 poses), 1020-1021 woman, 1022-1023 man turned / front, 1024-1026 the walking man",
+   "record": "[cmd, item, mirror, delay]: cmd -1 show the picture for `delay` calls; cmd -3 same, and move the sprite 12 px right on EVERY call of the record; the script ends with a lone byte -2: the previous record's picture is drawn once more and the script restarts (its x is NOT reset)",
+   "members": [
+    {
+     "x0": 92,
+     "y": 350,
+     "calls": 20,
+     "dx_per_cycle": 0,
+     "pictures": [
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1017,
+       0,
+       0
+      ],
+      [
+       1019,
+       0,
+       0
+      ],
+      [
+       1018,
+       0,
+       0
+      ],
+      [
+       1018,
+       0,
+       0
+      ],
+      [
+       1018,
+       0,
+       0
+      ],
+      [
+       1017,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1023,
+       0,
+       0
+      ],
+      [
+       1023,
+       0,
+       0
+      ],
+      [
+       1023,
+       0,
+       0
+      ],
+      [
+       1023,
+       0,
+       0
+      ]
+     ],
+     "records": [
+      {
+       "cmd": -1,
+       "item": 15,
+       "picture": 1016,
+       "mirror": 0,
+       "delay": 5
+      },
+      {
+       "cmd": -1,
+       "item": 16,
+       "picture": 1017,
+       "mirror": 0,
+       "delay": 1
+      },
+      {
+       "cmd": -1,
+       "item": 18,
+       "picture": 1019,
+       "mirror": 0,
+       "delay": 1
+      },
+      {
+       "cmd": -1,
+       "item": 17,
+       "picture": 1018,
+       "mirror": 0,
+       "delay": 3
+      },
+      {
+       "cmd": -1,
+       "item": 16,
+       "picture": 1017,
+       "mirror": 0,
+       "delay": 1
+      },
+      {
+       "cmd": -1,
+       "item": 15,
+       "picture": 1016,
+       "mirror": 0,
+       "delay": 1
+      },
+      {
+       "cmd": -1,
+       "item": 21,
+       "picture": 1022,
+       "mirror": 0,
+       "delay": 2
+      },
+      {
+       "cmd": -1,
+       "item": 21,
+       "picture": 1022,
+       "mirror": 1,
+       "delay": 2
+      },
+      {
+       "cmd": -1,
+       "item": 22,
+       "picture": 1023,
+       "mirror": 0,
+       "delay": 3
+      }
+     ],
+     "first_call": 1,
+     "first_tick": 0,
+     "point": 22
+    },
+    {
+     "x0": 184,
+     "y": 350,
+     "calls": 23,
+     "dx_per_cycle": 0,
+     "pictures": [
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1023,
+       1,
+       0
+      ],
+      [
+       1023,
+       1,
+       0
+      ],
+      [
+       1023,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1017,
+       1,
+       0
+      ],
+      [
+       1017,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ]
+     ],
+     "records": [
+      {
+       "cmd": -1,
+       "item": 21,
+       "picture": 1022,
+       "mirror": 0,
+       "delay": 4
+      },
+      {
+       "cmd": -1,
+       "item": 22,
+       "picture": 1023,
+       "mirror": 1,
+       "delay": 3
+      },
+      {
+       "cmd": -1,
+       "item": 15,
+       "picture": 1016,
+       "mirror": 1,
+       "delay": 6
+      },
+      {
+       "cmd": -1,
+       "item": 16,
+       "picture": 1017,
+       "mirror": 1,
+       "delay": 2
+      },
+      {
+       "cmd": -1,
+       "item": 15,
+       "picture": 1016,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -1,
+       "item": 21,
+       "picture": 1022,
+       "mirror": 1,
+       "delay": 3
+      },
+      {
+       "cmd": -1,
+       "item": 15,
+       "picture": 1016,
+       "mirror": 1,
+       "delay": 3
+      }
+     ],
+     "first_call": 1,
+     "first_tick": 0,
+     "point": 23
+    },
+    {
+     "x0": 404,
+     "y": 350,
+     "calls": 19,
+     "dx_per_cycle": 0,
+     "pictures": [
+      [
+       1020,
+       0,
+       0
+      ],
+      [
+       1020,
+       0,
+       0
+      ],
+      [
+       1020,
+       0,
+       0
+      ],
+      [
+       1020,
+       1,
+       0
+      ],
+      [
+       1020,
+       1,
+       0
+      ],
+      [
+       1020,
+       1,
+       0
+      ],
+      [
+       1020,
+       1,
+       0
+      ],
+      [
+       1021,
+       1,
+       0
+      ],
+      [
+       1021,
+       1,
+       0
+      ],
+      [
+       1021,
+       1,
+       0
+      ],
+      [
+       1020,
+       0,
+       0
+      ],
+      [
+       1020,
+       0,
+       0
+      ],
+      [
+       1020,
+       0,
+       0
+      ],
+      [
+       1021,
+       0,
+       0
+      ],
+      [
+       1021,
+       0,
+       0
+      ],
+      [
+       1021,
+       0,
+       0
+      ],
+      [
+       1021,
+       0,
+       0
+      ],
+      [
+       1021,
+       0,
+       0
+      ],
+      [
+       1021,
+       0,
+       0
+      ]
+     ],
+     "records": [
+      {
+       "cmd": -1,
+       "item": 19,
+       "picture": 1020,
+       "mirror": 0,
+       "delay": 3
+      },
+      {
+       "cmd": -1,
+       "item": 19,
+       "picture": 1020,
+       "mirror": 1,
+       "delay": 4
+      },
+      {
+       "cmd": -1,
+       "item": 20,
+       "picture": 1021,
+       "mirror": 1,
+       "delay": 3
+      },
+      {
+       "cmd": -1,
+       "item": 19,
+       "picture": 1020,
+       "mirror": 0,
+       "delay": 3
+      },
+      {
+       "cmd": -1,
+       "item": 20,
+       "picture": 1021,
+       "mirror": 0,
+       "delay": 5
+      }
+     ],
+     "first_call": 1,
+     "first_tick": 0,
+     "point": 24
+    },
+    {
+     "x0": 540,
+     "y": 350,
+     "calls": 44,
+     "dx_per_cycle": 0,
+     "pictures": [
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1017,
+       0,
+       0
+      ],
+      [
+       1017,
+       0,
+       0
+      ],
+      [
+       1017,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1023,
+       1,
+       0
+      ],
+      [
+       1023,
+       1,
+       0
+      ],
+      [
+       1023,
+       1,
+       0
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1023,
+       0,
+       0
+      ],
+      [
+       1023,
+       0,
+       0
+      ],
+      [
+       1023,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1016,
+       0,
+       0
+      ],
+      [
+       1017,
+       0,
+       0
+      ],
+      [
+       1019,
+       0,
+       0
+      ],
+      [
+       1018,
+       0,
+       0
+      ],
+      [
+       1018,
+       0,
+       0
+      ],
+      [
+       1018,
+       0,
+       0
+      ],
+      [
+       1018,
+       0,
+       0
+      ],
+      [
+       1018,
+       0,
+       0
+      ],
+      [
+       1019,
+       0,
+       0
+      ],
+      [
+       1017,
+       0,
+       0
+      ],
+      [
+       1017,
+       0,
+       0
+      ]
+     ],
+     "records": [
+      {
+       "cmd": -1,
+       "item": 15,
+       "picture": 1016,
+       "mirror": 0,
+       "delay": 5
+      },
+      {
+       "cmd": -1,
+       "item": 16,
+       "picture": 1017,
+       "mirror": 0,
+       "delay": 3
+      },
+      {
+       "cmd": -1,
+       "item": 15,
+       "picture": 1016,
+       "mirror": 0,
+       "delay": 4
+      },
+      {
+       "cmd": -1,
+       "item": 21,
+       "picture": 1022,
+       "mirror": 1,
+       "delay": 3
+      },
+      {
+       "cmd": -1,
+       "item": 22,
+       "picture": 1023,
+       "mirror": 1,
+       "delay": 3
+      },
+      {
+       "cmd": -1,
+       "item": 21,
+       "picture": 1022,
+       "mirror": 1,
+       "delay": 2
+      },
+      {
+       "cmd": -1,
+       "item": 21,
+       "picture": 1022,
+       "mirror": 0,
+       "delay": 4
+      },
+      {
+       "cmd": -1,
+       "item": 15,
+       "picture": 1016,
+       "mirror": 0,
+       "delay": 5
+      },
+      {
+       "cmd": -1,
+       "item": 22,
+       "picture": 1023,
+       "mirror": 0,
+       "delay": 3
+      },
+      {
+       "cmd": -1,
+       "item": 15,
+       "picture": 1016,
+       "mirror": 0,
+       "delay": 2
+      },
+      {
+       "cmd": -1,
+       "item": 16,
+       "picture": 1017,
+       "mirror": 0,
+       "delay": 1
+      },
+      {
+       "cmd": -1,
+       "item": 18,
+       "picture": 1019,
+       "mirror": 0,
+       "delay": 1
+      },
+      {
+       "cmd": -1,
+       "item": 17,
+       "picture": 1018,
+       "mirror": 0,
+       "delay": 5
+      },
+      {
+       "cmd": -1,
+       "item": 18,
+       "picture": 1019,
+       "mirror": 0,
+       "delay": 1
+      },
+      {
+       "cmd": -1,
+       "item": 16,
+       "picture": 1017,
+       "mirror": 0,
+       "delay": 1
+      }
+     ],
+     "first_call": 1,
+     "first_tick": 0,
+     "point": 25
+    },
+    {
+     "x0": 0,
+     "y": 350,
+     "calls": 70,
+     "dx_per_cycle": 324,
+     "pictures": [
+      [
+       1024,
+       1,
+       0
+      ],
+      [
+       1025,
+       1,
+       12
+      ],
+      [
+       1026,
+       1,
+       12
+      ],
+      [
+       1025,
+       1,
+       12
+      ],
+      [
+       1024,
+       1,
+       12
+      ],
+      [
+       1025,
+       1,
+       12
+      ],
+      [
+       1026,
+       1,
+       12
+      ],
+      [
+       1025,
+       1,
+       12
+      ],
+      [
+       1024,
+       1,
+       12
+      ],
+      [
+       1025,
+       1,
+       12
+      ],
+      [
+       1026,
+       1,
+       12
+      ],
+      [
+       1025,
+       1,
+       12
+      ],
+      [
+       1024,
+       1,
+       12
+      ],
+      [
+       1025,
+       1,
+       12
+      ],
+      [
+       1026,
+       1,
+       12
+      ],
+      [
+       1025,
+       1,
+       12
+      ],
+      [
+       1024,
+       1,
+       12
+      ],
+      [
+       1025,
+       1,
+       12
+      ],
+      [
+       1026,
+       1,
+       12
+      ],
+      [
+       1025,
+       1,
+       12
+      ],
+      [
+       1024,
+       1,
+       12
+      ],
+      [
+       1025,
+       1,
+       12
+      ],
+      [
+       1026,
+       1,
+       12
+      ],
+      [
+       1025,
+       1,
+       12
+      ],
+      [
+       1024,
+       1,
+       12
+      ],
+      [
+       1025,
+       1,
+       12
+      ],
+      [
+       1026,
+       1,
+       12
+      ],
+      [
+       1025,
+       1,
+       12
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1022,
+       1,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1022,
+       0,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1017,
+       1,
+       0
+      ],
+      [
+       1019,
+       1,
+       0
+      ],
+      [
+       1018,
+       1,
+       0
+      ],
+      [
+       1018,
+       1,
+       0
+      ],
+      [
+       1018,
+       1,
+       0
+      ],
+      [
+       1018,
+       1,
+       0
+      ],
+      [
+       1018,
+       1,
+       0
+      ],
+      [
+       1018,
+       1,
+       0
+      ],
+      [
+       1018,
+       1,
+       0
+      ],
+      [
+       1018,
+       1,
+       0
+      ],
+      [
+       1018,
+       1,
+       0
+      ],
+      [
+       1018,
+       1,
+       0
+      ],
+      [
+       1018,
+       1,
+       0
+      ],
+      [
+       1019,
+       1,
+       0
+      ],
+      [
+       1017,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ],
+      [
+       1016,
+       1,
+       0
+      ]
+     ],
+     "records": [
+      {
+       "cmd": -1,
+       "item": 23,
+       "picture": 1024,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 24,
+       "picture": 1025,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 25,
+       "picture": 1026,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 24,
+       "picture": 1025,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 23,
+       "picture": 1024,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 24,
+       "picture": 1025,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 25,
+       "picture": 1026,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 24,
+       "picture": 1025,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 23,
+       "picture": 1024,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 24,
+       "picture": 1025,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 25,
+       "picture": 1026,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 24,
+       "picture": 1025,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 23,
+       "picture": 1024,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 24,
+       "picture": 1025,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 25,
+       "picture": 1026,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 24,
+       "picture": 1025,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 23,
+       "picture": 1024,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 24,
+       "picture": 1025,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 25,
+       "picture": 1026,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 24,
+       "picture": 1025,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 23,
+       "picture": 1024,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 24,
+       "picture": 1025,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 25,
+       "picture": 1026,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 24,
+       "picture": 1025,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 23,
+       "picture": 1024,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 24,
+       "picture": 1025,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 25,
+       "picture": 1026,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -3,
+       "item": 24,
+       "picture": 1025,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -1,
+       "item": 21,
+       "picture": 1022,
+       "mirror": 1,
+       "delay": 5
+      },
+      {
+       "cmd": -1,
+       "item": 21,
+       "picture": 1022,
+       "mirror": 0,
+       "delay": 7
+      },
+      {
+       "cmd": -1,
+       "item": 15,
+       "picture": 1016,
+       "mirror": 1,
+       "delay": 8
+      },
+      {
+       "cmd": -1,
+       "item": 16,
+       "picture": 1017,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -1,
+       "item": 18,
+       "picture": 1019,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -1,
+       "item": 17,
+       "picture": 1018,
+       "mirror": 1,
+       "delay": 11
+      },
+      {
+       "cmd": -1,
+       "item": 18,
+       "picture": 1019,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -1,
+       "item": 16,
+       "picture": 1017,
+       "mirror": 1,
+       "delay": 1
+      },
+      {
+       "cmd": -1,
+       "item": 15,
+       "picture": 1016,
+       "mirror": 1,
+       "delay": 6
+      }
+     ],
+     "first_call": 220,
+     "first_tick": 2190,
+     "point": 26
+    }
+   ]
+  },
+  "alarm_lights": {
+   "points": [
+    3,
+    4,
+    5
+   ],
+   "gate_call": {
+    "centre": 37,
+    "outer": 234
+   },
+   "gate_ticks": {
+    "centre": 365,
+    "outer": 2336
+   },
+   "state_to_picture": {
+    "0": {
+     "item": 7,
+     "picture": 1008,
+     "mirror": 0
+    },
+    "1": {
+     "item": 6,
+     "picture": 1007,
+     "mirror": 1
+    },
+    "2": {
+     "item": 8,
+     "picture": 1009,
+     "mirror": 0
+    },
+    "3": {
+     "item": 6,
+     "picture": 1007,
+     "mirror": 0
+    }
+   },
+   "start_state": {
+    "left": 0,
+    "centre": 1,
+    "right": 2
+   },
+   "sequence_first_calls": [
+    [
+     0,
+     1,
+     2
+    ],
+    [
+     1,
+     2,
+     3
+    ],
+    [
+     2,
+     3,
+     0
+    ],
+    [
+     3,
+     0,
+     1
+    ],
+    [
+     0,
+     1,
+     2
+    ],
+    [
+     1,
+     2,
+     3
+    ],
+    [
+     2,
+     3,
+     0
+    ],
+    [
+     3,
+     0,
+     1
+    ],
+    [
+     0,
+     1,
+     2
+    ],
+    [
+     1,
+     2,
+     3
+    ],
+    [
+     2,
+     3,
+     0
+    ],
+    [
+     3,
+     0,
+     1
+    ]
+   ]
+  },
+  "status_lights": {
+   "function": "CartoonStatusLights (0x429440)",
+   "points": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "base_item": 9,
+   "first_picture": 1010,
+   "rule": "every call, each light independently: with probability 100/299 (rand() % 299 < 100) draw picture 1010 + r % 3 (r = that remainder); the lights at points 9, 10, 11 are drawn mirrored; otherwise the light is OFF (the strip is restored from the clean copy every call)",
+   "mirror": [
+    0,
+    0,
+    0,
+    1,
+    1,
+    1
+   ]
+  },
+  "panel_lights": {
+   "function": "CartoonPanelLights (0x429595)",
+   "points": [
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ],
+   "base_item": 12,
+   "first_picture": 1013,
+   "rule": "every call, each light is ALWAYS drawn with picture 1013 + rand() % 299 % 3; the last four (points 16-19) are mirrored",
+   "mirror": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  "trail_and_ring": {
+   "dot_picture": 1002,
+   "dots": [
+    {
+     "call": 11,
+     "point": 27
+    },
+    {
+     "call": 22,
+     "point": 28
+    },
+    {
+     "call": 33,
+     "point": 29
+    },
+    {
+     "call": 44,
+     "point": 30
+    },
+    {
+     "call": 55,
+     "point": 31
+    },
+    {
+     "call": 66,
+     "point": 32
+    },
+    {
+     "call": 77,
+     "point": 33
+    },
+    {
+     "call": 88,
+     "point": 34
+    },
+    {
+     "call": 99,
+     "point": 35
+    },
+    {
+     "call": 110,
+     "point": 36
+    },
+    {
+     "call": 121,
+     "point": 37
+    },
+    {
+     "call": 132,
+     "point": 38
+    },
+    {
+     "call": 143,
+     "point": 39
+    },
+    {
+     "call": 154,
+     "point": 40
+    },
+    {
+     "call": 165,
+     "point": 41
+    },
+    {
+     "call": 176,
+     "point": 42
+    },
+    {
+     "call": 187,
+     "point": 43
+    },
+    {
+     "call": 198,
+     "point": 44
+    },
+    {
+     "call": 209,
+     "point": 45
+    },
+    {
+     "call": 220,
+     "point": 46
+    },
+    {
+     "call": 231,
+     "point": 47
+    }
+   ],
+   "ring_pictures": [
+    1003,
+    1004,
+    1005,
+    1006
+   ],
+   "ring_point": 21,
+   "ring_first_call": 237,
+   "ring_ticks_per_picture": 10,
+   "dot_first_tick": 100,
+   "ring_first_tick": 2360
+  },
+  "speech": {
+   "function": "CartoonSpeech (0x42984d)",
+   "states": 11,
+   "waits_ticks": {
+    "1": 219,
+    "3": 248,
+    "6": 248,
+    "7": 248
+   },
+   "note": "clip n (NE1SOUND 3999 + n) starts when the previous one has finished; before clips 1, 3, 6, 7 there is a pause of 219 (clip 1) / 248 ticks; clips 2, 4, 5, 8-11 follow at once"
+  },
+  "end": "after pass 7 (25 redraws after the last bulletin has been typed); Enter skips to the title scene, Space / Esc skip everything"
+ },
+ "title_scene": {
+  "redraw_ticks": 12,
+  "redraws": 162,
+  "frame_note": "frames[0] is the pre-frame (t = 0, parameter 0), frames[r] for r = 1..162 is loop iteration r - 1 (parameter r - 1) at t = 12 r ticks; positions are where the part is DRAWN in that frame",
+  "ship": {
+   "start_x": -400,
+   "advance_px": 8,
+   "stand_still_params": [
+    56,
+    85
+   ],
+   "wobble": "after each draw y += -2 when param % 10 == 0, +2 when param % 10 == 5 (none while standing still); every part of the ship wobbles by the same amount"
+  },
+  "sub": {
+   "picture": 1033,
+   "mirror": 1,
+   "size": [
+    72,
+    44
+   ],
+   "hook_open_params": [
+    67,
+    70
+   ],
+   "fall_starts_param": 68,
+   "fall_px_per_redraw": 6,
+   "fall_stops_when_y_at_least": 318,
+   "clip_bottom_row": 312,
+   "note": "the sub is NOT attached to the ship after the drop: it keeps the ship's x advance but is clipped to rows <= 312, so once its top row is at 313 or lower (it stops at y = 322) nothing of it is drawn. It sinks behind the wave strip, splashes, and is gone.",
+   "first_fall_redraw": 69,
+   "gone_redraw": 81
+  },
+  "splash": {
+   "pictures": [
+    1034,
+    1035,
+    1036,
+    1037,
+    1038
+   ],
+   "size": [
+    76,
+    50
+   ],
+   "left_point": 54,
+   "right_dx": 76,
+   "right_mirror": 1,
+   "trigger": "sub y > 262 (0x106)",
+   "sound": 43,
+   "sound_redraw": 73,
+   "first_picture_redraw": 75,
+   "note": "sound on the trigger frame, nothing for the next frame, then one picture per redraw (5 redraws); both halves are drawn at the FIXED point 54 (the ship is standing still)"
+  },
+  "draw_order": [
+   "sky 1039 (0,0)",
+   "sea 1040 (0,284)",
+   "clouds 1042 / 1043 (static)",
+   "hull 1027",
+   "radar",
+   "hook",
+   "sub (clipped)",
+   "waves 1041 (0,284)",
+   "splash",
+   "bow spray"
+  ],
+  "frames": [
+   {
+    "redraw": 0,
+    "param": 0,
+    "tick": 0,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -400,
+     "y": 120
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": -232,
+     "y": 192
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -408,
+     "y": 226
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -432,
+     "y": 240,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 24,
+     "y": 252
+    },
+    "pre_frame": true
+   },
+   {
+    "redraw": 1,
+    "param": 0,
+    "tick": 12,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -392,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": -224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -400,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -424,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 32,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 2,
+    "param": 1,
+    "tick": 24,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -384,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": -216,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -392,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -416,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 40,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 3,
+    "param": 2,
+    "tick": 36,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -376,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": -208,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -384,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -408,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 48,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 4,
+    "param": 3,
+    "tick": 48,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -368,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": -200,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -376,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -400,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 56,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 5,
+    "param": 4,
+    "tick": 60,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -360,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": -192,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -368,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -392,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 64,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 6,
+    "param": 5,
+    "tick": 72,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -352,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": -184,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -360,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -384,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 72,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 7,
+    "param": 6,
+    "tick": 84,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -344,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": -176,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -352,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -376,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 80,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 8,
+    "param": 7,
+    "tick": 96,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -336,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": -168,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -344,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -368,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 88,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 9,
+    "param": 8,
+    "tick": 108,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -328,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": -160,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -336,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -360,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 96,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 10,
+    "param": 9,
+    "tick": 120,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -320,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": -152,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -328,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -352,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 104,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 11,
+    "param": 10,
+    "tick": 132,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -312,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": -144,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -320,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -344,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 112,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 12,
+    "param": 11,
+    "tick": 144,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -304,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": -136,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -312,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -336,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 120,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 13,
+    "param": 12,
+    "tick": 156,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -296,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": -128,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -304,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -328,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 128,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 14,
+    "param": 13,
+    "tick": 168,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -288,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": -120,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -296,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -320,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 136,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 15,
+    "param": 14,
+    "tick": 180,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -280,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": -112,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -288,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -312,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 144,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 16,
+    "param": 15,
+    "tick": 192,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -272,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": -104,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -280,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -304,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 152,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 17,
+    "param": 16,
+    "tick": 204,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -264,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": -96,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -272,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -296,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 160,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 18,
+    "param": 17,
+    "tick": 216,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -256,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": -88,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -264,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -288,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 168,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 19,
+    "param": 18,
+    "tick": 228,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -248,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": -80,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -256,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -280,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 176,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 20,
+    "param": 19,
+    "tick": 240,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -240,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": -72,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -248,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -272,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 184,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 21,
+    "param": 20,
+    "tick": 252,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -232,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": -64,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -240,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -264,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 192,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 22,
+    "param": 21,
+    "tick": 264,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -224,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": -56,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -232,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -256,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 200,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 23,
+    "param": 22,
+    "tick": 276,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -216,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": -48,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -224,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -248,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 208,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 24,
+    "param": 23,
+    "tick": 288,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -208,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": -40,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -216,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -240,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 216,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 25,
+    "param": 24,
+    "tick": 300,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -200,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": -32,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -208,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -232,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 224,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 26,
+    "param": 25,
+    "tick": 312,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -192,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": -24,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -200,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -224,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 232,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 27,
+    "param": 26,
+    "tick": 324,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -184,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": -16,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -192,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -216,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 240,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 28,
+    "param": 27,
+    "tick": 336,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -176,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": -8,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -184,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -208,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 248,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 29,
+    "param": 28,
+    "tick": 348,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -168,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 0,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -176,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -200,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 256,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 30,
+    "param": 29,
+    "tick": 360,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -160,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 8,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -168,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -192,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 264,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 31,
+    "param": 30,
+    "tick": 372,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -152,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 16,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -160,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -184,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 272,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 32,
+    "param": 31,
+    "tick": 384,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -144,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 24,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -152,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -176,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 280,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 33,
+    "param": 32,
+    "tick": 396,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -136,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 32,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -144,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -168,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 288,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 34,
+    "param": 33,
+    "tick": 408,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -128,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 40,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -136,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -160,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 296,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 35,
+    "param": 34,
+    "tick": 420,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -120,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 48,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -128,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -152,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 304,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 36,
+    "param": 35,
+    "tick": 432,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -112,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 56,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -120,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -144,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 312,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 37,
+    "param": 36,
+    "tick": 444,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -104,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 64,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -112,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -136,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 320,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 38,
+    "param": 37,
+    "tick": 456,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -96,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 72,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -104,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -128,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 328,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 39,
+    "param": 38,
+    "tick": 468,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -88,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 80,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -96,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -120,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 336,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 40,
+    "param": 39,
+    "tick": 480,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -80,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 88,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -88,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -112,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 344,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 41,
+    "param": 40,
+    "tick": 492,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -72,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 96,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -80,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -104,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 352,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 42,
+    "param": 41,
+    "tick": 504,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -64,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 104,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -72,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -96,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 360,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 43,
+    "param": 42,
+    "tick": 516,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -56,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 112,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -64,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -88,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1038,
+     "mirror": 0,
+     "x": 368,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 44,
+    "param": 43,
+    "tick": 528,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -48,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 120,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -56,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -80,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1037,
+     "mirror": 0,
+     "x": 376,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 45,
+    "param": 44,
+    "tick": 540,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -40,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 128,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -48,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -72,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1038,
+     "mirror": 0,
+     "x": 384,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 46,
+    "param": 45,
+    "tick": 552,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -32,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 136,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -40,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -64,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1037,
+     "mirror": 0,
+     "x": 392,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 47,
+    "param": 46,
+    "tick": 564,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -24,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 144,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -32,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -56,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1038,
+     "mirror": 0,
+     "x": 400,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 48,
+    "param": 47,
+    "tick": 576,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -16,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 152,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -24,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -48,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1037,
+     "mirror": 0,
+     "x": 408,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 49,
+    "param": 48,
+    "tick": 588,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": -8,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 160,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -16,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -40,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1038,
+     "mirror": 0,
+     "x": 416,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 50,
+    "param": 49,
+    "tick": 600,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 0,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 168,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": -8,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -32,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1037,
+     "mirror": 0,
+     "x": 424,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 51,
+    "param": 50,
+    "tick": 612,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 8,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 176,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 0,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -24,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1038,
+     "mirror": 0,
+     "x": 432,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 52,
+    "param": 51,
+    "tick": 624,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 16,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 184,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 8,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -16,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1037,
+     "mirror": 0,
+     "x": 440,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 53,
+    "param": 52,
+    "tick": 636,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 24,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 192,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 16,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": -8,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1038,
+     "mirror": 0,
+     "x": 448,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 54,
+    "param": 53,
+    "tick": 648,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 32,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 200,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 24,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 0,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1037,
+     "mirror": 0,
+     "x": 456,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 55,
+    "param": 54,
+    "tick": 660,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 40,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 208,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 32,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 8,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1038,
+     "mirror": 0,
+     "x": 464,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 56,
+    "param": 55,
+    "tick": 672,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 48,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 216,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 40,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 16,
+     "y": 236,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1037,
+     "mirror": 0,
+     "x": 472,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 57,
+    "param": 56,
+    "tick": 684,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 58,
+    "param": 57,
+    "tick": 696,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 59,
+    "param": 58,
+    "tick": 708,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 60,
+    "param": 59,
+    "tick": 720,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 61,
+    "param": 60,
+    "tick": 732,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 62,
+    "param": 61,
+    "tick": 744,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 63,
+    "param": 62,
+    "tick": 756,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 64,
+    "param": 63,
+    "tick": 768,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 65,
+    "param": 64,
+    "tick": 780,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 66,
+    "param": 65,
+    "tick": 792,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 67,
+    "param": 66,
+    "tick": 804,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 68,
+    "param": 67,
+    "tick": 816,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1032,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 238,
+     "visible_rows": 44,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 69,
+    "param": 68,
+    "tick": 828,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1032,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 244,
+     "visible_rows": 44,
+     "falling": true
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 70,
+    "param": 69,
+    "tick": 840,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1032,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 250,
+     "visible_rows": 44,
+     "falling": true
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 71,
+    "param": 70,
+    "tick": 852,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1032,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 256,
+     "visible_rows": 44,
+     "falling": true
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 72,
+    "param": 71,
+    "tick": 864,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 262,
+     "visible_rows": 44,
+     "falling": true
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 73,
+    "param": 72,
+    "tick": 876,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 268,
+     "visible_rows": 44,
+     "falling": true
+    },
+    "splash": null,
+    "sfx": [
+     43
+    ],
+    "spray": null
+   },
+   {
+    "redraw": 74,
+    "param": 73,
+    "tick": 888,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 274,
+     "visible_rows": 39,
+     "falling": true
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 75,
+    "param": 74,
+    "tick": 900,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 280,
+     "visible_rows": 33,
+     "falling": true
+    },
+    "splash": {
+     "picture": 1034,
+     "left": [
+      -12,
+      248
+     ],
+     "right": [
+      64,
+      248
+     ],
+     "right_mirror": 1
+    },
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 76,
+    "param": 75,
+    "tick": 912,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 286,
+     "visible_rows": 27,
+     "falling": true
+    },
+    "splash": {
+     "picture": 1035,
+     "left": [
+      -12,
+      248
+     ],
+     "right": [
+      64,
+      248
+     ],
+     "right_mirror": 1
+    },
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 77,
+    "param": 76,
+    "tick": 924,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 292,
+     "visible_rows": 21,
+     "falling": true
+    },
+    "splash": {
+     "picture": 1036,
+     "left": [
+      -12,
+      248
+     ],
+     "right": [
+      64,
+      248
+     ],
+     "right_mirror": 1
+    },
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 78,
+    "param": 77,
+    "tick": 936,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 298,
+     "visible_rows": 15,
+     "falling": true
+    },
+    "splash": {
+     "picture": 1037,
+     "left": [
+      -12,
+      248
+     ],
+     "right": [
+      64,
+      248
+     ],
+     "right_mirror": 1
+    },
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 79,
+    "param": 78,
+    "tick": 948,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 304,
+     "visible_rows": 9,
+     "falling": true
+    },
+    "splash": {
+     "picture": 1038,
+     "left": [
+      -12,
+      248
+     ],
+     "right": [
+      64,
+      248
+     ],
+     "right_mirror": 1
+    },
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 80,
+    "param": 79,
+    "tick": 960,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 310,
+     "visible_rows": 3,
+     "falling": true
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 81,
+    "param": 80,
+    "tick": 972,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 316,
+     "visible_rows": 0,
+     "falling": true
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 82,
+    "param": 81,
+    "tick": 984,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": true
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 83,
+    "param": 82,
+    "tick": 996,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 84,
+    "param": 83,
+    "tick": 1008,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 85,
+    "param": 84,
+    "tick": 1020,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 86,
+    "param": 85,
+    "tick": 1032,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": null
+   },
+   {
+    "redraw": 87,
+    "param": 86,
+    "tick": 1044,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 56,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 224,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 48,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 24,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1038,
+     "mirror": 0,
+     "x": 480,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 88,
+    "param": 87,
+    "tick": 1056,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 64,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 232,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 56,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 32,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1037,
+     "mirror": 0,
+     "x": 488,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 89,
+    "param": 88,
+    "tick": 1068,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 72,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 240,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 64,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 40,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1038,
+     "mirror": 0,
+     "x": 496,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 90,
+    "param": 89,
+    "tick": 1080,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 80,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 248,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 72,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 48,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1037,
+     "mirror": 0,
+     "x": 504,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 91,
+    "param": 90,
+    "tick": 1092,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 88,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 256,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 80,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 56,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1038,
+     "mirror": 0,
+     "x": 512,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 92,
+    "param": 91,
+    "tick": 1104,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 96,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 264,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 88,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 64,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1037,
+     "mirror": 0,
+     "x": 520,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 93,
+    "param": 92,
+    "tick": 1116,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 104,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 272,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 96,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 72,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1038,
+     "mirror": 0,
+     "x": 528,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 94,
+    "param": 93,
+    "tick": 1128,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 112,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 280,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 104,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 80,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1037,
+     "mirror": 0,
+     "x": 536,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 95,
+    "param": 94,
+    "tick": 1140,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 120,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 288,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 112,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 88,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 544,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 96,
+    "param": 95,
+    "tick": 1152,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 128,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 296,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 120,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 96,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 552,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 97,
+    "param": 96,
+    "tick": 1164,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 136,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 304,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 128,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 104,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 560,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 98,
+    "param": 97,
+    "tick": 1176,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 144,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 312,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 136,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 112,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 568,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 99,
+    "param": 98,
+    "tick": 1188,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 152,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 320,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 144,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 120,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 576,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 100,
+    "param": 99,
+    "tick": 1200,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 160,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 328,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 152,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 128,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 584,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 101,
+    "param": 100,
+    "tick": 1212,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 168,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 336,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 160,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 136,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 592,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 102,
+    "param": 101,
+    "tick": 1224,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 176,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 344,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 168,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 144,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 600,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 103,
+    "param": 102,
+    "tick": 1236,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 184,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 352,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 176,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 152,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 608,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 104,
+    "param": 103,
+    "tick": 1248,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 192,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 360,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 184,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 160,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 616,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 105,
+    "param": 104,
+    "tick": 1260,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 200,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 368,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 192,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 168,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 624,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 106,
+    "param": 105,
+    "tick": 1272,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 208,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 376,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 200,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 176,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 632,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 107,
+    "param": 106,
+    "tick": 1284,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 216,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 384,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 208,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 184,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 640,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 108,
+    "param": 107,
+    "tick": 1296,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 224,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 392,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 216,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 192,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 648,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 109,
+    "param": 108,
+    "tick": 1308,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 232,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 400,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 224,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 200,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 656,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 110,
+    "param": 109,
+    "tick": 1320,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 240,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 408,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 232,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 208,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 664,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 111,
+    "param": 110,
+    "tick": 1332,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 248,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 416,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 240,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 216,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 672,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 112,
+    "param": 111,
+    "tick": 1344,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 256,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 424,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 248,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 224,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 680,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 113,
+    "param": 112,
+    "tick": 1356,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 264,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 432,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 256,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 232,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 688,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 114,
+    "param": 113,
+    "tick": 1368,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 272,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 440,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 264,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 240,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 696,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 115,
+    "param": 114,
+    "tick": 1380,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 280,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 448,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 272,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 248,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 704,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 116,
+    "param": 115,
+    "tick": 1392,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 288,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 456,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 280,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 256,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 712,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 117,
+    "param": 116,
+    "tick": 1404,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 296,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 464,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 288,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 264,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 720,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 118,
+    "param": 117,
+    "tick": 1416,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 304,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 472,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 296,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 272,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 728,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 119,
+    "param": 118,
+    "tick": 1428,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 312,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 480,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 304,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 280,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 736,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 120,
+    "param": 119,
+    "tick": 1440,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 320,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 488,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 312,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 288,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 744,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 121,
+    "param": 120,
+    "tick": 1452,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 328,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 496,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 320,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 296,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 752,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 122,
+    "param": 121,
+    "tick": 1464,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 336,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 504,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 328,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 304,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 760,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 123,
+    "param": 122,
+    "tick": 1476,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 344,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 512,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 336,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 312,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 768,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 124,
+    "param": 123,
+    "tick": 1488,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 352,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 520,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 344,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 320,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 776,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 125,
+    "param": 124,
+    "tick": 1500,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 360,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 528,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 352,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 328,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 784,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 126,
+    "param": 125,
+    "tick": 1512,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 368,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 536,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 360,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 336,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 792,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 127,
+    "param": 126,
+    "tick": 1524,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 376,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 544,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 368,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 344,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 800,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 128,
+    "param": 127,
+    "tick": 1536,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 384,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 552,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 376,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 352,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 808,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 129,
+    "param": 128,
+    "tick": 1548,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 392,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 560,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 384,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 360,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 816,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 130,
+    "param": 129,
+    "tick": 1560,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 400,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 568,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 392,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 368,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 824,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 131,
+    "param": 130,
+    "tick": 1572,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 408,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 576,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 400,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 376,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 832,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 132,
+    "param": 131,
+    "tick": 1584,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 416,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 584,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 408,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 384,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 840,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 133,
+    "param": 132,
+    "tick": 1596,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 424,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 592,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 416,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 392,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 848,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 134,
+    "param": 133,
+    "tick": 1608,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 432,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 600,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 424,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 400,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 856,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 135,
+    "param": 134,
+    "tick": 1620,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 440,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 608,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 432,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 408,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 864,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 136,
+    "param": 135,
+    "tick": 1632,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 448,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 616,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 440,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 416,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 872,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 137,
+    "param": 136,
+    "tick": 1644,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 456,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 624,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 448,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 424,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 880,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 138,
+    "param": 137,
+    "tick": 1656,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 464,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 632,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 456,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 432,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 888,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 139,
+    "param": 138,
+    "tick": 1668,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 472,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 640,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 464,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 440,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 896,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 140,
+    "param": 139,
+    "tick": 1680,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 480,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 648,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 472,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 448,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 904,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 141,
+    "param": 140,
+    "tick": 1692,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 488,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 656,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 480,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 456,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 912,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 142,
+    "param": 141,
+    "tick": 1704,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 496,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 664,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 488,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 464,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 920,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 143,
+    "param": 142,
+    "tick": 1716,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 504,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 672,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 496,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 472,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 928,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 144,
+    "param": 143,
+    "tick": 1728,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 512,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 680,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 504,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 480,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 936,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 145,
+    "param": 144,
+    "tick": 1740,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 520,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 688,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 512,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 488,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 944,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 146,
+    "param": 145,
+    "tick": 1752,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 528,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 696,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 520,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 496,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 952,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 147,
+    "param": 146,
+    "tick": 1764,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 536,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 704,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 528,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 504,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 960,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 148,
+    "param": 147,
+    "tick": 1776,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 544,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 712,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 536,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 512,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 968,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 149,
+    "param": 148,
+    "tick": 1788,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 552,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 720,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 544,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 520,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 976,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 150,
+    "param": 149,
+    "tick": 1800,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 560,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 728,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 552,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 528,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 984,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 151,
+    "param": 150,
+    "tick": 1812,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 568,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 736,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 560,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 536,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 992,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 152,
+    "param": 151,
+    "tick": 1824,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 576,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 744,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 568,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 544,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 1000,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 153,
+    "param": 152,
+    "tick": 1836,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 584,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 752,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 576,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 552,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 1008,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 154,
+    "param": 153,
+    "tick": 1848,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 592,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1028,
+     "mirror": 0,
+     "x": 760,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 584,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 560,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 1016,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 155,
+    "param": 154,
+    "tick": 1860,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 600,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 768,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 592,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 568,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 1024,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 156,
+    "param": 155,
+    "tick": 1872,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 608,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 776,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 600,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 576,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 1032,
+     "y": 248
+    }
+   },
+   {
+    "redraw": 157,
+    "param": 156,
+    "tick": 1884,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 616,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 0,
+     "x": 784,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 608,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 584,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 1040,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 158,
+    "param": 157,
+    "tick": 1896,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 624,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 792,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 616,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 592,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 1048,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 159,
+    "param": 158,
+    "tick": 1908,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 632,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 800,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 624,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 600,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 1056,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 160,
+    "param": 159,
+    "tick": 1920,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 640,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1030,
+     "mirror": 0,
+     "x": 808,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 632,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 608,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 1064,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 161,
+    "param": 160,
+    "tick": 1932,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 648,
+     "y": 118
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 816,
+     "y": 190
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 640,
+     "y": 224
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 616,
+     "y": 322,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1036,
+     "mirror": 0,
+     "x": 1072,
+     "y": 250
+    }
+   },
+   {
+    "redraw": 162,
+    "param": 161,
+    "tick": 1944,
+    "hull": {
+     "picture": 1027,
+     "mirror": 0,
+     "x": 656,
+     "y": 116
+    },
+    "radar": {
+     "picture": 1029,
+     "mirror": 1,
+     "x": 824,
+     "y": 188
+    },
+    "hook": {
+     "picture": 1031,
+     "mirror": 1,
+     "x": 648,
+     "y": 222
+    },
+    "sub": {
+     "picture": 1033,
+     "mirror": 1,
+     "x": 624,
+     "y": 320,
+     "visible_rows": 0,
+     "falling": false
+    },
+    "splash": null,
+    "sfx": [],
+    "spray": {
+     "picture": 1035,
+     "mirror": 0,
+     "x": 1080,
+     "y": 248
+    }
+   }
+  ]
+ },
+ "reveal_and_prompt": {
+  "after_ship": "at once (no fade): sky + clouds + sea redrawn without the ship, music stopped (0x33 + stop)",
+  "steps": [
+   {
+    "t_ticks": 0,
+    "sfx": 51,
+    "action": "show picture 1044 'The Learning Company Presents' at point 59 (a single blit, NO wipe), hold 292 ticks"
+   },
+   {
+    "t_ticks": 292,
+    "action": "erase it (sky / clouds redrawn over the strip)"
+   },
+   {
+    "t_ticks": 292,
+    "sfx": 51,
+    "action": "show picture 1045 'OPERATION' at point 60, hold 292 ticks"
+   },
+   {
+    "t_ticks": 584,
+    "sfx": 51,
+    "action": "show picture 1046 'NEPTUNE' at point 61 and the TEXT string 11001 (white, font colour 15) at point 62, with the two buttons"
+   }
+  ],
+  "hold_ticks": 292,
+  "keys_during_holds": "Enter, Space, Esc end the hold early; Space / Esc also abandon the whole opening",
+  "prompt": {
+   "buttons": {
+    "start": {
+     "x": 228,
+     "y": 322,
+     "normal": 2420,
+     "pressed": 2421
+    },
+    "intro": {
+     "x": 330,
+     "y": 322,
+     "normal": 2422,
+     "pressed": 2423
+    }
+   },
+   "timeout_ticks": 1825,
+   "music_after_ticks": 292,
+   "music_id": 9502,
+   "keys": {
+    "start": [
+     "Space",
+     "Esc",
+     "S",
+     "click Start"
+    ],
+    "intro": [
+     "Enter",
+     "I",
+     "click Intro"
+    ],
+    "timeout": "Intro"
+   }
+  }
+ }
+}

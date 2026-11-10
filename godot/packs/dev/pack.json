@@ -1,0 +1,7 @@
+{
+  "id": "dev",
+  "title": "Dev pack",
+  "version": "1",
+  "format": 1,
+  "description": "The developers' own pack: coloured shapes with their asset name written on them, speech that says its own name, sounds that say \"bang\". Complete, and not meant for play. Copy it to start a game of your own."
+}

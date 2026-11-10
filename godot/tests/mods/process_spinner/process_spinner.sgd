@@ -1,0 +1,11 @@
+# Asks for no instruction limit (0) and never returns from _process, which the engine calls every frame: the game must stop it all the same.
+func mod_init(_granted : Dictionary) -> void:
+	pass
+
+func _process(_delta : float) -> void:
+	var n := 0
+	while true:
+		n += 1
+
+func fine() -> String:
+	return "still here"

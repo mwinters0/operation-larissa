@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="Campaign" format=3]
+
+[ext_resource type="Script" path="res://src/resources/campaign.gd" id="1_campaign"]
+
+[resource]
+script = ExtResource("1_campaign")
+provenance = "Dev pack: the test campaign of I7 batch C (tools/dev_pack/test_sectors/batch_c.py)."
+id = &"test_c"
+title = "Test C"
+new_game_text = &"Test C"
+banner_index = 0
+sectors = PackedInt32Array(140, 141, 142, 143, 144, 145, 146, 147, 148)
+finales = PackedInt32Array()
+default_edu_levels = PackedInt32Array(0, 1, 1, 2, 2)
+log_series = 3
+log_unlock_order = PackedInt32Array(3, 1, 4, 9, 2, 6, 5, 8, 7)
+finale_log_counts = PackedInt32Array()
+log_texts = Array[StringName]([&"Test log entry 1: a note of the canister.", &"Test log entry 2: a note of the canister.", &"Test log entry 3: a note of the canister.", &"Test log entry 4: a note of the canister.", &"Test log entry 5: a note of the canister.", &"Test log entry 6: a note of the canister.", &"Test log entry 7: a note of the canister.", &"Test log entry 8: a note of the canister.", &"Test log entry 9: a note of the canister."])
+log_voices = Array[StringName]([&"log_0", &"log_1", &"log_2", &"log_3", &"log_4", &"log_5", &"log_6", &"log_7", &"log_8"])
+supply_texts = Array[StringName]([&"Test mission control: sector 140 is done.", &"Test mission control: sector 141 is done.", &"Test mission control: sector 142 is done.", &"Test mission control: sector 143 is done.", &"Test mission control: sector 144 is done.", &"Test mission control: sector 145 is done.", &"Test mission control: sector 146 is done.", &"Test mission control: sector 147 is done.", &"Test mission control: sector 148 is done."])
+supply_voices = Array[StringName]([&"", &"", &"", &"", &"", &"", &"", &"", &""])
+fallback_song = &"sector_song_1"
+closing_scene = &""
+finale_text = "Test C is done."
+finale_picture = "title_sky"

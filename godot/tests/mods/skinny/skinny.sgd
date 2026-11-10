@@ -1,0 +1,59 @@
+# A small skin mod: it redraws the whole sector from the state it is given, with rectangles for the walls and pictures of its own pack (skin/*.png) for the sub, the creatures, the ink and
+# the pieces, and the sub through its own shader (skin/glow.gdshader). It keeps nothing between frames: every frame is built from `state`, so a skin bound late draws what one bound early does.
+var api : Dictionary = {}
+# (only for the tests to ask: what the skin was told happened. It draws from `state`, never from this. Each event costs the script instructions, so a long list is only looked at in its last element.)
+var heard := []
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func heard_events() -> Array:
+	return heard
+
+func skin_frame(state : Dictionary, fraction : float, events : Array) -> Array:
+	if events.size() > 0 and events.size() <= 16:
+		for event in events:
+			heard.append(event[0])
+	elif events.size() > 16:
+		heard.append(events[events.size() - 1][0])
+	if heard.size() > 64:
+		heard = heard.slice(32)
+	var out := []
+	out.append(["rect", Rect2(0, 0, 608, 288), Color(0.02, 0.10, 0.18)])
+	# the walls: one rectangle for each run of wall tiles in a row
+	var walls : String = state["walls"]
+	var columns : int = api["skin"]["columns"]
+	var rows : int = api["skin"]["rows"]
+	var tile : int = api["skin"]["tile"]
+	for row in rows:
+		var start := -1
+		for column in columns + 1:
+			var solid := column < columns and walls[row * columns + column] == "1"
+			if solid and start < 0:
+				start = column
+			elif not solid and start >= 0:
+				out.append(["rect", Rect2(start * tile, row * tile, (column - start) * tile, tile), Color(0.35, 0.30, 0.25)])
+				start = -1
+	for piece in state["pieces"]:
+		out.append(["picture", "skin/piece.png", Rect2(piece["position"], Vector2(24, 20))])
+	for creature in state["creatures"]:
+		var at : Vector2 = creature["previous"].lerp(creature["current"], fraction)
+		var size : Vector2 = creature["hit_rect"].size
+		if size.x <= 0:
+			size = Vector2(16, 16)
+		out.append(["picture", "skin/creature.png", Rect2(at, size), creature["mirrored"], Color.from_hsv((creature["picture"] % 12) / 12.0, 0.6, 1.0)])
+	for pellet in state["pellets"]:
+		out.append(["picture", "skin/ink.png", pellet["previous"].lerp(pellet["current"], fraction)])
+	var sub : Dictionary = state["sub"]
+	if sub["active"] and sub["visible"] and not state["dissolve"]["done"]:
+		var centre : Vector2 = sub["previous"].lerp(sub["current"], fraction)
+		var alpha := 1.0 - state["dissolve"]["progress"]
+		# a layer through the skin's own shader: the sub glows while it is invulnerable
+		var glow := 0.6 if sub["invulnerability"] > 0 else 0.0
+		out.append(["layer", "skin/glow.gdshader", {"strength": glow, "tint": Color(1.0, 0.9, 0.3)}])
+		out.append(["picture", "skin/sub.png", Rect2(centre - Vector2(48, 27), Vector2(96, 54)), sub["mirrored"], Color(1, 1, 1, alpha)])
+		out.append(["layer", ""])
+	# the beacon, and a line to the data canister, as the events and the pieces allow
+	if sub["beacon"]:
+		out.append(["rect", Rect2(4, 4, 8, 8), Color(1, 0.2, 0.2)])
+	return out

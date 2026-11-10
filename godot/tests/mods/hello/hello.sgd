@@ -1,0 +1,18 @@
+# A well-formed mod: it logs when it starts, and answers calls from the game.
+var api : Dictionary = {}
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+	api["log"].call("hello from " + str(api["id"]))
+
+func api_version() -> int:
+	return api["api_version"]
+
+func say(text : String) -> void:
+	api["log"].call(text)
+
+func picture(path : String) -> Variant:
+	return api["load"].call(path)
+
+func api_keys() -> Array:
+	return api.keys()

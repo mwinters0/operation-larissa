@@ -1,0 +1,83 @@
+[gd_resource type="Resource" script_class="StoryScript" format=3]
+
+[ext_resource type="Script" path="res://src/resources/story_script.gd" id="1_story_script"]
+[ext_resource type="Script" path="res://src/resources/story_page.gd" id="2_story_page"]
+
+[sub_resource type="Resource" id="Page_1"]
+script = ExtResource("2_story_page")
+heading = &"story_heading_capsule"
+frame = &"story_frame_stars"
+caption = &"story_caption_0"
+extra_pictures = Array[StringName]([&"story_galaxy_capsule"])
+extra_positions = PackedVector2Array(132, 92)
+
+[sub_resource type="Resource" id="Page_2"]
+script = ExtResource("2_story_page")
+heading = &"story_heading_capsule"
+frame = &"story_frame_stars"
+caption = &"story_caption_1"
+extra_pictures = Array[StringName]([&"story_galaxy_capsule"])
+extra_positions = PackedVector2Array(132, 92)
+
+[sub_resource type="Resource" id="Page_3"]
+script = ExtResource("2_story_page")
+heading = &"story_heading_capsule"
+frame = &"story_frame_stars"
+caption = &"story_caption_2"
+extra_pictures = Array[StringName]([&"story_galaxy_capsule"])
+extra_positions = PackedVector2Array(132, 92)
+
+[sub_resource type="Resource" id="Page_4"]
+script = ExtResource("2_story_page")
+heading = &"story_heading_toxins"
+frame = &"story_frame_pacific"
+caption = &"story_caption_3"
+
+[sub_resource type="Resource" id="Page_5"]
+script = ExtResource("2_story_page")
+heading = &"story_heading_toxins"
+frame = &"story_frame_pacific"
+caption = &"story_caption_4"
+ring = true
+
+[sub_resource type="Resource" id="Page_6"]
+script = ExtResource("2_story_page")
+heading = &"story_heading_submarine"
+frame = &"story_frame_submarine"
+caption = &"story_caption_5"
+
+[sub_resource type="Resource" id="Page_7"]
+script = ExtResource("2_story_page")
+heading = &"story_heading_submarine"
+frame = &"story_frame_submarine"
+caption = &"story_caption_6"
+
+[sub_resource type="Resource" id="Page_8"]
+script = ExtResource("2_story_page")
+heading = &"story_heading_submarine"
+frame = &"story_frame_submarine"
+caption = &"story_caption_7"
+
+[sub_resource type="Resource" id="Page_9"]
+script = ExtResource("2_story_page")
+heading = &"story_heading_oceans"
+frame = &"story_frame_stars"
+caption = &"story_caption_8"
+extra_pictures = Array[StringName]([&"story_earth_globe", &"story_americas", &"story_cloud_swirl"])
+extra_positions = PackedVector2Array(208, 60, 228, 60, 224, 60)
+last = true
+
+[resource]
+script = ExtResource("1_story_script")
+pages = Array[ExtResource("2_story_page")]([SubResource("Page_1"), SubResource("Page_2"), SubResource("Page_3"), SubResource("Page_4"), SubResource("Page_5"), SubResource("Page_6"), SubResource("Page_7"), SubResource("Page_8"), SubResource("Page_9")])
+background = &"story_background"
+heading_position = Vector2(168, 6)
+frame_position = Vector2(0, 38)
+caption_position = Vector2(52, 316)
+ring_pictures = Array[StringName]([&"story_ring_0", &"story_ring_1", &"story_ring_2", &"story_ring_3"])
+ring_position = Vector2(184, 234)
+ring_picture_ticks = 7
+minimum_page_ticks = 365
+last_page_ticks = 3285
+caption_delay_ticks = 15
+provenance = "Original: OpeningStoryPages 0x42a9f1 (OPENING.C) and the page player PlayStoryPageSpeech 0x42a817: nine pages of pictures, a page lasts as long as its speech and at least 365 ticks, the last waits up to 3285 ticks; the words are the bitmaps 2056-2064. Constants are in tools/import/step_story.py."

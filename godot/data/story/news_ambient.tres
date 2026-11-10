@@ -1,0 +1,61 @@
+[gd_resource type="Resource" script_class="CutsceneTimeline" format=3]
+
+[ext_resource type="Script" path="res://src/resources/cutscene_timeline.gd" id="1_cutscene_timeline"]
+[ext_resource type="Script" path="res://src/resources/cutscene_track.gd" id="2_cutscene_track"]
+[ext_resource type="Script" path="res://src/resources/cutscene_cue.gd" id="3_cutscene_cue"]
+
+[sub_resource type="Resource" id="Track_1"]
+script = ExtResource("2_cutscene_track")
+actor = &"alarm_0"
+property = &"picture"
+times = PackedFloat64Array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 570, 580, 590, 600, 610, 620, 630)
+values = [&"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0"]
+
+[sub_resource type="Resource" id="Track_2"]
+script = ExtResource("2_cutscene_track")
+actor = &"alarm_0"
+property = &"mirror"
+times = PackedFloat64Array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 570, 580, 590, 600, 610, 620, 630)
+values = [false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false]
+
+[sub_resource type="Resource" id="Track_3"]
+script = ExtResource("2_cutscene_track")
+actor = &"alarm_1"
+property = &"picture"
+times = PackedFloat64Array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 570, 580, 590, 600, 610, 620, 630)
+values = [&"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1"]
+
+[sub_resource type="Resource" id="Track_4"]
+script = ExtResource("2_cutscene_track")
+actor = &"alarm_1"
+property = &"mirror"
+times = PackedFloat64Array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 570, 580, 590, 600, 610, 620, 630)
+values = [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false]
+
+[sub_resource type="Resource" id="Track_5"]
+script = ExtResource("2_cutscene_track")
+actor = &"alarm_2"
+property = &"picture"
+times = PackedFloat64Array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 570, 580, 590, 600, 610, 620, 630)
+values = [&"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_0"]
+
+[sub_resource type="Resource" id="Track_6"]
+script = ExtResource("2_cutscene_track")
+actor = &"alarm_2"
+property = &"mirror"
+times = PackedFloat64Array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 570, 580, 590, 600, 610, 620, 630)
+values = [false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false, true]
+
+[sub_resource type="Resource" id="Track_7"]
+script = ExtResource("2_cutscene_track")
+actor = &"ring"
+property = &"picture"
+times = PackedFloat64Array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 570, 580, 590, 600, 610, 620, 630)
+values = [&"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3"]
+
+[resource]
+script = ExtResource("1_cutscene_timeline")
+length = 640
+loop = true
+tracks = Array[ExtResource("2_cutscene_track")]([SubResource("Track_1"), SubResource("Track_2"), SubResource("Track_3"), SubResource("Track_4"), SubResource("Track_5"), SubResource("Track_6"), SubResource("Track_7")])
+provenance = "Original: the alarm lights' four states and the pulsing ring, one step per 10 tick redraw (docs/data/opening.json). Ours: the loop length of 64 redraws."

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="CutsceneTimeline" format=3]
+
+[ext_resource type="Script" path="res://src/resources/cutscene_timeline.gd" id="1_cutscene_timeline"]
+[ext_resource type="Script" path="res://src/resources/cutscene_track.gd" id="2_cutscene_track"]
+[ext_resource type="Script" path="res://src/resources/cutscene_cue.gd" id="3_cutscene_cue"]
+
+[sub_resource type="Resource" id="Track_1"]
+script = ExtResource("2_cutscene_track")
+actor = &"pod"
+property = &"picture"
+times = PackedFloat64Array(0, 18, 36, 54)
+values = [&"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1"]
+
+[sub_resource type="Resource" id="Track_2"]
+script = ExtResource("2_cutscene_track")
+actor = &"pod"
+property = &"mirror"
+times = PackedFloat64Array(0, 18, 36)
+values = [false, true, false]
+
+[resource]
+script = ExtResource("1_cutscene_timeline")
+length = 72
+loop = true
+tracks = Array[ExtResource("2_cutscene_track")]([SubResource("Track_1"), SubResource("Track_2")])
+provenance = "Original: the last stage of ExpertClosingSequence: only the control box blinks, one phase per 18 tick step, until a key or a click. The phases go on from where the deck shot left them."

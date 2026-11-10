@@ -1,0 +1,1 @@
+{"id": "mod_rules", "title": "Rules", "version": "1.0", "mod": {"entry": "rules.sgd", "requires_api": 4, "rules": {"answers": [41], "instructions": [0, 1], "sub": true}}}

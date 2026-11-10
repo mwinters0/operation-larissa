@@ -1,0 +1,11 @@
+# A skin that never returns, and asks for no instruction limit at all (0): the game gives a skin a limit anyway, so a frame costs it a little and no more.
+var api : Dictionary = {}
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func skin_frame(state : Dictionary, fraction : float, events : Array) -> Array:
+	var n := 0
+	while true:
+		n += 1
+	return []

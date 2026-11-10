@@ -1,0 +1,162 @@
+{
+ "_doc": "Ambient bubbles (BUBBLES.C: UpdateAmbientBubbles (0x41a800), ResetBubbles (0x41a6fc)) and the DrawSub overlays (DrawSub (0x418a81)) that look like bubbles. Read with tools/analysis/ghidra/export_bubbles.py. Positions are WINDOW pixels (the playfield's top-left is (16, 32)). All counts are game ticks (73/6 Hz). See that script's docstring for the original's rules.",
+ "ambient": {
+  "bundle": 22,
+  "logical_bundle": 39,
+  "picture_sizes": [
+   [
+    24,
+    70
+   ],
+   [
+    20,
+    68
+   ],
+   [
+    20,
+    64
+   ],
+   [
+    20,
+    70
+   ],
+   [
+    56,
+    72
+   ],
+   [
+    60,
+    76
+   ],
+   [
+    60,
+    82
+   ],
+   [
+    60,
+    62
+   ]
+  ],
+  "spawn_chance": 50,
+  "spawn_y": 320,
+  "top_y": 32,
+  "x_base": 28,
+  "x_span": 584,
+  "max_bubbles": 2,
+  "slots": [
+   {
+    "name": "column",
+    "first_picture": 0,
+    "rise_per_tick": 10,
+    "loop": [
+     1,
+     2,
+     3,
+     0
+    ]
+   },
+   {
+    "name": "cluster",
+    "first_picture": 4,
+    "rise_per_tick": 6,
+    "loop": [
+     5,
+     6,
+     7,
+     6,
+     5,
+     4
+    ]
+   }
+  ],
+  "no_bubble_screens": [
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    1
+   ],
+   [
+    0,
+    2
+   ],
+   [
+    0,
+    3
+   ]
+  ],
+  "finale_no_bubble_sector": 30,
+  "finale_no_bubble_screens": [
+   1,
+   2
+  ],
+  "reset_on": "game start, every screen change (not after a math problem)",
+  "oxygen_or_hit_effect": false
+ },
+ "sub_overlays": {
+  "bundle": 15,
+  "hit_bubbles": {
+   "first_picture": 9,
+   "picture_count": 4,
+   "ticks": 8,
+   "ticks_per_picture": 2,
+   "x_by_cell": [
+    4,
+    4,
+    4,
+    4,
+    16,
+    16,
+    16,
+    16,
+    16
+   ],
+   "y": 0,
+   "mirrored_cells": [
+    0,
+    1,
+    2,
+    3
+   ]
+  },
+  "message_light": {
+   "picture": 8,
+   "start_ticks_trigger": 36,
+   "start_ticks_canister": 2,
+   "dx_by_cell": [
+    46,
+    46,
+    46,
+    0,
+    0,
+    0,
+    34,
+    33,
+    35
+   ],
+   "dy_by_cell": [
+    0,
+    3,
+    0,
+    0,
+    0,
+    0,
+    0,
+    3,
+    0
+   ],
+   "cells": [
+    0,
+    1,
+    2,
+    6,
+    7,
+    8
+   ],
+   "drawn_when": "countdown odd and (cell < 3 or cell > 5)",
+   "mirrored": false
+  }
+ }
+}

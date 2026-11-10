@@ -1,0 +1,59 @@
+{
+ "comment": "The runs of names that the code builds at run time (StringName(\"log_entry_%d\" % n)): kind -> prefix -> the numbers that must exist (first..last, except the listed missing ones). test_code_names.py compares them with names/original.json and with the patterns found in godot/src; rename_name.py --run renames a whole run and keeps this file in step. Hand-made, committed.",
+ "format": 1,
+ "runs": {
+  "text": {
+   "calc_notice_": {
+    "first": 0,
+    "last": 2
+   },
+   "closing_page_": {
+    "first": 0,
+    "last": 2
+   },
+   "correct_phrase_": {
+    "first": 0,
+    "last": 3
+   },
+   "customized_level_": {
+    "first": 0,
+    "last": 3
+   },
+   "hint_": {
+    "first": 0,
+    "last": 6,
+    "missing": [
+     4
+    ]
+   },
+   "level_choice_": {
+    "first": 0,
+    "last": 3
+   },
+   "news_bulletin_": {
+    "first": 0,
+    "last": 5
+   }
+  },
+  "ui_picture": {
+   "panel_light_": {
+    "first": 0,
+    "last": 2
+   },
+   "scanner_strip_": {
+    "first": 0,
+    "last": 4
+   },
+   "status_light_": {
+    "first": 0,
+    "last": 2
+   }
+  },
+  "problem_art": {
+   "log_scan_": {
+    "first": 0,
+    "last": 8
+   }
+  }
+ }
+}

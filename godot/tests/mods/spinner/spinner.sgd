@@ -1,0 +1,20 @@
+# Takes more instructions and more memory (stack) than its manifest allows: both calls are stopped, the mod stays loaded.
+var api : Dictionary = {}
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func spin() -> int:
+	var n := 0
+	while true:
+		n += 1
+	return n
+
+func dive(depth : int) -> int:
+	return dive(depth + 1) + 1
+
+func recurse() -> int:
+	return dive(0)
+
+func fine() -> String:
+	return "still here"

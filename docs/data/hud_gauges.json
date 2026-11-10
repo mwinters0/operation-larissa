@@ -1,0 +1,143 @@
+{
+ "_doc": "HUD gauges on the 640x400 screen (DisplayBezel 0x419eec, DisplayOxygen 0x41a11c, DisplayInkPelletCounter 0x419f6e). Pictures come from the bezel bundle (picture indices below).",
+ "tanks": {
+  "slots": 6,
+  "y": 332,
+  "x": [
+   92,
+   116,
+   140,
+   164,
+   188,
+   212
+  ],
+  "pic_full": 15,
+  "pic_empty": 16,
+  "dirty_rect": [
+   92,
+   332,
+   144,
+   24
+  ]
+ },
+ "oxygen": {
+  "slots": 4,
+  "x0": 240,
+  "y": 334,
+  "step_x": 20,
+  "pic_full": 17,
+  "pic_empty": 18,
+  "pic_low_warning": 19,
+  "note": "when Oxygen==1 slot 0 shows pic 19 (low-oxygen warning, new-player hint 1) and the remaining 3 empty slots start at x=0x104",
+  "dirty_rect": [
+   240,
+   334,
+   80,
+   20
+  ]
+ },
+ "ink_pellets": {
+  "max": 21,
+  "pic_full": 4,
+  "pic_empty": 5,
+  "xy": [
+   [
+    128,
+    364
+   ],
+   [
+    128,
+    374
+   ],
+   [
+    128,
+    384
+   ],
+   [
+    156,
+    364
+   ],
+   [
+    156,
+    374
+   ],
+   [
+    156,
+    384
+   ],
+   [
+    184,
+    364
+   ],
+   [
+    184,
+    374
+   ],
+   [
+    184,
+    384
+   ],
+   [
+    212,
+    364
+   ],
+   [
+    212,
+    374
+   ],
+   [
+    212,
+    384
+   ],
+   [
+    240,
+    364
+   ],
+   [
+    240,
+    374
+   ],
+   [
+    240,
+    384
+   ],
+   [
+    268,
+    364
+   ],
+   [
+    268,
+    374
+   ],
+   [
+    268,
+    384
+   ],
+   [
+    296,
+    364
+   ],
+   [
+    296,
+    374
+   ],
+   [
+    296,
+    384
+   ]
+  ],
+  "dirty_rect": [
+   128,
+   364,
+   196,
+   30
+  ]
+ },
+ "bezel_background": {
+  "pic": 0,
+  "xy": [
+   12,
+   324
+  ]
+ }
+}

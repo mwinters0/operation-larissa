@@ -1,0 +1,8 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+reports/
+build/
+
+# The screen editor's throw-away scene holders (one per screen opened, made by the plugin)
+/screen_editor_work/

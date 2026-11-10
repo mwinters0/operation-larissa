@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GameSkin" format=3]
+
+[ext_resource type="Script" path="res://src/skins/game_skin.gd" id="1_skin"]
+[ext_resource type="PackedScene" path="res://skins/creatures/creatures_presenter.tscn" id="2_presenter"]
+
+; The creatures skin: the original's pictures, fonts and render settings (nothing is mapped), and a presenter of its own that draws
+; the rainbow fish with an AnimationTree and the puffer fish as a 3D model in a SubViewport (see creatures_presenter.gd).
+[resource]
+script = ExtResource("1_skin")
+id = &"creatures"
+display_name = "Creatures: an AnimationTree rainbow fish and a 3D puffer fish"
+presenter_scene = ExtResource("2_presenter")

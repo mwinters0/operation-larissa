@@ -1,0 +1,44 @@
+soundfonts/
+NEPTUNE.ISO
+extracted/
+__pycache__/
+*.pyc
+.venv/
+
+# original bytes, written by the importer from your copy; see docs/port/FIDELITY.md
+godot/tests/fixtures/original/
+
+# files copied out of NEPTUNE.ISO on demand (tools/gamefiles.py materialize)
+build/
+iso/
+iso.tmp/
+prefix/
+.claude/worktrees/
+
+# --- THE LEGACY PACK: the original game, written by tools/import/import_all.py from YOUR copy of the game (docs/play/LEGACY.md) as loose
+# files into the folder godot/packs/legacy (tools/import/common.py legacy_root), never committed. Everything in godot/packs/ is ignored except its README
+# and the dev pack (godot/packs/dev/, ours: committed, ships with the game); any other pack folder you put there stays yours.
+/godot/packs/*
+!/godot/packs/README.md
+!/godot/packs/dev/
+# A file that is derived from the program's code alone (the cutscene timelines but the news cartoon's, sub_tuning, closing_crew, the menu layout) is
+# made by the importer too but commits, in godot/data/: it holds no picture, sound, text or level of the game and points at none (README.md, "the legacy pack").
+# your own data about the legacy pack that holds the game's content (the hand corrections of the voice transcripts; tools/import/common.py LEGACY_AREA)
+/godot/data/legacy/
+# tables dumped from the CD by tools/analysis/export_json.py, decode_problems.py and export_gfx_tbl.py (the importer's "tables" step)
+/docs/data/sectors.json
+/docs/data/problem_records.json
+/docs/data/problem_tables_raw.json
+/docs/data/problem_gfx_bundles.json
+/docs/data/trigger_table.json
+/docs/data/zone_defaults.json
+/docs/data/onwin_map.json
+# the references the snapshot test renders from its pictures
+/godot/tests/snapshots/*.png
+# A developer's own mise overrides (docs/SETUP.md)
+mise.local.toml
+# Pack files (`<id>.larissa`, pack_tool --export-pack --archive): a legacy one holds the original content
+*.larissa
+
+# The godot-sandbox extension that runs a mod pack (fetched, pinned: tools/fetch_sandbox.py, docs/SETUP.md)
+/godot/addons/godot_sandbox/

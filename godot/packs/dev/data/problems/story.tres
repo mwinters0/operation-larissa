@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="TextTable" format=3]
+
+[ext_resource type="Script" path="res://src/resources/text_table.gd" id="1_text_table"]
+
+[resource]
+script = ExtResource("1_text_table")
+texts = {10003: "news_bulletin_0", 10004: "news_bulletin_1", 10005: "news_bulletin_2", 10006: "news_bulletin_3", 10007: "news_bulletin_4", 10008: "news_bulletin_5", 10009: "text_10009", 10010: "text_10010", 10011: "text_10011"}

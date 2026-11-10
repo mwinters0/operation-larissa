@@ -1,0 +1,119 @@
+; Dev pack - sector 120, the creature arena (I7 batch B, tools/dev_pack/test_sectors/batch_b.py).
+; One creature for every property the creature tests look at; the Godot side lists them in tests/engine/dev_creatures.gd.
+
+; --- shared entry points ----------------------------------------------------------------------------------
+quiet_hit:
+    Return
+
+; An ink pellet turns the creature into a harmless cloud for 60 ticks (the loop body runs count + 1 times).
+cloud_ink:
+    Set_Frame ink_burst_0
+cloud_wait:
+    Wait_Next_Tick
+    Loop_Counter1_Back_To cloud_wait 59
+    Return
+
+; --- 0 the post: a clam that stays where it is ------------------------------------------------------------
+post_start:
+    Set_Frame clam_closed
+post_wait:
+    Wait_Next_Tick
+    Jump_To post_wait
+
+; --- 1 the swimmer: right and left, ten steps each --------------------------------------------------------
+swimmer_start:
+    Set_Frame_Range rainbow_fish_swim_0 rainbow_fish_swim_1
+swim_right:
+    Move_Foe_Relative_XY 2 0 1
+    Loop_Counter0_Back_To swim_right 9
+swim_left:
+    Move_Foe_Relative_XY -2 0 129
+    Loop_Counter0_Back_To swim_left 9
+    Jump_To swimmer_start
+
+; --- 2 the chomper: one sound per round of 20 ticks -------------------------------------------------------
+chomper_start:
+    Set_Frame clam_open_mid
+chomp_round:
+    Play_Sound clam_chomp
+chomp_wait:
+    Wait_Next_Tick
+    Loop_Counter0_Back_To chomp_wait 19
+    Jump_To chomp_round
+
+; --- 3 the bell and 4 the hopper: a jellyfish and its loose tentacle tip -----------------------------------
+bell_start:
+    Set_Frame_Range jellyfish_pulse_0 jellyfish_pulse_4
+bell_pulse:
+    Move_Foe_Relative_XY 0 0 1
+    Wait_Next_Tick
+    Jump_To bell_pulse
+
+; Four hops of 28, 8, 32 and 12 pixels (the picture jellyfish_tentacle is the one the original look never glides), two ticks apart.
+hopper_start:
+    Set_Frame jellyfish_tentacle
+hopper_hop:
+    Move_Foe_Relative_XY -14 0 0
+    Wait_Next_Tick
+    Wait_Next_Tick
+    Move_Foe_Relative_XY 4 -1 0
+    Wait_Next_Tick
+    Wait_Next_Tick
+    Move_Foe_Relative_XY 16 1 0
+    Wait_Next_Tick
+    Wait_Next_Tick
+    Move_Foe_Relative_XY -6 0 0
+    Wait_Next_Tick
+    Wait_Next_Tick
+    Jump_To hopper_hop
+
+; --- 5 the sleeper: dormant and hidden until another creature (or a test) wakes it; it creeps right when it runs ---
+sleeper_start:
+    Set_Frame_Range clam_closed clam_open_wide
+sleeper_creep:
+    Move_Foe_Relative_XY 1 0 1
+    Jump_To sleeper_creep
+
+; --- 6 the runner (screen 6) uses the swimmer's script -------------------------------------------------------
+
+; --- 7 the mirror: stands still, drawn mirrored -------------------------------------------------------------
+mirror_start:
+    Wait_Next_Tick
+    Jump_To mirror_start
+
+; --- 8 the glider: waits two ticks, then swims 12 steps, rests, and swims back ---------------------------------
+glider_start:
+    Set_Frame_Range ray_swim_0 ray_swim_2
+    Wait_Next_Tick
+    Wait_Next_Tick
+glider_right:
+    Move_Foe_Relative_XY 2 0 1
+    Loop_Counter0_Back_To glider_right 11
+    Wait_Next_Tick
+    Wait_Next_Tick
+glider_left:
+    Move_Foe_Relative_XY -2 0 129
+    Loop_Counter0_Back_To glider_left 11
+    Jump_To glider_start
+
+; --- 9 Zoom: a dolphin that refills the air; touched, it goes to sleep, plays its sound and hides -------------------
+zoom_start:
+    Set_Frame_Range dolphin_swim_0 dolphin_swim_2
+zoom_swim:
+    Move_Foe_Relative_XY 0 0 1
+    Jump_To zoom_swim
+zoom_hit:
+    Put_Foe_To_Sleep self
+    Play_Sound oxygen_refill
+    Hide_Foe
+
+; --- 10 the waker: on screen 5, it wakes the sleeper (foe 5) after 30 ticks -------------------------------------------
+waker_start:
+    Set_Frame clam_closed
+waker_wait:
+    Wait_Next_Tick
+    Loop_Counter2_Back_To waker_wait 29
+    Wake_Foe 5
+waker_idle:
+    Wait_Next_Tick
+    Jump_To waker_idle

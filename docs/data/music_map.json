@@ -1,0 +1,45 @@
+{
+ "_doc": "Music id -> MIDI file. LoadMidiFile (0x413e8c) looks the id up in the table @0x440dd8, then opens SOUNDS\\<X><rest> where X='B' (base/AdLib set) or 'E' (extended/GM set, chosen from midimap.cfg) replaces the first letter of the stored name. Sector music id = 9504 + sector%6 for sector<30 (SelectSectorMusic 0x43200f); 9500 for sectors 30/31; 9501 closing; 9502/9503 sign-in/title.",
+ "music": [
+  {
+   "id": 9500,
+   "file": "BEND.MID"
+  },
+  {
+   "id": 9501,
+   "file": "BEND2.MID"
+  },
+  {
+   "id": 9502,
+   "file": "BNEPT1.MID"
+  },
+  {
+   "id": 9503,
+   "file": "BNEPT2.MID"
+  },
+  {
+   "id": 9504,
+   "file": "BSECT1.MID"
+  },
+  {
+   "id": 9505,
+   "file": "BSECT2.MID"
+  },
+  {
+   "id": 9506,
+   "file": "BSECT3.MID"
+  },
+  {
+   "id": 9507,
+   "file": "BSECT4.MID"
+  },
+  {
+   "id": 9508,
+   "file": "BSECT5.MID"
+  },
+  {
+   "id": 9509,
+   "file": "BSECT6.MID"
+  }
+ ]
+}

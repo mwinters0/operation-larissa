@@ -1,0 +1,95 @@
+[gd_resource type="Resource" script_class="ZoneTable" format=3]
+
+[ext_resource type="Script" path="res://src/resources/zone_table.gd" id="1_zone_table"]
+[ext_resource type="Script" path="res://src/resources/zone_data.gd" id="2_zone_data"]
+[ext_resource type="Texture2D" uid="uid://c0j1ywo8slj4a" path="res://packs/dev/assets/ui/hud/ui_1195.png" id="3_ui_1195"]
+[ext_resource type="Texture2D" uid="uid://b7xs6jy8ltpoh" path="res://packs/dev/assets/ui/hud/ui_1196.png" id="4_ui_1196"]
+[ext_resource type="Texture2D" uid="uid://cb8tbcuglbtei" path="res://packs/dev/assets/ui/hud/ui_1197.png" id="5_ui_1197"]
+[ext_resource type="Texture2D" uid="uid://d0fvwxvw54u3k" path="res://packs/dev/assets/ui/hud/ui_1198.png" id="6_ui_1198"]
+[ext_resource type="Texture2D" uid="uid://c0jjdu2secaf5" path="res://packs/dev/assets/ui/hud/ui_1199.png" id="7_ui_1199"]
+
+[sub_resource type="Resource" id="Zone_1"]
+script = ExtResource("2_zone_data")
+index = 0
+title = "Dev zone 0"
+tile_zone = 0
+tile_source_id = 0
+deco_count = 27
+foe_count = 11
+banner_texture = ExtResource("3_ui_1195")
+default_edu_level_voyager = 0
+default_edu_level_expert = 1
+
+[sub_resource type="Resource" id="Zone_2"]
+script = ExtResource("2_zone_data")
+index = 1
+title = "Dev zone 1"
+tile_zone = 1
+tile_source_id = 1
+deco_count = 51
+foe_count = 9
+banner_texture = ExtResource("4_ui_1196")
+default_edu_level_voyager = 1
+default_edu_level_expert = 2
+
+[sub_resource type="Resource" id="Zone_3"]
+script = ExtResource("2_zone_data")
+index = 2
+title = "Dev zone 2"
+tile_zone = 2
+tile_source_id = 2
+deco_count = 38
+foe_count = 7
+banner_texture = ExtResource("5_ui_1197")
+default_edu_level_voyager = 1
+default_edu_level_expert = 2
+
+[sub_resource type="Resource" id="Zone_4"]
+script = ExtResource("2_zone_data")
+index = 3
+title = "Dev zone 3"
+tile_zone = 3
+tile_source_id = 3
+deco_count = 35
+foe_count = 9
+banner_texture = ExtResource("6_ui_1198")
+default_edu_level_voyager = 2
+default_edu_level_expert = 3
+
+[sub_resource type="Resource" id="Zone_5"]
+script = ExtResource("2_zone_data")
+index = 4
+title = "Dev zone 4"
+tile_zone = 4
+tile_source_id = 4
+deco_count = 22
+foe_count = 18
+banner_texture = ExtResource("7_ui_1199")
+default_edu_level_voyager = 2
+default_edu_level_expert = 3
+
+[sub_resource type="Resource" id="Zone_6"]
+script = ExtResource("2_zone_data")
+index = 5
+title = "Dev finale A"
+tile_zone = 4
+tile_source_id = 4
+deco_count = 22
+foe_count = 15
+default_edu_level_voyager = 2
+default_edu_level_expert = 3
+
+[sub_resource type="Resource" id="Zone_7"]
+script = ExtResource("2_zone_data")
+index = 6
+title = "Dev finale B"
+tile_zone = 4
+tile_source_id = 4
+deco_count = 22
+foe_count = 10
+default_edu_level_voyager = 2
+default_edu_level_expert = 3
+
+[resource]
+script = ExtResource("1_zone_table")
+zones = Array[ExtResource("2_zone_data")]([SubResource("Zone_1"), SubResource("Zone_2"), SubResource("Zone_3"), SubResource("Zone_4"), SubResource("Zone_5"), SubResource("Zone_6"), SubResource("Zone_7")])

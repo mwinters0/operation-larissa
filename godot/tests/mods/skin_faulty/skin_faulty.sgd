@@ -1,0 +1,9 @@
+# A skin that raises on every frame (it asks the API for a function that is not there): the frames it spoils draw nothing, the loader counts the faults and quarantines it, the game goes on.
+var api : Dictionary = {}
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func skin_frame(state : Dictionary, fraction : float, events : Array) -> Array:
+	api["no_such_function"].call("frame")
+	return []

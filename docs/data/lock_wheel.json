@@ -1,0 +1,261 @@
+{
+ "_doc": "Combination lock (type 0). Label tables: variant = record field f0 (0, 5, 8, 11 occur); 12 sets of 8 labels each, the EXE's static bytes: DoCombinationLock loads strings 11219-11245 over the decimal ones at run time (step_problems.lock_labels). Timing in 73 Hz ticks: DoCombinationLock 0x421780; each operand is brought up by spinning wheel A one quarter-slot per 9 ticks (sound 0x26) until slot (8-n)*4, then sound 0x27; the answer wheel B then advances one slot = 4 sub-steps x 9 ticks = 36 ticks (sound 0x26 each), followed by a 73-tick window in which Space / Enter / click stops it. Correct iff wheel position == (8-answer_slot)*4 (0 if slot 0). Passing the correct slot unstopped twice -> 'OUT OF TIME' (string 11045); a wrong stop -> 'ERROR' (11046); both cost 1 oxygen (sound 0x21), show the solution and continue. Two combination numbers per lock (record fields f1..f9 and f12..f20).",
+ "ticks_per_second": 73,
+ "substeps_per_slot": 4,
+ "ticks_per_substep": 9,
+ "key_window_ticks": 73,
+ "positions_per_revolution": 32,
+ "ticks_per_slot_including_window": 109,
+ "revolution_seconds": 11.95,
+ "operand_labels_by_wheel_set": {
+  "0": [
+   "2",
+   "3",
+   "4",
+   "5",
+   "6",
+   "7",
+   "8",
+   "9"
+  ],
+  "1": [
+   "20",
+   "30",
+   "40",
+   "50",
+   "60",
+   "70",
+   "80",
+   "90"
+  ],
+  "2": [
+   "25",
+   "50",
+   "75",
+   "25",
+   "50",
+   "75",
+   "25",
+   "50"
+  ],
+  "3": [
+   "1/12",
+   "2/12",
+   "3/12",
+   "4/12",
+   "5/12",
+   "6/12",
+   "7/12",
+   "8/12"
+  ],
+  "4": [
+   "10",
+   "20",
+   "30",
+   "40",
+   "50",
+   "60",
+   "70",
+   "80"
+  ],
+  "5": [
+   "25",
+   "50",
+   "75",
+   "25",
+   "50",
+   "75",
+   "25",
+   "50"
+  ],
+  "6": [
+   "1/10",
+   "2/10",
+   "3/10",
+   "4/10",
+   "5/10",
+   "6/10",
+   "7/10",
+   "8/10"
+  ],
+  "7": [
+   " .1",
+   " .2",
+   " .3",
+   " .4",
+   " .5",
+   " .6",
+   " .7",
+   " .8"
+  ],
+  "8": [
+   " .1",
+   " .2",
+   " .3",
+   " .4",
+   " .5",
+   " .6",
+   " .7",
+   " .8"
+  ],
+  "9": [
+   "1/4",
+   "1/2",
+   "1/3",
+   "2/3",
+   "2",
+   "3",
+   "4",
+   "6"
+  ],
+  "10": [
+   "1/12",
+   "1/8",
+   "2/12",
+   "3/8",
+   "5/12",
+   "7/12",
+   "5/8",
+   "9/12"
+  ],
+  "11": [
+   " .10",
+   " .20",
+   " .30",
+   " .40",
+   " .50",
+   " .60",
+   " .70",
+   " .80"
+  ]
+ },
+ "answer_labels_by_wheel_set": {
+  "0": [
+   "11",
+   "12",
+   "13",
+   "14",
+   "15",
+   "16",
+   "17",
+   "18"
+  ],
+  "1": [
+   "20",
+   "30",
+   "40",
+   "50",
+   "60",
+   "70",
+   "80",
+   "90"
+  ],
+  "2": [
+   "50",
+   "75",
+   "100",
+   "125",
+   "150",
+   "175",
+   "200",
+   "225"
+  ],
+  "3": [
+   "2/12",
+   "3/12",
+   "4/12",
+   "5/12",
+   "6/12",
+   "7/12",
+   "8/12",
+   "9/12"
+  ],
+  "4": [
+   "10",
+   "20",
+   "30",
+   "40",
+   "50",
+   "60",
+   "70",
+   "80"
+  ],
+  "5": [
+   "100",
+   "125",
+   "150",
+   "175",
+   "200",
+   "225",
+   "250",
+   "275"
+  ],
+  "6": [
+   " .2",
+   " .3",
+   " .4",
+   " .5",
+   " .6",
+   " .7",
+   " .8",
+   " .9"
+  ],
+  "7": [
+   "2/10",
+   "3/10",
+   "4/10",
+   "5/10",
+   "6/10",
+   "7/10",
+   "8/10",
+   "9/10"
+  ],
+  "8": [
+   "1.1",
+   "1.2",
+   "1.3",
+   "1.4",
+   "1.5",
+   "1.6",
+   "1.7",
+   "1.8"
+  ],
+  "9": [
+   "1/4",
+   "1/3",
+   "1/2",
+   "2/3",
+   "1",
+   "2",
+   "3",
+   "4"
+  ],
+  "10": [
+   "1/5",
+   "1/4",
+   "1/3",
+   "1/2",
+   "2/3",
+   "3/4",
+   "4/5",
+   "1"
+  ],
+  "11": [
+   "20%",
+   "30%",
+   "40%",
+   "50%",
+   "60%",
+   "70%",
+   "80%",
+   "90%"
+  ]
+ },
+ "operator_strings": [
+  "=",
+  "+",
+  "-",
+  "x",
+  "/"
+ ]
+}

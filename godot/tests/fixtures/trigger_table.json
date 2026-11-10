@@ -1,0 +1,5 @@
+{
+ "comment": "Provenance and the SHA-256 hash of the ORIGINAL trigger table (problem type per slot, educational level and pick), written by tools/import/step_sectors.py (import_all.py) from the program's data segment (docs/data/, from tools/analysis/export_json.py), never hand-edited. It holds no original bytes: \"sha256\" is the hash of the whole table, the \"size\" bytes at \"file_offset\" of ONWIN.EXE (DS offset \"ds_offset\"). godot/tests/test_trigger_table_fidelity.gd checks that TriggerTable.encode() hashes to it. The table bytes themselves are written to the git-ignored tests/fixtures/original/trigger_table.json by the same importer run, for first-difference messages. See docs/port/FIDELITY.md, \"Fixtures commit hashes, not bytes\".",
+ "source": {"file": "ONWIN.EXE", "ds_offset": 8894, "file_offset": 255166, "size": 504},
+ "sha256": "ad59ebe2214c776a79e59e97ab454ed242eee74ccbf1d9b6a815d448703f478c"
+}

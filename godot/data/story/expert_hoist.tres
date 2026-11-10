@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="CutsceneTimeline" format=3]
+
+[ext_resource type="Script" path="res://src/resources/cutscene_timeline.gd" id="1_cutscene_timeline"]
+[ext_resource type="Script" path="res://src/resources/cutscene_track.gd" id="2_cutscene_track"]
+[ext_resource type="Script" path="res://src/resources/cutscene_cue.gd" id="3_cutscene_cue"]
+
+[sub_resource type="Resource" id="Track_1"]
+script = ExtResource("2_cutscene_track")
+actor = &"cable"
+property = &"visible"
+times = PackedFloat64Array(0, 396)
+values = [false, true]
+
+[sub_resource type="Resource" id="Track_2"]
+script = ExtResource("2_cutscene_track")
+actor = &"cable"
+property = &"extent"
+times = PackedFloat64Array(0, 396, 414, 432, 450, 468, 486, 504, 522, 540, 558, 576, 594, 612, 630, 648, 666, 684, 702, 720, 738, 756, 774, 792, 810, 828, 846, 864, 882, 900, 918, 936, 954, 972)
+values = [36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 216, 204, 192, 180, 168, 156, 144, 132, 120, 108, 96, 84, 72, 60, 48, 36, 24]
+
+[sub_resource type="Resource" id="Track_3"]
+script = ExtResource("2_cutscene_track")
+actor = &"sub"
+property = &"position"
+times = PackedFloat64Array(0, 684, 702, 720, 738, 756, 774, 792, 810, 828, 846, 864, 882, 900, 918, 936, 954, 972)
+values = [Vector2(184, 212), Vector2(184, 200), Vector2(184, 188), Vector2(184, 176), Vector2(184, 164), Vector2(184, 152), Vector2(184, 140), Vector2(184, 128), Vector2(184, 116), Vector2(184, 104), Vector2(184, 92), Vector2(184, 80), Vector2(184, 68), Vector2(184, 56), Vector2(184, 44), Vector2(184, 32), Vector2(184, 20), Vector2(184, 8)]
+
+[sub_resource type="Resource" id="Track_4"]
+script = ExtResource("2_cutscene_track")
+actor = &"sub"
+property = &"pose"
+times = PackedFloat64Array(0, 18, 36, 54, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 252, 270, 288, 306, 324, 342, 360, 378, 396, 414, 432, 450, 468, 486, 504, 522, 540, 558, 576, 594, 612, 630, 648, 666, 684, 702, 720, 738, 756, 774, 792, 810, 828, 846, 864, 882, 900, 918, 936, 954, 972)
+values = [Vector2i(5, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0), Vector2i(6, 1), Vector2i(6, 0)]
+
+[sub_resource type="Resource" id="Track_5"]
+script = ExtResource("2_cutscene_track")
+actor = &"artifact"
+property = &"position"
+times = PackedFloat64Array(0, 684, 702, 720, 738, 756, 774, 792, 810, 828, 846, 864, 882, 900, 918, 936, 954, 972)
+values = [Vector2(200, 232), Vector2(200, 220), Vector2(200, 208), Vector2(200, 196), Vector2(200, 184), Vector2(200, 172), Vector2(200, 160), Vector2(200, 148), Vector2(200, 136), Vector2(200, 124), Vector2(200, 112), Vector2(200, 100), Vector2(200, 88), Vector2(200, 76), Vector2(200, 64), Vector2(200, 52), Vector2(200, 40), Vector2(200, 28)]
+
+[sub_resource type="Resource" id="Track_6"]
+script = ExtResource("2_cutscene_track")
+actor = &"artifact"
+property = &"frame"
+times = PackedFloat64Array(0, 18, 36, 54, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 252, 270, 288, 306, 324, 342, 360, 378, 396, 414, 432, 450, 468, 486, 504, 522, 540, 558, 576, 594, 612, 630, 648, 666, 684, 702, 720, 738, 756, 774, 792, 810, 828, 846, 864, 882, 900, 918, 936, 954, 972)
+values = [&"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0", &"alien_artifact_1", &"alien_artifact_0"]
+
+[sub_resource type="Resource" id="Track_7"]
+script = ExtResource("2_cutscene_track")
+actor = &"cable"
+property = &"frame"
+times = PackedFloat64Array(396, 576, 666)
+values = [0, 1, 2]
+
+[resource]
+script = ExtResource("1_cutscene_timeline")
+length = 990
+tracks = Array[ExtResource("2_cutscene_track")]([SubResource("Track_1"), SubResource("Track_2"), SubResource("Track_3"), SubResource("Track_4"), SubResource("Track_5"), SubResource("Track_6"), SubResource("Track_7")])
+provenance = "Original: ExpertClosingSequence 0x41c650 (CLOSING.C), the first stage: the sub turns (ExpertClosingTurnTable), idles 20 steps, the hook comes down 16 steps of 12 px and closes, then the cable pulls the sub and the artifact up 17 steps. One step is 18 ticks; the pictures of the sub (cell, propeller phase) and the artifact toggle every step. Constants are in tools/import/step_story.py with the function they were read from."

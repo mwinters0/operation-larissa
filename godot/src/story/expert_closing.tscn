@@ -1,0 +1,100 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/story/expert_closing.gd" id="1_closing"]
+[ext_resource type="Script" path="res://src/story/expert_closing_cable.gd" id="2_cable"]
+
+[node name="ExpertClosing" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 400.0
+mouse_filter = 2
+script = ExtResource("1_closing")
+
+[node name="Playfield" type="Control" parent="."]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 0
+offset_left = 16.0
+offset_top = 32.0
+offset_right = 624.0
+offset_bottom = 320.0
+mouse_filter = 2
+
+[node name="Artifact" type="AnimatedSprite2D" parent="Playfield"]
+unique_name_in_owner = true
+position = Vector2(184, 200)
+centered = false
+
+[node name="Sub" type="AnimatedSprite2D" parent="Playfield"]
+unique_name_in_owner = true
+position = Vector2(168, 180)
+centered = false
+
+[node name="Cable" type="Control" parent="Playfield"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 608.0
+offset_bottom = 288.0
+mouse_filter = 2
+script = ExtResource("2_cable")
+
+[node name="Deck" type="Control" parent="."]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 0
+offset_left = 16.0
+offset_top = 32.0
+offset_right = 624.0
+offset_bottom = 320.0
+mouse_filter = 2
+
+[node name="Water" type="ColorRect" parent="Deck"]
+layout_mode = 0
+offset_right = 608.0
+offset_bottom = 288.0
+mouse_filter = 2
+color = Color(0, 0, 0.667, 1)
+
+[node name="Cloud" type="Sprite2D" parent="Deck"]
+unique_name_in_owner = true
+centered = false
+
+[node name="Ship" type="Sprite2D" parent="Deck"]
+unique_name_in_owner = true
+centered = false
+
+[node name="Crew" type="Node2D" parent="Deck"]
+unique_name_in_owner = true
+
+[node name="DeckArtifact" type="AnimatedSprite2D" parent="Deck"]
+unique_name_in_owner = true
+position = Vector2(184, 267)
+centered = false
+
+[node name="DeckSub" type="AnimatedSprite2D" parent="Deck"]
+unique_name_in_owner = true
+position = Vector2(168, 259)
+centered = false
+
+[node name="DeckCable" type="Control" parent="Deck"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 122.0
+offset_right = 608.0
+offset_bottom = 288.0
+mouse_filter = 2
+script = ExtResource("2_cable")
+bottom = 295
+hook_frame = 2
+
+[node name="Pod" type="Sprite2D" parent="Deck"]
+unique_name_in_owner = true
+centered = false
+
+[node name="Sea" type="Sprite2D" parent="Deck"]
+unique_name_in_owner = true
+centered = false
+
+[node name="Animations" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true

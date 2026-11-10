@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="GameSkin" format=3]
+
+[ext_resource type="Script" path="res://src/skins/game_skin.gd" id="1_skin"]
+[ext_resource type="Script" path="res://src/skins/render_settings.gd" id="2_render"]
+[ext_resource type="Script" path="res://src/skins/hud_labels.gd" id="3_labels"]
+[ext_resource type="Texture2D" path="res://tests/skins/tiny/marker.png" id="4_marker"]
+
+[sub_resource type="Resource" id="Resource_render"]
+script = ExtResource("2_render")
+texture_filter = 1
+snap_transforms = false
+snap_vertices = false
+
+[sub_resource type="Resource" id="Resource_labels"]
+script = ExtResource("3_labels")
+font_size = 11
+game_words = Array[String](["Tiny Voyager", "Tiny Expert"])
+
+[resource]
+script = ExtResource("1_skin")
+id = &"tiny"
+display_name = "Tiny test skin: one colour in place of three pictures, linear filtering, the HUD's words as text"
+pictures = Dictionary[String, Texture2D]({
+"frame/dolphin_swim_0": ExtResource("4_marker"),
+"ui_picture/title_sky": ExtResource("4_marker"),
+"ui_picture/ui_1195": ExtResource("4_marker")
+})
+render = SubResource("Resource_render")
+hud_labels = SubResource("Resource_labels")

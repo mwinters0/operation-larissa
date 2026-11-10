@@ -1,0 +1,107 @@
+# A rule-hook mod that misbehaves, in the way the test asks for (`set_mode`), in every hook: it raises, never returns, answers garbage or more than the game accepts, claims what a mod must not, or answers
+# differently every time. Its manifest asks for no limit worth the name; the game gives it the lowest (1 million instructions per call, never 0). The `try_*` functions attempt what a mod must not do (a refused
+# call raises, which the game counts) and the `check_*` ones ask the API for what it must not give.
+var api : Dictionary = {}
+var mode := "good"
+var counter := 0
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func set_mode(wanted : String) -> void:
+	mode = wanted
+
+func calls() -> int:
+	return counter
+
+# what a hook answers in the mode: `fallback` when the mode is a good one
+func behave(fallback : Variant) -> Variant:
+	counter += 1
+	if mode == "raise":
+		api["no_such_function"].call("x")
+	elif mode == "spin":
+		var n := 0
+		while true:
+			n += 1
+	elif mode == "garbage":
+		return "this is not an answer"
+	elif mode == "nothing":
+		return null
+	elif mode == "claims":
+		return {"oxygen": 99, "set_flags": 1}
+	elif mode == "float":
+		return {"vx": 1.5}
+	elif mode == "oversize":
+		var memory := {}
+		for i in 40:
+			memory["k" + str(i)] = i
+		return {"memory": memory}
+	elif mode == "long_text":
+		var text := "x"
+		for i in 12:
+			text += text
+		return {"memory": {"text": text}}
+	elif mode == "impure":
+		return {"vx": counter, "dx": counter, "condition": counter % 2 == 0, "memory": {"n": counter}}
+	return fallback
+
+func judge_answer(state : Dictionary) -> Variant:
+	if mode == "impure":
+		counter += 1
+		return counter % 2 == 0
+	var answer : Variant = behave(true)
+	if mode == "wild" or mode == "claims" or mode == "float" or mode == "oversize" or mode == "long_text":
+		return "not a bool"
+	return answer
+
+func creature_instruction(state : Dictionary) -> Variant:
+	if mode == "wild":
+		counter += 1
+		return {"dx": 1000, "dy": -1000, "set_flags": 70000, "clear_flags": -5, "frame": 1000}
+	return behave({})
+
+func sub_ability(state : Dictionary) -> Variant:
+	if mode == "wild":
+		counter += 1
+		return {"vx": 99999, "vy": -99999, "invulnerability": 99999}
+	return behave({})
+
+# --- reaching the game (each raises) ---
+func try_reach_the_game_state() -> String:
+	var node = get_node("/root/GameState")
+	return "oxygen: " + str(node.oxygen_model)
+
+func try_reach_the_hooks() -> String:
+	var node = get_node("/root/GameState")
+	node.hooks.calls = -1
+	return "wrote the table"
+
+func try_reach_the_tree() -> String:
+	var found = get_tree().get_first_node_in_group("sector")
+	found.call("queue_free")
+	return "closed the sector"
+
+func try_load_the_rules() -> String:
+	var script = load("res://src/core/rule_hooks.gd")
+	return "loaded the table: " + str(script)
+
+func try_make_a_node() -> String:
+	var node = Node2D.new()
+	return "made a node: " + str(node)
+
+# --- the state it is given is read-only ---
+func try_write_the_state(state : Dictionary) -> String:
+	state["number"] = 1
+	return "wrote the state"
+
+func try_write_a_field(state : Dictionary) -> String:
+	state["memory"]["visits"] = 99
+	return "wrote the memory it was handed"
+
+func try_write_the_facts() -> String:
+	api["rules"]["max_calls_per_tick"] = 1000000
+	return "raised a limit of the rules API"
+
+# --- the API answers nothing for these ---
+func check_load_a_file_of_another_pack() -> Variant:
+	return api["load"].call("../mod_rules/rules.sgd")

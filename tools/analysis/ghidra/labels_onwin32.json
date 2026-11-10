@@ -1,0 +1,1535 @@
+{
+ "0x0044ae1a": "EduLevel",
+ "0x0044ae16": "PlayerProgress",
+ "0x00448664": {
+  "map": "001C:63B8"
+ },
+ "0x00448668": {
+  "map": "001C:63BA"
+ },
+ "0x0044866c": {
+  "map": "001C:63BC"
+ },
+ "0x00448670": "SubVX",
+ "0x00448674": "SubVY",
+ "0x0044f528": "CurScreen",
+ "0x0044f52c": {
+  "map": "001C:D118"
+ },
+ "0x0044b318": "NPieces",
+ "0x0044b31a": "PieceScreen",
+ "0x00448680": "MidpointReached",
+ "0x00442e50": "InMathPractice",
+ "0x00442a4c": "PracticeRecordTweaks",
+ "0x004486b0": {
+  "map": "001C:63E8"
+ },
+ "0x004486b1": {
+  "map": "001C:63E9"
+ },
+ "0x004486b2": {
+  "map": "001C:63EA"
+ },
+ "0x004486b3": "InkPelletsMax",
+ "0x00448cac": {
+  "map": "001C:6980"
+ },
+ "0x0044b03c": "SectorMusicId",
+ "0x00440dd8": "MusicIdTable",
+ "0x00440e28": "MusicFileNamePtrs",
+ "0x00443080": "StunGunSpawnDX",
+ "0x00443089": "StunGunSpawnDY",
+ "0x00443092": "StunGunDirBySubCell",
+ "0x0044309b": "StunGunStepDX",
+ "0x004430a2": "StunGunStepDY",
+ "0x004413a4": "TankIconX",
+ "0x004413bc": "InkIconXY",
+ "0x00442794": "TriggerTypeTable",
+ "0x00441e9c": {
+  "name": "LockOperandLabels",
+  "evidence": "pointer table of the lock's label strings per wheel set; several sets point at buffers DoCombinationLock (0x421780) fills at run time from strings 11219-11245 (LockTenthLabelPtrs and the following tables), so their static EXE contents (' .1', ' .10' ...) are not what the wheel shows"
+ },
+ "0x0044201c": {
+  "name": "LockAnswerLabels",
+  "evidence": "pointer table of the lock's label strings per wheel set; several sets point at buffers DoCombinationLock (0x421780) fills at run time from strings 11219-11245 (LockTenthLabelPtrs and the following tables), so their static EXE contents (' .1', ' .10' ...) are not what the wheel shows"
+ },
+ "0x00441294": "BallastDenominations",
+ "0x004499a8": "ProblemTable",
+ "0x004499b4": "ProblemRecord",
+ "0x00448d25": {
+  "name": "LockAnswerWheelPos",
+  "evidence": "u8 0-31, the answer wheel position (4 per label). Set to 0 in DoCombinationLock ONLY, advanced by LockAdvanceAnswerWheel, so the second combination number starts where the first was stopped; compared with (8 - slot) * 4 in LockRunStage"
+ },
+ "0x00448d24": {
+  "name": "LockOperandWheelPos",
+  "evidence": "i8 0-31, the operand wheel position; moved +1 / -1 (wrapping 31/0) by LockSpinOperandWheel, never reset between the numbers"
+ },
+ "0x00448d26": {
+  "name": "LockSpinDirection",
+  "evidence": "0 = operand wheel turns forward, 1 = backward; cleared at the start of LockRunStage, toggled after every operand"
+ },
+ "0x00448d2c": {
+  "name": "LockSumBoxCursorX",
+  "evidence": "x of the next character in the long sum box (y 0x123); 0x4a at the start of each LockRunStage (box 0x4a,0x123,0xd0,0x11 cleared)"
+ },
+ "0x00448d20": {
+  "name": "LockProgramPtr",
+  "evidence": "pointer into the lock record's program bytes: record+1 for number 1, record+0x1c for number 2 ([slot, op]* , '=' = op 0, then the answer slot)"
+ },
+ "0x00448cd4": {
+  "name": "LockRecord",
+  "evidence": "pointer to the current type 0 record (byte 0 = wheel set 0-11)"
+ },
+ "0x00448cd8": {
+  "name": "LockOperandLabelSet",
+  "evidence": "pointer table of the 8 operand label strings of the record's wheel set (LockOperandLabels + set * 8 entries)"
+ },
+ "0x00448cdc": {
+  "name": "LockAnswerLabelSet",
+  "evidence": "pointer table of the 8 answer label strings of the record's wheel set (LockAnswerLabels + set * 8 entries)"
+ },
+ "0x00440150": {
+  "name": "PendingInput",
+  "evidence": "key code cached by PeekInput until WaitForInput / FlushInput takes or drops it"
+ },
+ "0x00448494": {
+  "name": "Alarms",
+  "evidence": "u32[]: alarm deadlines in 73 Hz ticks, set by set_alarm(n, ticks) = timeGetTime()*73/1000 + ticks, tested by alarm_expired / wait_alarm"
+ },
+ "0x004499a4": {
+  "name": "ProblemTextBundle",
+  "evidence": "BNDL of the current problem's texts; BundleItem(.., 0) prompt, 1 hint, 2 / 3 lock notices, 4 + type = worked solution"
+ },
+ "0x004499ac": {
+  "name": "LockPictureBundle",
+  "evidence": "BNDL of the lock's pictures: items 0-4 operator pictures (+ - x / =), 5 blank operator box, 10 the settled label's backdrop"
+ },
+ "0x00441e88": {
+  "name": "OperatorStrings",
+  "evidence": "pointer table of the operator strings by operator code: '=', '+', '-', 'x', '/'"
+ },
+ "0x004426d4": {
+  "name": "TextSubstTable",
+  "evidence": "pointer table of the substitution strings for the \\x08 \\xD0+k markers of problem texts (strcpy'd by the *Subst functions, read by WriteMessageText)"
+ },
+ "0x004411dc": {
+  "name": "SampleRateOverride",
+  "evidence": "playback rate override of PlayWave (-1 = the clip's header rate); set by set_sample_speed; DESIGN 7 'Sample rates'"
+ },
+ "0x0044120c": {
+  "map": "001C:1006",
+  "evidence": "byte: sound effects enabled (PlaySoundEffect guard); saved in the roster record"
+ },
+ "0x0044120d": {
+  "map": "001C:1007",
+  "evidence": "byte: background music enabled (PlayBackgroundMusic guard)"
+ },
+ "0x0044120e": {
+  "map": "001C:1008",
+  "evidence": "byte: speech clips enabled (every speech loop checks it)"
+ },
+ "0x00440e00": {
+  "name": "MusicLoopStart",
+  "evidence": "int[10]: loop start of each song, all 0; DESIGN 7 Music"
+ },
+ "0x00441410": {
+  "name": "NoBubbleScreens",
+  "evidence": "(sector, screen) byte pairs where UpdateAmbientBubbles is skipped; DESIGN 9"
+ },
+ "0x00441434": {
+  "name": "BubbleBundle",
+  "evidence": "bundle of the 8 ambient bubble pictures (LoadBubbles)"
+ },
+ "0x00441438": {
+  "name": "BubbleAActive",
+  "evidence": "ambient bubble A active flag (ResetBubbles clears it)"
+ },
+ "0x0044143c": {
+  "name": "BubbleBActive",
+  "evidence": "ambient bubble B active flag (ResetBubbles clears it)"
+ },
+ "0x004486bc": {
+  "name": "BubbleAX",
+  "evidence": "ambient bubble A x"
+ },
+ "0x004486c0": {
+  "name": "BubbleAY",
+  "evidence": "ambient bubble A y (rises 10 px per tick)"
+ },
+ "0x004486cc": {
+  "name": "BubbleAPic",
+  "evidence": "ambient bubble A picture 0-3, +1 per tick"
+ },
+ "0x004486c4": {
+  "name": "BubbleBX",
+  "evidence": "ambient bubble B x"
+ },
+ "0x004486c8": {
+  "name": "BubbleBY",
+  "evidence": "ambient bubble B y (rises 6 px per tick)"
+ },
+ "0x004486d0": {
+  "name": "BubbleBPic",
+  "evidence": "ambient bubble B picture (4..7, ping-pong)"
+ },
+ "0x004486d4": {
+  "name": "BubbleBUp",
+  "evidence": "ambient bubble B picture direction flag"
+ },
+ "0x00448684": {
+  "name": "InvulnerabilityCounter",
+  "evidence": "ticks of invulnerability left: 30 after a creature hit (set by ApplyCreatureDamage), counts down per drawn frame; DrawSub draws the hit bubbles while > 22; DESIGN 3.5"
+ },
+ "0x00448688": {
+  "name": "MessageLightCountdown",
+  "evidence": "DrawSub message light countdown: 36 after touching a math trigger, 2 after the canister pickup (0x4182da; overwrites a pending trigger countdown and sets the problem id to 1, the trigger problem is never shown [V asm, G34]); the light shows while odd; DESIGN 9"
+ },
+ "0x0044868c": {
+  "name": "LastHitFoe",
+  "evidence": "the creature remembered from the previous tick (copy of HitFoeIndex); a creature only hurts again when it differs; cleared on a screen change; DESIGN 3.5"
+ },
+ "0x00448cb0": {
+  "name": "HitFoeIndex",
+  "evidence": "count - index of the first touching creature with damage != 0 (0 = none), set by update_animals each tick; DESIGN 3.5"
+ },
+ "0x00448cb4": {
+  "name": "HitFoeDamage",
+  "evidence": "damage byte of that creature; passed to ApplyCreatureDamage"
+ },
+ "0x0044b048": {
+  "map": "001C:8C4E",
+  "evidence": "bitmask of the ink pellets in flight (StartStunGun / UpdateStunGun); DESIGN 3.4"
+ },
+ "0x0044b04c": {
+  "map": "001C:8C52",
+  "evidence": "ink pellet x positions (int[2]); 16 x 16 box overlap test against creatures in update_animals"
+ },
+ "0x0044b054": {
+  "map": "001C:8C56",
+  "evidence": "ink pellet y positions (int[2])"
+ },
+ "0x0044b049": {
+  "name": "StunGunPhase",
+  "evidence": "byte[2], per pellet: 0 = flying, 1..4 = splash picture index (set to 1 on rock in UpdateStunGun, or by update_animals when a creature rectangle overlaps the pellet, or at spawn for direction code 3); UpdateStunGun plays sound 0x19 when it is 1 and ends the pellet when it passes StunGunSplashLast; pellet-vs-sub: no code reads SubX/SubY/SubCell together with StunGunX/Y (only StartStunGun for the spawn point), so the sub never collides with its own pellets [V, pellet audit]"
+ },
+ "0x0044b05c": {
+  "name": "StunGunSplashLast",
+  "evidence": "byte[2], per pellet: last splash picture index, StartStunGun sets it to 3 (rock/creature splash pictures 1..3) [V, pellet audit]"
+ },
+ "0x0044b05e": {
+  "name": "StunGunDir",
+  "evidence": "byte[2], per pellet: direction code copied from StunGunDirBySubCell[SubCell] at StartStunGun; index into StunGunStepDX/DY (code 3 = no motion) [V, pellet audit]"
+ },
+ "0x00448694": {
+  "name": "BallastMode",
+  "evidence": "ballast denomination display mode by level: L0 -> 0 (cents), L1 -> 2 (powers of two), L2 -> 1 (dollars), L3 -> 2; DESIGN 5.4 types 28 / 29"
+ },
+ "0x00442cb8": {
+  "name": "PracticeRecordCounts",
+  "evidence": "4 x 34 bytes: number of stored problem records per educational level and type (the practice 'available types' table); DESIGN 2.1 Math Practice"
+ },
+ "0x00442e6c": {
+  "name": "PieceAnimCounter",
+  "evidence": "shared 0..15 counter of DrawProbePieces (+1 per call)"
+ },
+ "0x00442e70": {
+  "name": "RockPictureTable",
+  "evidence": "16-entry rock picture table indexed by PieceAnimCounter (sparkle on 3 of 16 frames)"
+ },
+ "0x00442e68": {
+  "name": "ProbeCount",
+  "evidence": "number of pieces in the probe list (InitProbeList / AddProbePiece)"
+ },
+ "0x00449fd8": {
+  "name": "ProbeList",
+  "evidence": "probe piece list, 3 words per piece: id, x, y (AddProbePiece)"
+ },
+ "0x00443044": {
+  "name": "RadarSweepPictures",
+  "evidence": "Prob03: bundle item of the beam picture per sweep step (12); DESIGN 5.5 type 3"
+ },
+ "0x00443050": {
+  "name": "RadarSweepPositions",
+  "evidence": "Prob03: (x, y) byte pair of the beam picture per sweep step (12)"
+ },
+ "0x00443068": {
+  "name": "RadarBlipX",
+  "evidence": "Prob03: blip x per row (5)"
+ },
+ "0x0044306d": {
+  "name": "RadarBlipY",
+  "evidence": "Prob03: blip y per row (5)"
+ },
+ "0x00443072": {
+  "name": "RadarBlipStep",
+  "evidence": "Prob03: sweep step at which the blip is shown, per row; all 0 (beam straight up); DESIGN 5.5 type 3"
+ },
+ "0x00442994": {
+  "map": "001C:24EE",
+  "evidence": "9 sub cells x 16 flag nibbles, one byte each, index SubCell*16 + (flags & 15): bit 1 = test x in [SubX, SubX+95], bit 0 = test y in [SubY, SubY+57], 0 = axis not tested (DetectMathTrigger asm 0x4277be-0x427811); bytes dumped from the EXE; DESIGN 4.1"
+ },
+ "0x00441544": {
+  "name": "ClockHourHandTable",
+  "evidence": "Prob24: hour hand (x, y, mirror) triples by hour12 / minute (13); DESIGN 5.5 type 24"
+ },
+ "0x0044156b": {
+  "name": "ClockHourHandPictures",
+  "evidence": "Prob24: hour hand picture per table entry (13)"
+ },
+ "0x00441579": {
+  "name": "VoyagerClosingTurnTable",
+  "evidence": "VoyagerClosingSequence: the next sub cell while it turns, indexed by the current cell"
+ },
+ "0x00441582": {
+  "name": "ExpertClosingTurnTable",
+  "evidence": "ExpertClosingSequence: sub cells while it turns ({3,3,3,4,5,6,6,6,6})"
+ },
+ "0x0044158c": {
+  "name": "VoyagerClosingClipFirst",
+  "evidence": "first speech clip id of Voyager closing page n (3)"
+ },
+ "0x00441598": {
+  "name": "VoyagerClosingClipEnd",
+  "evidence": "one past the last speech clip id of Voyager closing page n (3)"
+ },
+ "0x004415a4": {
+  "name": "ExpertCraneTable",
+  "evidence": "ExpertClosingCrewStep: the six deck sailors' programs, 4-byte records [op, item, mirror, delay] (NOT a crane script), cut at each -3 byte, ends with -1; decoded in docs/data/expert_closing.json"
+ },
+ "0x00441a74": {
+  "name": "LogEntryClipFirst",
+  "evidence": "first speech clip id of canister log entry n (30)"
+ },
+ "0x00441aec": {
+  "name": "LogEntryClipEnd",
+  "evidence": "one past the last speech clip id of canister log entry n (30)"
+ },
+ "0x004430c4": {
+  "name": "SupplyMessageClipFirst",
+  "evidence": "first speech clip id of the supply message after sector n (30)"
+ },
+ "0x0044313c": {
+  "name": "SupplyMessageClipEnd",
+  "evidence": "one past the last speech clip id of the supply message after sector n (30)"
+ },
+ "0x00442a24": {
+  "name": "BarnacleXY",
+  "evidence": "Prob14: (x, y) byte pairs of the 20 barnacles on the monitor"
+ },
+ "0x00442a9c": {
+  "name": "CartoonCrewOffsets",
+  "evidence": "news cartoon: byte offset of each crew member's script in CartoonCrewTable (5 ints)"
+ },
+ "0x00442ab4": {
+  "name": "CartoonCrewTable",
+  "evidence": "news cartoon: crew scripts, 4-byte records [cmd, bundle item, mirror, delay], terminated by a lone 0xfe"
+ },
+ "0x00440b2c": {
+  "name": "ClipBottom",
+  "evidence": "inclusive bottom row of the current clip rectangle (the title scene sets 0x138 for the sinking sub); DrawPictureMasked"
+ },
+ "0x00449e9c": {
+  "name": "CartoonClock",
+  "evidence": "news cartoon: tick counter start + 10 n of the current redraw (time gates compare against it)"
+ },
+ "0x0044f21c": {
+  "name": "ZoneFoeBundle",
+  "evidence": "bundle of the current zone's creature pictures (LoadZoneResources); the Expert closing draws one of its items; DESIGN closings"
+ },
+ "0x00441b6c": {
+  "name": "Prob08_KindTable",
+  "evidence": "Prob08 depth gauge: kind per f0 (5); DESIGN 5.5 type 8"
+ },
+ "0x00441b72": {
+  "name": "Prob08_PictureByKind",
+  "evidence": "Prob08: mark picture per kind (3)"
+ },
+ "0x00441b78": {
+  "name": "Prob08_DivisorByKind",
+  "evidence": "Prob08: divisor of the depth giving the number of 128 x 16 marks, per kind (3)"
+ },
+ "0x004431b4": {
+  "name": "Prob25_GridY",
+  "evidence": "Prob25 grid y positions (6)"
+ },
+ "0x004431cc": {
+  "name": "Prob25_GridX",
+  "evidence": "Prob25 grid x positions (8)"
+ },
+ "0x00441280": {
+  "name": "BallastWeightX",
+  "evidence": "Prob28 / 29: x of the 10 weight slots"
+ },
+ "0x0044128a": {
+  "name": "BallastWeightY",
+  "evidence": "Prob28 / 29: y of the 10 weight slots"
+ },
+ "0x0044130c": {
+  "name": "BallastLabels",
+  "evidence": "Prob28 / 29: denomination labels, 0x32 bytes per mode x 10 labels of 5 bytes; the EXE holds static strings, mode 1 ('.01' .. '.25') is overwritten at run time by LoadBallastLabels (0x419d96) with strings 11215-11218 (BallastLabelsMode1)"
+ },
+ "0x00440084": {
+  "name": "VgaPalette",
+  "evidence": "16 RGB triples: SetColor(n) palette; DESIGN 5.5"
+ },
+ "0x00442fdc": {
+  "name": "Prob26_NeedleXYFlip",
+  "evidence": "Prob26 needle (x, y, mirror) triples by speed 0-25 (26); DESIGN 5.5 types 26 / 27"
+ },
+ "0x0044302a": {
+  "name": "Prob26_NeedlePicture",
+  "evidence": "Prob26 needle picture by speed 0-25 (26)"
+ },
+ "0x00442e84": {
+  "name": "Prob27_NeedleXYFlip",
+  "evidence": "Prob27 needle (x, y, mirror) triples by f0 (26); DESIGN 5.5 types 26 / 27"
+ },
+ "0x00442ed2": {
+  "name": "Prob27_NeedlePicture",
+  "evidence": "Prob27 needle picture by f0 (26)"
+ },
+ "0x00441c88": {
+  "name": "LockOperandLabelX",
+  "evidence": "lock diagram: x of the 8 operand label points, 4 phases at stride 0x40 (y table at +0x20); DESIGN 5.5 type 0"
+ },
+ "0x00441ca8": {
+  "name": "LockOperandLabelY",
+  "evidence": "lock diagram: y of the operand label points (see LockOperandLabelX)"
+ },
+ "0x00441d88": {
+  "name": "LockAnswerLabelX",
+  "evidence": "lock diagram: x of the 8 answer label points, 4 phases at stride 0x40"
+ },
+ "0x00441da8": {
+  "name": "LockAnswerLabelY",
+  "evidence": "lock diagram: y of the answer label points"
+ },
+ "0x0044b314": {
+  "name": "SectorRespawnX",
+  "evidence": "sector header +0x00 (u16 x2 at load): SubX of the respawn point on screen 6 (DoAction: SubX = this when IsPastSectorMidpoint); DESIGN 3.3"
+ },
+ "0x0044b316": {
+  "name": "SectorRespawnY",
+  "evidence": "sector header +0x02: SubY of the respawn point (DoAction)"
+ },
+ "0x0044b352": {
+  "name": "SectorRespawnCell",
+  "evidence": "sector header +0x3E: SubCell of the respawn point (DoAction)"
+ },
+ "0x0044b325": {
+  "name": "PieceX",
+  "evidence": "sector header +0x11, 11 words: window-pixel x of each piece (DrawScreen -> AddProbePiece)"
+ },
+ "0x0044b33b": {
+  "name": "PieceY",
+  "evidence": "sector header +0x27, 11 words: window-pixel y of each piece (DrawScreen -> AddProbePiece)"
+ },
+ "0x0044b356": {
+  "name": "NeighbourLeft",
+  "evidence": "sector header +0x42, 12 bytes: screen reached when SubX < -32, value - 1 = screen, 0 = none (DoAction); DESIGN 3.3"
+ },
+ "0x0044b362": {
+  "name": "NeighbourRight",
+  "evidence": "sector header +0x4E, 12 bytes: screen reached when SubX > 575 (DoAction)"
+ },
+ "0x0044b36e": {
+  "name": "NeighbourUp",
+  "evidence": "sector header +0x5A, 12 bytes: screen reached when SubY < 3 (DoAction)"
+ },
+ "0x0044b37a": {
+  "name": "NeighbourDown",
+  "evidence": "sector header +0x66, 12 bytes: screen reached when SubY > 290 (DoAction)"
+ },
+ "0x0044b386": {
+  "name": "SectorScreenTiles",
+  "evidence": "first screen's 38 x 18 tile bytes (header 0x72); screen k is k * 0x500 further; DrawScreen sets ScreenTilesPtr (0x0044ef88) = this + CurScreen * 0x500"
+ },
+ "0x0044ef88": {
+  "name": "ScreenTilesPtr",
+  "evidence": "pointer to the current screen's tile bytes; flag 0x40 = solid is tested by ScanSubWalls, 0x80 = current by ApplyWaterCurrent (DrawScreen, DoAction)"
+ },
+ "0x00448678": {
+  "name": "WaterCurrentX",
+  "evidence": "result of ApplyWaterCurrent: x acceleration (1/8 px per tick per tick) added to SubVX in DoAction"
+ },
+ "0x0044867c": {
+  "name": "WaterCurrentY",
+  "evidence": "result of ApplyWaterCurrent: y acceleration added to SubVY in DoAction"
+ },
+ "0x0044ae22": {
+  "name": "HintsOn",
+  "evidence": "short: Options > New Player Hints. ShowFirstTimeHint (0x427e20) shows nothing when 0; MenuNewPlayerHints (0x42bc56) stores the Yes / No answer (button 1 = Yes) [V, flow audit]"
+ },
+ "0x0044ae24": {
+  "name": "HintsUnseenMask",
+  "evidence": "ushort: bit n set = hint n not shown yet; ShowFirstTimeHint (0x427e20) clears the bit when it shows hint n; MenuNewPlayerHints (0x42bc56) sets it to 0xffff on Yes [V, flow audit]"
+ },
+ "0x0044307c": {
+  "name": "CurrentMusicId",
+  "evidence": "int: the song PlayBackgroundMusic (0x43206e) was last asked for (even with MusicOn = 0), -1 after StopBackgroundMusic (0x43208f); SetMusicOn (0x431db0) replays it from the start [V, flow audit]"
+ },
+ "0x00442c24": {
+  "name": "DlgYesNoRecord",
+  "evidence": "RunModalDialog (0x4174ec) record: +0 type 8 = Yes / No, +4 title ptr, +9 text ptr, +0xd default button (0 = No). Used by SaveAndExit (0x42ba05), JustExit (0x42ba83), MenuReturnToSignInSave (0x42b914), MenuReturnToSignIn (0x42b98f) [V, flow audit]"
+ },
+ "0x00442c40": {
+  "name": "DlgOptionYesNoRecord",
+  "evidence": "RunModalDialog (0x4174ec) record like DlgYesNoRecord (0x442c24) but with its default button (+0xd = 0x442c4d) set at run time to \"the answer that would CHANGE the setting\": MenuSoundEffects (0x42bcdf) / MenuMusic (0x42bd56) / MenuVoice (0x42bdcd) / MenuNewPlayerHints (0x42bc56) [V, flow audit]"
+ },
+ "0x0044ae18": {
+  "name": "PlayerCustomized",
+  "evidence": "short (player record field): game customized (Problem Customization changed level / calculator). SignInScreenLoop (0x430c33) shows CustomizedGameNotice (0x42f4be) after DelayTicks(0x24) when set; the main loop keeps EduLevel when set instead of the zone table [I, flow audit]"
+ },
+ "0x00442fc8": {
+  "name": "SignInWelcomePending",
+  "evidence": "int: set to 1 by EVERY sign_in call (0x43146e); SignInScreenLoop (0x430c33, 0x430d65-0x430d7c) speaks SignInSpeech(1) (\"classified mission\") and clears it, so the speech plays on every return to sign-in (Main calls SignIn again after each LongJmp) [V asm, G36]"
+ },
+ "0x00442984": {
+  "name": "NoShipNoticeTypes",
+  "evidence": "10 bytes {9,14,17,20,21,25,30,31,32,33}: the problem types for which ShowWrongAnswerNotice (0x426317) skips string 11114 after the second wrong answer [V table, I meaning]"
+ },
+ "0x00449f48": {
+  "name": "PracticeResult",
+  "evidence": "short: Math Practice result of the problem just played. do_math_practice (0x42d817) sets 2 before DoMathProblem; DoMathProblem sets 0 = right at the first try, 1 = right at the second, (stays 2 = failed); the lock sets 0 when its second number is stopped right. do_math_practice counts 0 as \"correct on 1st try\" (DAT_00449f40) and 1 as \"correct on 2nd try\" (DAT_00449f44) [V]"
+ },
+ "0x0044ae26": {
+  "name": "CalculatorOn",
+  "evidence": "short (player record field): 1 = the calculator option is on (Problem Customization / practice setup; new players start with 1). DoMathProblem (0x423629) passes it as the \"use calculator\" argument of GetAnswer and calls ShowFirstTimeHint(4) when set, (3) when clear; the customized-game notice prints string 11205 + value (Off / On) [V]"
+ },
+ "0x00442990": {
+  "name": "PromptTriggerSlotPlus1",
+  "evidence": "int: DoMathProblem sets it to its trigger slot + 1 around ShowProblemPrompt only (0 otherwise); while > 0 outside practice WriteMessageText draws through WriteMessageTextWithSender [I name]"
+ },
+ "0x00448ab4": {
+  "name": "LogBundle",
+  "evidence": "pointer to the loaded log text bundle (logical 0x1c0 + GetGameLevel(), real bundles 107 / 108 = NEP.DLL text ids 10648-10662 / 10663-10677); freed by FreeDataBankResources (0x41e768) [V]"
+ },
+ "0x00448ab8": {
+  "name": "LogEntryNumbers",
+  "evidence": "byte[15]: the entry numbers (1-15) the log lists, filled from LogUnlockOrder* and sorted ascending by PrepareCanisterLog (0x41e787); row r shows bundle item LogEntryNumbers[r] - 1 [V]"
+ },
+ "0x00448ac7": {
+  "name": "LogRowCaptions",
+  "evidence": "15 x 30 bytes: the row captions 'ENTRY 1.04' (string 11032 + LogEntryNumberTemplate with the game digit and the two-digit entry number patched in) [V]"
+ },
+ "0x00448c8c": {
+  "name": "LogCaptionLength",
+  "evidence": "strlen of 'ENTRY' (11032): offset at which the template's ' 1.00' starts in each LogRowCaptions row [V]"
+ },
+ "0x00448c90": {
+  "name": "LogEntryCount",
+  "evidence": "number of entries the log lists = GetSector() % 15 + 1; the DONE row has this index [V]"
+ },
+ "0x00448c91": {
+  "name": "LogSelectedRow",
+  "evidence": "row of the newest entry after sorting = the row DoDataBank opens on [V]"
+ },
+ "0x004419d4": {
+  "name": "DataBankOpen",
+  "evidence": "1 while the log bundle is loaded (set by DoDataBank, cleared by FreeDataBankResources; FreeMathResources frees it if still set) [V]"
+ },
+ "0x004419d5": {
+  "name": "LogUnlockOrderVoyager",
+  "evidence": "byte[15]: 4 3 7 1 11 2 5 12 6 9 10 8 15 14 13 = the order in which sectors 0-14 of Voyager deliver log entries (sector s lists the first s % 15 + 1) [V]"
+ },
+ "0x004419e4": {
+  "name": "LogUnlockOrderExpert",
+  "evidence": "byte[15]: 2 7 4 1 13 3 5 9 14 6 15 8 11 10 12 = the order in which the Expert sectors deliver log entries [V]"
+ },
+ "0x004419f4": {
+  "name": "LogRowX",
+  "evidence": "u32[16]: x of menu row r: 362 for rows 0-7, 485 for rows 8-15 (hotspot x; the highlight box starts 2 px left) [V]"
+ },
+ "0x00441a34": {
+  "name": "LogRowY",
+  "evidence": "u32[16]: y of menu row r: 88 + 20 * (r % 8) [V]"
+ },
+ "0x00441b64": {
+  "name": "LogEntryNumberTemplate",
+  "evidence": "string ' 1.00' appended to 'ENTRY'; its '1' becomes the game digit (1 Voyager, 2 Expert) and '00' the entry number [V]"
+ },
+ "0x00448174": {
+  "name": "TextMarkupBuffer",
+  "evidence": "char[0x320]: output of ConvertTextMarkup (0x415ebf) [V]"
+ },
+ "0x00441bcc": {
+  "name": "EntryState",
+  "evidence": "GetNumber (0x41fb34) state: 0 = whole number / decimal, 1 = numerator (after F), 2 = denominator (after '/'); the jump tables at 0x41fd5e / 0x41fdca (state 0), the compare tree at 0x420205 (state 1) and 0x420423 (state 2) dispatch on it [V]"
+ },
+ "0x00441bd0": {
+  "name": "EntryWhole",
+  "evidence": "GetNumber: 9-character buffer of the whole part / decimal digits, right aligned, the leftmost used index is EntryWholeStart [V]"
+ },
+ "0x00441bda": {
+  "name": "EntryNumerator",
+  "evidence": "GetNumber: 2-character numerator buffer, leftmost used index EntryNumeratorStart (2 = empty) [V]"
+ },
+ "0x00441bdd": {
+  "name": "EntryDenominator",
+  "evidence": "GetNumber: 3-character denominator buffer, leftmost used index EntryDenominatorStart (3 = empty); a usable denominator has a first digit that is not '0' (checks at 0x420641, 0x420690, 0x4206df, 0x42072e, 0x42077d, 0x42082c) [V]"
+ },
+ "0x00441be1": {
+  "name": "EntryDisplayText",
+  "evidence": "GetNumber: the 12-character text FormatEntryText (0x4208d9) builds for DrawCalcDisplay (0x420b73) [V]"
+ },
+ "0x00441bf0": {
+  "name": "EntryWholeStart",
+  "evidence": "GetNumber: index of the leftmost typed digit in EntryWhole; 9 = nothing typed, at most EntryNegative (the sign takes a cell); F is accepted when EntryWholeStart - EntryNegative >= 7 (0x41ff9f), i.e. at most 2 characters typed [V]"
+ },
+ "0x00441bf4": {
+  "name": "DecimalPointPos",
+  "evidence": "GetNumber: index where the decimal point was typed, 9 = no point typed (the exponent is 8 - this) [V]"
+ },
+ "0x00441bf8": {
+  "name": "EntryNumeratorStart",
+  "evidence": "GetNumber: leftmost used index of EntryNumerator, 2 = empty, 0 = two digits [V]"
+ },
+ "0x00441bfc": {
+  "name": "EntryDenominatorStart",
+  "evidence": "GetNumber: leftmost used index of EntryDenominator, 3 = empty, 0 = three digits [V]"
+ },
+ "0x00441c00": {
+  "name": "EntryNegative",
+  "evidence": "GetNumber: the entry is negative (N key / '-' without calculator); cleared by typing 0 into an empty entry [V]"
+ },
+ "0x00441c04": {
+  "name": "EntryDone",
+  "evidence": "GetNumber: set when a key ends the entry; the key's code (1 Enter, 2 +, 3 -, 4 *, 5 /, 6 =, 8 S, 9 R, 10 C) is GetNumber's return value [V]"
+ },
+ "0x00441c08": {
+  "name": "CalcNoticeDialogRecord",
+  "evidence": "ShowCalcNoticeDialog (0x420d8f): the RunModalDialog (0x4174ec) record; +4 (0x441c0c) title pointer, +9 (0x441c11) text pointer are set before the call [V]"
+ },
+ "0x004499b0": {
+  "name": "CalcNoticeBundle",
+  "evidence": "bundle 0xf5 (real 42) loaded by DoMathProblem (0x423629): items 0-2 = texts 10174 'The calculator cannot divide a number by zero.', 10175 'The answer you have calculated is too large for the calculator.', 10176 'The calculator will not accept an operator (+-/*=) when entering a fraction...'; ShowCalcNoticeDialog (0x420d8f) kind 0 / 1 / 2 picks the item [V]"
+ },
+ "0x00441444": {
+  "name": "CalcHotkeys",
+  "evidence": "string 11246 'FfSsNnRrCc.' (LoadStringResource in GetAnswer 0x41ade0): the hot-key letters F S N R C (upper and lower case) and the decimal point key, compared in TranslateCalcKey (0x41b843) and IsCalcEntryKey (0x420d46) [V]"
+ },
+ "0x00441c64": {
+  "name": "Prob04_PieceX",
+  "evidence": "Prob04: x of the four line pieces (4 dwords), drawn one per 15 ticks; DESIGN 5.5 type 4"
+ },
+ "0x00441c74": {
+  "name": "Prob04_PieceY",
+  "evidence": "Prob04: y of the four line pieces (4 dwords)"
+ },
+ "0x00442c88": {
+  "name": "Prob05_PieceX",
+  "evidence": "Prob05: x of the six line pieces (6 dwords), one per 15 ticks; DESIGN 5.5 type 5"
+ },
+ "0x00442ca0": {
+  "name": "Prob05_PieceY",
+  "evidence": "Prob05: y of the six line pieces (6 dwords)"
+ },
+ "0x00441bc4": {
+  "name": "Prob30_BoxXStep",
+  "evidence": "Prob30: the two x steps (bytes) between neighbouring boxes of a row, alternating (20 / 24 px); DESIGN 5.5 type 30"
+ },
+ "0x0044af5c": {
+  "name": "Prob26_NeedleIndex",
+  "evidence": "Prob26_Diagram sets it to f0 (needle position); Prob26_SuccessAnimation counts it down once per 20 ticks"
+ },
+ "0x0044aee4": {
+  "name": "Prob27_NeedleIndex",
+  "evidence": "Prob27_Diagram sets it to f0; Prob27_SuccessAnimation counts it up once per 20 ticks"
+ },
+ "0x0044af6c": {
+  "name": "CommonEffectCache",
+  "evidence": "0x34 pointers: preloaded common effects (0 = load from the bundle at every PlaySoundEffect; true for 0x16, 0x1d, 0x20-0x33); see LoadCommonEffects"
+ },
+ "0x0044af68": {
+  "name": "CurrentEffectBuffer",
+  "evidence": "the buffer of the uncached effect that is playing; freed by StopCommonSoundEffect"
+ },
+ "0x00440d80": "WindowActive",
+ "0x00440e68": "SoundPauseLevel",
+ "0x0044014c": "InWin32Dialog",
+ "0x00440d84": "EndSessionRequested",
+ "0x00440e58": "SongPaused",
+ "0x0044a020": {
+  "name": "RosterSlots",
+  "evidence": "99 player records of 36 (0x24) bytes (9 dwords), 0xdec bytes in all; name[10] at +0, +0x0a progress, +0x0c PlayerCustomized, +0x0e EduLevel, +0x10 sound, +0x12 voice, +0x14 music, +0x1c tanks * 5 + oxygen, +0x1e ink pellets, +0x20 capsule pieces; a slot is free when name[0] == 0 (CountRosterPlayers); the current player's copy is CurrentPlayer (0x44ae0c). Field offsets agree with 0x44ae16 PlayerProgress / 0x44ae1a EduLevel [V]"
+ },
+ "0x0044ae0c": {
+  "name": "CurrentPlayer",
+  "evidence": "36 byte copy of the signed-in player's roster record (SignInScreenLoop copies the 9 dwords of the chosen slot here; UpdateRosterData writes it back); same layout as RosterSlots [V]"
+ },
+ "0x0044ade8": {
+  "name": "RosterLastSlot",
+  "evidence": "name[0] of roster slot 98, the last one; RemoveRosterSlot sets it to 0 after shifting the slots down [V]"
+ },
+ "0x00442f98": {
+  "name": "NewPlayerAdded",
+  "evidence": "word: set to 1 by AddNewPlayer; sign_in plays SignInSpeech(2) (new, 'Begin mission') when non-zero, else SignInSpeech(3) ('Resume mission') [V] It is set by AddNewPlayer (0x430851) only and nothing ever clears it (no other write in ONWIN32.EXE): after one New every later Start of the run says 'Begin mission' [V, G26]"
+ },
+ "0x00442f94": {
+  "name": "SignInPicturesLoaded",
+  "evidence": "word: non-zero while the 14 sign-in picture buffers exist; FreeSignInPictures frees them and clears it [V]"
+ },
+ "0x00442fb4": {
+  "name": "SignInScrollTrackX",
+  "evidence": "x of the sign-in list's scroll track (hotspot 3000) [I]"
+ },
+ "0x00442fb8": {
+  "name": "SignInScrollTrackY",
+  "evidence": "y of the scroll track [I]"
+ },
+ "0x00442fbc": {
+  "name": "SignInScrollThumbY",
+  "evidence": "current y of the scroll thumb (SetSignInScrollThumb) [I]"
+ },
+ "0x00442fc0": {
+  "name": "SignInScrollTrackH",
+  "evidence": "height of the scroll track; the thumb index is (thumb y - track y) * count / this [I]"
+ },
+ "0x00442fc4": {
+  "name": "SignInScrollThumbSize",
+  "evidence": "width / height of the (square) scroll thumb [I]"
+ },
+ "0x00444e54": {
+  "name": "InputEventKind",
+  "evidence": "raw input event kind: 1 Esc / quit, 2 key, 3 left down, 4 left up, 5 right down, 6 right up; set by PostKeyEvent and MainWindowProc, cleared by PumpMessages; read by PollInputEvent [V]"
+ },
+ "0x00444e58": {
+  "name": "InputEventArg1",
+  "evidence": "key code (kind 2) or mouse x (kinds 3-6) of the pending raw input event [V]"
+ },
+ "0x00444e5c": {
+  "name": "InputEventArg2",
+  "evidence": "mouse y of the pending raw input event [V]"
+ },
+ "0x00440164": {
+  "name": "MouseX",
+  "evidence": "last mouse x seen by MainWindowProc [I]"
+ },
+ "0x00440168": {
+  "name": "MouseY",
+  "evidence": "last mouse y seen by MainWindowProc; the sign-in list picks its row with (MouseY - 0x68) / 0x13 [V]"
+ },
+ "0x00440f30": {
+  "name": "MouseButtonDown",
+  "evidence": "non-zero while the left button is held (returned by IsMouseButtonDown) [I]"
+ },
+ "0x00440074": {
+  "name": "RealRsrcNums",
+  "evidence": "pointer to the locked OTHR 15001 resource of ONWIN32.EXE: u16 logical -> real id table (load_real_rsrc_nums 0x410658, read by LogicalToRealResource)"
+ },
+ "0x00440080": {
+  "name": "CurrentPaletteId",
+  "evidence": "id of the palette installed by install_vga_palette (0x4106d1); -1 initially"
+ },
+ "0x00440174": {
+  "name": "ResourceLoadLimit",
+  "evidence": "max bytes load_uncompressed (0x4112ba) copies to the destination; -1 = no limit; set around the table loads in LoadCommonResources / LoadZoneResources / LoadSectorResources"
+ },
+ "0x00440178": {
+  "name": "BundleItemsAreRealIds",
+  "evidence": "1 while generic_load_uncompressed loads the children of a BNDL: their ids are already real ids, LogicalToRealResource returns them unchanged"
+ },
+ "0x0044017c": {
+  "name": "KeptResourceHandle",
+  "evidence": "HGLOBAL of the resource load_special (0x41153b) keeps locked in place; unload_special frees it; free_unmush_buffer does nothing while it is set"
+ },
+ "0x004401b8": {
+  "name": "VScreenWidth",
+  "evidence": "width of the WinG back buffer (640) (also called BackBufferStride)"
+ },
+ "0x004401bc": {
+  "name": "VScreenHeight",
+  "evidence": "height of the WinG back buffer (800: 400 visible rows + a clean copy)"
+ },
+ "0x004401c0": {
+  "name": "GamePalette",
+  "evidence": "HPALETTE created by set_palette"
+ },
+ "0x004401c4": {
+  "name": "ScreenDC",
+  "evidence": "DC of the main window the back buffer is blitted to (released in ShutdownSoundAndMidi)"
+ },
+ "0x004401c8": {
+  "name": "WinGDC",
+  "evidence": "memory DC of the WinG back buffer (create_virtual_screen 0x4118df)"
+ },
+ "0x004401cc": {
+  "name": "VScreenBits",
+  "evidence": "pointer to the 8-bit back buffer pixels (WinGCreateBitmap) (also called BackBufferBase)"
+ },
+ "0x004401d0": {
+  "name": "DibHeightSign",
+  "evidence": "-1: the DIB is top-down (biHeight = -height)"
+ },
+ "0x004401d4": {
+  "name": "OriginalBitmap",
+  "evidence": "bitmap selected into WinGDC before the WinG bitmap"
+ },
+ "0x004401d8": {
+  "name": "OriginalPalette",
+  "evidence": "palette that was selected into ScreenDC before the game palette (restored in graphics_cleanup)"
+ },
+ "0x004401dc": {
+  "name": "FirstPaletteInstall",
+  "evidence": "1 until the first set_palette, which then runs ClearSystemPalette"
+ },
+ "0x004401e0": {
+  "name": "ExclusivePaletteMode",
+  "evidence": "set_palette flag: 1 = SYSPAL_NOSTATIC with replaced system colours"
+ },
+ "0x0044027c": {
+  "name": "WinGModule",
+  "evidence": "HMODULE of WING32.DLL"
+ },
+ "0x00440b24": {
+  "name": "DirtyTrackingOn",
+  "evidence": "non-zero: AddDirtyRect records rectangles"
+ },
+ "0x00440b28": {
+  "name": "ClipTop",
+  "evidence": "top row of the current clip rectangle (counterpart of ClipBottom 0x440b2c); BlitPictureTransparent / DrawPictureMasked (also called DrawClipTop)"
+ },
+ "0x00440b30": {
+  "name": "ClipLeft",
+  "evidence": "left column of the current clip rectangle; BlitPictureTransparent"
+ },
+ "0x00440b34": {
+  "name": "ClipRight",
+  "evidence": "inclusive right column of the clip rectangle; BlitPictureTransparent"
+ },
+ "0x00440b3c": {
+  "name": "ScreenOriginX",
+  "evidence": "x offset of the 640x400 game area in the client area (centred by MainWindowProc); subtracted from mouse x (also called WindowOriginX)"
+ },
+ "0x00440b40": {
+  "name": "ScreenOriginY",
+  "evidence": "y offset of the 640x400 game area in the client area (also called WindowOriginY)"
+ },
+ "0x00440b44": {
+  "name": "Nep256DllSlot",
+  "evidence": "slot of NEP256.DLL (pictures with real id < 3000) (also called NEP256Dll)"
+ },
+ "0x00440b48": {
+  "name": "NepBg1DllSlot",
+  "evidence": "slot of NEPBG1.DLL (pictures 3000-3179) (also called NEPBG1Dll)"
+ },
+ "0x00440b4c": {
+  "name": "NepBg2DllSlot",
+  "evidence": "slot of NEPBG2.DLL (pictures >= 3180) (also called NEPBG2Dll)"
+ },
+ "0x00440b50": {
+  "name": "DirtyRectCount",
+  "evidence": "entries in the dirty rectangle list (max 0x100)"
+ },
+ "0x00440dc4": {
+  "name": "MainMenuDef",
+  "evidence": "pointer to the installed menu definition (count + 0x1c-byte records), 0 = no menu; SetMainMenu / exists_menu"
+ },
+ "0x00440dc8": {
+  "name": "MenuEnabled",
+  "evidence": "1 = menu items enabled, 0 = greyed; SetMenuEnabled / GetMenuEnabled"
+ },
+ "0x00440dcc": {
+  "name": "ResourceLoadInProgress",
+  "evidence": "1 around the PumpMessages calls of GetResource / load_special; HandleMenuMessage (menu command dispatch) ignores commands while it is set (also called MenuLocked)"
+ },
+ "0x00440e50": {
+  "name": "MidiAvailable",
+  "evidence": "1 once InitMIDIDriver opened the sequencer and MCI_STATUS works, else 0 (no music)"
+ },
+ "0x00440e54": {
+  "name": "CurrentSongId",
+  "evidence": "id of the song loaded by PlayMusic, -1 after StopMusic"
+ },
+ "0x00440e5c": {
+  "name": "MidiSequencerDevice",
+  "evidence": "MCI device id of the opened \"sequencer\" device (InitMIDIDriver)"
+ },
+ "0x00440e60": {
+  "name": "MidiSongDevice",
+  "evidence": "MCI device id of the open song (LoadMidiFile / PlayMusic), 0 = no song; closed by StopMusic"
+ },
+ "0x00440e64": {
+  "name": "SongPausePosition",
+  "evidence": "MCI position saved by PauseSong, used by ResumeSong"
+ },
+ "0x00440f34": {
+  "name": "MouseUpdateCallback",
+  "evidence": "callback of SetUpdateMouseFunc / UpdateMouseFunc (never set)"
+ },
+ "0x00440f38": {
+  "name": "CurrentCursorIndex",
+  "evidence": "cursor index of UseMouseCursor (unused)"
+ },
+ "0x00440f3c": {
+  "name": "FiddleKludgeBase",
+  "evidence": "0 on a 480-high screen, 0x7fff = disabled; set by InitInstance / WM_DISPLAYCHANGE; added to the n of set_fiddle_kludge"
+ },
+ "0x00440f40": {
+  "name": "FiddleKludgeOffset",
+  "evidence": "last n passed to set_fiddle_kludge (0 or -0x17)"
+ },
+ "0x004411a8": {
+  "name": "Ne0SoundDllSlot",
+  "evidence": "slot of NE0SOUND.DLL (sounds 8000-9998) (also called NE0SoundDll)"
+ },
+ "0x004411ac": {
+  "name": "Ne1SoundDllSlot",
+  "evidence": "slot of NE1SOUND.DLL (sounds 4000-7999) (also called NE1SoundDll)"
+ },
+ "0x004411cc": {
+  "name": "NepDllSlot",
+  "evidence": "resource file slot of NEP.DLL (general data, bundles, palettes, strings); opened by InitApp (also called NEPDll)"
+ },
+ "0x004411d0": {
+  "name": "WaveDevicePresent",
+  "evidence": ""
+ },
+ "0x00441218": {
+  "name": "DialogSavedBackground",
+  "evidence": ""
+ },
+ "0x00441944": {
+  "name": "ClosingSubToggle",
+  "evidence": ""
+ },
+ "0x00441948": {
+  "name": "ExpertClosingArtifactFrame",
+  "evidence": "int: 0 / 1 toggled by every ExpertClosingDrawArtifact call"
+ },
+ "0x0044194c": {
+  "name": "ExpertClosingPodPhase",
+  "evidence": "int 0..3: phase of the 56 x 28 animation (items 3, 4, 5, 4)"
+ },
+ "0x00441950": {
+  "name": "CollideRectCount",
+  "evidence": "COLLIDE.C: number of rectangles in CollideRects"
+ },
+ "0x00441c84": {
+  "map": "001C:191E",
+  "evidence": "byte flag: LockWheelBundle is loaded"
+ },
+ "0x00442bfc": {
+  "name": "CartoonBulletinIndex",
+  "evidence": "index of the next bulletin typed by CartoonTeletypeNextBulletin"
+ },
+ "0x00442c04": {
+  "name": "StoryRingFrame",
+  "evidence": "index 0..3 of the ring picture drawn last"
+ },
+ "0x00442d5c": {
+  "name": "PracticeSetupControls",
+  "evidence": "9 radios / buttons of the practice setup dialog: 10-byte records (x, y shorts, w, h bytes, text pointer)"
+ },
+ "0x00443608": {
+  "name": "CrtStreams",
+  "evidence": ""
+ },
+ "0x004439c8": {
+  "name": "CrtHandleCount",
+  "evidence": ""
+ },
+ "0x004439cc": {
+  "name": "CrtHandleFlags",
+  "evidence": ""
+ },
+ "0x00444155": {
+  "name": "CrtCtypeTable",
+  "evidence": ""
+ },
+ "0x004442fc": {
+  "name": "RandSeedLo",
+  "evidence": ""
+ },
+ "0x00444300": {
+  "name": "RandSeedHi",
+  "evidence": ""
+ },
+ "0x00444340": {
+  "name": "Pow10Table8",
+  "evidence": ""
+ },
+ "0x0044440c": {
+  "map": "001C:0030",
+  "evidence": ""
+ },
+ "0x0044446c": {
+  "name": "CrtSignalHandlers",
+  "evidence": ""
+ },
+ "0x00444494": {
+  "name": "CrtSignalNumbers",
+  "evidence": ""
+ },
+ "0x004446ec": {
+  "name": "NeResFileSlots",
+  "evidence": "50 slots x 12 bytes {file HANDLE, HGLOBAL resource directory, read position}; slot id = index | 0x80 (NeOpenResourceFile 0x4100e6)"
+ },
+ "0x00444a48": {
+  "name": "InvisibleColor",
+  "evidence": "transparent palette index (set_invisible_color_to 0x4106bc); 200 after start (also called ColorKey)"
+ },
+ "0x00444a4c": {
+  "name": "CurrentColorIndex",
+  "evidence": "palette index used by the fill primitives (SetColor / set_a_color)"
+ },
+ "0x00444a50": {
+  "name": "GamePaletteRGB",
+  "evidence": "256 x 3 bytes RGB of the installed palette, searched by get_nearest_color_index (entries 10..245)"
+ },
+ "0x00444e50": {
+  "name": "CurrentColorNumber",
+  "evidence": "the VGA colour number last passed to SetColor (returned by GetColor)"
+ },
+ "0x00444e60": {
+  "name": "LongestSpeechClip",
+  "evidence": "largest clip size seen by LoadSpeechClip (0x411315)"
+ },
+ "0x00444e64": {
+  "name": "UnmushBuffer",
+  "evidence": "shared 0x4a768-byte buffer (allocate_unmush_buffer 0x410d95): speech clips are loaded here by LoadSpeechClip, PlayWave plays from it"
+ },
+ "0x00444eb4": {
+  "name": "DibColorTable",
+  "evidence": "256 RGBQUAD table given to WinGSetDIBColorTable (set_palette 0x411c56)"
+ },
+ "0x00445300": {
+  "name": "pWinGCreateDC",
+  "evidence": "function pointer from GetProcAddress in LoadWinGDLL (0x4117b8)"
+ },
+ "0x00445304": {
+  "name": "pWinGRecommendDIBFormat",
+  "evidence": "function pointer from GetProcAddress in LoadWinGDLL (0x4117b8)"
+ },
+ "0x00445308": {
+  "name": "pWinGCreateBitmap",
+  "evidence": "function pointer from GetProcAddress in LoadWinGDLL (0x4117b8)"
+ },
+ "0x0044530c": {
+  "name": "pWinGGetDIBPointer",
+  "evidence": "function pointer from GetProcAddress in LoadWinGDLL (0x4117b8)"
+ },
+ "0x00445310": {
+  "name": "pWinGGetDIBColorTable",
+  "evidence": "function pointer from GetProcAddress in LoadWinGDLL (0x4117b8)"
+ },
+ "0x00445314": {
+  "name": "pWinGSetDIBColorTable",
+  "evidence": "function pointer from GetProcAddress in LoadWinGDLL (0x4117b8)"
+ },
+ "0x00445318": {
+  "name": "pWinGBitBlt",
+  "evidence": "function pointer from GetProcAddress in LoadWinGDLL (0x4117b8)"
+ },
+ "0x0044531c": {
+  "name": "pWinGStretchBlt",
+  "evidence": "function pointer from GetProcAddress in LoadWinGDLL (0x4117b8)"
+ },
+ "0x0044533c": {
+  "name": "DirtyRects",
+  "evidence": "dirty rectangle list, 16 bytes per entry {x, y, w, h}"
+ },
+ "0x004463c8": {
+  "name": "MusicSoundSetGM",
+  "evidence": "1 = General MIDI (\"E\" song files), 0 = AdLib / MVI / Thunder Board class card detected in midimap.cfg (\"B\" files); InitMIDIDriver, LoadMidiFile"
+ },
+ "0x004463d0": {
+  "name": "MouseCursors",
+  "evidence": "HCURSOR[15] table of LoadUpMouseCursors (unused)"
+ },
+ "0x0044640c": {
+  "name": "AppInstance",
+  "evidence": "HINSTANCE of the program"
+ },
+ "0x00446410": {
+  "name": "MainWindow",
+  "evidence": "HWND of the main window"
+ },
+ "0x00446414": {
+  "name": "IniFilePath",
+  "evidence": "full path of the ONWINCD INI file (ResolveInstallPaths)"
+ },
+ "0x00446518": {
+  "name": "InstallDir",
+  "evidence": "install / CD directory with trailing backslash ([ONWINCD] CDDrive); prefix of NEP*.DLL and SOUNDS\\"
+ },
+ "0x00446590": {
+  "name": "CollisionEnabled",
+  "evidence": "1 unless INI [ONWINCD] Collision = FALSE; ReadCollisionSetting; creature contact damage switch"
+ },
+ "0x00446594": {
+  "name": "TextFont",
+  "evidence": "CreateTextFont (0x414b77): HFONT made by CreateFontIndirect from strings 11253-11256 (Arial bold, cell height 19, width 7); selected into the screen DC (0x445328, = WinGDC) by DrawChar for characters >= 0x20"
+ },
+ "0x004465d4": {
+  "name": "BitmapFontData",
+  "evidence": "SetFont (0x414d29): pointer to the current bitmap font resource (NEP.DLL 998: byte 0 first char, 1 last char, 2 height 20)"
+ },
+ "0x004465d8": {
+  "name": "BitmapFontWidths",
+  "evidence": "SetFont: width table of the bitmap font (data + 3), indexed by character code; read by GetCharWidth and DrawChar for codes < 0x20"
+ },
+ "0x004465dc": {
+  "name": "BitmapFontOffsetLow",
+  "evidence": "SetFont: low bytes of each glyph's offset into the bitmap data (widths + stride)"
+ },
+ "0x004465e0": {
+  "name": "BitmapFontOffsetHigh",
+  "evidence": "SetFont: high bytes of each glyph's offset (low table + stride); offset = high * 256 + low"
+ },
+ "0x004465e4": {
+  "name": "BitmapFontBits",
+  "evidence": "SetFont: the glyph bitmap data (1 bit per pixel, rows byte-padded, MSB first; FontLineHeightPx rows per glyph in DrawChar)"
+ },
+ "0x004465e8": {
+  "name": "CurFontSlot",
+  "evidence": "SetFont (0x414d29): the current font slot (0 = NEP.DLL 998, the only one loaded)"
+ },
+ "0x004465ec": {
+  "name": "FontLineHeightPx",
+  "evidence": "SetFont: line height = max(tmHeight + tmExternalLeading of the font selected in the screen DC at that moment, bitmap font height byte = 20); 20 for the Arial 19 px font whatever its external leading (0 or 1), and for the stock font at the first call; read by GetFontLineHeight, DrawChar (rows of a bitmap glyph), CartoonTypeLine / CartoonWrapTypeText (y advance)"
+ },
+ "0x004465f0": {
+  "name": "FontResourceSlots",
+  "evidence": ""
+ },
+ "0x0044663c": {
+  "name": "AnimTable",
+  "evidence": ""
+ },
+ "0x004479a4": {
+  "name": "HotspotTable",
+  "evidence": ""
+ },
+ "0x00447d8c": {
+  "name": "HotspotTableSaved",
+  "evidence": ""
+ },
+ "0x004484b4": {
+  "name": "DialogX",
+  "evidence": ""
+ },
+ "0x004484b8": {
+  "name": "DialogY",
+  "evidence": ""
+ },
+ "0x004484bc": {
+  "name": "DialogW",
+  "evidence": ""
+ },
+ "0x004484c0": {
+  "name": "DialogH",
+  "evidence": ""
+ },
+ "0x00448695": {
+  "name": "BallastLabelHalfWidths",
+  "evidence": ""
+ },
+ "0x0044869f": {
+  "name": "BallastSelected",
+  "evidence": ""
+ },
+ "0x004486dc": {
+  "name": "DataFilePath",
+  "evidence": ""
+ },
+ "0x00448758": {
+  "name": "ExpertClosingBundle",
+  "evidence": "BNDL 0x1d1 = pictures 2012 + item (links, ball, pod, hook, ship, sailors 10-26)"
+ },
+ "0x00448760": {
+  "name": "ExpertClosingSceneBundle",
+  "evidence": "BNDL 0x1d2: item 0 = sea strip 2039, item 1 = cloud 2040"
+ },
+ "0x00448764": {
+  "name": "ExpertClosingCableTop",
+  "evidence": "int: y where the hoist chain starts at the top (0x20, later 0x9a); ExpertClosingEraseCable / DrawCable run from DAT_00448768 up to it"
+ },
+ "0x00448768": {
+  "name": "ExpertClosingCableBottom",
+  "evidence": "int: y of the bottom end of the hoist chain (the hook): 0x24 + 12 per descent step (16 steps), then -12 per step while the sub is pulled up"
+ },
+ "0x0044876c": {
+  "name": "ExpertClosingHookFrame",
+  "evidence": "int: 0 / 1 / 2 = hook open / closing / closed (bundle item DAT + 6)"
+ },
+ "0x00448770": {
+  "name": "ExpertClosingArtifactY",
+  "evidence": "int: y of the 84 x 72 foe-bundle picture hoisted with the sub (0xe8, then -12 per step)"
+ },
+ "0x00448774": {
+  "name": "ExpertClosingCrewPos",
+  "evidence": "6 x (x, y) ints: positions of the six deck sailors"
+ },
+ "0x004487a4": {
+  "name": "ExpertClosingCrewScriptStart",
+  "evidence": "6 ints: byte offset of each sailor's script in ExpertCraneTable (after each 0xfd byte)"
+ },
+ "0x004487bc": {
+  "name": "ExpertClosingCrewDelay",
+  "evidence": "6 ints: steps left before a sailor's script advances"
+ },
+ "0x004487d4": {
+  "name": "ExpertClosingCrewScriptPos",
+  "evidence": "6 ints: current script offset (-1 = restart), advanced by 4 per record"
+ },
+ "0x004487ec": {
+  "name": "CollideRects",
+  "evidence": "COLLIDE.C: up to 64 rectangles of 5 shorts (id, x, y, w, h)"
+ },
+ "0x00448ce0": {
+  "name": "LockOperandLabelHalfWidth",
+  "evidence": "8 ints: half text width of the operand labels"
+ },
+ "0x00448d00": {
+  "name": "LockAnswerLabelHalfWidth",
+  "evidence": "8 ints: half text width of the answer labels"
+ },
+ "0x00448d28": {
+  "name": "LockWheelBundle",
+  "evidence": "BNDL 0x1a2 loaded by DoCombinationLock, freed by FreeLockResources"
+ },
+ "0x00449e74": {
+  "name": "CartoonBundle",
+  "evidence": "BNDL of the news cartoon pictures (item 0 console = 1001 ...)"
+ },
+ "0x00449e78": {
+  "name": "TitleBundle",
+  "evidence": "BNDL of the title scene pictures (item 0 = wave strip 1041, 1 / 2 clouds, 3 Presents, 4 OPERATION)"
+ },
+ "0x00449e88": {
+  "name": "OpeningPoints",
+  "evidence": "pointer to the opening's 68-point table (NEP.DLL 10012, doubled window pixels, shorts x / y)"
+ },
+ "0x00449e8c": {
+  "name": "CartoonBulletinBundle",
+  "evidence": "text bundle of the six teletype bulletins (10003-10008)"
+ },
+ "0x00449ea4": {
+  "name": "StoryRingPictures",
+  "evidence": "4 picture pointers: the radar ring of story page 5 (2076-2079)"
+ },
+ "0x00449f30": {
+  "name": "PracticeSetupFocus",
+  "evidence": "focused control of the practice setup dialog"
+ },
+ "0x00449f34": {
+  "name": "PracticeSetupRadioBundle",
+  "evidence": "BNDL: radio button pictures (off, off focus, on, on focus)"
+ },
+ "0x0044af54": {
+  "name": "SignInZoneIconPicture",
+  "evidence": "picture (bundle 0x19) of one zone icon in a roster row"
+ },
+ "0x0044f540": {
+  "name": "CrtExceptFramePtr",
+  "evidence": ""
+ },
+ "0x0044f5ec": {
+  "name": "CrtHandles",
+  "evidence": ""
+ },
+ "0x0044f690": {
+  "name": "CrtHeapRegions",
+  "evidence": ""
+ },
+ "0x0044f890": {
+  "name": "CrtHeapRegionCount",
+  "evidence": ""
+ },
+ "0x0044f8a8": {
+  "name": "CrtHeapFreeList",
+  "evidence": ""
+ },
+ "0x0044f944": {
+  "name": "CrtEnvironmentStrings",
+  "evidence": ""
+ },
+ "0x0044f954": {
+  "name": "environ",
+  "evidence": ""
+ },
+ "0x00441450": "WriteErrorDialogRecord",
+ "0x00442fd0": "NewPlayerNameTemplate",
+ "0x00441188": {
+  "name": "DissolveColumnOrder",
+  "evidence": "16 bytes {11,13,5,14,7,1,15,2,0,3,8,4,9,12,6,10}: which column residue (mod 16) pass p of dissolve (0x414f81) copies; docs/data/dissolve_tables.json"
+ },
+ "0x00441198": {
+  "name": "DissolveRowOrder",
+  "evidence": "16 bytes {13,11,6,10,3,1,15,0,12,5,7,2,4,14,9,8}: per row (row % 16) shift of the dissolve (0x414f81) pattern; docs/data/dissolve_tables.json"
+ },
+ "0x00442c5c": {
+  "name": "DlgAboutBoxRecord",
+  "evidence": "RunModalDialog (0x4174ec) record of MenuAboutBox (0x42b74c): +0 type 1 (OK), +4 title ptr (string 11150, set at run time), +9 text ptr (the joined About text)"
+ },
+ "0x00442c78": {
+  "name": "AboutBoxLineEnd1",
+  "evidence": "one byte string \"\\n\" that MenuAboutBox appends after Version (string 11002) [V, G32]"
+ },
+ "0x00442c7a": {
+  "name": "AboutBoxLineEnd2",
+  "evidence": "one byte string \"\\n\" that MenuAboutBox appends after Copyright (string 11001) [V, G32]"
+ },
+ "0x00449e98": {
+  "name": "OpeningEnded",
+  "evidence": "OpeningSequence (0x42b16b): set to 1 by Enter on the last story page (OpeningStoryPages 0x42a9f1 returns 0 without leaving); non-zero means the opening is not repeated (the attract loop ends) [V]"
+ },
+ "0x00442e80": {
+  "name": "CurrentRosterSlot",
+  "evidence": "int: roster slot of the signed-in player (initial -1 = none): set by SignIn (0x42e028) from sign_in's return, set to -1 by add_player_to_hall (0x4315ac) after RemoveRosterSlot; UpdateRosterData (0x42e09a) copies the 36-byte current-player record into this slot when it is >= 0, which SaveAndExit (0x42ba05) -> SaveRosterData reaches even from Math Practice (the blank practice record then overwrites the last signed-in player's slot) [V asm, G33]"
+ },
+ "0x00442e54": {
+  "name": "PracticeSetIsMental",
+  "evidence": "int, initial -1: do_math_practice (0x42d817) sets it to (PlayerCustomized == 1) at the start of every set, PlayerCustomized being the set kind (0 five random, 1 Mental Math, 2 all types); 1 selects the two-line score panel in PracticeShowScore (0x42d12e) and the counters are zeroed when it differs from the previous set's value (local_8) [V asm, G23]"
+ },
+ "0x00449f38": {
+  "name": "PracticeRestartRequested",
+  "evidence": "int: do_math_practice sets it 0 at the start of a set; PracticeSetupDialog (0x42cbae) sets it 1 when Done is pressed (Options > Customization during a problem): the set loop ends after the problem and the do-while repeats with the new settings [V asm, G23]"
+ },
+ "0x00449f3c": {
+  "name": "PracticeProblemCount",
+  "evidence": "int: score panel 'Number of problems' (string 11168); +1 per problem after DoMathProblem and +1 per lock number; zeroed only when the set kind switches between Mental Math and the others (and on the first set) [V asm, G23]; the +1 at 0x42d9e3 is unconditional, so a problem ended by Options > Customization (PracticeResult still 2) is counted too [V asm, G37]"
+ },
+ "0x00449f40": {
+  "name": "PracticeFirstTryCount",
+  "evidence": "int: 'Correct on 1st try' (11170) or, for Mental Math, 'Problems correct' (11169): +1 when PracticeResult == 0 (and +1 for a right lock number); accumulates across sets like PracticeProblemCount [V asm, G23]"
+ },
+ "0x00449f44": {
+  "name": "PracticeSecondTryCount",
+  "evidence": "int: 'Correct on 2nd try' (11171): +1 when PracticeResult == 1; accumulates across sets like PracticeProblemCount [V asm, G23]"
+ },
+ "0x0044f524": "FoeTable",
+ "0x0044f36a": "FoeCollisionRects",
+ "0x00441b9d": "SubCollisionRects",
+ "0x0044f220": "FoePictureTable",
+ "0x00441b84": "FoeOpcodeOperandCount",
+ "0x0044b351": {
+  "name": "SectorHeaderUnused3D",
+  "evidence": "sector header +0x3D (u8): 11 in 23 sectors, 0 in sectors 11 and 25-31. NEVER read: no instruction in ONWIN32.EXE has 0x44b351 as displacement and the only base-pointer users of the header (MidpointHelper 0x4191e0, LoadSectorResources 0x433d13) touch only +0x04, +0x06+i and +0x00..+0x3C words; bytes 0x3D-0x41 are loaded (load limit 0x3C72) but unused; probably authoring-tool leftover [V raw scan + asm, header audit]"
+ },
+ "0x0044b353": {
+  "name": "SectorHeaderUnused3F",
+  "evidence": "sector header +0x3F: high byte of the SectorRespawnCell word (+0x3E, read as 'MOVSX EAX, word ptr [0x0044b352]' at 0x41805e), always 0 in the data. Not read separately [V]"
+ },
+ "0x0044b354": {
+  "name": "SectorHeaderUnused40",
+  "evidence": "sector header +0x40 (u8): 0x48 (72) in sectors 0-10 and 12-24, 0 in sectors 11 and 25-31. NEVER read (no reference to 0x44b354 anywhere in the EXE) [V raw scan + asm, header audit]"
+ },
+ "0x0044b355": {
+  "name": "SectorHeaderUnused41",
+  "evidence": "sector header +0x41 (u8): always 0; never read [V]"
+ },
+ "0x004432a8": {
+  "name": "SectorResourceTable",
+  "evidence": "32 dwords: logical resource id of each sector's 0x3C72-byte data (LoadSectorResources 0x433d13 loads it to SectorRespawnX 0x44b314 with ResourceLoadLimit 0x3c72); 16-bit exe: SECTOR_TBL DS 0x2CCA [V asm]"
+ },
+ "0x00443328": {
+  "name": "FoeResourceTable",
+  "evidence": "32 dwords: logical resource id of each sector's foe script data (LoadSectorResources loads it to FoeTable 0x44f524, limit 0xbb8); 16-bit exe: FOE_TBL [V asm]"
+ },
+ "0x004433a8": {
+  "name": "SectorBackgroundTable",
+  "evidence": "15 dwords indexed by sector % 15 (sector < 30): logical id of the background panel bundle passed to the loader with destination 0x44efa4 (LoadSectorResources); 16-bit exe: BG_TBL [V asm, I meaning]"
+ },
+ "0x004433e4": {
+  "name": "FinaleBackgroundTable",
+  "evidence": "dwords indexed by sector % 15 for sectors >= 30 (the finales 30 / 31): background panel bundle id (LoadSectorResources) [V asm, I meaning]"
+ },
+ "0x0044ae28": {
+  "name": "PlayerTanksOxygen",
+  "evidence": "u16 of the current-player record (CurrentPlayer 0x44ae0c + 0x1c): Tanks * 5 + Oxygen. Written by UpdateRosterData (0x42e09a), read back into Tanks / Oxygen by SignInScreenLoop (0x430c33) and AddNewPlayer (0x430851), zeroed by do_math_practice (0x42d817) [V code]"
+ },
+ "0x0044ae2a": {
+  "name": "PlayerInkPellets",
+  "evidence": "u16 of the current-player record (+0x1e): InkPelletsLeft. Written by UpdateRosterData (0x42e09a), read by SignInScreenLoop (0x430c33) / AddNewPlayer (0x430851), zeroed by do_math_practice (0x42d817) [V code]"
+ },
+ "0x0044ae2c": {
+  "name": "PlayerPiecesMask",
+  "evidence": "u16 of the current-player record (+0x20): ProbesPickedUp (0x44f52c). Written by UpdateRosterData (0x42e09a), read by SignInScreenLoop (0x430c33) / AddNewPlayer (0x430851), zeroed by do_math_practice (0x42d817) [V code]"
+ },
+ "0x0044ae2e": {
+  "name": "PlayerTries",
+  "evidence": "u16 of the current-player record (+0x22): the tries counter. Main (0x427bb4) adds 1 when DoAction returns 2 (game over); add_player_to_hall copies it into the Hall of Fame entry; do_math_practice (0x42d817) zeroes it; port PlayerProfile.tries [V code]"
+ },
+ "0x0044127c": {
+  "name": "SubPropellerPhase",
+  "evidence": "0 / 1, flipped by every DrawSub (0x418a81); picks the propeller picture (sub picture table 0x441220 [phase + SubCell * 2]) and is the blink phase of the invulnerable sub; never reset (not by DoAction 0x417ffc either); port SubModel.propeller_phase [V code]"
+ },
+ "0x004431ee": {
+  "map": "001C:2C66",
+  "evidence": "byte: 1 after LoadSectorResources (0x433d13), 0 after FreeSectorResources (0x433ec2); Main (0x427bb4) tests it to reload the sector (FoeTable, sector record) before every DoAction and to free it after [V code]"
+ },
+ "0x004431ed": {
+  "map": "001C:2C65",
+  "evidence": "byte: 1 after LoadZoneResources (0x433be4), 0 after FreeZoneResources (0x433e7d); tested by Main (0x427bb4) [V code]"
+ },
+ "0x00449db8": {
+  "name": "DoActionResult",
+  "evidence": "int: Main (0x427bb4) stores the return of DoAction (0x417ffc) here and branches on it: 0 = the sector is done (UpdateOxygen(3), UpdateInkPelletUses(0x15), ProbesPickedUp = 0, then IncrementSector), 1 = a tank lost (UpdateOxygen(4)), 2 = game over (refill, ProbesPickedUp = 0, SetPastSectorMidpoint(0), PlayerTries + 1); the inner loop runs DoAction again while it is not 0 [V code]"
+ },
+ "0x004426d1": {
+  "map": "001C:223F",
+  "evidence": "byte: 1 once DoMathProblem (0x423629) has loaded the problem's bundles (after LoadBundleInto of LockPictureBundle), 0 after FreeMathResources (0x423b03); Main (0x427bb4) frees them after a DoAction that returned from inside a problem and at the longjmp target [V code]"
+ },
+ "0x0044efb4": {
+  "name": "StationBundle",
+  "evidence": "bundle of the supply station pictures (BundleItem): 0 and 1 the body (right station: 0 at x 0x1c0, 1 at 0x210, 1 mirrored at 0x240; left station: 0 mirrored at 0x10), 2 closed door, 3 and 4 door opening / closing, 6 the balloon (32 x 64); read by DrawSupplyStation, ExitSupplyStation, EnterSupplyStation, LaunchBalloon (draw order: LaunchBalloon draws picture 6 first, then the body and the door, so the balloon is behind the station); DESIGN 3.7 [V decompile of DrawScreen / DrawSupplyStation / LaunchBalloon]"
+ },
+ "0x0044efb0": {
+  "name": "PieceBundle",
+  "evidence": "bundle of the probe piece pictures (BundleItem): 3 and 4 the canister's two flashing pictures, RockPictureTable indexes the rocks; read by DrawProbePieces [V decompile of DrawScreen / DrawSupplyStation / LaunchBalloon]"
+ },
+ "0x0044ef8c": {
+  "name": "ScreenDecoListBack",
+  "evidence": "pointer into the current screen's record: deco list 1 {n, (x/4, y/2, pic|0x80 mirror) * n}, drawn by DrawScreen BEFORE the solid tiles; set by DrawScreen from CurScreen; DESIGN 4.1 [V decompile of DrawScreen / DrawSupplyStation / LaunchBalloon]"
+ },
+ "0x0044ef90": {
+  "name": "ScreenDecoListMid",
+  "evidence": "pointer to deco list 2 of the current screen, drawn by DrawScreen AFTER the solid tiles and the supply station (so over the station in the still picture), before the pieces and the sub of each frame [V decompile of DrawScreen / DrawSupplyStation / LaunchBalloon]"
+ },
+ "0x0044ef94": {
+  "name": "ScreenDecoListFront",
+  "evidence": "pointer to deco list 3 of the current screen, drawn by every frame loop (DoAction, ExitSupplyStation, EnterSupplyStation, LaunchBalloon) with DrawBackgroundDecos(.., 0) AFTER the pieces, the sub and the creatures [V decompile of DrawScreen / DrawSupplyStation / LaunchBalloon]"
+ },
+ "0x0044ef98": {
+  "name": "ScreenAnimDecoList",
+  "evidence": "pointer to the animated deco records (n, then 22-byte records) of the current screen; DrawAnimatedDecos advances the frame cursor of each (byte 5) once per call [V decompile of DrawScreen / DrawSupplyStation / LaunchBalloon]"
+ },
+ "0x0044efb8": {
+  "name": "DecoPictureTable",
+  "evidence": "table of picture pointers of the zone's deco bundle, indexed by the deco slot (list entries: id & 0x7f; animated entries: (entry & 0x7f) - 1), read by DrawBackgroundDecos / DrawAnimatedDecos [V decompile of DrawScreen / DrawSupplyStation / LaunchBalloon]"
+ },
+ "0x0044b064": {
+  "name": "StationDoorBackup",
+  "evidence": "saved picture (get_image of 0x1c0, 0x25a, 12 x 56) of the end station's door area, taken by DrawSupplyStation; EnterSupplyStation restores it (put_image) before each frame [V decompile of DrawScreen / DrawSupplyStation / LaunchBalloon]"
+ },
+ "0x0044efa0": {
+  "name": "SubBundle",
+  "evidence": "bundle of the sub's pictures (BundleItem): index (char)SubPictureTable[SubPropellerPhase + SubCell * 2] the cell and propeller picture, 8 the message light, 9-12 the hit bubbles; read by DrawSub (draws the sub, then the hit bubbles, then the message light, as one unit) [V decompile of DrawSub / DoAction / ExitSupplyStation / EnterSupplyStation / LaunchBalloon]"
+ },
+ "0x0044efa4": {
+  "name": "BackdropTilePicture",
+  "evidence": "picture tiled 4 x 2 (152 x 144 px each) over the playfield by DrawScreen as the background of a sector numbered 0x20 or more (a sector that is not one of the original 32; the original ones draw the background UnmushBuffer instead) [V decompile of DrawScreen]"
+ },
+ "0x0044efa8": {
+  "name": "SolidTileBundle",
+  "evidence": "bundle of the zone's solid-tile pictures: DrawScreen draws picture (tile & 0x3f) at each tile with bit 0x40 set and a non-zero picture, after the back decos and before the station and the mid decos [V decompile of DrawScreen]"
+ },
+ "0x0044ef9c": {
+  "name": "ScreenTriggerList",
+  "evidence": "pointer to the math trigger records (n, then 4-byte records, bit 7 of byte 3 = armed) of the current screen, after the animated deco records; read by DetectMathTrigger [V decompile of DrawScreen / DetectMathTrigger]"
+ },
+ "0x00441220": {
+  "name": "SubPictureTable",
+  "evidence": "2 bytes per SubCell (propeller phase 0 and 1): the picture of SubBundle that DrawSub draws for the cell [V decompile of DrawSub]"
+ },
+ "0x00449e7c": {
+  "name": "TitleSkyPicture",
+  "evidence": "loose picture 1039 (sky, 640 x 302) of the title scene: TitleDrawBackdrop draws it unmasked at (0, 0); TitleRevealText draws it again, masked, over the 'Presents' strip to erase it [V decompile of OpeningSequence / TitleDrawBackdrop / TitleRevealText]"
+ },
+ "0x00449e80": {
+  "name": "TitleSeaPicture",
+  "evidence": "loose picture 1040 (sea, 640 x 116) of the title scene: TitleDrawBackdrop draws it masked at (0, 284) after the sky and before the clouds; TitleScreenPromptLoop draws it again before NEPTUNE [V decompile of TitleDrawBackdrop / TitleScreenPromptLoop]"
+ },
+ "0x00442a98": {
+  "name": "OpeningResetAnimations",
+  "evidence": "set to 1 by the clean-up at the end of OpeningSequence around one call each of CartoonCapsuleTrail, CartoonAlarmLights, NewsCartoonRedraw, CartoonTeletypeNextBulletin, TitleDrawRadar, TitleSplash and TitleBowSpray: while it is 1 they only reset their own counters and draw nothing [V decompile]"
+ },
+ "0x00442c00": {
+  "name": "TitleRadarFrame",
+  "evidence": "radar picture of the title scene's ship (item 1 + this of CartoonBundle: 1028-1030) advanced by TitleDrawRadar every 3rd parameter [V decompile of TitleDrawRadar]"
+ },
+ "0x00442c01": {
+  "name": "TitleRadarMirror",
+  "evidence": "the radar's turning direction of the title scene (the flag that makes TitleDrawRadar draw the picture mirrored on the way back; it is the mirror argument of its DrawPictureMasked) [V decompile of TitleDrawRadar]"
+ },
+ "0x00442c02": {
+  "name": "TitleSplashFrame",
+  "evidence": "state of TitleSplash: 0xfe (-2) plays sound 0x2b, -1 draws nothing, 0-4 the splash picture (CartoonBundle item 7 + this, drawn at the fixed point 54 and mirrored 76 px to the right); stops at 5 [V decompile of TitleSplash]"
+ },
+ "0x00442c03": {
+  "name": "TitleBowSprayToggle",
+  "evidence": "0 / 1, flipped by every TitleBowSpray call: the bow spray picture is CartoonBundle item 8 or 10 plus this [V decompile of TitleBowSpray]"
+ },
+ "0x00449dc0": {
+  "name": "HelpPageTexts",
+  "evidence": "RunHelpTopic (0x428d70): array of up to 15 pointers, one per page, to the page text after ConvertTextMarkup (0x415ebf); passed to RunPagedDialog (0x417755) through PagedDialogRecord [V decompile of RunHelpTopic]"
+ },
+ "0x00442a78": {
+  "name": "PagedDialogRecord",
+  "evidence": "the record RunHelpTopic (0x428d70) fills and hands to RunPagedDialog (0x417755): +0 the title pointer (string 11116-11122 after its 'N.'), +9 the page count (PagedDialogPageCount) [V decompile of RunHelpTopic]"
+ },
+ "0x00442a81": {
+  "name": "PagedDialogPageCount",
+  "evidence": "byte +9 of PagedDialogRecord: the number of pages, the first character of string 11116-11122 minus '0' [V decompile of RunHelpTopic]"
+ },
+ "0x00441f7c": {
+  "name": "LockTenthLabelPtrs",
+  "evidence": "8 pointers to label buffers; DoCombinationLock (0x421780) loads strings 11219-11226 ('0.1' .. '0.8') into them at start, over the EXE's static ' .1' .. ' .8'; the lock wheel and LockShowSolution read the loaded text [V decompile of DoCombinationLock]"
+ },
+ "0x00441f9c": {
+  "name": "LockTenthLabelPtrsCopy",
+  "evidence": "8 pointers; DoCombinationLock (0x421780) strcpy's the loaded LockTenthLabelPtrs strings into their buffers [V decompile of DoCombinationLock]"
+ },
+ "0x00441ffc": {
+  "name": "LockHundredthLabelPtrs",
+  "evidence": "8 pointers to label buffers; DoCombinationLock (0x421780) loads strings 11228-11235 ('0.10' .. '0.80') into them [V decompile of DoCombinationLock]"
+ },
+ "0x0044211c": {
+  "name": "LockWholeTenthLabelPtrs",
+  "evidence": "8 pointers to label buffers; DoCombinationLock (0x421780) loads strings 11237-11244 ('1.1' .. '1.8') into them [V decompile of DoCombinationLock]"
+ },
+ "0x004420dc": {
+  "name": "LockTenthFromSecondPtrs",
+  "evidence": "8 pointers; DoCombinationLock (0x421780) copies LockTenthLabelPtrs entries 1-7 into entries 0-6 and loads string 11227 into entry 7 (LockLabelSlotNineTenths) [V decompile of DoCombinationLock]"
+ },
+ "0x004420f8": {
+  "name": "LockLabelSlotNineTenths",
+  "evidence": "entry 7 of LockTenthFromSecondPtrs: DoCombinationLock (0x421780) loads string 11227 into its buffer [V decompile of DoCombinationLock]"
+ },
+ "0x004421dc": {
+  "name": "LockSolutionForm6Ptrs",
+  "evidence": "LockShowSolution (0x4223db) form 6: the {3} slot is this table's entry LockProgramPtr[4]; DoCombinationLock does not overwrite it (static strings) [V decompile of LockShowSolution]"
+ },
+ "0x004421fc": {
+  "name": "LockSolutionForm7Ptrs",
+  "evidence": "LockShowSolution (0x4223db) form 7: the {3} slot is this table's entry LockProgramPtr[4]; DoCombinationLock (0x421780) copies LockTenthLabelPtrs entries 1-7 into entries 0-6, entry 7 is LockSolutionForm7Slot7 [V decompile]"
+ },
+ "0x00442218": {
+  "name": "LockSolutionForm7Slot7",
+  "evidence": "entry 7 of LockSolutionForm7Ptrs: DoCombinationLock (0x421780) copies LockLabelSlotNineTenths (string 11227) into its buffer [V decompile of DoCombinationLock]"
+ },
+ "0x0044221c": {
+  "name": "LockSolutionForm11Ptrs",
+  "evidence": "LockShowSolution (0x4223db) form 11: the {3} slot is this table's entry LockProgramPtr[4]; DoCombinationLock (0x421780) copies LockHundredthLabelPtrs entries 1-7 into entries 0-6, entry 7 is LockSolutionForm11Slot7 [V decompile]"
+ },
+ "0x00442238": {
+  "name": "LockSolutionForm11Slot7",
+  "evidence": "entry 7 of LockSolutionForm11Ptrs: DoCombinationLock (0x421780) loads string 11245 into its buffer, so form 11 with answer slot 7 shows that string where the pattern of the table gives 0.90 [V decompile of DoCombinationLock]"
+ },
+ "0x0044133e": {
+  "name": "BallastLabelsMode1",
+  "evidence": "BallastLabels + 0x32: the 10 labels of display mode 1 (level 3); LoadBallastLabels (0x419d96) loads strings 11215 (slots 0-3), 11216 (4-5), 11217 (6) and 11218 (7-9) over the EXE's static '.01' .. '.25' [V decompile of LoadBallastLabels]"
+ },
+ "0x00446600": {
+  "name": "UnusedVariantIndex",
+  "evidence": "read only, never written (zero-fill beyond the DATA raw size): LoadClosingResources bundle 0x1d3 + it, VoyagerClosingSequence 'if != 0 PlayBackgroundMusic(0)', OpeningSequence bundle 0x11 + it; always 0, so the Voyager closing is silent [V references]"
+ },
+ "0x0044b040": {
+  "name": "ClosingSongId",
+  "evidence": "LoadExpertClosingMusic (0x4320b7) sets it to 0x251d (9501); PlayExpertClosingMusic (0x4320cc) plays it [V decompile]"
+ },
+ "0x004425af": {
+  "name": "EmptyText",
+  "evidence": "a 0 byte (empty string); DoCombinationLock passes it to WriteMessageText (0x4234c0) to clear the message box [V, EXE byte]"
+ },
+ "0x00449ee0": {
+  "name": "CartoonSpeechState",
+  "evidence": "CartoonSpeech (0x42984d): index of the next news clip group (set to 1 at the start, counts up) [V decompile of CartoonSpeech]"
+ },
+ "0x00449ee4": {
+  "name": "CartoonSpeechDeadline",
+  "evidence": "CartoonSpeech (0x42984d): tick count when the next clip may start: now + 0xdb (219) at the start, now + 0xf8 (248) for the later pauses; 0 = none [V decompile of CartoonSpeech]"
+ }
+}

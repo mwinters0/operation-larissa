@@ -1,0 +1,35 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/story/news_cartoon.gd" id="1_news"]
+
+[node name="NewsCartoon" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 400.0
+script = ExtResource("1_news")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 400.0
+color = Color(0, 0, 0, 1)
+
+[node name="Stage" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Teletype" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 272.0
+offset_top = 184.0
+offset_right = 552.0
+offset_bottom = 304.0
+theme_type_variation = &"HudLabel"
+autowrap_mode = 3
+
+[node name="Ambient" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+
+[node name="Script" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true

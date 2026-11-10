@@ -1,0 +1,49 @@
+{
+ "comment": "A made-up creature script that uses every kind of named operand, with its own small name registry, to check that the GDScript (FoeAsm, FoeNames) and the Python (foe_text.py, foe_names.py) disassemblers write the same text and that the assembler reads it back to the same bytes. Hand-made: it has nothing of the original game. Used by godot/tests/engine/test_foe_names_operands.gd and tools/import/test_foe_names.py.",
+ "sector": 7,
+ "zone": 2,
+ "registry": {
+  "format": 1,
+  "content_set": "probe",
+  "names": {
+   "sound": {
+    "probe_sound": 5
+   },
+   "frame": {
+    "common": {
+     "probe_common": 3
+    },
+    "2": {
+     "probe_zone_pic": 40
+    },
+    "4": {
+     "other_zone_pic": 40
+    }
+   },
+   "foe": {
+    "7": {
+     "probe_boss": 3,
+     "probe_helper": 4
+    }
+   },
+   "screen": {
+    "7": {
+     "probe_cave": 4
+    }
+   },
+   "flag": {
+    "common": {
+     "probe_finale": 15
+    },
+    "7": {
+     "probe_gate": 2
+    }
+   }
+  }
+ },
+ "entries": {
+  "start": 0
+ },
+ "script_hex": "0705070607630b280ba80ba90b830a03280cfe03810d0a14a80e0a14290408030881090916021703180f0f01d2ff",
+ "text": "start:\n    Play_Sound probe_sound\n    Play_Sound 6\n    Play_Sound 99\n    Set_Frame probe_zone_pic\n    Set_Frame probe_zone_pic mirrored\n    Set_Frame 41 mirrored\n    Set_Frame probe_common mirrored\n    Set_Frame_Range probe_common probe_zone_pic\n    Move_Foe_Relative_XY -2 3 1 mirrored\n    Move_Foe_To_XY 10 20 probe_zone_pic mirrored\n    Move_Foe_To_Screen_XY 10 20 41 probe_cave\n    Put_Foe_To_Sleep probe_boss\n    Put_Foe_To_Sleep self+1\n    Wake_Foe 9\n    Set_Flag probe_gate\n    Clear_Flag 3\n    If_Flag probe_finale\n    Hide_Foe\n    Jump_To start\n"
+}

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ProblemType" format=3]
+
+[ext_resource type="Script" path="res://src/resources/problem_type.gd" id="1_problem_type"]
+
+[resource]
+script = ExtResource("1_problem_type")
+id = 16
+title = "Dev problem 16"
+texts = PackedStringArray("Dev problem 16, text 00", "Dev problem 16, text 01", "Dev problem 16, text 02", "Dev problem 16, text 03", "Dev problem 16, text 04", "Dev problem 16, text 05", "Dev problem 16, text 06", "Dev problem 16, text 07", "Dev problem 16, text 08", "Dev problem 16, text 09", "Dev problem 16, text 10", "Dev problem 16, text 11", "Dev problem 16, text 12", "Dev problem 16, text 13", "Dev problem 16, text 14", "Dev problem 16, text 15", "Dev problem 16, text 16", "Dev problem 16, text 17", "Dev problem 16, text 18", "Dev problem 16, text 19", "Dev problem 16, text 20", "Dev problem 16, text 21", "Dev problem 16, text 22", "Dev problem 16, text 23", "Dev problem 16, text 24", "Dev problem 16, text 25", "Dev problem 16, text 26", "Dev problem 16, text 27", "Dev problem 16, text 28", "Dev problem 16, text 29", "Dev problem 16, text 30", "Dev problem 16, text 31")
+text_ids = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+uses_calculator = true
+levels_available = PackedInt32Array(1, 1, 1, 1)
+art_dir = "res://packs/dev/assets/problem_art/b092"
+art_files = PackedStringArray("res://packs/dev/assets/problem_art/b092/pa_1887.png", "res://packs/dev/assets/problem_art/b092/pa_1888.png", "res://packs/dev/assets/problem_art/b092/pa_1889.png", "res://packs/dev/assets/problem_art/b092/pa_1890.png")
+field_kinds = "wwwwwwnnnnn"
+records = Array[PackedInt64Array]([PackedInt64Array(10, 10, 10, 10, 10, 10, 0, 10, 1, 0, 0, 20, 1, 0, 0, 30, 1, 0, 0, 10, 1, 0, 0, 20, 1, 0), PackedInt64Array(20, 20, 20, 20, 20, 20, 0, 25, 1, 0, 0, 35, 1, 0, 0, 15, 1, 0, 0, 25, 1, 0, 0, 35, 1, 0), PackedInt64Array(30, 30, 30, 30, 30, 30, 0, 40, 1, 0, 0, 20, 1, 0, 0, 30, 1, 0, 0, 40, 1, 0, 0, 20, 1, 0), PackedInt64Array(11, 11, 11, 11, 11, 11, 0, 30, 1, 0, 0, 40, 1, 0, 0, 20, 1, 0, 0, 30, 1, 0, 0, 40, 1, 0), PackedInt64Array(21, 21, 21, 21, 21, 21, 0, 45, 1, 0, 0, 25, 1, 0, 0, 35, 1, 0, 0, 45, 1, 0, 0, 25, 1, 0), PackedInt64Array(31, 31, 31, 31, 31, 31, 0, 30, 1, 0, 0, 40, 1, 0, 0, 50, 1, 0, 0, 30, 1, 0, 0, 40, 1, 0), PackedInt64Array(12, 12, 12, 12, 12, 12, 0, 50, 1, 0, 0, 30, 1, 0, 0, 40, 1, 0, 0, 50, 1, 0, 0, 30, 1, 0), PackedInt64Array(22, 22, 22, 22, 22, 22, 0, 35, 1, 0, 0, 45, 1, 0, 0, 55, 1, 0, 0, 35, 1, 0, 0, 45, 1, 0), PackedInt64Array(32, 32, 32, 32, 32, 32, 0, 50, 1, 0, 0, 60, 1, 0, 0, 40, 1, 0, 0, 50, 1, 0, 0, 60, 1, 0), PackedInt64Array(13, 13, 13, 13, 13, 13, 0, 40, 1, 0, 0, 50, 1, 0, 0, 60, 1, 0, 0, 40, 1, 0, 0, 50, 1, 0), PackedInt64Array(23, 23, 23, 23, 23, 23, 0, 55, 1, 0, 0, 65, 1, 0, 0, 45, 1, 0, 0, 55, 1, 0, 0, 65, 1, 0), PackedInt64Array(33, 33, 33, 33, 33, 33, 0, 70, 1, 0, 0, 50, 1, 0, 0, 60, 1, 0, 0, 70, 1, 0, 0, 50, 1, 0)])
+record_levels = PackedInt32Array(0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3)
+answer_fields = PackedInt32Array(10, 10, 10, 10)
+compare_mode = "exact"
+tolerances = PackedFloat64Array(0, 0, 0, 0)
+kind_checked_levels = PackedInt32Array()
+extras = {}
+diagram = {"family": "items", "items": [{"pic": 0, "pos": [20, 60], "opaque": true}, {"text": {"field": 0}, "box": [30, 64], "y": 330}, {"text": {"field": 1}, "box": [100, 64], "y": 330}, {"text": {"field": 2}, "box": [170, 64], "y": 330}, {"text": {"field": 3}, "box": [240, 64], "y": 330}]}

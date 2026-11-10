@@ -1,0 +1,1 @@
+{"id": "mod_hostile", "title": "Hostile mod", "version": "1.0", "mod": {"entry": "hostile.sgd", "limits": {"execution_timeout": 100000, "memory_max": 4096, "allocations_max": 1000000, "references_max": 100000, "coroutines_max": 100000}}}

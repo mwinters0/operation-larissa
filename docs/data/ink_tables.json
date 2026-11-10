@@ -1,0 +1,82 @@
+{
+ "_doc": "Ink pellet (stun gun) tables. StartStunGun 0x432330: pellet x = SubX + spawn_dx[SubCell], y = SubY + spawn_dy[SubCell], direction = dir_by_subcell[SubCell] (index into step tables; 3 = no motion: splashes at once). UpdateStunGun 0x4323f0 moves it 3 steps/frame of (step_dx[dir], step_dy[dir]) px = up to 24 px/frame; it is removed outside x 1..0x26f, y 0x11..0x13f, and 'hits' (starts the splash animation, frames 1..3) when the tile at ((x-8)>>4, (y-0x18)>>4) in the 38x18 map has flag 0x40. Splash frame k is drawn from the ink bundle (16) picture k at (x+splash_dx[k], y+splash_dy[k]). Max 2 pellets in flight.",
+ "spawn_dx_by_subcell": [
+  4,
+  0,
+  0,
+  0,
+  40,
+  76,
+  76,
+  72,
+  72
+ ],
+ "spawn_dy_by_subcell": [
+  26,
+  14,
+  16,
+  16,
+  16,
+  16,
+  16,
+  14,
+  26
+ ],
+ "dir_by_subcell": [
+  0,
+  1,
+  2,
+  2,
+  3,
+  4,
+  4,
+  5,
+  6
+ ],
+ "step_dx_by_dir": [
+  -8,
+  -8,
+  -8,
+  0,
+  8,
+  8,
+  8
+ ],
+ "step_dy_by_dir": [
+  2,
+  -2,
+  0,
+  0,
+  0,
+  -2,
+  2
+ ],
+ "splash_dx": [
+  0,
+  -4,
+  -16,
+  -28,
+  -28
+ ],
+ "splash_dy": [
+  0,
+  -4,
+  -12,
+  -20,
+  -20
+ ],
+ "splash_w": [
+  16,
+  24,
+  48,
+  72,
+  72
+ ],
+ "splash_h": [
+  16,
+  24,
+  38,
+  56,
+  56
+ ]
+}

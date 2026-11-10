@@ -1,0 +1,52 @@
+# A small rule-hook mod, the three hooks a campaign can declare it for:
+#   judge_answer      problem type 41 asks for "a multiple of {0}": ANY positive multiple is right, which the type's own data (it stores one answer) says is wrong.
+#   creature_instruction
+#                     Mod_Instruction 0 f  raises flag f the third time it is run (counting in the game's memory for the mod, not in a variable of its own);
+#                     Mod_Instruction 1 v  is a condition: the next instruction runs only while the sub is within 4 * v pixels (x) of the creature.
+#   sub_ability       a dash: with the fire button pressed and a key held left or right, the sub's velocity is set to its top speed and it is invulnerable for 4 ticks; the dashes are counted in the memory.
+# It keeps nothing in variables between calls but `served`, which the tests read to count how often the game asked (nothing it answers depends on it).
+var api : Dictionary = {}
+var served := 0
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func times_asked() -> int:
+	return served
+
+func judge_answer(state : Dictionary) -> bool:
+	served += 1
+	var step : int = state["fields"][0]
+	var typed : float = state["typed"]["value"]
+	if step <= 0 or typed <= 0.0:
+		return false
+	var times : int = int(typed)
+	return float(times) == typed and times % step == 0
+
+func creature_instruction(state : Dictionary) -> Dictionary:
+	served += 1
+	var memory : Dictionary = state["memory"]
+	if state["number"] == 0:
+		var visits : int = 0
+		if memory.has("visits"):
+			visits = memory["visits"]
+		visits += 1
+		var out := {"memory": {"visits": visits}}
+		if visits == 3:
+			out["set_flags"] = 1 << state["value"]
+		return out
+	var gap : int = state["position"].x - state["sub"].x
+	if gap < 0:
+		gap = -gap
+	return {"condition": gap < 4 * state["value"]}
+
+func sub_ability(state : Dictionary) -> Dictionary:
+	served += 1
+	var memory : Dictionary = state["memory"]
+	var dashes : int = 0
+	if memory.has("dashes"):
+		dashes = memory["dashes"]
+	if state["fire"] > 0 and state["steer"].x != 0:
+		dashes += 1
+		return {"vx": state["steer"].x * state["max_velocity"].x, "invulnerability": 4, "memory": {"dashes": dashes}}
+	return {}

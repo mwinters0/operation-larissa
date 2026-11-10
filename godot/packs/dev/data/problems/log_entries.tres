@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="TextTable" format=3]
+
+[ext_resource type="Script" path="res://src/resources/text_table.gd" id="1_text_table"]
+
+[resource]
+script = ExtResource("1_text_table")
+texts = {10648: "log_entry_0", 10649: "log_entry_1", 10650: "log_entry_2", 10651: "log_entry_3", 10652: "log_entry_4", 10653: "log_entry_5", 10654: "log_entry_6", 10655: "log_entry_7", 10656: "log_entry_8", 10657: "log_entry_9", 10658: "log_entry_10", 10659: "log_entry_11", 10660: "log_entry_12", 10661: "log_entry_13", 10662: "log_entry_14", 10663: "log_entry_15", 10664: "log_entry_16", 10665: "log_entry_17", 10666: "log_entry_18", 10667: "log_entry_19", 10668: "log_entry_20", 10669: "log_entry_21", 10670: "log_entry_22", 10671: "log_entry_23", 10672: "log_entry_24", 10673: "log_entry_25", 10674: "log_entry_26", 10675: "log_entry_27", 10676: "log_entry_28", 10677: "log_entry_29"}

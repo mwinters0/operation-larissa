@@ -1,0 +1,41 @@
+{
+ "_doc": "dissolve (0x414f81) tables. Pass p (0..15) copies, for every pair of rows r = 0, 2, 4 ... (h - 1), the 2 x 2 blocks at x = (-row_order[r % 16]) + 16 n + column_order[p] that lie in 0 <= x < w - 2; a FlushRect of the whole box follows each pass; one final full copy + flush ends it. Over the 16 passes column_order visits every residue mod 16 once.",
+ "column_order": [
+  11,
+  13,
+  5,
+  14,
+  7,
+  1,
+  15,
+  2,
+  0,
+  3,
+  8,
+  4,
+  9,
+  12,
+  6,
+  10
+ ],
+ "row_order": [
+  13,
+  11,
+  6,
+  10,
+  3,
+  1,
+  15,
+  0,
+  12,
+  5,
+  7,
+  2,
+  4,
+  14,
+  9,
+  8
+ ],
+ "passes": 16,
+ "block": 2
+}

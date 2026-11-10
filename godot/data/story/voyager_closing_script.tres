@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="VoyagerClosingScript" format=3]
+
+[ext_resource type="Script" path="res://src/resources/voyager_closing_script.gd" id="1_voyager_closing_script"]
+
+[resource]
+script = ExtResource("1_voyager_closing_script")
+step_ticks = 6
+rise_steps = 18
+rise_pixels = 4
+turn_table = PackedInt32Array(2, 2, 2, 2, 3, 4, 5, 5, 5)
+turn_done_cell = 2
+change_pictures = Array[StringName]([&"heli_change_0", &"heli_change_1", &"heli_change_2"])
+change_picture_steps = 2
+flash_sound = &"closing_flash"
+surge_sound = &"closing_surge"
+surge_steps = 15
+surge_pixels = 8
+fly_pixels = 8
+fly_until_x = -136
+body_picture = &"heli_body"
+rotor_pictures = Array[StringName]([&"heli_rotor_0", &"heli_rotor_1"])
+margin_ticks = 14.6
+provenance = "Original: VoyagerClosingSequence (CLOSING.C), the loops: 18 steps of 4 px up, the turn table, three change pictures of 12 ticks, 15 steps of 8 px up, then 8 px left a step until x <= -136; a step is 6 ticks. Constants are in tools/import/step_story.py. Ours: the 14.6 tick margin after the last step."

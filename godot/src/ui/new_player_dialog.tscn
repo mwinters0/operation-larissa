@@ -1,0 +1,88 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/new_player_dialog.gd" id="1_dialog"]
+
+[node name="NewPlayerDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dialog")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="NamePanel" type="PanelContainer" parent="Center"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+theme_type_variation = &"ConsolePanel"
+
+[node name="Rows" type="VBoxContainer" parent="Center/NamePanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NameTitle" type="Label" parent="Center/NamePanel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ConsoleTitle"
+text = "Enter New Player Name"
+
+[node name="NameText" type="Label" parent="Center/NamePanel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Type your name"
+
+[node name="NameEdit" type="LineEdit" parent="Center/NamePanel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+max_length = 9
+
+[node name="GamePanel" type="PanelContainer" parent="Center"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+theme_type_variation = &"ConsolePanel"
+
+[node name="Rows" type="VBoxContainer" parent="Center/GamePanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="GameTitle" type="Label" parent="Center/GamePanel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ConsoleTitle"
+text = "Choose a Game Level"
+
+[node name="GameText" type="Label" parent="Center/GamePanel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Voyager first"
+
+[node name="Voyager" type="Button" parent="Center/GamePanel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Voyager Game"
+
+[node name="Expert" type="Button" parent="Center/GamePanel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Expert Game"
