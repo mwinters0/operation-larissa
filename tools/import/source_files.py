@@ -97,7 +97,7 @@ def main() -> int:
     try:
         if args.write:
             files = current()
-            TABLE.write_text(build_table(files))
+            TABLE.write_text(build_table(files), newline="\n")
             print("wrote %s: %d files" % (TABLE, len(files)))
         else:
             check()
@@ -109,4 +109,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    import utf8_mode
+    utf8_mode.ensure()
     sys.exit(main())

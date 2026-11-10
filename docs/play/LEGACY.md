@@ -14,6 +14,10 @@ When you're done, you'll have three files in `game/build/`:
 
 The author uses Fedora Linux, so this is the only system where the tools are fully tested.  (Help wanted!)
 
+On Windows, the steps to build the legacy pack and play it in the editor's Godot are in
+[`../SETUP.md`](../SETUP.md), "On Windows: build the original game and play it"; the exported build below is Linux-only. Where this
+manual writes `tools/godot.sh <arguments>`, Windows runs `uv run tools/godot.py <arguments>`.
+
 1. Install the system programs that you'll need:
 
    Fedora:
