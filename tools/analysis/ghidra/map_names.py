@@ -53,7 +53,7 @@ def write_table(out: Path = TABLE) -> int:
     import gamefiles
     symbols = parse(gamefiles.read(MAP_FILE).decode("latin-1"))
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps({"source": MAP_FILE, "symbols": symbols}, indent=1) + "\n")
+    out.write_text(json.dumps({"source": MAP_FILE, "symbols": symbols}, indent=1) + "\n", newline="\n")
     return len(symbols)
 
 

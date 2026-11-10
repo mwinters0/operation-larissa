@@ -77,7 +77,7 @@ def main():
             else:
                 (draw / f'{dll}_{r[2]}.bin').write_bytes(d.rstrip(b'\0') if d.rstrip(b'\0') else d[:16])
                 man[f'{dll}:{r[2]}'] = {'file': f'sounds/fm_patches_undecoded/{dll}_{r[2]}.bin', 'kind': 'fm-patch', 'header_u32': fmt}
-    with open(OUT / 'sounds' / 'manifest.json', 'w') as f:
+    with open(OUT / 'sounds' / 'manifest.json', 'w', newline='\n') as f:
         json.dump(man, f, indent=1)
     # MIDI
     dm = OUT / 'music'; dm.mkdir(parents=True, exist_ok=True)

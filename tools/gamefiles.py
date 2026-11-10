@@ -140,6 +140,8 @@ def materialize(path: str) -> Path:
 
 if __name__ == "__main__":
     import sys
+    import utf8_mode
+    utf8_mode.ensure()
     usage = "usage: gamefiles.py ls [FOLDER] | read PATH > file | materialize PATH | sha256"
     cmd, args = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else ("", [])
     if cmd == "ls":
