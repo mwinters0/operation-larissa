@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/anim_deco.gd" id="1_anim"]
+
+[node name="AnimDeco" type="AnimatedSprite2D"]
+centered = false
+script = ExtResource("1_anim")

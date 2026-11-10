@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="Campaign" format=3]
+
+[ext_resource type="Script" path="res://src/resources/campaign.gd" id="1_campaign"]
+
+[resource]
+script = ExtResource("1_campaign")
+provenance = "Dev pack: a campaign of our own (tools/dev_pack/dev_sectors.py)."
+id = &"dev_tour"
+title = "Dev tour"
+new_game_text = &"Dev tour"
+banner_index = 0
+sectors = PackedInt32Array(0, 1, 2, 3)
+finales = PackedInt32Array(4)
+default_edu_levels = PackedInt32Array(0, 1, 1, 2, 2)
+log_series = 1
+log_unlock_order = PackedInt32Array(1, 2, 3, 4)
+finale_log_counts = PackedInt32Array(4)
+log_texts = Array[StringName]([&"Dev log entry 1: the canister of sector 0.", &"Dev log entry 2: the canister of sector 1.", &"Dev log entry 3: the canister of sector 2.", &"Dev log entry 4: the canister of sector 3."])
+log_voices = Array[StringName]([&"log_0", &"log_1", &"log_2", &"log_3"])
+supply_texts = Array[StringName]([&"Dev mission control: sector 0 is done.", &"Dev mission control: sector 1 is done.", &"Dev mission control: sector 2 is done.", &"Dev mission control: sector 3 is done."])
+supply_voices = Array[StringName]([&"supply_0", &"supply_1", &"supply_2", &"supply_3"])
+fallback_song = &"sector_song_1"
+closing_scene = &""
+finale_text = "The dev tour is done. Nothing of the original is in this game."
+finale_picture = "title_sky"

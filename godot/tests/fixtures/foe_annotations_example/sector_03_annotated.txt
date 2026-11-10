@@ -1,0 +1,454 @@
+; Sector 3 creature script (example for the annotation tests).
+; Written by hand.
+
+touch_return:   ; creatures that only bounce back
+    Return
+    ; then idle for a while
+    Padding 1
+
+    Padding 8
+
+; The dive.
+; It starts with two ticks of waiting.
+foe0_ink:
+    Wait_Next_Tick
+    Wait_Next_Tick
+    Set_Frame 32 ; the diving frame
+    Move_Foe_Relative_XY -4 -5 0
+
+swim_back:
+    ; three frames, then loop
+    Set_Frame 33
+    Wait_Next_Tick
+    Set_Frame 34
+    Wait_Next_Tick
+dive_end:
+    Loop_Counter2_Back_To swim_back 29      ; 29 times
+    Set_Frame 30
+    Move_Foe_Relative_XY 4 5 0
+    Return
+
+foe6_ink:
+    Wait_Next_Tick
+    Wait_Next_Tick
+    Set_Frame 32
+    Move_Foe_Relative_XY -12 28 0
+
+loc_555:
+    Set_Frame 33
+    Wait_Next_Tick
+    Set_Frame 34
+    Wait_Next_Tick
+    Loop_Counter2_Back_To loc_555 29
+    Set_Frame 7
+    Move_Foe_Relative_XY 12 -28 0
+    Return
+
+foe12_ink:
+    Wait_Next_Tick
+    Wait_Next_Tick
+    Set_Frame 32
+    Move_Foe_Relative_XY 2 -8 0
+
+loc_581:
+    Set_Frame 33
+    Wait_Next_Tick
+    Set_Frame 34
+    Wait_Next_Tick
+    Loop_Counter2_Back_To loc_581 29
+    Set_Frame 30
+    Move_Foe_Relative_XY -2 8 0
+    Return
+    Padding 2
+    ; The following instructions are not executed -- nothing jumps to them
+    Set_Frame 32
+    Move_Foe_Relative_XY 0 -11 0
+
+loc_607:
+    ; The following instructions are not executed -- nothing jumps to them
+    Set_Frame 33
+    Wait_Next_Tick
+    Set_Frame 34
+    Wait_Next_Tick
+    Loop_Counter2_Back_To loc_607 29
+    Set_Frame 30
+    Move_Foe_Relative_XY 0 11 0
+    Return
+    Padding 2
+    Set_Frame 32
+    Move_Foe_Relative_XY 0 -3 0
+
+loc_633:
+    ; The following instructions are not executed -- nothing jumps to them
+    Set_Frame 33
+    Wait_Next_Tick
+    Set_Frame 34
+    Wait_Next_Tick
+    Loop_Counter2_Back_To loc_633 29
+    Set_Frame 30
+    Move_Foe_Relative_XY 0 3 0
+    Return
+    Padding 30
+
+loc_681:
+    Move_Foe_Relative_XY 0 0 1
+    Loop_Counter0_Back_To loc_681 28
+
+foe0_start:
+    Move_Foe_Relative_XY 0 3 1
+    Loop_Counter0_Back_To foe0_start 10
+    Set_Frame 19
+    Wait_Next_Tick
+    Set_Frame 20
+    Wait_Next_Tick
+    Play_Sound 10
+    Wake_Foe 1
+    Set_Frame 21
+    Wait_Next_Tick
+
+loc_712:
+    Move_Foe_Relative_XY 0 0 1
+    Loop_Counter0_Back_To loc_712 5
+
+loc_721:
+    Move_Foe_Relative_XY 0 -3 1
+    Loop_Counter0_Back_To loc_721 10
+    Jump_To loc_681
+    Padding 4
+
+foe1_start:
+    Show_Foe
+    Move_Foe_To_XY 130 77 22
+
+loc_742:
+    Move_Foe_Relative_XY -10 0 0
+    Loop_Counter0_Back_To loc_742 23
+
+loc_751:
+    Put_Foe_To_Sleep 1
+    Hide_Foe
+    Jump_To foe1_start
+
+foe1_hit:
+    Loop_Counter0_Back_To foe1_hit 1
+    Jump_To loc_751
+    Padding 11
+
+foe2_start:
+    Move_Foe_Relative_XY 4 0 1
+    Loop_Counter0_Back_To foe2_start 17
+
+loc_785:
+    Move_Foe_Relative_XY 4 -4 1
+    Loop_Counter0_Back_To loc_785 7
+
+loc_794:
+    Move_Foe_Relative_XY 4 0 1
+    Loop_Counter0_Back_To loc_794 12
+
+loc_803:
+    Move_Foe_Relative_XY -4 0 1 mirrored
+    Loop_Counter0_Back_To loc_803 12
+
+loc_812:
+    Move_Foe_Relative_XY -4 4 1 mirrored
+    Loop_Counter0_Back_To loc_812 7
+
+loc_821:
+    Move_Foe_Relative_XY -4 0 1 mirrored
+    Loop_Counter0_Back_To loc_821 17
+    Jump_To foe2_start
+    Padding 7
+
+foe3_start:
+    Move_Foe_Relative_XY 0 0 1
+    Loop_Counter0_Back_To foe3_start 5
+    Set_Frame 11
+    Wait_Next_Tick
+    Set_Frame_Range 12 13
+    Set_Frame 12
+    Wait_Next_Tick
+
+loc_858:
+    Move_Foe_Relative_XY -6 0 1
+    Loop_Counter0_Back_To loc_858 14
+    Set_Frame 11
+    Wait_Next_Tick
+    Set_Frame_Range 9 10
+    Set_Frame 10
+    Wait_Next_Tick
+
+loc_876:
+    Move_Foe_Relative_XY 0 0 1
+    Loop_Counter0_Back_To loc_876 3
+
+loc_885:
+    Move_Foe_Relative_XY 0 0 1 mirrored
+    Loop_Counter0_Back_To loc_885 7
+    Set_Frame 11 mirrored
+    Wait_Next_Tick
+    Set_Frame_Range 12 13
+    Set_Frame 12 mirrored
+    Wait_Next_Tick
+
+loc_903:
+    Move_Foe_Relative_XY 6 0 1 mirrored
+    Loop_Counter0_Back_To loc_903 14
+    Set_Frame 11 mirrored
+    Wait_Next_Tick
+    Set_Frame_Range 9 10
+    Set_Frame 10 mirrored
+    Wait_Next_Tick
+
+loc_921:
+    Move_Foe_Relative_XY 0 0 1 mirrored
+    Loop_Counter0_Back_To loc_921 5
+    Jump_To foe3_start
+    Padding 7
+
+foe4_start:
+    Move_Foe_Relative_XY 6 0 1
+    Loop_Counter0_Back_To foe4_start 22
+
+loc_949:
+    Move_Foe_Relative_XY -6 0 1 mirrored
+    Loop_Counter0_Back_To loc_949 22
+
+loc_958:
+    Move_Foe_Relative_XY 6 0 1
+    Loop_Counter0_Back_To loc_958 22
+
+loc_967:
+    Move_Foe_Relative_XY 0 4 1
+    Loop_Counter0_Back_To loc_967 12
+
+loc_976:
+    Move_Foe_Relative_XY 0 -4 1 mirrored
+    Loop_Counter0_Back_To loc_976 12
+
+loc_985:
+    Move_Foe_Relative_XY -6 0 1 mirrored
+    Loop_Counter0_Back_To loc_985 22
+    Jump_To foe4_start
+    Padding 7
+
+foe5_start:
+    Wait_Next_Tick
+    If_Sub_Y_Less 100
+    Jump_To foe5_start
+    If_Sub_X_Less 50
+    Jump_To foe5_start
+    Show_Foe
+
+loc_1016:
+    Move_Foe_Relative_XY 0 -3 1
+    Loop_Counter0_Back_To loc_1016 14
+
+loc_1025:
+    Set_Frame 38
+    Move_Foe_Relative_XY -20 0 0
+    Play_Sound 0
+    Set_Frame 39
+    Wait_Next_Tick
+    Set_Frame 38
+    Wait_Next_Tick
+    Set_Frame 37
+    Move_Foe_Relative_XY 20 0 0
+
+loc_1045:
+    Move_Foe_Relative_XY -8 0 1
+    Loop_Counter0_Back_To loc_1045 20
+
+loc_1054:
+    Move_Foe_Relative_XY 0 0 1 mirrored
+    Loop_Counter0_Back_To loc_1054 9
+
+loc_1063:
+    Move_Foe_Relative_XY 8 0 1 mirrored
+    Loop_Counter0_Back_To loc_1063 20
+
+loc_1072:
+    Move_Foe_Relative_XY 0 0 1
+    Loop_Counter0_Back_To loc_1072 9
+    Jump_To loc_1025
+    Padding 3
+
+foe6_start:
+    Set_Frame 6
+
+loc_1089:
+    Wait_Next_Tick
+    Loop_Counter0_Back_To loc_1089 28
+    Set_Frame 7
+    Wait_Next_Tick
+    Set_Frame 8
+
+loc_1100:
+    Wait_Next_Tick
+    Loop_Counter0_Back_To loc_1100 5
+    Set_Frame 7
+    Wait_Next_Tick
+    Jump_To foe6_start
+    Padding 9
+
+foe7_start:
+    Move_Foe_Relative_XY 4 -1 1
+    Move_Foe_Relative_XY 4 -1 1
+    Move_Foe_Relative_XY 4 -2 1
+    Loop_Counter0_Back_To foe7_start 16
+
+loc_1138:
+    Move_Foe_Relative_XY 0 4 1 mirrored
+    Loop_Counter0_Back_To loc_1138 15
+
+loc_1147:
+    Move_Foe_Relative_XY 0 -4 1 mirrored
+    Loop_Counter0_Back_To loc_1147 15
+
+loc_1156:
+    Move_Foe_Relative_XY -6 2 1 mirrored
+    Loop_Counter0_Back_To loc_1156 33
+    Jump_To foe7_start
+    Padding 9
+
+foe8_start:
+    Set_Frame 6
+
+loc_1179:
+    Wait_Next_Tick
+    Loop_Counter0_Back_To loc_1179 30
+    Set_Frame 7
+    Wait_Next_Tick
+    Set_Frame 8
+
+loc_1190:
+    Wait_Next_Tick
+    Loop_Counter0_Back_To loc_1190 5
+    Set_Frame 7
+    Wait_Next_Tick
+    Jump_To foe8_start
+    Padding 9
+
+foe9_start:
+    Move_Foe_Relative_XY 0 0 1
+    Loop_Counter0_Back_To foe9_start 11
+    Set_Frame 11
+    Wait_Next_Tick
+    Set_Frame_Range 12 13
+    Set_Frame 12
+    Wait_Next_Tick
+
+loc_1229:
+    Move_Foe_Relative_XY 0 -3 1
+    Loop_Counter0_Back_To loc_1229 18
+
+loc_1238:
+    Move_Foe_Relative_XY -4 0 1
+    Loop_Counter0_Back_To loc_1238 19
+
+loc_1247:
+    Move_Foe_Relative_XY 4 0 1 mirrored
+    Loop_Counter0_Back_To loc_1247 19
+
+loc_1256:
+    Move_Foe_Relative_XY 0 3 1 mirrored
+    Loop_Counter0_Back_To loc_1256 18
+    Set_Frame 11 mirrored
+    Wait_Next_Tick
+    Set_Frame_Range 9 10
+    Set_Frame 10 mirrored
+    Wait_Next_Tick
+
+loc_1274:
+    Move_Foe_Relative_XY 0 0 1 mirrored
+    Loop_Counter0_Back_To loc_1274 8
+    Jump_To foe9_start
+    Padding 17
+
+foe10_start:
+    Move_Foe_Relative_XY 4 -4 1 mirrored
+    Loop_Counter0_Back_To foe10_start 17
+
+loc_1312:
+    Move_Foe_Relative_XY 4 4 1 mirrored
+    Loop_Counter0_Back_To loc_1312 17
+
+loc_1321:
+    Move_Foe_Relative_XY -4 -4 1
+    Loop_Counter0_Back_To loc_1321 17
+
+loc_1330:
+    Move_Foe_Relative_XY -4 4 1
+    Loop_Counter0_Back_To loc_1330 17
+    Jump_To foe10_start
+    Padding 11
+
+foe11_start:
+    Set_Frame 3 mirrored
+
+loc_1355:
+    Wait_Next_Tick
+    Loop_Counter0_Back_To loc_1355 6
+    Set_Frame 4 mirrored
+
+loc_1363:
+    Wait_Next_Tick
+    Loop_Counter0_Back_To loc_1363 5
+    Set_Frame 5 mirrored
+
+loc_1371:
+    Wait_Next_Tick
+    Loop_Counter0_Back_To loc_1371 5
+    Set_Frame 4 mirrored
+
+loc_1379:
+    Wait_Next_Tick
+    Loop_Counter0_Back_To loc_1379 5
+    Play_Sound 13
+    Jump_To foe11_start
+    Padding 7
+
+foe12_start:
+    Move_Foe_Relative_XY 6 0 1 mirrored
+    Loop_Counter0_Back_To foe12_start 25
+
+loc_1406:
+    Move_Foe_Relative_XY -6 0 1
+    Loop_Counter0_Back_To loc_1406 25
+    Jump_To foe12_start
+    Padding 15
+
+foe13_start:
+    Move_Foe_Relative_XY 0 0 1
+    Loop_Counter0_Back_To foe13_start 3
+
+loc_1442:
+    Move_Foe_Relative_XY 6 3 1
+    Loop_Counter0_Back_To loc_1442 26
+    Hide_Foe
+
+loc_1452:
+    Wait_Next_Tick
+    Jump_To loc_1452
+    Padding 3
+
+foe14_start:
+    Move_Foe_Relative_XY 0 0 1 mirrored
+    Loop_Counter0_Back_To foe14_start 3
+
+loc_1468:
+    Move_Foe_Relative_XY 6 3 1 mirrored
+    Loop_Counter0_Back_To loc_1468 26
+    Hide_Foe
+
+loc_1478:
+    Wait_Next_Tick
+    Jump_To loc_1478
+
+foe14_hit:
+    Put_Foe_To_Sleep 14
+    Play_Sound 16
+    Hide_Foe
+    Jump_To loc_1468
+
+; End of the script.

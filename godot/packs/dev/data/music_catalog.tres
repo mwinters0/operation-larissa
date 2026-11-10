@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MusicCatalog" format=3]
+
+[ext_resource type="Script" path="res://src/resources/music_catalog.gd" id="1_music_catalog"]
+
+[resource]
+script = ExtResource("1_music_catalog")
+ids = PackedInt32Array(9500, 9501, 9502, 9503, 9504, 9505, 9506, 9507, 9508, 9509)
+gm_paths = PackedStringArray("res://packs/dev/assets/audio/music/finale_9500.ogg", "res://packs/dev/assets/audio/music/closing_9501.ogg", "res://packs/dev/assets/audio/music/opening_9502.ogg", "res://packs/dev/assets/audio/music/title_9503.ogg", "res://packs/dev/assets/audio/music/sector_song_1_9504.ogg", "res://packs/dev/assets/audio/music/sector_song_2_9505.ogg", "res://packs/dev/assets/audio/music/sector_song_3_9506.ogg", "res://packs/dev/assets/audio/music/sector_song_4_9507.ogg", "res://packs/dev/assets/audio/music/sector_song_5_9508.ogg", "res://packs/dev/assets/audio/music/sector_song_6_9509.ogg")
+adlib_paths = PackedStringArray("res://packs/dev/assets/audio/music/adlib/finale_9500.ogg", "res://packs/dev/assets/audio/music/adlib/closing_9501.ogg", "res://packs/dev/assets/audio/music/adlib/opening_9502.ogg", "res://packs/dev/assets/audio/music/adlib/title_9503.ogg", "res://packs/dev/assets/audio/music/adlib/sector_song_1_9504.ogg", "res://packs/dev/assets/audio/music/adlib/sector_song_2_9505.ogg", "res://packs/dev/assets/audio/music/adlib/sector_song_3_9506.ogg", "res://packs/dev/assets/audio/music/adlib/sector_song_4_9507.ogg", "res://packs/dev/assets/audio/music/adlib/sector_song_5_9508.ogg", "res://packs/dev/assets/audio/music/adlib/sector_song_6_9509.ogg")
+midi_names = PackedStringArray("BEND.MID", "BEND2.MID", "BNEPT1.MID", "BNEPT2.MID", "BSECT1.MID", "BSECT2.MID", "BSECT3.MID", "BSECT4.MID", "BSECT5.MID", "BSECT6.MID")

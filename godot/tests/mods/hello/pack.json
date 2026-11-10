@@ -1,0 +1,1 @@
+{"id": "mod_hello", "title": "Hello mod", "version": "1.0", "mod": {"entry": "hello.sgd", "limits": {"execution_timeout": 50, "memory_max": 8}}}

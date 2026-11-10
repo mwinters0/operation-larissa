@@ -1,0 +1,119 @@
+# A hostile problem-screen mod. Every try_* attempts something a mod that draws a problem must not do (a refused call raises, which the game counts); every bad_* returns a draw list full of what the game must drop; the
+# plain problem_frame draws a good rectangle and then CLAIMS to have judged the answer, in every way a list could: the game draws none of the claims, and what it draws changes no answer.
+var api : Dictionary = {}
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func problem_frame(state : Dictionary) -> Array:
+	var out := []
+	out.append(["rect", Rect2(0, 0, 640, 400), Color.BLACK])
+	out.append(["text", "The answer is right", Vector2(10, 10), 17, Color.GREEN])
+	out.append(["answer", 12])
+	out.append(["correct", true])
+	out.append(["verdict", "right"])
+	out.append(["submit", "12"])
+	out.append(["oxygen", 99])
+	out.append(["continue"])
+	out.append(["close"])
+	return out
+
+# --- reaching the game ---
+func try_reach_the_problem_flow() -> String:
+	var node = get_node("/root/GameState")
+	return "oxygen: " + str(node.oxygen)
+
+func try_reach_the_problem_screen() -> String:
+	var screen = get_parent().get_parent()
+	screen.call("submit_answer", 12)
+	return "answered for the player"
+
+func try_reach_the_tree() -> String:
+	var found = get_tree().get_first_node_in_group("problem")
+	found.call("close")
+	return "closed the problem"
+
+func try_quit_the_game() -> String:
+	get_tree().quit()
+	return "quit the game"
+
+func try_make_a_node() -> String:
+	var node = Node2D.new()
+	node.queue_redraw()
+	return "made a canvas: " + str(node)
+
+func try_load_a_script_of_the_game() -> String:
+	var script = load("res://src/problems/answer_checker.gd")
+	return "loaded the checker: " + str(script)
+
+# --- the state it is given is read-only ---
+func try_write_the_state(state : Dictionary) -> String:
+	state["fields"] = []
+	return "wrote the problem"
+
+func try_write_a_field(state : Dictionary) -> String:
+	state["fields"][2] = {"text": "0", "value": 0.0, "fraction": false}
+	return "wrote the answer of the problem"
+
+func try_write_the_entry(state : Dictionary) -> String:
+	state["entry"] = "12"
+	return "typed for the player"
+
+func try_write_the_facts() -> String:
+	api["problems"]["max_commands"] = 1000000000
+	return "raised a limit of the problem API"
+
+# --- the API answers nothing for these ---
+func check_load_a_picture_of_another_pack() -> Variant:
+	return api["load"].call("../mod_tides/problems/fish.png")
+
+func check_load_a_picture_of_the_chain() -> Variant:
+	return api["load"].call("pictures/ui_picture/dot.png")
+
+# --- draw lists the game must drop (or cut) ---
+func bad_commands() -> Array:
+	var out := []
+	out.append(["answer", 12])
+	out.append(["picture", "skin/dot.png", Vector2(0, 0)])
+	out.append(["picture", "problems/missing.png", Vector2(0, 0)])
+	out.append(["picture", "../mod_tides/problems/fish.png", Vector2(0, 0)])
+	out.append(["picture", "problems/../pack.json", Vector2(0, 0)])
+	out.append(["picture", "res://icon.svg", Vector2(0, 0)])
+	out.append(["layer", "skin/glow.gdshader"])
+	out.append(["rect", Rect2(0, 0, 4, 4), Color.RED])
+	return out
+
+func bad_texts() -> Array:
+	var out := []
+	out.append(["text"])
+	out.append(["text", "no place"])
+	out.append(["text", 12, Vector2(0, 0), 17, Color.WHITE])
+	out.append(["text", "no colour", Vector2(0, 0), 17])
+	out.append(["text", "size", Vector2(0, 0), "big", Color.WHITE])
+	out.append(["text", "nan size", Vector2(0, 0), NAN, Color.WHITE])
+	out.append(["text", "inf place", Vector2(INF, 0), 17, Color.WHITE])
+	out.append(["text", "negative width", Vector2(0, 0), 17, Color.WHITE, -5.0])
+	out.append(["text", "unknown alignment", Vector2(0, 0), 17, Color.WHITE, 100.0, "justify"])
+	out.append(["text", "alignment first", Vector2(0, 0), 17, Color.WHITE, "center", 100.0])
+	out.append(["text", "a font", Vector2(0, 0), 17, Color.WHITE, 100.0, "left", "res://font.ttf"])
+	out.append(["text", "good", Vector2(0, 0), 17, Color.WHITE])
+	return out
+
+func bad_text_sizes() -> Array:
+	var out := []
+	out.append(["text", "tiny", Vector2(0, 0), 1, Color.WHITE])
+	out.append(["text", "huge", Vector2(0, 0), 100000, Color.WHITE])
+	out.append(["text", "tab\tand\nnewline" + char(27) + "escape", Vector2(0, 0), 17, Color.WHITE])
+	return out
+
+func bad_long_text() -> Array:
+	var text := "x"
+	for i in 12:
+		text += text
+	return [["text", text, Vector2(0, 0), 17, Color.WHITE]]
+
+func bad_many_texts() -> Array:
+	var out := []
+	for i in 300:
+		out.append(["text", "t", Vector2(0, i), 17, Color.WHITE])
+	return out

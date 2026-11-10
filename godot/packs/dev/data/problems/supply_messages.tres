@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="TextTable" format=3]
+
+[ext_resource type="Script" path="res://src/resources/text_table.gd" id="1_text_table"]
+
+[resource]
+script = ExtResource("1_text_table")
+texts = {10678: "supply_message_0", 10679: "supply_message_1", 10680: "supply_message_2", 10681: "supply_message_3", 10682: "supply_message_4", 10683: "supply_message_5", 10684: "supply_message_6", 10685: "supply_message_7", 10686: "supply_message_8", 10687: "supply_message_9", 10688: "supply_message_10", 10689: "supply_message_11", 10690: "supply_message_12", 10691: "supply_message_13", 10692: "supply_message_14", 10693: "supply_message_15", 10694: "supply_message_16", 10695: "supply_message_17", 10696: "supply_message_18", 10697: "supply_message_19", 10698: "supply_message_20", 10699: "supply_message_21", 10700: "supply_message_22", 10701: "supply_message_23", 10702: "supply_message_24", 10703: "supply_message_25", 10704: "supply_message_26", 10705: "supply_message_27", 10706: "supply_message_28", 10707: "supply_message_29"}

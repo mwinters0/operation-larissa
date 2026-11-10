@@ -1,0 +1,62 @@
+[gd_resource type="Resource" script_class="ScreenData" format=3]
+
+[ext_resource type="Script" path="res://src/resources/screen_data.gd" id="1_screen_data"]
+[ext_resource type="Script" path="res://src/resources/deco_placement.gd" id="2_deco_placement"]
+[ext_resource type="Script" path="res://src/resources/anim_deco_data.gd" id="3_anim_deco_data"]
+[ext_resource type="Script" path="res://src/resources/math_trigger_data.gd" id="4_math_trigger_data"]
+
+[sub_resource type="Resource" id="Deco_1"]
+script = ExtResource("2_deco_placement")
+pos = Vector2i(192, 256)
+slot = 0
+flag = false
+
+[sub_resource type="Resource" id="Deco_2"]
+script = ExtResource("2_deco_placement")
+pos = Vector2i(400, 248)
+slot = 1
+flag = false
+
+[sub_resource type="Resource" id="Deco_3"]
+script = ExtResource("2_deco_placement")
+pos = Vector2i(248, 250)
+slot = 2
+flag = false
+
+[sub_resource type="Resource" id="Deco_4"]
+script = ExtResource("2_deco_placement")
+pos = Vector2i(300, 250)
+slot = 3
+flag = false
+
+[sub_resource type="Resource" id="Deco_5"]
+script = ExtResource("2_deco_placement")
+pos = Vector2i(348, 256)
+slot = 4
+flag = false
+
+[sub_resource type="Resource" id="Anim_6"]
+script = ExtResource("3_anim_deco_data")
+pos = Vector2i(200, 240)
+frames = PackedInt32Array(0, 0, 0, 0, 1, 1, 1, 1)
+size = Vector2i(64, 48)
+start_cursor = 2
+
+[sub_resource type="Resource" id="Trigger_7"]
+script = ExtResource("4_math_trigger_data")
+pos = Vector2i(500, 240)
+slot = 13
+armed = true
+rearm_on_enter = false
+test_nibble = 15
+
+[resource]
+script = ExtResource("1_screen_data")
+original_sector = -1
+original_screen = -1
+tiles = PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 114, 114, 114, 114, 114, 114, 114, 114, 114, 114, 114, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113, 113)
+bg_decos = Array[ExtResource("2_deco_placement")]([SubResource("Deco_1"), SubResource("Deco_2")])
+mid_decos = Array[ExtResource("2_deco_placement")]([SubResource("Deco_3"), SubResource("Deco_4")])
+fg_decos = Array[ExtResource("2_deco_placement")]([SubResource("Deco_5")])
+anim_decos = Array[ExtResource("3_anim_deco_data")]([SubResource("Anim_6")])
+triggers = Array[ExtResource("4_math_trigger_data")]([SubResource("Trigger_7")])

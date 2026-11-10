@@ -1,0 +1,207 @@
+{
+ "comments": {
+  "0x00411c03": {
+   "plate": "end prologue",
+   "eol": "EAX=x"
+  },
+  "0x00411c06": {
+   "eol": "EAX=x+ScreenOriginX"
+  },
+  "0x00411c0c": {
+   "eol": "screen_x=x+ScreenOriginX"
+  },
+  "0x00411c0f": {
+   "eol": "EAX=y"
+  },
+  "0x00411c12": {
+   "eol": "EAX=y+ScreenOriginY"
+  },
+  "0x00411c18": {
+   "eol": "screen_y=y+ScreenOriginY"
+  },
+  "0x004120bc": {
+   "plate": "end of prologue",
+   "eol": "EDI=height"
+  },
+  "0x004120bf": {
+   "eol": "ESI=width"
+  },
+  "0x004120c2": {
+   "eol": "EBX=y"
+  },
+  "0x004120c5": {
+   "eol": "ECX=x"
+  },
+  "0x004120c8": {
+   "pre": "check x>=0",
+   "eol": "test x"
+  },
+  "0x004120ca": {
+   "eol": "jump if (x>=0) // actually: SF==OF, and OF is always 0 after TEST, so just SF==0"
+  },
+  "0x004120cc": {
+   "pre": "If x < 0 then we're drawing something partially off the left edge and need to adjust the width of our rectangle.",
+   "eol": "tmp_x=x"
+  },
+  "0x004120cf": {
+   "eol": "EAX=tmp_x"
+  },
+  "0x004120d2": {
+   "plate": "EAX=abs(tmp_x)"
+  },
+  "0x004120d7": {
+   "pre": "width=width - abs(x)",
+   "eol": "width=width - abs(x)"
+  },
+  "0x004120d9": {
+   "eol": "x=0"
+  },
+  "0x004120db": {
+   "eol": "test y"
+  },
+  "0x004120dd": {
+   "eol": "jump if (y>=0)"
+  },
+  "0x004120df": {
+   "pre": "If y < 0 then we're drawing something partially off the top edge and need to adjust the height of our rectangle",
+   "eol": "tmp_y=y"
+  },
+  "0x004120e2": {
+   "eol": "EAX=tmp_y"
+  },
+  "0x004120e5": {
+   "plate": "EAX=abs(tmp_y)"
+  },
+  "0x004120ea": {
+   "pre": "height=height - abs(y)",
+   "eol": "height=height - abs(y)"
+  },
+  "0x004120ec": {
+   "eol": "y=0"
+  },
+  "0x004120ee": {
+   "eol": "EAX=width+x"
+  },
+  "0x004120f1": {
+   "eol": "set flags for ((width+x)-640)"
+  },
+  "0x004120f6": {
+   "eol": "if ((width+x)-640) <= 0"
+  },
+  "0x004120f8": {
+   "pre": "truncate width to max x",
+   "eol": "width=640"
+  },
+  "0x004120fd": {
+   "eol": "width=640-x"
+  },
+  "0x004120ff": {
+   "eol": "EAX=height+y"
+  },
+  "0x00412102": {
+   "eol": "set flags for ((height+y)-400)"
+  },
+  "0x00412107": {
+   "eol": "if ((height+y)-400) <= 0"
+  },
+  "0x00412109": {
+   "pre": "truncate height to max y",
+   "eol": "height=400"
+  },
+  "0x0041210e": {
+   "eol": "height=400-y"
+  },
+  "0x00412112": {
+   "eol": "return if width <= 0"
+  },
+  "0x00412116": {
+   "eol": "return if height <= 0"
+  },
+  "0x00412118": {
+   "eol": "call_x=x"
+  },
+  "0x0041211b": {
+   "eol": "call_y=y"
+  },
+  "0x0041211e": {
+   "eol": "call_width=width"
+  },
+  "0x00412121": {
+   "eol": "call_height=height"
+  }
+ },
+ "functions": {
+  "0x00411bfd": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int width",
+     "/int height"
+    ]
+   },
+   "locals": {
+    "Stack[-0xc]:4": {
+     "name": "screen_x",
+     "type": "/int"
+    },
+    "Stack[-0x8]:4": {
+     "name": "screen_y",
+     "type": "/int"
+    }
+   },
+   "labels": {
+    "0x00411c38": "call_draw",
+    "0x00411c52": "return"
+   }
+  },
+  "0x004120b3": {
+   "name": "FlushRect",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int width",
+     "/int height"
+    ]
+   },
+   "locals": {
+    "Stack[-0x1c]:4": {
+     "name": "spill_call_x",
+     "type": "/int"
+    },
+    "Stack[-0x18]:4": {
+     "name": "spill_call_y",
+     "type": "/int"
+    },
+    "Stack[-0x14]:4": {
+     "name": "spill_call_width",
+     "type": "/int"
+    },
+    "Stack[-0x10]:4": {
+     "name": "spill_call_height",
+     "type": "/int"
+    },
+    "Stack[-0xc]:4": {
+     "name": "spill_tmp_y",
+     "type": "/int"
+    },
+    "Stack[-0x8]:4": {
+     "name": "spill_tmp_x",
+     "type": "/int"
+    }
+   },
+   "labels": {
+    "0x004120db": "validate_y",
+    "0x004120ee": "truncate_x",
+    "0x004120ff": "truncate_y",
+    "0x00412110": "call_draw",
+    "0x00412138": "return"
+   }
+  }
+ }
+}

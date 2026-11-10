@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ProblemType" format=3]
+
+[ext_resource type="Script" path="res://src/resources/problem_type.gd" id="1_problem_type"]
+
+[resource]
+script = ExtResource("1_problem_type")
+id = 31
+title = "Dev problem 31"
+texts = PackedStringArray("Dev problem 31, text 00", "Dev problem 31, text 01", "Dev problem 31, text 02", "Dev problem 31, text 03", "Dev problem 31, text 04", "Dev problem 31, text 05", "Dev problem 31, text 06", "Dev problem 31, text 07", "Dev problem 31, text 08", "Dev problem 31, text 09", "Dev problem 31, text 10", "Dev problem 31, text 11", "Dev problem 31, text 12", "Dev problem 31, text 13", "Dev problem 31, text 14", "Dev problem 31, text 15", "Dev problem 31, text 16", "Dev problem 31, text 17", "Dev problem 31, text 18", "Dev problem 31, text 19", "Dev problem 31, text 20", "Dev problem 31, text 21", "Dev problem 31, text 22", "Dev problem 31, text 23", "Dev problem 31, text 24", "Dev problem 31, text 25", "Dev problem 31, text 26", "Dev problem 31, text 27", "Dev problem 31, text 28", "Dev problem 31, text 29", "Dev problem 31, text 30", "Dev problem 31, text 31")
+text_ids = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+uses_calculator = true
+levels_available = PackedInt32Array(1, 1, 1, 1)
+art_dir = "res://packs/dev/assets/problem_art/b105"
+art_files = PackedStringArray("res://packs/dev/assets/problem_art/b105/pa_1959.png", "res://packs/dev/assets/problem_art/b105/pa_1960.png", "res://packs/dev/assets/problem_art/b105/pa_1961.png", "res://packs/dev/assets/problem_art/b105/pa_1962.png", "res://packs/dev/assets/problem_art/b105/pa_1963.png", "res://packs/dev/assets/problem_art/b105/pa_1964.png", "res://packs/dev/assets/problem_art/b105/pa_1965.png", "res://packs/dev/assets/problem_art/b105/pa_1966.png", "res://packs/dev/assets/problem_art/b105/pa_1967.png", "res://packs/dev/assets/problem_art/b105/pa_1968.png", "res://packs/dev/assets/problem_art/b105/pa_1969.png", "res://packs/dev/assets/problem_art/b105/pa_1970.png", "res://packs/dev/assets/problem_art/b105/pa_1971.png")
+field_kinds = "cccccccccc"
+records = Array[PackedInt64Array]([PackedInt64Array(0, 1, 2, 0, 1, 2, 0, 1, 2, 0), PackedInt64Array(1, 2, 0, 1, 2, 0, 1, 2, 0, 1), PackedInt64Array(2, 0, 1, 2, 0, 1, 2, 0, 1, 2), PackedInt64Array(1, 2, 0, 1, 2, 0, 1, 2, 0, 1), PackedInt64Array(2, 0, 1, 2, 0, 1, 2, 0, 1, 2), PackedInt64Array(0, 1, 2, 0, 1, 2, 0, 1, 2, 0), PackedInt64Array(2, 0, 1, 2, 0, 1, 2, 0, 1, 2), PackedInt64Array(0, 1, 2, 0, 1, 2, 0, 1, 2, 0), PackedInt64Array(1, 2, 0, 1, 2, 0, 1, 2, 0, 1), PackedInt64Array(0, 1, 2, 0, 1, 2, 0, 1, 2, 0), PackedInt64Array(1, 2, 0, 1, 2, 0, 1, 2, 0, 1), PackedInt64Array(2, 0, 1, 2, 0, 1, 2, 0, 1, 2)])
+record_levels = PackedInt32Array(0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3)
+answer_fields = PackedInt32Array(8, 8, 8, 8)
+compare_mode = "exact"
+tolerances = PackedFloat64Array(0, 0, 0, 0)
+kind_checked_levels = PackedInt32Array()
+extras = {}
+diagram = {"family": "items", "items": [{"pic": 0, "pos": [20, 60], "opaque": true}, {"text": {"field": 0}, "box": [30, 64], "y": 330}, {"text": {"field": 1}, "box": [100, 64], "y": 330}, {"text": {"field": 2}, "box": [170, 64], "y": 330}, {"text": {"field": 3}, "box": [240, 64], "y": 330}]}

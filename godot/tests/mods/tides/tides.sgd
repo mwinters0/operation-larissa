@@ -1,0 +1,30 @@
+# A small problem-screen mod: it draws the screen of problem type 40 ("fish in rows") from the problem it is told: a pool, a row of fish pictures of its own pack (problems/fish.png) for each row of the problem, what the player has
+# typed so far, and the prompt, through the game's font. It keeps nothing but a count of the times it was asked (for the tests to ask): every picture is built from `state`, so a screen shown late is the screen shown early.
+var api : Dictionary = {}
+var asked := 0
+var last_step := ""
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func times_asked() -> int:
+	return asked
+
+func problem_frame(state : Dictionary) -> Array:
+	asked += 1
+	last_step = state["step"]
+	var out := []
+	out.append(["rect", Rect2(16, 16, 330, 230), Color(0.02, 0.10, 0.18)])
+	var rows : int = state["fields"][0]
+	var per : int = state["fields"][1]
+	for row in rows:
+		for column in per:
+			out.append(["picture", "problems/fish.png", Vector2(28 + column * 24, 28 + row * 22)])
+	# the fish glow once the player is typing
+	if state["entry"] != "" and state["entry"] != "0":
+		out.append(["layer", "problems/glow.gdshader", {"strength": 0.5, "tint": Color(1.0, 0.9, 0.3)}])
+		out.append(["region", "problems/fish.png", Rect2(300, 200, 16, 16), Rect2(0, 0, 8, 8)])
+		out.append(["layer", ""])
+	out.append(["text", "Typed: " + state["entry"], Vector2(24, 260), 17, Color.WHITE, 300.0, "left"])
+	out.append(["text", state["title"], Vector2(24, 280), 14, Color(0.8, 0.9, 1.0)])
+	return out

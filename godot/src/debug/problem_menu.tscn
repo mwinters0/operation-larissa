@@ -1,0 +1,86 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/debug/problem_menu.gd" id="1_menu"]
+[ext_resource type="PackedScene" path="res://src/ui/hud.tscn" id="2_hud"]
+
+[node name="ProblemMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 400.0
+script = ExtResource("1_menu")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 400.0
+color = Color(0, 0, 0, 1)
+
+[node name="Hud" parent="." instance=ExtResource("2_hud")]
+
+[node name="Menu" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 400.0
+
+[node name="Heading" type="Label" parent="Menu"]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 6.0
+offset_right = 628.0
+offset_bottom = 30.0
+theme_override_font_sizes/font_size = 18
+text = "Math problems - debug menu"
+
+[node name="TypeList" type="ItemList" parent="Menu"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 12.0
+offset_top = 36.0
+offset_right = 330.0
+offset_bottom = 392.0
+theme_override_font_sizes/font_size = 13
+
+[node name="LevelButtons" type="HBoxContainer" parent="Menu"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 344.0
+offset_top = 36.0
+offset_right = 628.0
+offset_bottom = 68.0
+
+[node name="InfoLabel" type="Label" parent="Menu"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 344.0
+offset_top = 80.0
+offset_right = 628.0
+offset_bottom = 180.0
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="Help" type="Label" parent="Menu"]
+layout_mode = 0
+offset_left = 344.0
+offset_top = 200.0
+offset_right = 628.0
+offset_bottom = 300.0
+theme_override_font_sizes/font_size = 12
+text = "Up / Down: choose the problem type
+1 - 4 (or the buttons): play it at that level
+R: repeat the last one
+Enter submits; wrong, wrong shows hint then solution."
+autowrap_mode = 3
+
+[node name="ResultLabel" type="Label" parent="Menu"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 344.0
+offset_top = 320.0
+offset_right = 628.0
+offset_bottom = 392.0
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3

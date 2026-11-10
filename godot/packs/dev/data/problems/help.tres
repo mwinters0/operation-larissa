@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="TextTable" format=3]
+
+[ext_resource type="Script" path="res://src/resources/text_table.gd" id="1_text_table"]
+
+[resource]
+script = ExtResource("1_text_table")
+texts = {10152: "text_10152", 10153: "text_10153", 10155: "text_10155", 10156: "text_10156", 10157: "text_10157", 10158: "text_10158", 10159: "text_10159", 10160: "text_10160", 10161: "text_10161", 10162: "text_10162", 10163: "text_10163", 12000: "help_math_0", 12001: "help_math_1", 12002: "help_education_0", 12003: "help_education_1", 12004: "help_education_2", 12005: "help_education_3", 12006: "text_12006", 12007: "help_playing_0", 12008: "help_playing_1", 12009: "help_keyboard_0", 12011: "help_practice_0", 12012: "help_practice_1", 12013: "help_practice_2", 12014: "help_calculator_0", 12015: "help_calculator_1", 12016: "help_calculator_2", 12018: "help_zones_0"}

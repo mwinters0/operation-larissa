@@ -1,0 +1,130 @@
+# Running the original game under Steam's Proton, for comparing the port with it. Opt in per command with
+# `mise -E proton run <task>`, or for a shell with `export MISE_ENV=proton`; mise then loads this file on top of mise.toml.
+# What these tasks need and how to use them: docs/SETUP.md ("For the original game under Proton").
+
+[env]
+# Proton prefix: Wine's "virtual C: drive" is ./prefix/pfx
+STEAM_COMPAT_DATA_PATH = "{{config_root}}/prefix"
+STEAM_COMPAT_CLIENT_INSTALL_PATH = "{{env.HOME}}/.steam/steam"
+PROTON = "{{env.HOME}}/.steam/steam/steamapps/common/Proton - Experimental/proton"
+
+## Setup
+
+# Only playing the original under Wine needs a real folder for the CD. The tools in tools/ read NEPTUNE.ISO directly
+# (tools/gamefiles.py), so they do not use ./iso.
+[tasks.unpack-cd]
+description = "Unpack NEPTUNE.ISO into ./iso for the Wine tasks (no root/mount needed; skipped when ./iso exists, delete it to redo)"
+run = '''
+[ -d iso ] && exit 0
+rm -rf iso.tmp
+7z x -y -oiso.tmp NEPTUNE.ISO
+mv iso.tmp iso        # only a complete unpack becomes ./iso
+'''
+
+[tasks.prefix]
+description = "Create the Wine prefix in ./prefix/pfx (first run takes a minute; safe to re-run)"
+run = '''
+mkdir -p prefix
+"$PROTON" run wineboot -u
+'''
+
+[tasks.dpi]
+depends = ["prefix"]
+description = "Set Wine UI scaling for HiDPI: mise -E proton run dpi 192 (96=100%, 144=150%, 192=200%, 288=300%)"
+run = "\"$PROTON\" run reg add 'HKCU\\Control Panel\\Desktop' /v LogPixels /t REG_DWORD /d {{arg(name='dpi', default='192')}} /f"
+
+[tasks.patch]
+depends = ["unpack-cd"]
+description = "Install WinG into the game dir instead of system32 (avoids installer error -115)"
+run = '''
+f=iso/INSTALL/DATA1.CAB
+[ -f "$f.orig" ] || cp "$f" "$f.orig"
+# WinG file group's destination: <WINSYSDIR> -> <TARGETDIR> (same length, so offsets hold)
+off=3151
+case "$(dd if="$f" bs=1 skip=$off count=11 2>/dev/null)" in
+  "<WINSYSDIR>") printf '<TARGETDIR>' | dd of="$f" bs=1 seek=$off conv=notrunc 2>/dev/null ;;
+  "<TARGETDIR>") ;;
+  *) echo "unexpected bytes at offset $off in $f" >&2; exit 1 ;;
+esac
+'''
+
+[tasks.install]
+depends = ["prefix", "unpack-cd", "patch"]
+run = '"$PROTON" run "$PWD/iso/INSTALL/AUTORUN.EXE"'
+
+## Play
+
+[tasks.cdrom]
+depends = ["prefix", "unpack-cd"]
+description = "Present ./iso as a CD-ROM drive D: and point the game's INI at it"
+run = '''
+ln -sfn "$PWD/iso" prefix/pfx/dosdevices/d:
+"$PROTON" run reg add 'HKLM\Software\Wine\Drives' /v 'd:' /t REG_SZ /d cdrom /f
+sed -i 's|^CDDrive=.*|CDDrive=D:\\Onwincd\\\r|' prefix/pfx/drive_c/Tlcwin/Onwincd/Onwincd.ini
+'''
+
+[tasks.sound]
+depends = ["prefix"]
+description = "Prepare the game's Win95 MIDI-mapper config; SOUND=gm (default) or SOUND=adlib picks the music set"
+run = '''
+# The game reads a word N at offset 6 of \windows\system\midimap.cfg, then 16 bytes at N*0x36-0x24 as the
+# setup name. A name containing ADLIB / AD LIB / MVI PRO / BASE / THUNDER BOARD selects the base-level
+# B*.MID music, anything else the extended E*.MID set. It loads N into a dword with a 2-byte read, so
+# the high half is stack garbage under Wine. Patch the 7 bytes at 0x413C74 to use only the low word
+# (movzx eax,[ebp-4]; imul eax,eax,0x36), which moves the name to offset N*0x36 = 54.
+exe=prefix/pfx/drive_c/Tlcwin/Onwincd/Onwin32.exe
+off=$((0x413c74 - 0x410000 + 0x800))
+orig=6b45fc3683c0dc
+patched=0fb745fc6bc036
+cur=$(xxd -p -s $off -l 7 "$exe")
+if [ "$cur" = "$orig" ]; then
+  [ -f "$exe.orig" ] || cp "$exe" "$exe.orig"
+  printf '\x0f\xb7\x45\xfc\x6b\xc0\x36' | dd of="$exe" bs=1 seek=$off conv=notrunc 2>/dev/null
+elif [ "$cur" != "$patched" ]; then
+  echo "unexpected bytes at $off in $exe: $cur" >&2; exit 1
+fi
+case "${SOUND:-gm}" in
+  adlib) name="AD LIB" ;;
+  gm)    name="General MIDI" ;;
+  *) echo "SOUND must be gm or adlib" >&2; exit 1 ;;
+esac
+mkdir -p prefix/pfx/drive_c/windows/system
+f=prefix/pfx/drive_c/windows/system/midimap.cfg
+rm -f "$f"
+printf '\001\000' | dd of="$f" bs=1 seek=6 conv=notrunc 2>/dev/null
+printf '%s' "$name" | dd of="$f" bs=1 seek=54 conv=notrunc 2>/dev/null
+truncate -s 70 "$f"   # the 16-byte name read must not hit EOF
+'''
+
+[tasks.synth]
+description = "(Re)start the FluidSynth MIDI sink; SOUND=adlib uses ./soundfonts/opl.sf2 if present, else GM"
+run = '''
+sf=/usr/share/soundfonts/FluidR3_GM.sf2
+if [ "${SOUND:-gm}" = adlib ]; then
+  if [ -f soundfonts/opl.sf2 ]; then sf=$PWD/soundfonts/opl.sf2
+  else echo "soundfonts/opl.sf2 not found; AdLib mode will use the GM soundfont" >&2; fi
+fi
+pkill -x fluidsynth || true; sleep 0.5
+setsid fluidsynth -s -i -a pipewire -m alsa_seq -o midi.alsa_seq.id=FluidSynth "$sf" \
+  >/dev/null 2>&1 </dev/null &
+sleep 2
+'''
+
+[tasks.synth-stop]
+description = "Stop the FluidSynth MIDI sink"
+run = "pkill -x fluidsynth || true"
+
+[tasks.play]
+depends = ["cdrom", "sound", "synth"]
+depends_post = ["synth-stop"]
+run = '"$PROTON" run "C:\Tlcwin\Onwincd\Onwin32.exe"'
+
+## Utility
+
+[tasks.cmd]
+description = "Run any exe in the prefix: mise -E proton run cmd 'C:\\path\\game.exe'"
+run = '"$PROTON" run'
+
+[tasks.shell]
+description = "winecfg / explorer etc. in the prefix"
+run = '"$PROTON" run winecfg'

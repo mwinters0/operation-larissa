@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="SpriteMetaTable" format=3]
+
+[ext_resource type="Script" path="res://src/resources/sprite_meta_table.gd" id="1_sprite_meta_table"]
+
+[resource]
+script = ExtResource("1_sprite_meta_table")
+sizes = Array[Vector2i]([Vector2i(64, 48), Vector2i(40, 32), Vector2i(48, 40), Vector2i(56, 48), Vector2i(64, 32), Vector2i(40, 40), Vector2i(48, 48), Vector2i(56, 32), Vector2i(64, 40), Vector2i(40, 48), Vector2i(48, 32), Vector2i(56, 40), Vector2i(64, 48), Vector2i(40, 32), Vector2i(48, 40)])
+hit_rects = Array[Rect2i]([Rect2i(2, 2, 60, 44), Rect2i(2, 2, 36, 28), Rect2i(2, 2, 44, 36), Rect2i(2, 2, 52, 44), Rect2i(2, 2, 60, 28), Rect2i(2, 2, 36, 36), Rect2i(2, 2, 44, 44), Rect2i(2, 2, 52, 28), Rect2i(2, 2, 60, 36), Rect2i(2, 2, 36, 44), Rect2i(2, 2, 44, 28), Rect2i(2, 2, 52, 36), Rect2i(2, 2, 60, 44), Rect2i(2, 2, 36, 28), Rect2i(2, 2, 44, 36)])
+hit_rects_flipped = Array[Rect2i]([Rect2i(2, 2, 60, 44), Rect2i(2, 2, 36, 28), Rect2i(2, 2, 44, 36), Rect2i(2, 2, 52, 44), Rect2i(2, 2, 60, 28), Rect2i(2, 2, 36, 36), Rect2i(2, 2, 44, 44), Rect2i(2, 2, 52, 28), Rect2i(2, 2, 60, 36), Rect2i(2, 2, 36, 44), Rect2i(2, 2, 44, 28), Rect2i(2, 2, 52, 36), Rect2i(2, 2, 60, 44), Rect2i(2, 2, 36, 28), Rect2i(2, 2, 44, 36)])

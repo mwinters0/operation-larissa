@@ -1,0 +1,42 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/story/voyager_closing.gd" id="1_closing"]
+[ext_resource type="PackedScene" path="res://src/ui/message_box.tscn" id="2_message"]
+
+[node name="VoyagerClosing" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 400.0
+mouse_filter = 2
+script = ExtResource("1_closing")
+
+[node name="Playfield" type="Control" parent="."]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 0
+offset_left = 16.0
+offset_top = 32.0
+offset_right = 624.0
+offset_bottom = 320.0
+mouse_filter = 2
+
+[node name="Sub" type="AnimatedSprite2D" parent="Playfield"]
+unique_name_in_owner = true
+centered = false
+
+[node name="HeliBody" type="Sprite2D" parent="Playfield"]
+unique_name_in_owner = true
+visible = false
+centered = false
+
+[node name="HeliRotor" type="Sprite2D" parent="Playfield"]
+unique_name_in_owner = true
+visible = false
+centered = false
+
+[node name="Animations" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+
+[node name="MessageBox" parent="." instance=ExtResource("2_message")]
+unique_name_in_owner = true

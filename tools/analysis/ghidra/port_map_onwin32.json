@@ -1,0 +1,3935 @@
+{
+ "0x00410074": {
+  "name": "NeCloseResourceFile",
+  "status": "n/a",
+  "where": "n/a: the port reads assets pre-extracted from the DLLs by tools/extract (extract_data.py / extract_images.py / extract_sounds.py via tools/extract/ne.py); no runtime resource-file I/O"
+ },
+ "0x004100e6": {
+  "name": "NeOpenResourceFile",
+  "status": "n/a",
+  "where": "n/a: the port reads assets pre-extracted from the DLLs by tools/extract (extract_data.py / extract_images.py / extract_sounds.py via tools/extract/ne.py); no runtime resource-file I/O"
+ },
+ "0x00410334": {
+  "name": "NeFindResource",
+  "status": "n/a",
+  "where": "n/a: the port reads assets pre-extracted from the DLLs by tools/extract (extract_data.py / extract_images.py / extract_sounds.py via tools/extract/ne.py); no runtime resource-file I/O"
+ },
+ "0x00410449": {
+  "name": "NeLoadResource",
+  "status": "n/a",
+  "where": "n/a: the port reads assets pre-extracted from the DLLs by tools/extract (extract_data.py / extract_images.py / extract_sounds.py via tools/extract/ne.py); no runtime resource-file I/O"
+ },
+ "0x00410506": {
+  "name": "NeSizeofResource",
+  "status": "n/a",
+  "where": "n/a: the port reads assets pre-extracted from the DLLs by tools/extract (extract_data.py / extract_images.py / extract_sounds.py via tools/extract/ne.py); no runtime resource-file I/O"
+ },
+ "0x00410553": {
+  "name": "LockHandleIfSet",
+  "status": "n/a",
+  "where": "n/a: memory-handle plumbing"
+ },
+ "0x00410569": {
+  "name": "UnlockHandleIfSet",
+  "status": "n/a",
+  "where": "n/a: memory-handle plumbing"
+ },
+ "0x00410582": {
+  "name": "FreeHandleIfSet",
+  "status": "n/a",
+  "where": "n/a: memory-handle plumbing"
+ },
+ "0x00410596": {
+  "name": "NeAccessResource",
+  "status": "n/a",
+  "where": "n/a: unreferenced"
+ },
+ "0x004105ea": {
+  "name": "NeCloseAccessedResourceStub",
+  "status": "n/a",
+  "where": "n/a: unreferenced"
+ },
+ "0x004105f2": {
+  "name": "NeReadAccessedResource",
+  "status": "n/a",
+  "where": "n/a: unreferenced"
+ },
+ "0x00410658": {
+  "status": "n/a",
+  "where": "n/a: id mapping is baked into the extracted assets / data (DESIGN 7, resource OTHR 15001)"
+ },
+ "0x0041069c": {
+  "status": "n/a",
+  "where": "n/a: resource plumbing"
+ },
+ "0x004106bc": {
+  "status": "ported",
+  "where": "tools/extract/rund.py:TRANSPARENT_INDEX = 200 (alpha in the extracted sprites, tools/extract/extract_images.py); opaque mirrored DrawPicture = plain flipped texture"
+ },
+ "0x004106c9": {
+  "status": "n/a",
+  "where": "n/a: transparency is fixed in the extracted assets"
+ },
+ "0x004106d1": {
+  "status": "n/a",
+  "where": "n/a: the 8-bit palette is applied offline when sprites are converted to PNG (tools/extract/extract_images.py); no runtime palette"
+ },
+ "0x0041072e": {
+  "status": "n/a",
+  "where": "n/a: the port draws the 16 VGA colours as exact RGB (docs/data/problem_diagrams.json \"colors\"); original colour error <= 8/255 per channel (colour 7 = 184 not 192), cosmetic only"
+ },
+ "0x004107c7": {
+  "name": "SetColor",
+  "status": "ported",
+  "where": "godot/src/resources/problem_screen_layout.gd:color (the 16 VGA colours of VgaPalette 0x440084), used by diagrams (diagram_base.gd add_rect / add_text colour index), problem_screen.gd, log_screen.gd, console_frame.gd"
+ },
+ "0x00410832": {
+  "name": "GetColor",
+  "status": "n/a",
+  "where": "n/a: reads the current drawing colour so a caller can restore it; no state in the Godot port (colours are per node)"
+ },
+ "0x00410838": {
+  "status": "n/a",
+  "where": "n/a: back-buffer drawing primitive"
+ },
+ "0x00410848": {
+  "name": "DialogBoxPausingSound",
+  "status": "n/a",
+  "where": "n/a: Win32 DialogBoxParamA wrapper used only by the startup checks (StartupChecks, ShowTooLittleColorDialog, CheckSoundHardware, CheckDisplayResolution); the port has no such checks (and pauses sound around its own dialogs: game.gd:_show_modal)"
+ },
+ "0x0041088a": {
+  "name": "CenterDialogOnScreen",
+  "status": "n/a",
+  "where": "n/a: Win32 dialog placement (the port uses its own Godot dialogs)"
+ },
+ "0x004108e4": {
+  "status": "n/a",
+  "where": "n/a: unreferenced Win32 helper"
+ },
+ "0x004108ea": {
+  "name": "CenterWindow_body",
+  "status": "n/a",
+  "where": "n/a: unreferenced Win32 helper"
+ },
+ "0x00410b78": {
+  "name": "PostKeyEvent",
+  "status": "ported",
+  "where": "godot/src/problems/calculator.gd:key_for_event (typed CHARACTERS decide, as WM_CHAR does; Ctrl+B..F = codes 2-6 act as F S N R C); cursor / paging keys are Godot InputEventKey keycodes (log_screen.gd, ballast_panel_diagram.gd, sign_in.gd); test_calculator_input.gd"
+ },
+ "0x00410b8f": {
+  "name": "PumpMessages",
+  "status": "n/a",
+  "where": "n/a: Win32 message pump; Godot runs its own main loop"
+ },
+ "0x00410bc5": {
+  "name": "PollInputEvent",
+  "status": "ported",
+  "where": "Godot input events replace the raw poll (Esc -> quit_to_menu action game.gd:_unhandled_input; window close -> game.gd:_notification WM_CLOSE_REQUEST). The 'stand still while the window is inactive' rule: godot/src/autoload/game_clock.gd:_notification (window_active) + audio.gd:_notification"
+ },
+ "0x00410c6c": {
+  "name": "FlushInput",
+  "status": "n/a",
+  "where": "n/a: discards queued keys / clicks; Godot has no input queue to flush - the port switches input off while an animation / message runs (problem_screen.gd:_set_input) so keys pressed meanwhile are not replayed"
+ },
+ "0x00410c7d": {
+  "name": "PollInput",
+  "status": "n/a",
+  "where": "n/a: key-code + hotspot-id translation replaced by Godot input events and Controls (calculator Buttons, ballast_panel_diagram.gd:_gui_input, log_screen.gd, sign_in.gd, story_pages.gd); a click outside any widget does nothing, as outside every hotspot in the original"
+ },
+ "0x00410d50": {
+  "name": "PeekInput",
+  "status": "n/a",
+  "where": "n/a: non-blocking 'was a key pressed?' poll; Godot delivers input events (game.gd:_unhandled_input per frame for DoAction's PeekInput; opening.gd / story_pages.gd / expert_closing.gd / sign_in.gd for their skip polls)"
+ },
+ "0x00410d74": {
+  "status": "n/a",
+  "where": "n/a: memory management"
+ },
+ "0x00410d95": {
+  "status": "n/a",
+  "where": "n/a: memory management (the port streams voice files directly: godot/src/autoload/audio.gd)"
+ },
+ "0x00410daa": {
+  "status": "n/a",
+  "where": "n/a: memory management"
+ },
+ "0x00410dd4": {
+  "name": "BundleItem",
+  "status": "n/a",
+  "where": "n/a: BNDL item pointer lookup; port assets are individual Godot resources / textures"
+ },
+ "0x00410de3": {
+  "name": "NumBundleItems",
+  "status": "n/a",
+  "where": "n/a: the port reads bundle layouts from extracted data (docs/data/problem_gfx_bundles.json etc.)"
+ },
+ "0x00410dee": {
+  "name": "SetBundleItem",
+  "status": "n/a",
+  "where": "n/a: unreferenced"
+ },
+ "0x00410e00": {
+  "name": "LogicalToRealResource",
+  "status": "n/a",
+  "where": "n/a: the port reads assets pre-extracted from the DLLs by tools/extract; no runtime resource-file / bundle loading (logical id 28000 + i = NE0SOUND 8000 + i is baked into audio/voice catalogs: sfx_catalog.gd, voice_index.gd)"
+ },
+ "0x00410e29": {
+  "name": "GetResourceSize",
+  "status": "n/a",
+  "where": "n/a: the port reads assets pre-extracted from the DLLs by tools/extract (extract_data.py / extract_images.py / extract_sounds.py via tools/extract/ne.py); no runtime resource-file I/O"
+ },
+ "0x00410f80": {
+  "name": "ResourceTypeTagForId",
+  "status": "n/a",
+  "where": "n/a: documented in DESIGN 7; the extractors dispatch on resource type directly"
+ },
+ "0x00410fda": {
+  "status": "n/a",
+  "where": "n/a: the port reads assets pre-extracted from the DLLs by tools/extract (extract_data.py / extract_images.py / extract_sounds.py via tools/extract/ne.py); no runtime resource-file I/O"
+ },
+ "0x00411224": {
+  "status": "n/a",
+  "where": "n/a: the port reads bundle contents from extracted data; bundle item order/ids are documented in docs/data/problem_gfx_bundles.json, DESIGN 5.5/9"
+ },
+ "0x004112ba": {
+  "status": "n/a",
+  "where": "n/a: loads data tables, which the port gets from docs/data/*.json"
+ },
+ "0x00411315": {
+  "name": "LoadSpeechClip",
+  "status": "n/a",
+  "where": "n/a: the port reads assets pre-extracted from the DLLs by tools/extract; no runtime resource-file / bundle loading; speech clips are audio files played via godot/src/autoload/audio.gd:speak / play_voice_sequence (and the loose pictures it also loaded are normal textures)"
+ },
+ "0x00411338": {
+  "name": "LoadBundle",
+  "status": "n/a",
+  "where": "n/a: the port reads assets pre-extracted from the DLLs by tools/extract; no runtime resource-file / bundle loading"
+ },
+ "0x00411346": {
+  "name": "LoadBundleInto",
+  "status": "n/a",
+  "where": "n/a: the port reads assets pre-extracted from the DLLs by tools/extract; no runtime resource-file / bundle loading"
+ },
+ "0x00411359": {
+  "status": "n/a",
+  "where": "n/a: tables come from extracted data (docs/data/sectors.json, foe data)"
+ },
+ "0x0041136c": {
+  "status": "n/a",
+  "where": "n/a: unreferenced"
+ },
+ "0x004113a4": {
+  "status": "n/a",
+  "where": "n/a: unreferenced"
+ },
+ "0x004113af": {
+  "status": "n/a",
+  "where": "n/a: unreferenced"
+ },
+ "0x004113e7": {
+  "status": "n/a",
+  "where": "n/a: unreferenced"
+ },
+ "0x00411411": {
+  "status": "n/a",
+  "where": "n/a: unreferenced"
+ },
+ "0x004114aa": {
+  "status": "n/a",
+  "where": "n/a: unreferenced"
+ },
+ "0x0041153b": {
+  "status": "n/a",
+  "where": "n/a: speech clips are extracted to files (tools/extract/extract_sounds.py) and played from godot/src/autoload/audio.gd"
+ },
+ "0x004116f4": {
+  "status": "n/a",
+  "where": "n/a: memory management"
+ },
+ "0x00411726": {
+  "name": "LoadStringResource",
+  "status": "n/a",
+  "where": "n/a: user32 LoadStringA; strings are Catalog.texts(\"ui_strings\").text(id) (godot/data/problems/ui_strings.tres)"
+ },
+ "0x00411740": {
+  "status": "n/a",
+  "where": "n/a: Godot DirAccess / user:// handle storage (godot/src/autoload/save_store.gd)"
+ },
+ "0x0041174e": {
+  "status": "n/a",
+  "where": "n/a: godot/src/autoload/save_store.gd uses FileAccess"
+ },
+ "0x00411768": {
+  "status": "n/a",
+  "where": "n/a: godot/src/autoload/save_store.gd uses FileAccess"
+ },
+ "0x0041177d": {
+  "status": "n/a",
+  "where": "n/a: FileAccess"
+ },
+ "0x00411793": {
+  "status": "n/a",
+  "where": "n/a: FileAccess"
+ },
+ "0x004117a9": {
+  "status": "n/a",
+  "where": "n/a: FileAccess"
+ },
+ "0x004117b8": {
+  "status": "n/a",
+  "where": "n/a: WinG graphics layer (docs/port/AUDIT_CALLSITES.md lists the error box as N/A)"
+ },
+ "0x004118bf": {
+  "status": "n/a",
+  "where": "n/a: WinG"
+ },
+ "0x004118df": {
+  "status": "n/a",
+  "where": "n/a: Godot viewport 640x400 replaces the WinG back buffer"
+ },
+ "0x00411a43": {
+  "name": "ClearSystemPalette",
+  "status": "n/a",
+  "where": "n/a: Win32 palette plumbing"
+ },
+ "0x00411ace": {
+  "status": "n/a",
+  "where": "n/a: Win32 palette plumbing"
+ },
+ "0x00411b23": {
+  "status": "n/a",
+  "where": "n/a: Win32 palette plumbing"
+ },
+ "0x00411b5d": {
+  "status": "n/a",
+  "where": "n/a: Win32 cleanup"
+ },
+ "0x00411bc1": {
+  "status": "n/a",
+  "where": "n/a: WinG blit (Godot renders the scene directly)"
+ },
+ "0x00411bfd": {
+  "status": "n/a",
+  "where": "n/a: screen blit"
+ },
+ "0x00411c56": {
+  "status": "n/a",
+  "where": "n/a: Win32 palette setup (no fades or cycling: single caller, called once at start)"
+ },
+ "0x00411fd7": {
+  "status": "ported",
+  "where": "tools/extract/rund.py:decode_rund (checked: identical output on all 1534 RUND pictures of NEP256 / NEPBG1 / NEPBG2 / NEP.DLL)"
+ },
+ "0x00412072": {
+  "status": "ported",
+  "where": "tools/extract/rund.py:decode_rund (checks the RUND tag)"
+ },
+ "0x00412094": {
+  "name": "SetRectXYWH",
+  "status": "n/a",
+  "where": "n/a: rectangle helper"
+ },
+ "0x004120b3": {
+  "name": "FlushRect",
+  "status": "n/a",
+  "where": "n/a: back-buffer primitive; Godot draws sprites / ColorRects / Controls and presents frames itself (FlushRect's speed only matters for the tank-loss dissolve, ported as the dissolve: core/dissolve_pattern.gd)"
+ },
+ "0x0041213f": {
+  "name": "AddDirtyRect",
+  "status": "n/a",
+  "where": "n/a: dirty-rectangle bookkeeping for the GDI back buffer; Godot redraws what changes"
+ },
+ "0x00412206": {
+  "status": "n/a",
+  "where": "n/a: Godot redraws the whole viewport each frame; the dirty-rect list only limits the GDI copy"
+ },
+ "0x00412251": {
+  "status": "n/a",
+  "where": "n/a: dirty-rect bookkeeping"
+ },
+ "0x00412259": {
+  "status": "n/a",
+  "where": "screen blit; Godot redraws every frame"
+ },
+ "0x00412274": {
+  "status": "n/a",
+  "where": "screen blit"
+ },
+ "0x00412299": {
+  "name": "FillRect",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd (DiagramItem rect items, add_rect) and godot/src/ui/console_frame.gd:_draw (draw_rect); black boxes that clear a message area are Label / panel nodes"
+ },
+ "0x00412322": {
+  "name": "FillBackBufferRectBytes",
+  "status": "n/a",
+  "where": "godot/src/ui/sign_in.gd (scroll thumb drawn by a Godot control)"
+ },
+ "0x00412364": {
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/sonar_diagram.gd (radar sweep); the 1 x 1 red trail pixels at the blip position are deliberately NOT drawn (DESIGN 5.x 'The pixel dots are NOT ported': invisible at this scale)"
+ },
+ "0x0041239a": {
+  "name": "DrawHLine",
+  "status": "ported",
+  "where": "godot/src/ui/console_frame.gd:_draw / diagram_base.gd rect items (1 px high rectangles of the bezel frame and diagrams)"
+ },
+ "0x004123d1": {
+  "name": "DrawVLine",
+  "status": "n/a",
+  "where": "frame borders are theme boxes / scene art in the port"
+ },
+ "0x00412408": {
+  "name": "FillRectWithColor",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd (rect items) / godot/src/ui/console_frame.gd; clearing the message box = relabelling the text node (problem_screen.gd:_write_message)"
+ },
+ "0x00412440": {
+  "name": "DrawRectOutlineIndexed",
+  "status": "n/a",
+  "where": ""
+ },
+ "0x00412517": {
+  "status": "n/a",
+  "where": "sign-in screen frames are scene nodes in godot/src/ui/sign_in.gd"
+ },
+ "0x0041254f": {
+  "name": "CopyBackBufferRect",
+  "status": "n/a",
+  "where": "n/a: saves / restores a clean copy of a screen area in the lower half of the GDI back buffer (log monitor, sub erase); Godot redraws nodes, the log screen sets its entry text directly (log_screen.gd)"
+ },
+ "0x00412585": {
+  "status": "n/a",
+  "where": "pictures are Godot textures"
+ },
+ "0x00412590": {
+  "status": "n/a",
+  "where": "pictures are Godot textures"
+ },
+ "0x0041259c": {
+  "status": "n/a",
+  "where": "pictures are Godot textures"
+ },
+ "0x004125a7": {
+  "status": "n/a",
+  "where": "pictures are Godot textures"
+ },
+ "0x004125b3": {
+  "status": "n/a",
+  "where": "memory sizing"
+ },
+ "0x004125ca": {
+  "status": "n/a",
+  "where": "memory sizing"
+ },
+ "0x004125db": {
+  "name": "BlitPictureOpaque",
+  "status": "n/a",
+  "where": "godot: TextureRect / draw_texture"
+ },
+ "0x0041262a": {
+  "name": "DrawPicture",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd (opaque picture items) and TextureRect nodes; the pictures are the extracted textures"
+ },
+ "0x00412679": {
+  "name": "BlitPictureTransparent",
+  "status": "ported",
+  "where": "godot/src/ (Sprite2D / TextureRect with alpha for colour 200; clip rect = Godot clip / region, e.g. title_scene.gd sinking sub)"
+ },
+ "0x00412824": {
+  "name": "BlitPictureTransparentMirrored",
+  "status": "ported",
+  "where": "godot sprites use flip_h (sub cells < 4, crew, creatures)"
+ },
+ "0x0041294d": {
+  "name": "DrawPictureMasked",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd / Sprite2D / TextureRect with alpha for colour 200 (tools/extract/rund.py TRANSPARENT_INDEX); mirror = flip_h / flipped item"
+ },
+ "0x0041299f": {
+  "status": "n/a",
+  "where": "dead code (no callers)"
+ },
+ "0x00412a12": {
+  "status": "n/a",
+  "where": "letterbox black: project.godot stretch canvas_items / integer scale"
+ },
+ "0x00412b03": {
+  "status": "n/a",
+  "where": "godot: dialogs are overlay nodes, no screen save / restore needed"
+ },
+ "0x00412b2d": {
+  "status": "n/a",
+  "where": "godot: overlay nodes"
+ },
+ "0x00412b47": {
+  "name": "BuildRecolorTable",
+  "status": "n/a",
+  "where": ""
+ },
+ "0x00412b8c": {
+  "name": "RecolorBackBufferRect",
+  "status": "n/a",
+  "where": ""
+ },
+ "0x00412bc6": {
+  "status": "n/a",
+  "where": "dead code (no callers)"
+ },
+ "0x00412c62": {
+  "status": "not-ported",
+  "where": "dialog buttons are Godot Buttons with a theme (godot/src/ui/theme_builder.gd: pressed = black box with yellow text), not the original palette-inverted look; cosmetic"
+ },
+ "0x00412cbf": {
+  "name": "BlitRawPicture",
+  "status": "n/a",
+  "where": ""
+ },
+ "0x00412d2b": {
+  "name": "BlitRawTransparentClipped",
+  "status": "n/a",
+  "where": ""
+ },
+ "0x00412d9f": {
+  "name": "BlitRlePicture",
+  "status": "n/a",
+  "where": ""
+ },
+ "0x00412e91": {
+  "name": "BlitRawTransparentMirrored",
+  "status": "n/a",
+  "where": ""
+ },
+ "0x00412f09": {
+  "name": "CopyBufferRows",
+  "status": "n/a",
+  "where": "n/a: memcpy of back-buffer rows for CopyBackBufferRect"
+ },
+ "0x00412f6b": {
+  "name": "GrabScreenRect",
+  "status": "n/a",
+  "where": ""
+ },
+ "0x00412fc7": {
+  "name": "ApplyColorMapToRect",
+  "status": "n/a",
+  "where": ""
+ },
+ "0x0041312f": {
+  "name": "MainWindowProc",
+  "status": "ported",
+  "where": "Window messages map to Godot: WM_ACTIVATE -> godot/src/autoload/audio.gd:_notification (FOCUS_OUT / FOCUS_IN -> pause_sound_on_deactivate / resume_sound_on_activate) and game_clock.gd:_notification; WM_ENTERMENULOOP / EXITMENULOOP -> ui/game_menu_bar.gd (popup show / hide); WM_COMMAND -> game_menu_bar.gd signals; WM_CLOSE / SC_CLOSE -> game.gd:_notification WM_CLOSE_REQUEST; MM_WOM_DONE -> audio.gd:_on_voice_player_finished / _on_sfx_player_finished; WM_CHAR / WM_KEYDOWN -> calculator.gd:key_for_event etc.; mouse messages -> Controls. WM_PAINT / table cloth / palette / screen origin: n/a (Godot window). test_sound_pause.gd"
+ },
+ "0x00413847": {
+  "name": "PauseSoundOnDeactivate",
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:pause_sound_on_deactivate (+ _notification FOCUS_OUT; asking twice pauses once, flag 0x440d80), game_clock.gd (clock stands still), ui/game_menu_bar.gd (menu loop); test_sound_pause.gd"
+ },
+ "0x00413861": {
+  "name": "ResumeSoundOnActivate",
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:resume_sound_on_activate (+ FOCUS_IN), game_clock.gd, ui/game_menu_bar.gd; test_sound_pause.gd"
+ },
+ "0x00413890": {
+  "status": "n/a",
+  "where": "memory"
+ },
+ "0x00413919": {
+  "status": "n/a",
+  "where": "memory"
+ },
+ "0x00413936": {
+  "status": "n/a",
+  "where": "memory (Godot resources are reference counted)"
+ },
+ "0x004139c4": {
+  "status": "ported",
+  "where": "godot/src/ui/game_menu_bar.gd (the menu bar exists when shown)"
+ },
+ "0x004139d2": {
+  "status": "ported",
+  "where": "godot/src/ui/game_menu_bar.gd:_ready and _build_practice_menus (strings 11052-11063, practice_mode / sign_in_mode)"
+ },
+ "0x00413b05": {
+  "status": "ported",
+  "where": "godot/src/ui/game_menu_bar.gd (signals); menus stay enabled while the handler runs in the port, but its dialogs are modal"
+ },
+ "0x00413b73": {
+  "status": "n/a",
+  "where": ""
+ },
+ "0x00413b79": {
+  "status": "ported",
+  "where": "godot/src/ui/game_menu_bar.gd (set_item_disabled; sign_in_mode); greying during every cutscene is not replicated 1:1"
+ },
+ "0x00413bdc": {
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:set_sound_set (the user picks General MIDI or AdLib in Audio Settings instead of auto-detecting; default General MIDI = original default)"
+ },
+ "0x00413e24": {
+  "name": "GetSoundsDirPath",
+  "status": "n/a",
+  "where": ""
+ },
+ "0x00413e44": {
+  "status": "n/a",
+  "where": "process exit"
+ },
+ "0x00413e8c": {
+  "name": "LoadMidiFile",
+  "status": "ported",
+  "where": "godot/src/resources/music_catalog.gd:path_for / stream (id -> song file; General MIDI 'E' vs AdLib 'B' set chosen by Audio.sound_set, a machine setting instead of midimap.cfg - documented difference, see InitMIDIDriver); data docs/data/music_map.json"
+ },
+ "0x00413f2b": {
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:play_music"
+ },
+ "0x00413fba": {
+  "status": "ported",
+  "where": "godot/src/resources/music_catalog.gd:stream (song.loop = true: a song restarts from its beginning when it ends, loop start table all 0)"
+ },
+ "0x00413ff5": {
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:stop_music"
+ },
+ "0x0041403c": {
+  "name": "PauseSong",
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:pause_music (stream_paused keeps the position; levels nest)"
+ },
+ "0x004140c1": {
+  "name": "ResumeSong",
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:resume_music (the song goes on from the same place)"
+ },
+ "0x00414145": {
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:pause_sound (kill_wave + pause_music, nesting counter 0x440e68 = _sound_pause_level); callers game.gd:_show_modal / message dialogs; test_sound_pause.gd"
+ },
+ "0x00414163": {
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:resume_sound (last level resumes the song; a speech sequence whose clip was killed goes on with its next clip); test_sound_pause.gd"
+ },
+ "0x00414183": {
+  "status": "n/a",
+  "where": "safety reset of the pause nesting; audio.gd keeps balanced _sound_pause_level, no observable difference"
+ },
+ "0x00414194": {
+  "status": "n/a",
+  "where": "dead code (no callers)"
+ },
+ "0x004141d5": {
+  "status": "n/a",
+  "where": "dead code (no callers)"
+ },
+ "0x004141fe": {
+  "status": "n/a",
+  "where": "dead code (no callers)"
+ },
+ "0x00414221": {
+  "status": "n/a",
+  "where": ""
+ },
+ "0x00414235": {
+  "status": "n/a",
+  "where": "dead code (no callers)"
+ },
+ "0x00414248": {
+  "status": "n/a",
+  "where": "dead code (no callers)"
+ },
+ "0x0041425f": {
+  "status": "n/a",
+  "where": "dead code (no callers)"
+ },
+ "0x00414276": {
+  "name": "IsMouseButtonDown",
+  "status": "n/a",
+  "where": "n/a: sign-in thumb drag loop; Godot Control drag handling (ui/sign_in.gd)"
+ },
+ "0x0041427c": {
+  "status": "n/a",
+  "where": "godot: get_local_mouse_position"
+ },
+ "0x004142c4": {
+  "status": "n/a",
+  "where": "window creation"
+ },
+ "0x0041432d": {
+  "status": "n/a",
+  "where": "window layout; godot menu bar is part of the scene"
+ },
+ "0x00414351": {
+  "status": "n/a",
+  "where": "window creation (godot project.godot window 640x400)"
+ },
+ "0x00414499": {
+  "name": "ResolveInstallPaths",
+  "status": "n/a",
+  "where": "file paths; port uses res:// data"
+ },
+ "0x0041456d": {
+  "name": "StartupChecks",
+  "status": "n/a",
+  "where": "platform checks"
+ },
+ "0x0041460a": {
+  "name": "ShowTooLittleColorDialog",
+  "status": "n/a",
+  "where": "dead code (no callers)"
+ },
+ "0x00414626": {
+  "name": "CheckSoundHardware",
+  "status": "n/a",
+  "where": "hardware check; port always has audio"
+ },
+ "0x004146e1": {
+  "name": "CheckDisplayResolution",
+  "status": "n/a",
+  "where": "display check; Godot scales the 640x400 canvas"
+ },
+ "0x004147ac": {
+  "name": "ReadCollisionSetting",
+  "status": "ported",
+  "where": "godot/src/core/machine_settings.gd + sector_world.gd:check_contacts"
+ },
+ "0x004147fa": {
+  "status": "n/a",
+  "where": "resource loading; port uses extracted data / resources"
+ },
+ "0x004149f4": {
+  "name": "CheckSoundDllSize",
+  "status": "n/a",
+  "where": "install-integrity check of the original (ONWINCD.INI NE2sound= vs NE2SOUND.DLL size); nothing to port"
+ },
+ "0x00414ad0": {
+  "name": "ShutdownSoundAndMidi",
+  "status": "n/a",
+  "where": "n/a: program exit path (KillWave + MIDI close); Godot frees audio on quit (game.gd:_exit_tree stops music / voice)"
+ },
+ "0x00414b58": {
+  "name": "LoadFontResource",
+  "status": "n/a",
+  "where": "resource loading; the private glyphs are approximated as text (core/hint_system.gd glyph names, degree sign)"
+ },
+ "0x00414b77": {
+  "name": "CreateTextFont",
+  "status": "ported",
+  "where": "godot/src/ui/theme_builder.gd + godot/src/resources/problem_screen_layout.gd (Liberation Sans Bold squeezed to the same strings' metrics)"
+ },
+ "0x00414cdb": {
+  "name": "LoadFonts",
+  "status": "n/a",
+  "where": "font set-up at start; Godot theme font (theme_builder.gd)"
+ },
+ "0x00414cfc": {
+  "name": "FreeFontResource",
+  "status": "n/a",
+  "where": "memory management"
+ },
+ "0x00414d1c": {
+  "name": "FreeFonts",
+  "status": "n/a",
+  "where": "memory management"
+ },
+ "0x00414d29": {
+  "name": "SetFont",
+  "status": "n/a",
+  "where": "font selection; one Godot theme font"
+ },
+ "0x00414dc4": {
+  "name": "GetFontLineHeight",
+  "status": "n/a",
+  "where": "n/a: GDI font metric (20 px: max of the Arial cell 19 and the bitmap font height); `ProblemScreenLayout.line_height` carries the pitch, the Godot Theme font (Liberation Sans Bold squeezed to 7 px average, theme_builder.gd, DESIGN 5.19 'Font') sets line heights"
+ },
+ "0x00414dca": {
+  "name": "DrawChar",
+  "status": "ported",
+  "where": "godot/src/ui/theme_builder.gd + problem_screen_layout.gd (Arial-metric Liberation Sans Bold, documented open item 5.19); private glyphs < 0x20: degree sign 0x0c -> '\u00b0' (tools/extract/extract_data.py), keyboard glyphs -> core/hint_system.gd:printable / ui/help_topics.gd:clean"
+ },
+ "0x00414eef": {
+  "name": "GetCharWidth",
+  "status": "n/a",
+  "where": "text metrics come from Godot's Font (the width squeeze is in theme_builder.gd)"
+ },
+ "0x00414f48": {
+  "status": "n/a",
+  "where": "black-screen clear at start / exit; Godot clears the window"
+ },
+ "0x00414f81": {
+  "status": "ported",
+  "where": "godot/src/core/dissolve_pattern.gd, sub_dissolve.gdshader, sub.gd:show_dissolve, counted out by sim_world.gd:begin_dissolve / advance_dissolve"
+ },
+ "0x00415079": {
+  "status": "n/a",
+  "where": "dead code (stub, no callers)"
+ },
+ "0x00415083": {
+  "status": "n/a",
+  "where": "dead code (stub, no callers)"
+ },
+ "0x00415090": {
+  "status": "n/a",
+  "where": "audio device detection"
+ },
+ "0x004150b1": {
+  "status": "ported",
+  "where": "playback-rate override is baked into the extracted WAV headers (opening cartoon voices at 8000 Hz, speech 16000, effects 22050) - DESIGN 7 'Sample rates'; godot/src/autoload/audio.gd plays them as-is"
+ },
+ "0x004150c4": {
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:play_sfx / play_voice / play_voice_sequence / speak (one effect player + one voice player that cut each other like the single waveOut device; sfx_catalog.gd / voice_cues.gd map ids to files); DESIGN 7"
+ },
+ "0x004151a4": {
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:kill_wave (also stop_sfx / stop_voice; MM_WOM_DONE equivalent = AudioStreamPlayer.finished)"
+ },
+ "0x00415214": {
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:is_wave_playing / is_voice_playing (speech sequences advance clip by clip in _next_voice_clip)"
+ },
+ "0x00415250": {
+  "name": "PlayWaveUntilKey",
+  "status": "n/a",
+  "where": "dead code (no callers, AUDIT_CALLSITES)"
+ },
+ "0x004152cd": {
+  "name": "PlayWaveBlocking",
+  "status": "n/a",
+  "where": "dead code (no callers, AUDIT_CALLSITES)"
+ },
+ "0x004152f0": {
+  "status": "n/a",
+  "where": "dead code (ANIMLIST.C animation lists are unused by the game)"
+ },
+ "0x00415377": {
+  "status": "n/a",
+  "where": "dead code (ANIMLIST.C unused)"
+ },
+ "0x0041540d": {
+  "status": "n/a",
+  "where": "dead code (ANIMLIST.C unused)"
+ },
+ "0x004154c1": {
+  "status": "n/a",
+  "where": "dead code (ANIMLIST.C unused)"
+ },
+ "0x004154f8": {
+  "status": "n/a",
+  "where": "dead code (ANIMLIST.C unused)"
+ },
+ "0x00415539": {
+  "status": "n/a",
+  "where": "dead code (ANIMLIST.C unused)"
+ },
+ "0x004155c1": {
+  "status": "n/a",
+  "where": "dead code (ANIMLIST.C unused)"
+ },
+ "0x0041591a": {
+  "status": "n/a",
+  "where": "dead code (ANIMLIST.C unused)"
+ },
+ "0x00415b22": {
+  "status": "n/a",
+  "where": "dead code (ANIMLIST.C unused)"
+ },
+ "0x00415b6c": {
+  "name": "WaitForInput",
+  "status": "n/a",
+  "where": "n/a: blocking wait for a key / click; Godot is event driven (every wait loop of the original is a node waiting for input events, e.g. log_screen.gd:_input, ballast_panel_diagram.gd:_unhandled_key_input, expert_closing.gd, voyager_closing.gd)"
+ },
+ "0x00415ce0": {
+  "name": "PauseSoundForDialog",
+  "status": "ported",
+  "where": "godot/src/gameplay/game.gd:_show_modal (dialogs, opened through ModalHost) and _on_message_shown (messages): Audio.pause_sound - every modal dialog pauses the song and kills the wave; AUDIT_CALLSITES"
+ },
+ "0x00415cea": {
+  "name": "ResumeSoundAfterDialog",
+  "status": "ported",
+  "where": "godot/src/gameplay/game.gd:_show_modal (dialogs, opened through ModalHost) and _on_message_shown (messages): Audio.resume_sound"
+ },
+ "0x00415cf4": {
+  "status": "n/a",
+  "where": "pause counter plumbing"
+ },
+ "0x00415d00": {
+  "name": "ClearHotspots",
+  "status": "n/a",
+  "where": "n/a: hotspot table reset; Godot Controls own their mouse areas"
+ },
+ "0x00415d15": {
+  "name": "AddHotspot",
+  "status": "n/a",
+  "where": "n/a: mouse hot-spot registry replaced by Controls with mouse input: calculator Buttons at the same rects (resources/calculator_layout.gd), ballast_panel_diagram.gd:button_at, combination_lock.gd, problem_screen.gd (click anywhere = Enter), story_pages.gd, expert_closing.gd (click = key)"
+ },
+ "0x00415d78": {
+  "name": "RemoveHotspot",
+  "status": "n/a",
+  "where": "n/a: see AddHotspot (nodes are freed / disabled with their screen)"
+ },
+ "0x00415da5": {
+  "name": "HotspotAt",
+  "status": "n/a",
+  "where": "n/a: see AddHotspot (Godot hit-testing; later-registered hotspot wins = topmost Control)"
+ },
+ "0x00415e16": {
+  "status": "n/a",
+  "where": "hotspot plumbing; Godot Controls route clicks"
+ },
+ "0x00415e3e": {
+  "status": "n/a",
+  "where": "hotspot plumbing; Godot Controls route clicks"
+ },
+ "0x00415e66": {
+  "status": "n/a",
+  "where": "dead code"
+ },
+ "0x00415ea0": {
+  "status": "n/a",
+  "where": "text drawing; Godot Label"
+ },
+ "0x00415ebf": {
+  "name": "ConvertTextMarkup",
+  "status": "ported",
+  "where": "tools/extract/extract_data.py (control codes: 0x08 0xD0+n -> {n} slot, 0x0c -> '\u00b0', \\r -> newline) + godot/src/problems/text_template.gd:render (answer marker 0xFF -> blank) + ui/help_topics.gd:clean; colour / alignment escapes are replaced by node styling (Label colours, centred nodes)"
+ },
+ "0x00415fd4": {
+  "name": "DrawTextItem",
+  "status": "ported",
+  "where": "godot/src/problems/problem_screen.gd (message box text), log_screen.gd (log entry at (44, 84) width 264 colour 2); Godot Label / RichTextLabel instead of WrapTextLayout"
+ },
+ "0x00416001": {
+  "name": "DrawText",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd (text items) and Label nodes at the original's coordinates (y = top of the line)"
+ },
+ "0x00416036": {
+  "name": "GetTextWidth",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd (box = [x, w] centring uses the font's text width) / Control minimum sizes"
+ },
+ "0x0041607c": {
+  "status": "n/a",
+  "where": "text drawing; Godot Label / RichTextLabel"
+ },
+ "0x004160a1": {
+  "status": "n/a",
+  "where": "text measuring; Godot Font"
+ },
+ "0x004160c5": {
+  "status": "n/a",
+  "where": "text measuring; dialog button widths come from the Godot theme"
+ },
+ "0x004160f6": {
+  "name": "WrapTextLayout",
+  "status": "ported",
+  "where": "Godot Label / RichTextLabel autowrap (problem_screen.gd feedback AUTOWRAP_WORD_SMART, message boxes) with the squeezed Arial-metric font (theme_builder.gd); the per-character wait_alarm(6) is a no-op in the original; wrapping breakpoints may differ by sub-pixel metrics (open item 5.19)"
+ },
+ "0x004164e2": {
+  "name": "MeasureTextRun",
+  "status": "n/a",
+  "where": "text layout; Godot autowrap"
+ },
+ "0x004165d7": {
+  "name": "DrawWrapChar",
+  "status": "n/a",
+  "where": "text drawing; Godot Label (no underline markup in the port)"
+ },
+ "0x00416640": {
+  "name": "DelayTicks",
+  "status": "ported",
+  "where": "1/73 s ticks: godot/src/problems/diagrams/diagram_timeline.gd:seconds + diagram_base.gd timelines (Tween intervals), combination_lock.gd, sign_in.gd PRESSED_TICKS, log_screen.gd, problem_screen.gd MESSAGE_TICKS; AUDIT_CALLSITES timing table lists every call site as PORTED"
+ },
+ "0x00416670": {
+  "status": "ported",
+  "where": "godot/src/autoload/game_clock.gd (TICK_HZ 73 / 6 game frame), calculator.gd FLASH_TICKS Timer, diagram_timeline.gd, supply_station.gd TICK_SECONDS, data/story/voyager_closing_script.tres step_ticks, expert_hoist / deck / wait.tres"
+ },
+ "0x00416692": {
+  "status": "ported",
+  "where": "same as set_alarm: the wait is a Tween interval / Timer / the GameClock tick (blocking busy waits become non-blocking nodes with the same durations)"
+ },
+ "0x004166b5": {
+  "name": "alarm_expired",
+  "status": "ported",
+  "where": "same as set_alarm: timeouts as Timers / Tween callbacks (problem_screen.gd advance_ticks, title_reveal.tres marks, surface_ship_screen.gd WAIT_SECONDS 20, story_pages.gd)"
+ },
+ "0x004166dc": {
+  "name": "LoadDialogButtonLabels",
+  "status": "ported",
+  "where": "godot/src/ui/message_box.gd (button texts per message: 'Yes' / 'No' / 'OK' literals in game.gd / sign_in.gd / message_queue.gd) + help_viewer.gd and hall_of_fame_view.gd (strings 11011-11013 'Go Back', 'See Next Page', 'Done'); same English words, not read from strings 11009-11016"
+ },
+ "0x00416e73": {
+  "name": "DrawDialogButton",
+  "status": "ported",
+  "where": "godot/src/ui/message_box.gd (Godot Buttons with the neptune theme; the hand-drawn rounded button is not reproduced pixel for pixel)"
+ },
+ "0x00417028": {
+  "status": "ported",
+  "where": "godot/src/ui/message_box.gd (Button pressed state)"
+ },
+ "0x0041707d": {
+  "name": "FlashDialogButton",
+  "status": "n/a",
+  "where": "n/a: 16-tick pressed look on the chosen button before the dialog closes (4 x ReverseButton + DelayTicks(4)); the port closes at once - part of the deferred pressed-button look (PORT_GAPS G14 true_inverse_box), AUDIT_CALLSITES marks it N/A (Button pressed state)"
+ },
+ "0x004170a0": {
+  "name": "SaveDialogBackground",
+  "status": "n/a",
+  "where": "Godot dialogs are separate Controls over the scene"
+ },
+ "0x004170f1": {
+  "status": "n/a",
+  "where": "Godot dialogs are separate Controls over the scene"
+ },
+ "0x0041714c": {
+  "status": "ported",
+  "where": "godot/src/ui/message_box.gd (+ new_player_dialog.gd, hall_of_fame_view.gd; Godot-themed panels, not the original's hand-drawn box)"
+ },
+ "0x004173ea": {
+  "status": "n/a",
+  "where": "click routing by Godot Controls"
+ },
+ "0x004174aa": {
+  "status": "n/a",
+  "where": "click routing by Godot Controls"
+ },
+ "0x004174ec": {
+  "name": "RunModalDialog",
+  "status": "ported",
+  "where": "godot/src/ui/message_box.gd (MessageBoxView.show_message) + ui/message_queue.gd (post / close_current; Enter / Space press the focused button, Left / Right move, Esc picks the last button or message.escape_choice, Y / N answer a Yes / No, default button via Message.default_button) + ui/modal_host.gd (ModalHost: the screen below sleeps and the keyboard focus comes back when the message closes) + game.gd:_show_modal / _on_message_shown pausing sound; Godot-themed panel instead of the hand-drawn window (DESIGN 'Deliberate differences')"
+ },
+ "0x00417755": {
+  "name": "RunPagedDialog",
+  "status": "ported",
+  "where": "godot/src/ui/help_viewer.gd (Go Back / See Next Page / Done = strings 11011-11013, Left / Right / PgUp / PgDn turn pages, Esc closes) called via game.gd:_on_help_requested -> _show_modal"
+ },
+ "0x00417b40": {
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_01 hint_slots (slots 0-3 = f0..f3, 4 = int f5, 5 / 6 = f5 + grow, + 2 grow for patterns >= 4)"
+ },
+ "0x00417c2d": {
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_01 hint_index ((pattern + 6) at level 0, else min(pattern, 4) + 1)"
+ },
+ "0x00417c75": {
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_01 solution_slots (f0..f3, answer f6, f5 as int / number, then +grow steps)"
+ },
+ "0x00417da6": {
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_01 solution_index (min(pattern, 4) + 9)"
+ },
+ "0x00417dd8": {
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd with the type 1 spec in docs/data/problem_diagrams.json (panel picture at (16, 58) opaque, the four sequence numbers centred in 40 px boxes at x 44 / 98 / 152 / 206, y 178, the lock picture at (276, 176))"
+ },
+ "0x00417f56": {
+  "status": "ported",
+  "where": "godot/src/problems/problem_flow.gd:_show_success / _after_replay -> godot/src/problems/problem_screen.gd:_show_log_screen (canister: no success text, the log screen = DoDataBank follows, not in Math Practice); the open-lock picture + code drawn just before DoDataBank is painted over at once by the log screen, so it is never seen"
+ },
+ "0x00417ffc": {
+  "status": "ported",
+  "where": "the gameplay loop is split: godot/src/autoload/game_clock.gd (6-tick frame = 12.17 Hz), godot/src/gameplay/game.gd (begin_sector, music, dock, problem start, finale trigger, exits), sector_world.gd (screens, pieces, creatures, pellets, collisions, oxygen), sub.gd (keys, velocity, currents, walls, cell lookup, edges), supply_station.gd (ExitSupplyStation / EnterSupplyStation / LaunchBalloon), core/progression.gd (midpoint); DESIGN 3, AUDIT_CALLSITES; tests test_flow_fidelity.gd, test_sub_physics.gd, test_game_flow.gd"
+ },
+ "0x004189ce": {
+  "status": "n/a",
+  "where": "n/a: restores the clean background under the sub; Godot moves a sprite, no erasing needed"
+ },
+ "0x00418a81": {
+  "status": "ported",
+  "where": "godot/src/gameplay/sub.gd:refresh / _draw, godot/src/rules/sub_model.gd:bubble_picture / is_blinking / is_picture_visible (cell pictures CellPic, flip for cells < 4, blink in the last 22 invulnerability frames, hit bubbles pictures 9-12 for the first 8, message light per-cell offsets while message_light); tests test_sub_frames.gd, test_invulnerability.gd"
+ },
+ "0x00418bcb": {
+  "name": "RedrawFrameAfterTankLoss",
+  "status": "ported",
+  "where": "godot/src/gameplay/sub.gd:show_dissolve + core/dissolve_pattern.gd + sub_dissolve.gdshader, counted out by sim_world.gd:begin_dissolve / advance_dissolve, started by sector_world.gd:_on_sub_damaged and drawn by original_presenter.gd:_show_dissolve, the respawn after it by game_flow.gd:_on_tank_lost; test_tank_loss_dissolve.gd"
+ },
+ "0x00418d23": {
+  "name": "ApplyCreatureDamage",
+  "status": "ported",
+  "where": "godot/src/gameplay/sector_world.gd:sub_touches (damage < 0 = Zoom's tank, silent; > 0 sound 0x1a, oxygen, invulnerability 30 or tank-loss dissolve without invulnerability); tests test_creature_sounds.gd, test_invulnerability.gd"
+ },
+ "0x00418d86": {
+  "name": "ApplyWaterCurrent",
+  "status": "ported",
+  "where": "godot/src/rules/sub_model.gd:read_current (current tile under the sub at the original probe offset: direction from tile bits 0-2, strength bits 3-5; TileCodec / Currents layer), applied in logic_tick; test_sub_current.gd"
+ },
+ "0x00418ea7": {
+  "name": "ScanSubWalls",
+  "status": "ported",
+  "where": "godot/src/rules/sub_model.gd:wall_gap (80 x 32 wall box, tiles beyond the edge tile, flag 0x40); tests test_sub_physics.gd, test_sub_walls_dragon_reef.gd, test_sub_under_overhang.gd"
+ },
+ "0x004191e0": {
+  "name": "MidpointHelper",
+  "status": "ported",
+  "where": "godot/src/core/progression.gd:midpoint_flag + godot/src/autoload/game_state.gd:update_midpoint / screen_entered (midpoint_reached and every piece before the midpoint screen collected; the screen, 6 in the original, is sector.midpoint_screen of godot/data/rules/tuning.json)"
+ },
+ "0x00419223": {
+  "name": "CountPiecesRemaining",
+  "status": "ported",
+  "where": "godot/src/core/progression.gd:pieces_missing, used by godot/src/rules/game_flow.gd:on_dock_reached (magnetometer message at the dock)"
+ },
+ "0x0041924c": {
+  "name": "Prob28_PromptSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_ballast prompt_slots {0: target} (decimal 'x.xx' at level 2 = BallastMode 1, else integer)"
+ },
+ "0x004192da": {
+  "name": "Prob28_HintSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_ballast hint_slots {0: integer target, 1: shown target}"
+ },
+ "0x0041937f": {
+  "name": "Prob28_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:ballast_solution_slots (slots {2}..{11} from bit 9 down to bit 0, first term '  label ', the others '+ label ', each ending in a space, {1} = '= amount'); text item 3 of the type's bundle. Tests: test_problem_texts.gd:test_ballast_solution_slots_have_the_original_spacing, test_problem_texts_legacy.gd:test_the_ballast_solution_lists_the_weights_largest_first. The decimal labels of level 3: PORT_GAPS G46"
+ },
+ "0x0041952f": {
+  "name": "Prob28_LabelHalfWidths",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/ballast_panel_diagram.gd:_build (labels drawn centred in the slot width)"
+ },
+ "0x00419567": {
+  "name": "Prob28_Diagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/ballast_panel_diagram.gd:_build (panel, 10 weight buttons (slot / selected pictures, labels centred in the slot width), Done button, fill / drain marker; data docs/data/problem_diagrams.json types 28 / 29)"
+ },
+ "0x004196e8": {
+  "status": "not-ported",
+  "where": "godot/src/problems/diagrams/ballast_panel_diagram.gd:_unhandled_key_input / _gui_input / _press_done (keys 8 / 2 / 4 / 6 and the arrows move the cursor, Enter presses, other digits are ignored, the mouse acts on release, click sound 0x22, Done holds 73 ticks); Esc through PracticeMode / GameFlow.ask_to_exit; the cursor goes back to weight 0 when the keys are read again for the second try (keyboard_enabled); Space also presses (Deliberate deviation, test_ballast_panel_input.gd). Not matched: a held key does not repeat (key echoes are ignored, G54)"
+ },
+ "0x00419d5d": {
+  "status": "ported",
+  "where": "godot/src/problems/answer_checker.gd:check_selection / selection_sum"
+ },
+ "0x00419d96": {
+  "name": "LoadBallastLabels",
+  "status": "ported",
+  "where": "tools/import/step_problems.py:ballast_labels (strings 11215-11218 replace the static labels of display mode 1 in the type's extras `labels`; the importer checks each says the same number as the static label); read by godot/src/problems/answer_checker.gd:denomination_labels; tests/legacy/test_diagrams_legacy.gd"
+ },
+ "0x00419e20": {
+  "status": "n/a",
+  "where": "n/a: the port reads assets pre-extracted from the DLLs by tools/extract; no runtime resource-file / bundle loading"
+ },
+ "0x00419e34": {
+  "status": "n/a",
+  "where": "n/a: frees the bezel bundle (memory)"
+ },
+ "0x00419e4c": {
+  "status": "ported",
+  "where": "godot/src/ui/hud.gd:_on_message_light_changed (ship / computer lights, sound 0x2f when one turns on, blink animation) fed by GameState.set_message_light from sim_world.gd / game_flow.gd:on_dock_reached; test_hud_binding.gd, test_flow_fidelity.gd"
+ },
+ "0x00419eec": {
+  "status": "ported",
+  "where": "godot/src/ui/hud.gd + ui/console_frame.gd + resources/hud_layout.gd (bezel picture 0 at (12, 324), gauges, labels, frame); data docs/data/hud_gauges.json, console_layout.json; tests test_hud_layout.gd, test_hud_binding.gd"
+ },
+ "0x00419f6e": {
+  "status": "ported",
+  "where": "godot/src/ui/hud.gd:_on_ink_changed + ui/icon_gauge.gd (21 icons in 7 columns, pictures 4 full / 5 empty)"
+ },
+ "0x0041a00e": {
+  "status": "ported",
+  "where": "godot/src/autoload/game_state.gd:fire_ink / refill_ink (ink count, max 21 = ink.max of godot/data/rules/tuning.json via GameState.tuning.ink_max, signal ink_changed); test_ink_pellets.gd"
+ },
+ "0x0041a04f": {
+  "status": "ported",
+  "where": "godot/src/core/oxygen_model.gd:update + godot/src/autoload/game_state.gd:update_oxygen (return codes OK / -1 / -2 / -3, tank refill, game over; the limits 4 oxygen / 6 tanks are air.max_oxygen / air.max_tanks of godot/data/rules/tuning.json); tests test_oxygen_model.gd, test_game_state.gd"
+ },
+ "0x0041a11c": {
+  "status": "ported",
+  "where": "godot/src/ui/hud.gd:_on_oxygen_changed + ui/icon_gauge.gd (6 tank icons at x 92 + 24 i, 4 oxygen cells at x 240 + 20 i, warning picture 19 in cell 0 when one cell is left; the port also pulses it) and game_flow.gd:_on_oxygen_changed low-oxygen hint 1 (HintSystem.LOW_OXYGEN)"
+ },
+ "0x0041a2e1": {
+  "name": "DisplayBezelGameIcon",
+  "status": "ported",
+  "where": "godot/src/ui/hud.gd:_on_sector_changed (game_label picture 2 / 3 at (472, 374), 'Cust' picture 1 at (568, 374) when customised)"
+ },
+ "0x0041a341": {
+  "name": "DisplayBezelZoneIcon",
+  "status": "ported",
+  "where": "godot/src/ui/hud.gd:_on_sector_changed (zone_label = layout.zone_texture(zone), picture 6 + min(zone, 4) at (472, 352))"
+ },
+ "0x0041a380": {
+  "name": "DisplayBezelSectorIcon",
+  "status": "ported",
+  "where": "godot/src/ui/hud.gd:_on_sector_changed (sector_label = layout.sector_texture(sector): picture 11 + sector % 3 at (472, 330), 'Final' 14 for sectors > 29)"
+ },
+ "0x0041a3e8": {
+  "name": "DisplayBezelFrame",
+  "status": "ported",
+  "where": "godot/src/ui/console_frame.gd:_draw (list of filled rectangles in painting order, HudLayout.frame_rects / frame_colors)"
+ },
+ "0x0041a684": {
+  "name": "BlitPlayfieldClipped",
+  "status": "n/a",
+  "where": "n/a: restores a strip of the clean background under a bubble inside the playfield clip; Godot bubbles are sprites clipped by the playfield"
+ },
+ "0x0041a6fc": {
+  "name": "ResetBubbles",
+  "status": "ported",
+  "where": "godot/src/gameplay/bubbles.gd (both bubbles cleared on every screen change / sector start; tests test_bubbles.gd 'reset on screen change')"
+ },
+ "0x0041a70b": {
+  "name": "LoadBubbles",
+  "status": "n/a",
+  "where": "n/a: the port reads assets pre-extracted from the DLLs by tools/extract; no runtime resource-file / bundle loading (bubble pictures = godot/data/sprite_frames + bubble_rules.tres)"
+ },
+ "0x0041a724": {
+  "name": "FreeBubbles",
+  "status": "n/a",
+  "where": "n/a: frees the bubble bundle (memory)"
+ },
+ "0x0041a748": {
+  "name": "RestoreBubbleRects",
+  "status": "n/a",
+  "where": "n/a: restores the background under the bubbles' previous positions; Godot sprites move without erasing"
+ },
+ "0x0041a800": {
+  "name": "UpdateAmbientBubbles",
+  "status": "ported",
+  "where": "godot/src/gameplay/bubbles.gd + resources/bubble_rules.gd (docs/data/bubbles.json): two bubbles, 1 in 50 spawn per tick, rise 10 / 6 px, drawn last (over the sub); held and cleared while a supply trip runs, whose routines never call it (Bubbles.hold, original_presenter.gd:_arrange). Random sequence differs from the Borland LCG (known deferred G15)"
+ },
+ "0x0041aaf8": {
+  "name": "AddCalcHotspots",
+  "status": "ported",
+  "where": "godot/src/problems/calculator.gd:_ready (one transparent Button per key on the original hotspot rectangles, resources/calculator_layout.gd key_rects; 22 keys)"
+ },
+ "0x0041ad17": {
+  "name": "RemoveCalcHotspots",
+  "status": "n/a",
+  "where": "n/a: hotspots die with the calculator node"
+ },
+ "0x0041ade0": {
+  "status": "ported",
+  "where": "godot/src/problems/calculator.gd + problems/calculator_model.gd (pending operations, memory S/N/R, C once / twice, Enter submits, notices via calc_notice_dialog.gd = ShowCalcNoticeDialog, LCD via lcd_display.gd) and problems/answer_box.gd for the plain 'Ans:' box; DESIGN 7a; tests test_calculator.gd, test_calculator_input.gd, test_calculator_layout.gd"
+ },
+ "0x0041b411": {
+  "status": "ported",
+  "where": "godot/src/problems/calculator.gd:input_key / _start_flash / end_flash (12-tick key flash, input held, a result's command key acts only after the flash via _deferred_key); test_calculator_input.gd"
+ },
+ "0x0041b4f1": {
+  "name": "HighlightCalcKey",
+  "status": "ported",
+  "where": "godot/src/problems/calculator.gd:press / sfx_requested (sound 0x1f on every key press, valid or not) and _start_flash (pressed look; theme pressed style, not the original highlight - G14 deferred); test_sfx_events.gd"
+ },
+ "0x0041b843": {
+  "name": "TranslateCalcKey",
+  "status": "ported",
+  "where": "godot/src/problems/calculator.gd:key_for_event (F f S s N n R r C c . hotkeys, codes 2-6 = Ctrl+B..F act as F S N R C; characters, not virtual keys); test_calculator_input.gd"
+ },
+ "0x0041b8f8": {
+  "name": "Prob07_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_07 solution_slots {0: f5, 1: f6}"
+ },
+ "0x0041b933": {
+  "name": "Prob07_Diagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd ('sequence' timeline: panel + unit picture, then f0..f4 with sound 0x22 at t = 0, 30, 60, 90, 120); docs/data/problem_diagrams.json type 7; test_diagram_animations.gd"
+ },
+ "0x0041bc14": {
+  "status": "n/a",
+  "where": "buffer fill"
+ },
+ "0x0041bc32": {
+  "status": "n/a",
+  "where": "the port saves into Godot's user:// folder"
+ },
+ "0x0041bc4d": {
+  "status": "ported",
+  "where": "godot/src/autoload/save_store.gd:load_all / _parse_roster (JSON roster.json instead of ONUSERS.DAT; unreadable file = empty roster)"
+ },
+ "0x0041bce2": {
+  "status": "ported",
+  "where": "godot/src/autoload/save_store.gd (JSON roster.json via write / post_write_error instead of ONUSERS.DAT; on failure the OK dialog 'Write Error' 11018 / 'Writing to the disk has failed...' 11017, nothing else happens); test_save_store.gd"
+ },
+ "0x0041bdad": {
+  "status": "ported",
+  "where": "godot/src/autoload/save_store.gd:load_all (hall_of_fame.json) + core/hall_of_fame.gd:from_array"
+ },
+ "0x0041be42": {
+  "status": "ported",
+  "where": "godot/src/autoload/save_store.gd: write_failed / post_write_error"
+ },
+ "0x0041bec8": {
+  "status": "n/a",
+  "where": "data-file path selection (CD vs hard disk); port saves to user://"
+ },
+ "0x0041bf24": {
+  "name": "Prob24_PromptSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_24 prompt_slots (0 = f2, 1 = year f3 zero-padded to 4 digits = the original's '0' pad slot 5 for f3 < 1000, 2 = f0, 3 = f1)"
+ },
+ "0x0041bfad": {
+  "name": "Prob24_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_24 solution_slots (f2, f3, f4 zero-padded, f0, f1, pads blank)"
+ },
+ "0x0041c060": {
+  "name": "Prob24_Diagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd with the type 24 spec in docs/data/problem_diagrams.json (clock: only the hour of hhmm on a 12 hour dial)"
+ },
+ "0x0041c13c": {
+  "status": "n/a",
+  "where": "n/a: the port reads assets pre-extracted from the DLLs by tools/extract; no runtime resource-file / bundle loading"
+ },
+ "0x0041c1a7": {
+  "status": "n/a",
+  "where": "n/a: frees the closing bundles when FreeSectorResources runs after DoAction; its FreeClosingStopMusic (0x4320c2) only repeats StopBackgroundMusic for the Expert game after ExpertClosingSequence has stopped the song, so nothing is heard. The Voyager closing's music stop is StopSectorMusic at the start of VoyagerClosingSequence = godot/src/rules/game_flow.gd:play_closing (view.stop_music)"
+ },
+ "0x0041c206": {
+  "status": "ported",
+  "where": "godot/src/resources/voyager_closing_script.gd:timeline (data/story/voyager_closing_script.tres) (18 rise steps of 4 px, turn table to cell 2 with sound 0x2c, 3 transformation pictures 12 ticks each, sound 0x2d, 15 steps of 8 px up, flight left 8 px/step until x <= -0x88, then the pages) + game.gd closing hook; tests test_closing_sequences.gd, test_closing_trigger.gd, test_full_voyager_run.gd. The dead PlayBackgroundMusic(0) branch is not ported (dead in the original). Music: StopSectorMusic at its start = game_flow.gd:play_closing (view.stop_music), so the flight and the pages are silent; the trailing StopBackgroundMusic stops nothing"
+ },
+ "0x0041c350": {
+  "name": "ClosingEraseSub",
+  "status": "ported",
+  "where": "godot/src/resources/voyager_closing_script.gd:timeline (data/story/voyager_closing_script.tres) (the sub is a sprite moved per step; no erasing needed)"
+ },
+ "0x0041c418": {
+  "name": "ClosingDrawSub",
+  "status": "ported",
+  "where": "godot/src/resources/voyager_closing_script.gd:timeline (data/story/voyager_closing_script.tres) (propeller phase via SubTuning.picture_for; rotor pictures alternate through voyager_closing_script.gd:rotor_pictures[i % size])"
+ },
+ "0x0041c508": {
+  "name": "PlayVoyagerClosingSpeech",
+  "status": "ported",
+  "where": "godot/src/story/voyager_closing.gd:show_pages (jingle 4243 then the page clips via VoiceCues.closing_page; Enter / Esc cut the clip: stop_voice)"
+ },
+ "0x0041c5f2": {
+  "name": "VoyagerClosingPages",
+  "status": "ported",
+  "where": "godot/src/story/voyager_closing.gd:show_pages (three pages, bundle items 7-9 = texts 10715+, message queue boxes)"
+ },
+ "0x0041c650": {
+  "status": "ported",
+  "where": "godot/src/story/expert_closing.gd + expert_closing_cable.gd + closing_crew_actor.gd (docs/data/expert_closing.json, data/closing_crew.tres; the timelines data/story/expert_hoist / deck / wait.tres by tools/import/step_story.py): 18-tick steps, turn, 20 idle steps, hook down 16 / up 17 steps, deck shot with crew / pod / cable, key / click to end, music 9501 stopped at the end; tests test_closing_sequences.gd, test_flow_fidelity.gd"
+ },
+ "0x0041cbac": {
+  "name": "ExpertClosingEraseCable",
+  "status": "n/a",
+  "where": "Godot needs no erase (scene nodes); see ExpertClosingDrawCable for the picture difference"
+ },
+ "0x0041cc8d": {
+  "name": "ExpertClosingDrawCable",
+  "status": "ported",
+  "where": "godot/src/story/expert_closing_cable.gd"
+ },
+ "0x0041cd3b": {
+  "name": "ExpertClosingEraseArtifact",
+  "status": "n/a",
+  "where": "no erase needed in Godot"
+ },
+ "0x0041cd84": {
+  "name": "ExpertClosingDrawArtifact",
+  "status": "ported",
+  "where": "godot/src/story/expert_closing.gd: Artifact / DeckArtifact"
+ },
+ "0x0041cdba": {
+  "name": "ExpertClosingDrawPod",
+  "status": "ported",
+  "where": "godot/src/story/expert_closing.gd: Pod"
+ },
+ "0x0041ce27": {
+  "name": "ExpertClosingErasePod",
+  "status": "n/a",
+  "where": "no erase needed in Godot"
+ },
+ "0x0041ce49": {
+  "name": "ExpertClosingEraseCrew",
+  "status": "n/a",
+  "where": "no erase needed in Godot"
+ },
+ "0x0041ce8f": {
+  "name": "ExpertClosingDrawCrewPicture",
+  "status": "ported",
+  "where": "godot/src/story/closing_crew_actor.gd"
+ },
+ "0x0041ceb7": {
+  "name": "ExpertClosingCrewStep",
+  "status": "ported",
+  "where": "godot/src/story/closing_crew_actor.gd + docs/data/expert_closing.json"
+ },
+ "0x0041d088": {
+  "name": "CollideAddRect",
+  "status": "n/a",
+  "where": "no callers (dead code)"
+ },
+ "0x0041d0ea": {
+  "name": "CollideRemoveRect",
+  "status": "n/a",
+  "where": "no callers (dead code)"
+ },
+ "0x0041d17b": {
+  "name": "CollideFindRect",
+  "status": "n/a",
+  "where": "no callers (dead code)"
+ },
+ "0x0041d1fc": {
+  "name": "Prob19_PromptSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_19 (prompt slot 0 = unit word \"inch\" / \"quarter inch\" / \"centimeter\" / \"millimeter\" = text items 17-20 of the type, indexed by the ruler field)"
+ },
+ "0x0041d229": {
+  "name": "Prob19_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_19 (solution slots 0 = f1, 1 = f2, 5 = f6)"
+ },
+ "0x0041d27d": {
+  "name": "Prob19_TextVariant",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_19 (prompt / hint index: L0 ruler==0?0:1, L1 2, L2 ruler==3?3:4, L3 ruler==3?5:6, identical). Deviation: the EXE takes the solution text as variant + 9 (ShowProblemSolution 0x426a9e), the port uses [9,10,11,10,15,12,13] by unit (differs at L2 and L3); documented as a \"correction\" in DESIGN 5.4 (type 19 solution follows the unit), not in the \"Deliberate differences\" list"
+ },
+ "0x0041d2d3": {
+  "name": "Prob19_Diagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/ruler_diagram.gd (family \"ruler\", docs/data/problem_diagrams.json type 19: picture 0 at (20,60), ruler 1 / 2 at (40,184), 2 px line from x = 50 + 12 a, y 177 / 178; checked against the decompilation)"
+ },
+ "0x0041d99d": {
+  "name": "DrawCustomizationDialog",
+  "status": "ported",
+  "where": "godot/src/ui/customization_dialog.gd (Options > Problem Customization: strings 11021-11031 / 11153-11154 / 11161-11167; Godot widgets, not the hand-drawn dialog)"
+ },
+ "0x0041dc32": {
+  "name": "DrawDialogControls",
+  "status": "ported",
+  "where": "godot/src/ui/customization_dialog.gd (radio groups = CheckBox + ButtonGroup, Done / Cancel Buttons; themed Godot controls)"
+ },
+ "0x0041dfc8": {
+  "name": "PlayLogEntrySpeech",
+  "status": "ported",
+  "where": "godot/src/ui/log_screen.gd:_speak (Audio.play_voice_sequence of the VoiceCues clips named by Campaign.log_voice_name), :_input (Esc / Enter / arrows / a row click cut the speech and keep the key; other keys are swallowed; 8 2 4 6 only when no speech plays)"
+ },
+ "0x0041e092": {
+  "name": "AnimateLogScan",
+  "status": "ported",
+  "where": "godot/src/ui/log_screen.gd:run_scan / advance_scan / scan_pictures (bundle 0x1dc pictures, 6 sweeps x 8 pictures x 5 ticks, all-green picture 8 at the end, scanner sound 0x1d, stopped at the end)"
+ },
+ "0x0041e18f": {
+  "status": "ported",
+  "where": "godot/src/ui/log_screen.gd:start / _build_rows / press / click_row / _activate (menu, highlight, keys, clicks, speech); godot/src/problems/problem_screen.gd:_show_log_screen (do_access_closing)"
+ },
+ "0x0041e768": {
+  "status": "n/a",
+  "where": "n/a: memory (log bundle free)"
+ },
+ "0x0041e787": {
+  "name": "PrepareCanisterLog",
+  "status": "ported",
+  "where": "godot/src/core/canister_log.gd:count / entries / newest / initial_row / label (sector % 15 + 1 entries from the unlock tables, sorted ascending, \"ENTRY g.nn\" captions)"
+ },
+ "0x0041e8cc": {
+  "status": "ported",
+  "where": "godot/src/gameplay/original_presenter.gd:_build_decos (BackDecos / MidDecos / FrontDecos) + godot/src/gameplay/deco.gd (Deco sprites, bit 7 = mirrored)"
+ },
+ "0x0041e943": {
+  "status": "ported",
+  "where": "godot/src/gameplay/anim_deco.gd (AnimDeco: one frame-list entry per game tick, loops, start cursor) + original_presenter.gd:_build_anim_decos; drawn above the sub as in DoAction; tests/engine/test_anim_decos.gd"
+ },
+ "0x0041ea08": {
+  "status": "n/a",
+  "where": "n/a: restores the clean copy under the animated decos; Godot redraws every node each frame"
+ },
+ "0x0041ea94": {
+  "name": "Prob08_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_08 (solution slots 0 = f1, 1 = f2; index f0 + 6)"
+ },
+ "0x0041eacf": {
+  "name": "Prob08_Diagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd:add_spec_items (family \"items\", problem_diagrams.json type 8: picture 0 at (16,58), unit picture at (192,58), stacked marks at (64, 80 + 18 i))"
+ },
+ "0x0041ebc0": {
+  "status": "ported",
+  "where": "godot/src/gameplay/foe.gd (Foe node: shown when on the current screen and not hidden, at (x*2, y*2) window px, mirrored flag)"
+ },
+ "0x0041ec26": {
+  "name": "EraseAnimalRect",
+  "status": "n/a",
+  "where": "n/a: restores the playfield rectangle under a creature; Godot redraws every frame"
+ },
+ "0x0041eca5": {
+  "status": "n/a",
+  "where": "n/a: erases the creatures before the next frame; Godot redraws every frame"
+ },
+ "0x0041ed0c": {
+  "status": "ported",
+  "where": "godot/src/core/foe_vm.gd (+ gameplay/foe.gd, sector_world.gd:check_contacts, ink_pellet.gd) implements the foe VM, the contact / ink rules and the SOUND opcode. LOOP0/1/2 follow the EXE (counter starts at 0, first visit loads count and jumps: body runs count + 1 times), SET_POS / SET_POS_SCREEN clamp the picture into FRAME_RANGE and MOVE_REL wraps below min to max (tests/engine/test_foe_vm.gd, test_foe_sector0.gd)"
+ },
+ "0x0041f4a0": {
+  "name": "Prob30_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_30 (slots 0,1,2,3,8,9; index f10 + (level 0 ? 0 : level - 1) + 6)"
+ },
+ "0x0041f527": {
+  "name": "Prob30_Diagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/storage_boxes_diagram.gd (layers dy -22, rows dx -12 / dy 8 from (128,164), alternating box pictures with x steps, front picture at (44,96) after each box, sound 0x29 / 15 ticks per box, extra boxes in front; checked against the decompilation)"
+ },
+ "0x0041f760": {
+  "name": "Prob12_PromptSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_12 (prompt slot 0 = |f1|; f1 is never negative in the data)"
+ },
+ "0x0041f785": {
+  "name": "Prob12_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_12 (index (f2 < f0) + 4 are EMPTY texts in the data, so the port composes \"New temperature (in \u00b0F):\\n a +/- b = c\"; documented in DESIGN 5.4 as a correction: types 12 and 22 level 1 have no stored solution text)"
+ },
+ "0x0041f7d9": {
+  "name": "Prob13_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_13 (slots 0 = f0, 1 = f1; index f2 + 4)"
+ },
+ "0x0041f813": {
+  "name": "AnimateThermometerColumn",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd:add_spec_items (intro \"run\", sfx 0x25, 10 ticks per 16 px step, count + 1 pieces) and :_success_thermometer (rise picture 3 / erase picture 4, sound stopped at the end)"
+ },
+ "0x0041f8e3": {
+  "name": "AnimateThermometerSolution",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd:_success_thermometer (lead 73 ticks, |(f2 - f0) / 5| steps from the top at ((f0 + 15) / 5) * -16 + 258, trail 30 ticks); problem_screen.gd SUCCESS_REPLAY_TYPES"
+ },
+ "0x0041f962": {
+  "name": "Prob12_Diagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd (problem_diagrams.json type 12: pictures 0 at (16,58) and 2 at (152,274), mercury pieces from (160,258) rising (f0 + 15) / 5 + 1 steps, intro lead 30 / trail 60 ticks)"
+ },
+ "0x0041f9f4": {
+  "name": "Prob13_Diagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd (problem_diagrams.json type 13: Celsius scale picture 1 at (100,68) when f2 != 0, mercury count (f0 + 15 or + 35) / 5 + 1)"
+ },
+ "0x0041fb34": {
+  "status": "ported",
+  "where": "godot/src/problems/answer_box.gd (no-calculator \"Ans:\" entry: type_character / submit, Backspace click 0x1f) + godot/src/problems/calculator_model.gd:press / _digit / _fraction_key / _operator / _enter and calculator.gd:input_key (calculator entry, 12-tick key flash); DESIGN 7a; tests/test_calculator*.gd"
+ },
+ "0x004208d9": {
+  "name": "FormatEntryText",
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:display_text (numerator / numerator/denominator, then a space and the whole part unless 0, leading \"-\", \"0\" for an empty numerator) and answer_box.gd:text"
+ },
+ "0x00420abf": {
+  "name": "BuildEnteredNumber",
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:_entry_value (decimal or fraction; first denominator digit 0 refused) and godot/src/core/number_value.gd:parse (AnswerBox text -> NumberValue)"
+ },
+ "0x00420b73": {
+  "name": "DrawCalcDisplay",
+  "status": "ported",
+  "where": "godot/src/problems/lcd_display.gd:_draw / glyph_placements (field wiped, glyph pictures right to left from x0 + 160, advance 16, point beside the digit, F mark in fraction mode)"
+ },
+ "0x00420d46": {
+  "name": "IsCalcEntryKey",
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:is_entry_key (digits, \".\", \"F\"); calculator.gd:key_for_event (space and f -> F)"
+ },
+ "0x00420d8f": {
+  "name": "ShowCalcNoticeDialog",
+  "status": "ported",
+  "where": "godot/src/problems/calc_notice_dialog.gd (kind -1 \"Fraction Mode\" 11043/11044; kinds 0-2 \"Calculator Error\" 11042 + items 10174-10176; modal, Enter / Space / Esc / OK) with CalculatorModel.Notice"
+ },
+ "0x00420e30": {
+  "name": "Prob04_PromptSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_04 (prompt slot 0 = f0)"
+ },
+ "0x00420e4d": {
+  "name": "Prob04_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_04 (solution slots 0 = f0, 1 = f1; index 2)"
+ },
+ "0x00420e83": {
+  "name": "Prob04_Diagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd (problem_diagrams.json type 4: picture 0 at (16,58), four pressure-line pieces one per 15 ticks with sound 0x23)"
+ },
+ "0x00420f24": {
+  "name": "Prob22_PromptSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_22 (slots 0 = f0, 1 = f3, 2 = f1; the solution inherits the prompt slots). Solution at level 1 has empty texts in the EXE: port reuses the \"New heading\" text (documented correction)"
+ },
+ "0x00420f71": {
+  "name": "Prob22_Diagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd (problem_diagrams.json type 22: dial picture 0 at (16,60), needle picture by heading at (136,152))"
+ },
+ "0x00420fe7": {
+  "name": "Prob22_AngleToPicture",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json type 22 \"lookup\" entries (heading / 45 -> pictures 1,2,3,4,5,4,3,2), read by diagram_base.gd:_add_lookup_entry"
+ },
+ "0x00421046": {
+  "name": "Prob22_AngleMirror",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json type 22 lookup \"flip\" (225, 270, 315 degrees), diagram_base.gd:_add_lookup_entry"
+ },
+ "0x0042108d": {
+  "name": "Prob22_SuccessAnimation",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd:_success_heading (needle turns 45 degrees per step from f1 towards f3, wrap 360 -> 0 / <0 -> 315, sound 0x29, 22 ticks per picture, 22 ticks trail)"
+ },
+ "0x0042115c": {
+  "name": "Prob10_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_10 (slots 0 = f0, 1 = f1, 2 = f3, 3 = f2, 4 = f4)"
+ },
+ "0x004211e1": {
+  "name": "Prob10_Diagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd (problem_diagrams.json type 10: picture 0 at (16,58), three temperatures centred in a 92 px box at x 206, y 108 / 164 / 210, with the degree-C suffix)"
+ },
+ "0x00421350": {
+  "name": "Prob16_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_16 (slots 0 = f0, 3 = f6, 4 = f8, 5 = f1, 8 = f7, 9 = f9, 10 = f10; index (level > 1) + 3)"
+ },
+ "0x004213f5": {
+  "name": "Prob16_SuccessAnimation",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay mode \"overlay\" (problem_diagrams.json type 16 success: picture 3 and the speeds / distances written over the chart, level 0-1 one leg, 2-3 two legs; no sound, no delay)"
+ },
+ "0x00421595": {
+  "name": "Prob16_Diagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_base.gd (problem_diagrams.json type 16: levels 0-1 one leg, 2-3 two legs; speeds / times in boxes at x 52 / 116)"
+ },
+ "0x00421780": {
+  "name": "DoCombinationLock",
+  "status": "ported",
+  "where": "godot/src/problems/combination_lock.gd (INTRO / stages / notices: texts 2 and 3, practice ShowCorrectPhrase, WaitKeyOrTicks 146 ticks; the \"second answer wheel starts where the first stopped\" carry-over; abort when the air runs out) + godot/src/problems/problem_screen.gd:_start_lock; DESIGN 3.7. The label strings it loads at start (11219-11226, 11227, 11228-11235, 11237-11244) are in the type's `operand_labels` / `answer_labels` (tools/import/step_problems.py:lock_labels); 11245 would be form 11's answer slot 7, shown as the pattern's 0.90 (Deliberate deviation, problem_texts.gd:lock_solution)"
+ },
+ "0x00421a1b": {
+  "status": "n/a",
+  "where": "resources are Godot textures; see godot/src/problems/combination_lock.gd"
+ },
+ "0x00421a3a": {
+  "name": "LockMeasureLabelHalfWidths",
+  "status": "n/a",
+  "where": "layout only; Godot centres the wheel labels"
+ },
+ "0x00421a81": {
+  "name": "LockDrawOperandWheel",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/lock_diagram.gd:_build / _add_labels / label_position (wheel picture 6 + position % 4, labels at the 4 phase tables). Its settle plate (bundle picture 10, 80 x 44 at (136,98)), drawn by LockSpinOperandWheel after the stop, is lock_diagram.gd operand_window_shown; a redraw of the wheel paints over it"
+ },
+ "0x00421b78": {
+  "name": "LockDrawAnswerWheel",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/lock_diagram.gd:_build / _add_labels (answer wheel pictures 12 + position % 4 at (40,60), label tables)"
+ },
+ "0x00421c6c": {
+  "name": "LockSpinOperandWheel",
+  "status": "ported",
+  "where": "godot/src/problems/combination_lock.gd:_start_spin / _tick_operands / _operand_landed + godot/src/problems/lock_wheel.gd:Spin (9 ticks per quarter step, direction alternates, a same-number target turns a full revolution, sounds 0x26 per step / 0x27 at the end). Minor deviations: each position change happens at the END of its 9-tick interval (the EXE moves, then waits, so the wheel is 9 ticks later than the original); the settle plate (picture 10, 80 x 44 at (136,98)) is drawn by lock_diagram.gd:_build while operand_window_shown (set by combination_lock.gd _operand_landed, cleared by _start_spin / _begin_answer), with the chosen label written over it"
+ },
+ "0x00421d6c": {
+  "name": "LockAdvanceAnswerWheel",
+  "status": "ported",
+  "where": "godot/src/problems/lock_wheel.gd (4 x 9 ticks, then a 73-tick key window; right position passed twice = OUT OF TIME; the 9, 73 and 2 are lock_wheel of godot/data/rules/tuning.json) matches the timing. Input during the 36-tick motion: the EXE busy-waits (wait_alarm does not pump messages), so a Space / Enter typed during the motion stays in the Windows queue and is read by the first PeekInput of the next 73-tick window (FlushInput is only called after a window), i.e. it stops the wheel at the arriving label; each sub-step's uncached sound 0x26 load drains the queue, so only a key in the last 9 ticks survives (all of them with the sound off) = godot/src/problems/combination_lock.gd:_stop_wheel (_stop_pending acts when the key window opens, LAST_SUBSTEP_START); tests test_combination_lock.gd"
+ },
+ "0x00421dc9": {
+  "name": "LockRunStage",
+  "status": "ported",
+  "where": "godot/src/problems/combination_lock.gd:_begin_stage / _tick / press_key / _miss / _after_reason / _after_hint / _after_solution reproduce the stage (sums, the 146 + 24 + 24 tick operator pause, ERROR / OUT OF TIME, hint, solution, \"Click to go on.\", oxygen codes); the click that stops the answer wheel is the EXE hotspot 0xd, the rectangle (116,58)-(229,105) (AddHotspot(0xd,0x74,0x3a,0x71,0x2f)) at the top of the wheel = CombinationLock.STOP_BUTTON, acting on the left button's release (_unhandled_input); type-ahead during the wheel motion as LockAdvanceAnswerWheel; tests test_combination_lock.gd"
+ },
+ "0x00422176": {
+  "name": "LockRevealOperator",
+  "status": "ported",
+  "where": "godot/src/problems/combination_lock.gd:OPERATOR_REVEAL / _tick_reveal (blank, 146 ticks, shown 24, blank 24, shown for good; 194 ticks after every number incl. the \"=\"). Cosmetic: the operator is drawn as font text in LockDiagram.OPERATOR_BOX, the EXE draws bundle pictures 0-4 (+ - x / =) over blank picture 5 at (164,173) 20 x 20"
+ },
+ "0x00422310": {
+  "name": "LockAppendOperand",
+  "status": "ported",
+  "where": "godot/src/problems/combination_lock.gd:_operand_landed + godot/src/problems/diagrams/lock_diagram.gd:EXPRESSION_BOX (label + space appended to the long box). Cosmetic: the port centres the sum text in the box, the EXE appends left-aligned from x = 74"
+ },
+ "0x00422376": {
+  "name": "LockAppendOperator",
+  "status": "ported",
+  "where": "godot/src/problems/combination_lock.gd:_tick_reveal (operator text + space appended after the reveal) + lock_diagram.gd:EXPRESSION_BOX. Same cosmetic note as LockAppendOperand"
+ },
+ "0x004223db": {
+  "name": "LockShowSolution",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:lock_solution (text item 4 + f0 of the type, the slot maps of the 12 forms with parentheses, f10 / f11 / f21 / f22 from the record, the underline of form 3); tests/legacy/test_problem_texts_legacy.gd. The decimal labels are the strings DoCombinationLock loads ('0.5', '0.50'); form 11 answer slot 7 shows '0.90' where the original shows the wrong '1.9' (Deliberate deviation, test_problem_texts.gd)"
+ },
+ "0x00422e18": {
+  "name": "Prob09_PromptSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_09 (prompt slot 0 = \"\" at level 0 else string 11047, slot 1 = 11048 \"longitude\" / 11049 \"latitude\" by f0)"
+ },
+ "0x00422e7f": {
+  "name": "Prob09_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_09 (solution slots 0 = 11050 / 11051, 1 = word, 2 = f3 / f4, 3 = f1 / f2, 4 = f5). Deviation: the port swaps \"longitude\" -> \"latitude\" in the finished solution of a latitude question (ProblemTexts.Wording.solution_swap); the EXE text always says \"longitude\" (DESIGN 5.4 corrections only notes that the stored text says longitude; not a listed deliberate difference)"
+ },
+ "0x00422f64": {
+  "name": "Prob09_Diagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/nav_chart_diagram.gd (family \"nav_chart\", problem_diagrams.json type 9: markers x = (trunc((180 - lon) * 20) + 43) * 2, y = (trunc((lat - 20) * 9) + 41) * 2, legend pictures at (48,282) / (228,282))"
+ },
+ "0x0042317c": {
+  "name": "LoadMenuStringsPlaying",
+  "status": "ported",
+  "where": "godot/src/ui/game_menu_bar.gd:_ready (strings 11052-11057: Help / File / Options)"
+ },
+ "0x0042320d": {
+  "name": "LoadMenuStringsPractice",
+  "status": "ported",
+  "where": "godot/src/ui/game_menu_bar.gd:_build_practice_menus (strings 11058-11063)"
+ },
+ "0x00423338": {
+  "name": "DrawProblemBackground",
+  "status": "ported",
+  "where": "godot/src/problems/problem_screen.gd:_apply_layout (ProblemScreenLayout.background: loose picture 1780 at (12,30), also used by log_screen.gd)"
+ },
+ "0x00423378": {
+  "name": "LoadPromptSenderPicture",
+  "status": "ported",
+  "where": "godot/src/problems/prompt_sender.gd:PromptSender.picture_name (slot rule), problem_screen.gd:_write_prompt (picture at (361, 48), header at (414, 48), rest from y 68; WriteMessageTextWithSender 0x4233c8), problem_instance.gd:trigger_slot"
+ },
+ "0x004233c8": {
+  "name": "WriteMessageTextWithSender",
+  "status": "ported",
+  "where": "godot/src/problems/prompt_sender.gd + godot/src/problems/problem_screen.gd:_write_prompt (sender picture at (361,48), first line at x 414, rest from y 68; only for a map-trigger prompt, not in practice)"
+ },
+ "0x004234c0": {
+  "name": "WriteMessageText",
+  "status": "ported",
+  "where": "godot/src/problems/problem_screen.gd:_write_message (clears and rewrites the message box; text_label / feedback)"
+ },
+ "0x00423549": {
+  "name": "WaitKeyOrTicks",
+  "status": "ported",
+  "where": "godot/src/problems/problem_flow.gd:_show_message / _wait_for_continue / press_continue / advance_ticks (ProblemFlow.message_ticks 146, Enter or a click anywhere; Space does not end it) and combination_lock.gd:_message_timed_out / press_key; Esc -> Game.ask_to_exit (SaveAndExit)"
+ },
+ "0x004235e5": {
+  "name": "ShowCorrectPhrase",
+  "status": "ported",
+  "where": "godot/src/problems/correct_phrase.gd:pick (strings 11110-11113, % 4) shown by godot/src/problems/problem_flow.gd:_on_right and combination_lock.gd:_notice (practice only); random sequence differs (Borland rand, known gap)"
+ },
+ "0x00423629": {
+  "status": "ported",
+  "where": "godot/src/rules/game_flow.gd:open_problem / run_problem / show_problem_hints, godot/src/problems/problem_factory.gd:for_trigger_slot (rand % 2 candidate of the trigger table), problem_screen.gd (prompt, answer, ERROR, hint, 2nd try, \"directed to ship\", solution, success), problem_session.gd (attempt rules), GameState.update_oxygen codes 1 / 2, GameState piece take-back for the canister (type 1) when the air runs out. Esc / practice (no oxygen, PracticeResult) via practice_mode.gd"
+ },
+ "0x00423b03": {
+  "status": "n/a",
+  "where": "n/a: frees the problem bundles / lock and databank resources (memory)"
+ },
+ "0x00423b98": {
+  "status": "n/a",
+  "where": "n/a: record loader (byte field of the packed problem table); the port reads the records pre-extracted into godot/data/problems/problem_type_NN.tres"
+ },
+ "0x00423bac": {
+  "status": "n/a",
+  "where": "n/a: record loader (u16 field); pre-extracted records"
+ },
+ "0x00423bc2": {
+  "name": "bytes_to_CompactNumberType",
+  "status": "n/a",
+  "where": "n/a: record loader (7-byte compact number); pre-extracted records (ProblemRecord kinds \"n\")"
+ },
+ "0x00423c0e": {
+  "name": "ReadProblemRecord",
+  "status": "ported",
+  "where": "godot/src/problems/problem_factory.gd:make (index = random % record count of the level table) + godot/src/problems/problem_record.gd (decoded fields per type, godot/data/problems/*.tres). Random sequence differs (Borland rand, known gap); practice-mode record tweaks (types 4, 6, ...) are off in the original too (core/practice_set.gd note)"
+ },
+ "0x00424eea": {
+  "status": "ported",
+  "where": "godot/src/problems/problem_screen.gd:_apply_layout / title_label (ProblemScreenLayout title_box_x 40, width 268, y 36, centred, colour 15); title string = ProblemType.title (strings 11074+type) via problem_instance.gd:title"
+ },
+ "0x00424f3d": {
+  "name": "DrawProblemDiagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/diagram_factory.gd:create + diagram_base.gd:play_intro and the family classes (pie / barnacles / ballast / lock ...), problem_screen.gd:_show_diagram/_run_intro (picture builds up first, then ShowProblemPrompt flushes keys); per-type geometry/sounds/ticks in godot/data/problems/problem_type_NN.tres `diagram` (DESIGN 5.5). Random legend order of type 17 is a Godot random pick (G15)"
+ },
+ "0x004250c3": {
+  "name": "ShowProblemPrompt",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:describe (prompt_index/slots per type, checked against the decompiled index rules) + problem_instance.gd:_word; problem_screen.gd:_write_prompt with the sender picture (prompt_sender.gd = WriteMessageTextWithSender 0x4233c8)"
+ },
+ "0x00425772": {
+  "name": "CheckAnswer",
+  "status": "ported",
+  "where": "godot/src/problems/answer_checker.gd:check / check_selection (for a problem type a mod pack added, godot/src/problems/problem_session.gd:submit asks the campaign's mod first, RuleHooks.judge_answer), data-driven by answer_fields, compare_mode (exact 1e-10 / near / close / range / sum), tolerances and kind_checked_levels in godot/data/problems/problem_type_01..33.tres; all 33 cases of the original compared (types 1/2/9/11/13/17/26/27 tolerances, 4 level 0 exact vs strict range above, 14 level 1 and 17/32/33 kind rule). Minor: 1e-9 slack at a tolerance edge"
+ },
+ "0x00426317": {
+  "name": "ShowWrongAnswerNotice",
+  "status": "ported",
+  "where": "godot/src/problems/problem_flow.gd:_on_wrong/_after_error (STRING_ERROR 11000, STRING_DIRECTED_TO_SHIP 11114, NO_SHIP_NOTICE_TYPES = the 10-byte table at 0x442984, ProblemFlow.message_ticks 146 = WaitKeyOrTicks(0x92))"
+ },
+ "0x004263bb": {
+  "name": "ShowProblemHint",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd (hint_index/hint_slots per type) + problem_flow.gd:_after_error (hint stays up for the second try, calculator/answer box cleared)"
+ },
+ "0x00426a9e": {
+  "name": "ShowProblemSolution",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd (solution_index/slots) + problem_flow.gd:_show_solution / lock_go_on + problem_screen.gd:_show_go_on (string 11003 \"Click to go on.\" centred under the text, Enter or click, no time-out; Esc -> Game.ask_to_exit = SaveAndExit). Deviation: the original has NO stored solution text for type 12 and for type 22 level 1 (empty box); the port composes a text for them (problem_texts.gd:_type_12/_type_22; noted in DESIGN 5.4)"
+ },
+ "0x004272f1": {
+  "name": "ShowSuccessMessage",
+  "status": "ported",
+  "where": "godot/src/problems/problem_flow.gd:_show_success (success_index per type from problem_texts.gd, checked against all 33 cases; type 1 -> log screen LogScreen = do_access_closing; SUCCESS_REPLAY_TYPES [6,11,12,16,22,23,26,27] = the Prob*_SuccessAnimation/AnimateThermometerSolution calls; WaitKeyOrTicks(0x92))"
+ },
+ "0x00427744": {
+  "status": "ported",
+  "where": "godot/src/rules/trigger_model.gd:fires / fires_for (the trigger's flag nibble indexes TABLE = MathTriggerTable[SubCell*16+nibble] (0x442994): bit1 = test x in [SubX, SubX+95], bit0 = test y in [SubY, SubY+57], 0 = no test, so the trigger fires as soon as it is armed on the screen) called once per tick, after the sub has moved, by godot/src/rules/sim_world.gd:_check_triggers / _detect_math_trigger (first armed trigger of the screen in list order, at most one per call); the flag nibble is MathTriggerData.test_nibble; tests test_trigger_table_rule.gd, test_trigger_table_rule_legacy.gd"
+ },
+ "0x00427829": {
+  "status": "ported",
+  "where": "godot/src/rules/sim_world.gd:_rearm_triggers (re-arms triggers with bit 5 on entering a screen; armed state kept in TriggerModel.armed by SimWorld)"
+ },
+ "0x00427874": {
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_14 (solution slots {0:f1,1:f0,2:f2,3:f3})"
+ },
+ "0x004278dc": {
+  "name": "AnimateBarnacles",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/barnacle_diagram.gd + problem_type_14.tres `diagram.barnacle` (20 positions, f1 unhealthy pic 3, healthy halves pic 4/5 swapping, 3 rounds of 30 + 40 ticks, sound 0x24 once per round); test_diagram_animations.gd"
+ },
+ "0x00427b10": {
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/barnacle_diagram.gd + problem_type_14.tres `diagram` (pictures 0/1/2 at (20,60)/(36,72)/(36,266), rounds, 20-tick tail)"
+ },
+ "0x00427bb4": {
+  "status": "ported",
+  "where": "godot/src/main.gd -> SceneRouter (autoload) opening.gd -> ui/sign_in.gd -> gameplay/game.gd (begin_sector, complete_sector = result 0 + IncrementSector, _respawn = result 1, _restart = result 2 with ink refill / tries+1 / midpoint cleared, finish_game = add_player_to_hall + SaveRosterData + hall of fame -> sign-in). install_vga_palette / LoadCommonEffects / resource Free* n/a (Godot). srand(time) before each DoAction -> Godot randomize (G15 deferred). PracticeRecordTweaks (string 11249 \"FALSE\") is never active in either"
+ },
+ "0x00427e20": {
+  "name": "ShowFirstTimeHint",
+  "status": "ported",
+  "where": "godot/src/core/hint_system.gd (7 hints, unseen-bit mask, HintsOn) + godot/src/rules/game_flow.gd:show_hint / show_problem_hints (hint 3/4 by calculator option, 6 at levels 1/3, not in practice/lock/ballast; title string 11115). Deviation: hint 4 (calculator) has no text in the extracted data (text 10171 empty); hint_system.gd:CALCULATOR_FALLBACK stands in, the original shows its (empty?) item"
+ },
+ "0x00427ee4": {
+  "status": "ported",
+  "where": "godot/src/problems/problem_record.gd:number_at (kind 0 decimal raw/exp, kind 1 mixed fraction, other = unused -> 0); decoded at import into the flat PackedInt64Array of problem_type_NN.tres"
+ },
+ "0x00427f20": {
+  "name": "RoundHalfEven",
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:round_half_even (used by from_double = NormalizeDecimal and to_int = NumberToInt, and so by ProblemRecord.int_at)"
+ },
+ "0x00427fe8": {
+  "name": "NormalizeDecimal",
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:normalize_decimal (the five loops with the original's constants; the mantissa range -99999999 .. 999999999 keeps 9 digits for a positive and 8 for a negative; from_double is normalize_decimal(0, x)); tests/engine/test_number_value.gd. The port divides by 10 where the original multiplies by the double 0.1 in x87 extended precision: results differ only for overflow (never shown) and for a 9-digit division whose exact quotient is a tie at the last kept digit (-7383531.02 / -400: 18458.8276 in the original, 18458.8275 in the port)"
+ },
+ "0x0042812c": {
+  "name": "FractionToDecimal",
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:to_double + :from_double (CalculatorModel.calculate converts a fraction with a decimal operand); denominator 0 cannot occur (parse refuses it)"
+ },
+ "0x00428191": {
+  "name": "Gcd",
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:_gcd"
+ },
+ "0x004281b3": {
+  "name": "NormalizeFraction",
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:_normalize_fraction (carry numerator into whole, sign fix, gcd, limits whole -9..99, |num| <= 99, den <= 999 -> TOO_LARGE notice)"
+ },
+ "0x00428264": {
+  "name": "UnifyNumberKinds",
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:calculate (decimal that is a whole number -9..99 becomes w/1 beside a fraction, otherwise both decimal)"
+ },
+ "0x0042837c": {
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:to_double"
+ },
+ "0x004283bc": {
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:to_int + round_half_even (RoundHalfEven 0x427f20, ties to even); problem_record.gd:int_at"
+ },
+ "0x004283ed": {
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:decimal(int) (ProblemRecord.number_at of integer fields, AnswerChecker.expected)"
+ },
+ "0x00428405": {
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:decimal(0) / calculator_model.gd:_reset_after_notice"
+ },
+ "0x0042841f": {
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:_apply_pending (is_zero_approx on the divisor -> DIVIDE_BY_ZERO notice); same result as the original's exact test for the values reachable"
+ },
+ "0x00428463": {
+  "name": "AddDecimals",
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:calculate operator \"+\" on doubles + NumberValue.from_double (exponent alignment of the original = float math; result range -99999999 .. 999999999, divisor 0 -> notice; see NormalizeDecimal for the negative 9-digit difference)"
+ },
+ "0x004284bf": {
+  "name": "AddFractions",
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:_calculate_fractions operator \"+\" then _normalize_fraction"
+ },
+ "0x004284f3": {
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:calculate (UnifyNumberKinds + Decimals/Fractions variant), called by _apply_pending for the calculator keys; tests/engine/test_calculator.gd"
+ },
+ "0x0042856d": {
+  "name": "SubtractDecimals",
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:calculate operator \"-\" on doubles + NumberValue.from_double (exponent alignment of the original = float math; result range -99999999 .. 999999999, divisor 0 -> notice; see NormalizeDecimal for the negative 9-digit difference)"
+ },
+ "0x004285c9": {
+  "name": "SubtractFractions",
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:_calculate_fractions operator \"-\" then _normalize_fraction"
+ },
+ "0x004285fd": {
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:calculate (UnifyNumberKinds + Decimals/Fractions variant), called by _apply_pending for the calculator keys; tests/engine/test_calculator.gd"
+ },
+ "0x00428677": {
+  "name": "MultiplyDecimals",
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:calculate operator \"*\" on doubles + NumberValue.from_double (exponent alignment of the original = float math; result range -99999999 .. 999999999, divisor 0 -> notice; see NormalizeDecimal for the negative 9-digit difference)"
+ },
+ "0x0042869a": {
+  "name": "MultiplyFractions",
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:_calculate_fractions operator \"*\" then _normalize_fraction"
+ },
+ "0x004286e0": {
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:calculate (UnifyNumberKinds + Decimals/Fractions variant), called by _apply_pending for the calculator keys; tests/engine/test_calculator.gd"
+ },
+ "0x0042875a": {
+  "name": "DivideDecimals",
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:calculate operator \"/\" on doubles + NumberValue.from_double (exponent alignment of the original = float math; result range -99999999 .. 999999999, divisor 0 -> notice; see NormalizeDecimal for the negative 9-digit difference)"
+ },
+ "0x00428796": {
+  "name": "DivideFractions",
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:_calculate_fractions operator \"/\" (improper fractions) then _normalize_fraction"
+ },
+ "0x004287cb": {
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:calculate (UnifyNumberKinds + Decimals/Fractions variant), called by _apply_pending for the calculator keys; tests/engine/test_calculator.gd"
+ },
+ "0x00428845": {
+  "status": "ported",
+  "where": "godot/src/problems/calculator_model.gd:_negate / negated (N key). Edge: negating a 9-digit positive decimal overflows in the original (see NormalizeDecimal), the port shows the negative number"
+ },
+ "0x00428880": {
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:equals (|a-b| < 1e-10) and answer_checker.gd exact mode"
+ },
+ "0x00428908": {
+  "status": "ported",
+  "where": "godot/src/problems/answer_checker.gd:check compare_mode \"near\" (|b-a| <= |b|*tol)"
+ },
+ "0x00428974": {
+  "status": "ported",
+  "where": "godot/src/problems/answer_checker.gd:check compare_mode \"close\" (|b-a| <= tol)"
+ },
+ "0x004289cc": {
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:to_text (decimals keep their digits, \"0.05\"; fractions \"w  n/d\" (two spaces) / \"n/d\" / \"w\", \"-\" for negative; not reduced)"
+ },
+ "0x00428c10": {
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:to_text via problem_texts.gd:_num / _int (slots of the Prob*_Subst functions)"
+ },
+ "0x00428c48": {
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_18 (solution slots {0:f2,1:f1 int,2:f3})"
+ },
+ "0x00428c9a": {
+  "status": "ported",
+  "where": "godot/data/problems/problem_type_18.tres `diagram` family \"items\" (pic 0 at (20,58), f0 marks of pic 1 at (76+20i,170), f1 right-aligned to x 172 at y 102, colour 15) drawn by diagram_base.gd"
+ },
+ "0x00428d70": {
+  "name": "RunHelpTopic",
+  "status": "ported",
+  "where": "godot/src/ui/help_viewer.gd:show_topic / _refresh (RunPagedDialog's buttons and keys: Go Back a Page / See Next Page / Done = strings 11011-11013) shows godot/src/ui/help_topics.gd:TOPICS / PRACTICE_TOPIC, which follow the 7 wrappers (page texts 12000+n from logical id param_3, page counts and titles from strings 11116-11122); pinned by tests/legacy/test_help_topics_legacy.gd. The original's param_3 == 0 path (the short bundle-0xf0 texts 10152-10163) is dead and not ported. Text differences: key glyphs 0x09 / 0x0f / 0x15 of text 12016 are dropped (PORT_GAPS G48), the heading colour codes 3 / 4 (G51) and the left-margin code 0x01 of the key tables (G52) are ignored, and a click outside the dialog does not close it (G55)"
+ },
+ "0x00428ed9": {
+  "status": "ported",
+  "where": "help_topics.gd:TOPICS[0] = help_playing_0 / help_playing_1 = texts 12007 + 12008 (2 pages, string 11116)"
+ },
+ "0x00428ef2": {
+  "status": "ported",
+  "where": "help_topics.gd:TOPICS[1] = [12009] (= 0x7d09, 1 page)"
+ },
+ "0x00428f0b": {
+  "status": "ported",
+  "where": "help_topics.gd:TOPICS[2] = help_zones_0 = text 12018 (1 page, string 11118)"
+ },
+ "0x00428f24": {
+  "status": "ported",
+  "where": "help_topics.gd:TOPICS[3] = help_math_0 / help_math_1 = texts 12000 + 12001 (2 pages, string 11119)"
+ },
+ "0x00428f3d": {
+  "status": "ported",
+  "where": "help_topics.gd:TOPICS[4] = [12014, 12015, 12016] (= 0x7d0e.., 3 pages)"
+ },
+ "0x00428f56": {
+  "status": "ported",
+  "where": "help_topics.gd:TOPICS[5] = help_education_0 .. help_education_3 = texts 12002-12005 (4 pages, string 11121); text 12006 is in no topic. Heading colour: PORT_GAPS G51"
+ },
+ "0x00428f6f": {
+  "status": "ported",
+  "where": "help_topics.gd:PRACTICE_TOPIC = help_practice_0 .. help_practice_2 = texts 12011-12013 (3 pages, string 11122), item 0 of the practice Help menu"
+ },
+ "0x00428f88": {
+  "name": "CopyBackBufferRectAndFlush",
+  "status": "n/a",
+  "where": "blit helper"
+ },
+ "0x00428fbe": {
+  "name": "WaitEnterSpaceEscOrTicks",
+  "status": "ported",
+  "where": "data/story/title_reveal.tres [step_story.py:build_title_reveal] (292 ticks = 4 s per hold; marks presents / operation / neptune); Enter ends the running hold: godot/src/story/title_scene.gd:_end_hold"
+ },
+ "0x00428ffd": {
+  "name": "CartoonDrawCapsuleRing",
+  "status": "ported",
+  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (capsule ring)"
+ },
+ "0x0042907e": {
+  "name": "CartoonCapsuleTrail",
+  "status": "ported",
+  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (21 dots from call 11, one per 11 calls, ring 6 calls after, ring pictures 1003-1006 in news_ambient.tres) with StoryLayout points 27-47 / 21"
+ },
+ "0x004291cd": {
+  "name": "CartoonDrawMap",
+  "status": "ported",
+  "where": "godot/src/story/news_cartoon.gd:_build_stage (map picture 1000)"
+ },
+ "0x00429231": {
+  "name": "CartoonDrawConsole",
+  "status": "ported",
+  "where": "godot/src/story/news_cartoon.gd:_build_stage (console left / right)"
+ },
+ "0x004292aa": {
+  "name": "CartoonDrawAlarmLight",
+  "status": "ported",
+  "where": "data/story/news_ambient.tres [step_story.py:build_news_ambient] (the alarm lights' four states: picture and mirror)"
+ },
+ "0x00429318": {
+  "name": "CartoonAlarmLights",
+  "status": "ported",
+  "where": "data/story/news_ambient.tres [step_story.py:build_news_ambient] + data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (centre light from call 37, all three from call 234, counters 0/1/2 mod 4)"
+ },
+ "0x004293ef": {
+  "name": "CartoonDrawStatusLight",
+  "status": "ported",
+  "where": "godot/src/story/news_cartoon.gd:_flicker_timeline (status lights; made in code, random in the original)"
+ },
+ "0x00429440": {
+  "name": "CartoonStatusLights",
+  "status": "ported",
+  "where": "godot/src/story/news_cartoon.gd:_flicker_timeline (probability 100/299 per light and call, pictures 1010-1012, right three mirrored). Random sequence is a baked seed-73 sequence of 64 steps, not the Borland rand interleaving (G15 deferred)"
+ },
+ "0x00429544": {
+  "name": "CartoonDrawPanelLight",
+  "status": "ported",
+  "where": "godot/src/story/news_cartoon.gd:_flicker_timeline (panel lights)"
+ },
+ "0x00429595": {
+  "name": "CartoonPanelLights",
+  "status": "ported",
+  "where": "godot/src/story/news_cartoon.gd:_flicker_timeline (8 lights, pictures 1013-1015, right four mirrored). Random sequence differs (G15 deferred)"
+ },
+ "0x004296b6": {
+  "name": "CartoonDrawCrewPicture",
+  "status": "ported",
+  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news]"
+ },
+ "0x004296de": {
+  "name": "CartoonCrew",
+  "status": "ported",
+  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (crew_frame, 5 scripts, man on the left from call 220 walking 12 px per call)"
+ },
+ "0x0042984d": {
+  "name": "CartoonSpeech",
+  "status": "ported",
+  "where": "godot/src/story/news_cartoon.gd:_speak / SPEECH_GROUP_CLIPS / speech_groups (11 clips 4000-4010 in 5 groups, pauses before clips 1, 3, 6, 7) via Audio.speak and voice_cues \"opening_cartoon\""
+ },
+ "0x0042995c": {
+  "name": "NewsCartoonRedraw",
+  "status": "ported",
+  "where": "godot/src/story/news_cartoon.gd (whole scene: 10 ticks per redraw; map, console, lights, crew, trail, speech, teletype); the cartoon does not loop (deliberate)"
+ },
+ "0x00429a73": {
+  "name": "CartoonTypeLine",
+  "status": "ported",
+  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (teletype visible_ratio, typing ticks_per_character 3 of docs/data/opening.json = set_alarm 2 + 1), bulletin() = texts 10003-10008"
+ },
+ "0x00429b65": {
+  "name": "CartoonWrapTypeText",
+  "status": "ported",
+  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (teletype; the port wraps the whole text first and reveals it by characters, [I] DESIGN 2.1)"
+ },
+ "0x00429c18": {
+  "name": "CartoonTeletypeNextBulletin",
+  "status": "ported",
+  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (teletype box)"
+ },
+ "0x00429cc2": {
+  "name": "TitleShipWobble",
+  "status": "ported",
+  "where": "data/story/title_ship.tres [step_story.py:build_title_ship] (the +-2 wobble is in the table of docs/data/opening.json, so in the timeline)"
+ },
+ "0x00429d09": {
+  "name": "TitleDrawBackdrop",
+  "status": "ported",
+  "where": "godot/src/story/title_scene.gd:_build_stage (sky, sea, clouds)"
+ },
+ "0x00429dbb": {
+  "name": "TitleDrawHull",
+  "status": "ported",
+  "where": "data/story/title_ship.tres [step_story.py:build_title_ship] actor ship position (picture 1027, point 48, 8 px per redraw, stands for parameters 56-85)"
+ },
+ "0x00429e25": {
+  "name": "TitleDrawRadar",
+  "status": "ported",
+  "where": "data/story/title_ship.tres [step_story.py:build_title_ship] actor radar picture + mirror (1028/1029/1030/1029 mirrored every 3rd parameter)"
+ },
+ "0x00429efc": {
+  "name": "TitleDrawHook",
+  "status": "ported",
+  "where": "data/story/title_ship.tres [step_story.py:build_title_ship] actor hook picture (1031 mirrored, 1032 for parameters 67-70)"
+ },
+ "0x00429f7b": {
+  "name": "TitleDrawSub",
+  "status": "ported",
+  "where": "data/story/title_ship.tres [step_story.py:build_title_ship] actor mini_sub position + clip (drop 6 px per redraw, clip row 312, gone from redraw 81)"
+ },
+ "0x0042a01f": {
+  "name": "TitleSplash",
+  "status": "ported",
+  "where": "data/story/title_ship.tres [step_story.py:build_title_ship] actors splash_left / splash_right (pictures 1034-1038, mirrored copy 76 px right) + the sound cue (0x2B) at frame 73"
+ },
+ "0x0042a0f6": {
+  "name": "TitleBowSpray",
+  "status": "ported",
+  "where": "data/story/title_ship.tres [step_story.py:build_title_ship] actor spray (1035/1036 alternating, 1037/1038 while slowing, none while standing)"
+ },
+ "0x0042a1d7": {
+  "name": "TitleWaveStrip",
+  "status": "ported",
+  "where": "godot/src/story/title_scene.gd:_build_stage WavesFront (picture 1041 over the ship parts, point 53); hidden by _leave_ship_scene (the reveal repaints the backdrop without the strip)"
+ },
+ "0x0042a211": {
+  "name": "TitleRevealText",
+  "status": "ported",
+  "where": "godot/src/story/title_scene.gd:advance / _end_hold / _leave_ship_scene + data/story/title_reveal.tres (Presents -> OPERATION -> NEPTUNE with the prompt; sound 0x33 before each; Enter ends only the hold that is running, Space / Esc leave through Opening); tests/engine/test_opening.gd:test_enter_in_the_reveal_ends_one_hold_at_a_time"
+ },
+ "0x0042a3e3": {
+  "name": "TitleShowOperation",
+  "status": "ported",
+  "where": "data/story/title_reveal.tres [step_story.py:build_title_reveal] ('OPERATION' at point 60)"
+ },
+ "0x0042a49a": {
+  "name": "TitleScreenPromptLoop",
+  "status": "ported",
+  "where": "godot/src/story/title_scene.gd:_show_prompt/_choose/_unhandled_key_input (Start = S/Space/Esc/click on button, Intro = Enter/I/click on button, 1825 ticks (25 s) -> Intro, music restart 4 s (292 ticks) after the prompt, pictures 2420-2423). A release outside both buttons is Intro (title_scene.gd:click, forwarded by Opening._input), as the original's whole-screen hotspot 0xd = Enter"
+ },
+ "0x0042a761": {
+  "name": "StoryDrawLoosePicture",
+  "status": "ported",
+  "where": "godot/src/story/story_pages.gd:_show_page"
+ },
+ "0x0042a785": {
+  "name": "StoryDrawCaption",
+  "status": "ported",
+  "where": "godot/src/story/story_pages.gd:_show_page (data/story/story_script.tres caption_position, the pages' captions)"
+ },
+ "0x0042a7a2": {
+  "name": "StoryDrawHeading",
+  "status": "ported",
+  "where": "godot/src/story/story_pages.gd:_show_page (data/story/story_script.tres heading_position, the pages' headings)"
+ },
+ "0x0042a7bf": {
+  "name": "StoryAnimateRing",
+  "status": "ported",
+  "where": "godot/src/story/story_pages.gd:_ring_frames / Ring AnimatedSprite2D"
+ },
+ "0x0042a817": {
+  "name": "PlayStoryPageSpeech",
+  "status": "ported",
+  "where": "godot/src/story/story_pages.gd:_page_clock (Audio.speak of voice_cues story_page(n): 1-3 clips per page; Enter cuts the speech, Space/Esc leave; stands still while the window is inactive, opening.gd:set_window_active)"
+ },
+ "0x0042a9a3": {
+  "name": "StoryLoadRingPictures",
+  "status": "n/a",
+  "where": "resources; textures resolved by story_pages.gd:_ring_frames (Assets.ui_picture)"
+ },
+ "0x0042a9cd": {
+  "name": "StoryFreeRingPictures",
+  "status": "n/a",
+  "where": "memory"
+ },
+ "0x0042a9f1": {
+  "name": "OpeningStoryPages",
+  "status": "ported",
+  "where": "godot/src/story/story_pages.gd + data/story/story_script.tres (9 pages, headings/frames/captions 2056-2079, min 365 ticks and until the speech ends, page 9 3285 ticks, Enter next, Space/Esc leave); OpeningSequence adds the whole-screen hotspot 0xd (AddHotspot(0xd,0,0,640,400) at its start, removed only when it returns) which stays active during the pages, so a left click anywhere on ANY page is Enter (next page; on the last page it ends the story) = godot/src/story/opening.gd:_input -> story_segment.gd:click -> story_pages.gd:advance"
+ },
+ "0x0042b0f9": {
+  "name": "OpeningMusicCue",
+  "status": "ported",
+  "where": "godot/src/story/news_cartoon.gd:_ready (Audio.play_music SONG_OPENING 9502), title_scene.gd:_ready (SONG_TITLE 9503), :_leave_ship_scene (stop music) + the sound cue 0x33 at each reveal step (title_reveal.tres), :_show_prompt (SONG_OPENING again after 4 s); opening.gd:_leave stops music (cue 6)"
+ },
+ "0x0042b16b": {
+  "status": "ported",
+  "where": "godot/src/story/opening.gd (director: NewsCartoon -> TitleScene -> StoryPages, looping like the original: _run / _play_parts / _start_over start over from the cartoon when StoryPages.timed_out, i.e. the last page ran out its 3285 ticks with no key; Enter = next part, Space / Esc = leave; _input forwards a left-button release anywhere as Enter through StorySegment.click, as the original's whole-screen hotspot 0xd does, except over the title prompt's Start and Intro buttons, which act on the press; a release whose press began in an earlier part is swallowed, a Deliberate deviation) (test_opening.gd)"
+ },
+ "0x0042b74c": {
+  "name": "MenuAboutBox",
+  "status": "ported",
+  "where": "godot/src/ui/help_topics.gd:about_text (ABOUT_TEXTS = strings 11144-11149 joined, THEN \"Version 1.23\" (11002), newline, \"Copyright ...\" (11001), newline: description first, version and copyright at the bottom, as the original; title 11150) shown in the paged HelpViewer; test_help_topics.gd"
+ },
+ "0x0042b8f4": {
+  "name": "MenuAboutBoxCommand",
+  "status": "n/a",
+  "where": "menu handler; Help > About in godot/src/ui/game_menu_bar.gd"
+ },
+ "0x0042b900": {
+  "name": "QuitProgram",
+  "status": "ported",
+  "where": "godot/src/gameplay/game.gd:ask_to_exit (get_tree().quit() after save), ui/sign_in.gd Exit, problems/practice_mode.gd:_ask_exit (quit_requested signal first, quits_program=false in tests); the longjmp to the main loop exit = Godot quit"
+ },
+ "0x0042b914": {
+  "name": "MenuReturnToSignInSave",
+  "status": "ported",
+  "where": "godot/src/gameplay/game.gd:ask_to_return_to_sign_in / leave_to_sign_in (strings 11126 / 11127, default No, Yes = save + SceneRouter SIGN_IN)"
+ },
+ "0x0042b98f": {
+  "name": "MenuReturnToSignIn",
+  "status": "ported",
+  "where": "godot/src/problems/practice_mode.gd:ask_to_return (strings 11128 / 11129, no save, Yes = SceneRouter SIGN_IN)"
+ },
+ "0x0042ba05": {
+  "status": "ported",
+  "where": "godot/src/gameplay/game.gd:ask_to_exit (Esc via action quit_to_menu, strings 11130 / 11132, default No, Yes = save_progress + quit); the game's problem screens and message waits all route Esc here. Math Practice: practice_mode.gd:_ask_exit(true) for the answer entry (11130), no roster write (the original would overwrite the last signed-in slot with the blank practice record, a quirk not copied)"
+ },
+ "0x0042ba83": {
+  "status": "ported",
+  "where": "godot/src/problems/practice_mode.gd:ask_to_exit_from_problem / _ask_exit(false) (strings 11134 / 11132, default No, Yes = quit_requested + get_tree().quit()); File > Exit = ask_to_exit; chosen from ProblemScreen.step() / lock / ballast"
+ },
+ "0x0042bafc": {
+  "status": "ported",
+  "where": "godot/src/ui/hall_of_fame_view.gd + gameplay/game.gd:show_hall_of_fame / rules/game_flow.gd:finish_game (nine rows Name / Level / Tries from strings 11124 / 11125, \"(c)\" for customised games, music paused). Minor: closes with Esc or the Done button (Enter via focus); the original also closes on a click anywhere (hotspot 0xdef)"
+ },
+ "0x0042bc56": {
+  "name": "MenuNewPlayerHints",
+  "status": "ported",
+  "where": "godot/src/gameplay/game.gd:ask_option(&\"hints\") (strings 11143 title / 11142 text, default = the answer that changes the setting, Esc leaves it, Yes also makes every hint new again via HintSystem.reset)"
+ },
+ "0x0042bcdf": {
+  "name": "MenuSoundEffects",
+  "status": "ported",
+  "where": "godot/src/gameplay/game.gd:ask_option(&\"sound\") (11138 / 11139) -> Audio.set_bus_enabled SFX; test_flow_fidelity.gd"
+ },
+ "0x0042bd56": {
+  "name": "MenuMusic",
+  "status": "ported",
+  "where": "godot/src/gameplay/game.gd:ask_option(&\"music\") (11140 / 11141) -> Audio.set_music_on (song restarts from its beginning); test_flow_fidelity.gd"
+ },
+ "0x0042bdcd": {
+  "name": "MenuVoice",
+  "status": "ported",
+  "where": "godot/src/gameplay/game.gd:ask_option(&\"voice\") (11136 / 11137) -> Audio.set_bus_enabled VOICE"
+ },
+ "0x0042be44": {
+  "name": "Prob17_PromptSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_17 prompt_slots {0,1} = food names text_at(13 + ...) (rotation 0/1 of the legend + slice row GREEN 0 / PURPLE 1 / ORANGE 2 reproduces eec/eed/eee); checked for f0 = 0, 1, 2"
+ },
+ "0x0042bf47": {
+  "name": "Prob17_HintSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_17 hint_slots {2} = _simple_fraction of the answer; the original uses the constants \"1/3\", \"1/2\", \"1/4\" by f0, which are exactly the answers of the level-2 records (33% / 50% / 25%)"
+ },
+ "0x0042bfa2": {
+  "name": "Prob17_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_17 solution_slots {2: f1 text}"
+ },
+ "0x0042bfcc": {
+  "name": "Prob17_Diagram",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/pie_diagram.gd + problem_type_17.tres `diagram` (panel 0 at (82,76), legend lines at (134,226/248/270) in rotation 0/1, slices at the original points for f0 = 0 vs others, sound 0x29 + 88 ticks per slice)"
+ },
+ "0x0042c2a8": {
+  "name": "Prob05_PromptSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_05 prompt_slots {0:f0, 1:f1} (hint slots 2/3 = f4/f5 are not used by any text)"
+ },
+ "0x0042c314": {
+  "name": "Prob05_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_05 solution_slots {0:f0, 1:f1, 4:f2, 5:f3}"
+ },
+ "0x0042c380": {
+  "name": "Prob05_Diagram",
+  "status": "ported",
+  "where": "godot/data/problems/problem_type_05.tres `diagram` family \"items\" (panel then 6 pieces at the original points, sound 0x23, 15 ticks apart) via diagram_base.gd"
+ },
+ "0x0042c424": {
+  "name": "PracticeDrawCentredText",
+  "status": "ported",
+  "where": "godot/src/ui/practice_setup_dialog.gd (title label)"
+ },
+ "0x0042c450": {
+  "name": "DrawPracticeSetupDialog",
+  "status": "ported",
+  "where": "godot/src/ui/practice_setup_dialog.gd (Godot radio buttons / buttons instead of the drawn window; strings 11155-11167, 3 kinds, 4 levels, calculator On/Off greyed for mental math); defaults per DESIGN 2.1"
+ },
+ "0x0042c79d": {
+  "name": "DrawPracticeSetupControl",
+  "status": "ported",
+  "where": "godot/src/ui/practice_setup_dialog.gd (radio groups + buttons are Godot CheckBox / Button)"
+ },
+ "0x0042cbae": {
+  "name": "PracticeSetupDialog",
+  "status": "ported",
+  "where": "godot/src/ui/practice_setup_dialog.gd (+ .tscn; strings 11155-11167; Calculator On/Off greyed for Mental Math like the original focus skip) driven by godot/src/problems/practice_mode.gd:_ask_setup; Esc / Cancel leave practice, Done starts a set. Keyboard hotspot/focus ring is Godot focus + CheckBox groups"
+ },
+ "0x0042d10d": {
+  "name": "MenuPracticeSetupCommand",
+  "status": "ported",
+  "where": "godot/src/problems/practice_mode.gd:_on_customization_requested"
+ },
+ "0x0042d119": {
+  "name": "PracticeScoreWidth",
+  "status": "ported",
+  "where": "godot/src/problems/practice_mode.gd:SCORE_SIZE_WITH_CALCULATOR / SCORE_SIZE_WITHOUT_CALCULATOR"
+ },
+ "0x0042d12e": {
+  "name": "PracticeShowScore",
+  "status": "ported",
+  "where": "godot/src/core/practice_score.gd (counting) + godot/src/problems/practice_mode.gd:_update_score(wide) (3 / 2 lines, strings 11168-11171; panel 316 px with the calculator, 608 without, widened to 608 around types 0 / 28 / 29 by WIDE_PANEL_TYPES and narrowed after the problem)"
+ },
+ "0x0042d45a": {
+  "name": "PracticeDrawFrame",
+  "status": "ported",
+  "where": "godot/src/problems/practice_mode.gd (ConsoleFrame with hud_layout.tres + ScorePanel)"
+ },
+ "0x0042d6ff": {
+  "name": "PracticeBuildRandomSet",
+  "status": "ported",
+  "where": "godot/src/core/practice_set.gd:build (Kind.FIVE: randi() % 33 + 1 kept when PracticeSet.is_available; repeats allowed). RNG sequence differs (Borland rand deferred G15)"
+ },
+ "0x0042d749": {
+  "name": "PracticeBuildLockSet",
+  "status": "ported",
+  "where": "godot/src/core/practice_set.gd:build (Kind.MENTAL: five type-0 locks)"
+ },
+ "0x0042d772": {
+  "name": "PracticeBuildAllTypesSet",
+  "status": "ported",
+  "where": "godot/src/core/practice_set.gd:build / available_types (Kind.ALL: types 1-33 ascending where records exist at the level)"
+ },
+ "0x0042d7b0": {
+  "name": "PracticeNextProblemType",
+  "status": "ported",
+  "where": "godot/src/problems/practice_mode.gd:_play_set (iterates PracticeSet.build(kind, level) once per set)"
+ },
+ "0x0042d817": {
+  "status": "ported",
+  "where": "godot/src/problems/practice_mode.gd:_run / _play_set (settings dialog -> set -> \"practice another set?\" 11151/11152 -> loop; the score is reset only for the first set and when the kind switches between Mental Math and the others, _last_set_was_mental). Remaining nuance: a problem aborted by Options > Customization is not counted as a problem (the original adds 1 after DoMathProblem even then)"
+ },
+ "0x0042daf0": {
+  "status": "ported",
+  "where": "godot/src/gameplay/original_presenter.gd:_build_collectibles (clears the Collectibles node on every screen build)"
+ },
+ "0x0042daf8": {
+  "status": "ported",
+  "where": "godot/src/rules/sim_world.gd:_build_pieces (one PieceModel per piece of the screen not yet in GameState.pieces_mask) + godot/src/gameplay/original_presenter.gd:_build_collectibles (one Collectible per PieceModel; id i+1 == Collectible.index i) + godot/src/gameplay/collectible.gd:setup"
+ },
+ "0x0042db41": {
+  "status": "ported",
+  "where": "godot/src/rules/sim_world.gd:take_piece (removes the PieceModel) -> godot/src/gameplay/original_presenter.gd:_on_piece_collected (frees the Collectible node)"
+ },
+ "0x0042dbb2": {
+  "status": "ported",
+  "where": "godot/src/rules/piece_model.gd:touched_by / is_touched_by (96x58 sub picture box vs 24x20 piece box, inclusive) called from godot/src/rules/sim_world.gd:_check_pieces (once per tick, before the sub moves); the port tests every piece each tick instead of only the first hit (tests/engine/test_collectibles.gd)"
+ },
+ "0x0042dc3b": {
+  "status": "ported",
+  "where": "godot/src/gameplay/collectible.gd (AnimatedSprite2D frame = GameClock.tick_count % frames: canister red/green each tick, rock sparkle table; docs/data/piece_animation.json); drawn over the station and, in play, under the sub (Collectibles layer of original_presenter.gd)"
+ },
+ "0x0042dcec": {
+  "status": "n/a",
+  "where": "n/a: back-buffer erase/redraw of the dirty-rect renderer; Godot redraws the scene tree"
+ },
+ "0x0042dd3c": {
+  "name": "Prob11_PromptSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_11 (prompt slots filled as the original)"
+ },
+ "0x0042dd93": {
+  "name": "Prob11_HintSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_11 (hint (inherits prompt slots, adds {3} = unit word 11178 + period) slots filled as the original)"
+ },
+ "0x0042de06": {
+  "name": "Prob11_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_11 (solution slots filled as the original)"
+ },
+ "0x0042de3c": {
+  "name": "Prob11_SolutionString",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_11 (solution index 2 / 4 / 3 / 5 from period and unit, same table)"
+ },
+ "0x0042de8b": {
+  "name": "Prob11_Diagram",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[11]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\" family: panel, pictures f1+3 / f2+6, f0 text)"
+ },
+ "0x0042df92": {
+  "name": "Prob11_SuccessAnimation",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[11 success overlay]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (picture 2 + f3); problem_screen.gd:SUCCESS_REPLAY_TYPES; game only, never in practice (DESIGN 5.5)"
+ },
+ "0x0042e028": {
+  "status": "ported",
+  "where": "godot/src/ui/sign_in.gd:request_start (GameState.profile = chosen PlayerProfile; scene change via SceneRouter)"
+ },
+ "0x0042e09a": {
+  "status": "ported",
+  "where": "godot/src/autoload/game_state.gd:capture_profile (tanks, oxygen, ink, pieces, hints, progress+midpoint) + godot/src/gameplay/game.gd (profile.sound_on / music_on / voice_on written by _on_option_toggled); the port keeps one live PlayerProfile object instead of a copy in the roster slot"
+ },
+ "0x0042e11d": {
+  "status": "ported",
+  "where": "godot/src/gameplay/game.gd:save_progress -> GameState.capture_profile + SaveStore.save_roster (JSON in user://, deliberate; saves after each change)"
+ },
+ "0x0042e12c": {
+  "status": "ported",
+  "where": "godot/src/core/progression.gd:game_of (0 Voyager / 1 Expert; finale 0x3c -> 0, 0x3e -> 1)"
+ },
+ "0x0042e155": {
+  "name": "GetZone",
+  "status": "ported",
+  "where": "godot/src/core/progression.gd:zone_of (progress % 30 / 6; finales 5 / 6)"
+ },
+ "0x0042e18f": {
+  "status": "ported",
+  "where": "godot/src/core/progression.gd:sector_of (progress >> 1)"
+ },
+ "0x0042e19e": {
+  "status": "n/a",
+  "where": "n/a: only used by Main to decide when to free / reload the zone resource bundle (resource management); Godot loads zone data per sector"
+ },
+ "0x0042e1c6": {
+  "name": "IsPastSectorMidpoint",
+  "status": "ported",
+  "where": "godot/src/core/progression.gd:past_midpoint + godot/src/resources/player_profile.gd:past_midpoint"
+ },
+ "0x0042e1e2": {
+  "status": "ported",
+  "where": "godot/src/core/progression.gd:with_midpoint + godot/src/autoload/game_state.gd (past_midpoint, capture_profile) / clear_midpoint"
+ },
+ "0x0042e201": {
+  "status": "ported",
+  "where": "godot/src/core/progression.gd:next_progress (clears the flag, +2, 28 -> 0x3c, 58 -> 0x3e, finale stays) used by godot/src/gameplay/game.gd:complete_sector"
+ },
+ "0x0042e26c": {
+  "name": "Prob15_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_15 (solution slots filled as the original)"
+ },
+ "0x0042e2a6": {
+  "name": "Prob15_Diagram",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[15]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\")"
+ },
+ "0x0042e368": {
+  "name": "Prob31_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_31 (solution (9 slots) slots filled as the original)"
+ },
+ "0x0042e42b": {
+  "name": "Prob31_ShapeA",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/search_area_diagram.gd:_add_rectangle (shape codes 1, 3 (both rectangles) and 6 (lower rectangle))"
+ },
+ "0x0042e4ca": {
+  "name": "Prob31_ShapeB",
+  "status": "n/a",
+  "where": "n/a: only for shape code 4, which no stored record uses (records of type 31 hold shape codes 1, 2, 3, 6 only; documented in search_area_diagram.gd header)"
+ },
+ "0x0042e56a": {
+  "name": "Prob31_ShapeC",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/search_area_diagram.gd:_add_triangle_rows(1, 0) (45 degree triangle, width == height)"
+ },
+ "0x0042e615": {
+  "name": "Prob31_ShapeD",
+  "status": "n/a",
+  "where": "n/a: only for shape code 5, which no stored record uses (records of type 31 hold shape codes 1, 2, 3, 6 only)"
+ },
+ "0x0042e6fe": {
+  "name": "Prob31_ShapeE",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/search_area_diagram.gd:_add_triangle_rows(1, 2) (other slopes: steep triangle, two rows per column)"
+ },
+ "0x0042e7dd": {
+  "name": "Prob31_ShapeF",
+  "status": "n/a",
+  "where": "n/a: only for shape code 5, which no stored record uses"
+ },
+ "0x0042e91a": {
+  "name": "Prob31_ShapeG",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/search_area_diagram.gd:_add_triangle_rows(2, 0) (width == 2 x height: hypotenuse of two half-cell pieces)"
+ },
+ "0x0042ea12": {
+  "name": "Prob31_ShapeH",
+  "status": "n/a",
+  "where": "n/a: only for shape code 5, which no stored record uses"
+ },
+ "0x0042eb3b": {
+  "name": "Prob31_Diagram",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[31]) driven by godot/src/problems/diagrams/search_area_diagram.gd:_build (shape codes 1, 2, 3, 6; codes 4 and 5 are never stored)"
+ },
+ "0x0042ee04": {
+  "name": "Prob32_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_32 (solution (types 32 and 33 share it) slots filled as the original)"
+ },
+ "0x0042ee6c": {
+  "name": "Prob32_Diagram",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[32]) driven by godot/src/problems/diagrams/search_grid_diagram.gd (grids 100 / 16 / 4, sound 0x29 every 2 ticks)"
+ },
+ "0x0042f00c": {
+  "name": "Prob23_PromptSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_23 (prompt slots filled as the original)"
+ },
+ "0x0042f042": {
+  "name": "Prob23_HintSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_23 (hint slots filled as the original): the original puts num(f3) (= the total weight, same value as f1) in {1}; the port inherits int(f1) from the prompt slots, identical text"
+ },
+ "0x0042f07a": {
+  "name": "Prob23_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_23 (solution (side word 11182 / 11181) slots filled as the original)"
+ },
+ "0x0042f0f9": {
+  "name": "Prob23_Diagram",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[23]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\", mirrored picture by f2)"
+ },
+ "0x0042f163": {
+  "name": "Prob23_SuccessAnimation",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[23 success \"pictures\"]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (sound 0x29, pictures at 22 and 44 ticks); tests/legacy/test_diagram_animations_legacy.gd:test_type_23_two_pictures_22_and_44_ticks_apart"
+ },
+ "0x0042f250": {
+  "name": "Prob27_PromptSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_27 (prompt slots filled as the original)"
+ },
+ "0x0042f270": {
+  "name": "Prob27_HintSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_27 (hint (inherits {0}) slots filled as the original)"
+ },
+ "0x0042f290": {
+  "name": "Prob27_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_27 (solution slots filled as the original)"
+ },
+ "0x0042f2f6": {
+  "name": "Prob27_Diagram",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[27]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\": panel + needle lookup by speed)"
+ },
+ "0x0042f398": {
+  "name": "Prob27_SuccessAnimation",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[27 success \"needle\"]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (sound 0x22, 20 ticks per step)"
+ },
+ "0x0042f460": {
+  "name": "CopyStringReturnEnd",
+  "status": "n/a",
+  "where": "string helper"
+ },
+ "0x0042f486": {
+  "name": "ConcatStrings",
+  "status": "n/a",
+  "where": "n/a: string-building helper of the remove-player question; the port builds its own text (documented DESIGN 2: own question text instead of 11186 / 11187)"
+ },
+ "0x0042f4be": {
+  "name": "CustomizedGameNotice",
+  "status": "ported",
+  "where": "godot/src/rules/game_flow.gd:customized_notice_text (strings 11195-11206 composed as the original) posted by godot/src/ui/sign_in.gd:request_start after the 36-tick pressed look and before the scan"
+ },
+ "0x0042f5dc": {
+  "name": "DrawSignInButton",
+  "status": "ported",
+  "where": "godot/src/ui/sign_in.gd:_show_pressed (the four Buttons Start / New / Practice / Exit with the theme pressed look; picture buttons are Godot Buttons, G14 pressed-look deferred)"
+ },
+ "0x0042f611": {
+  "name": "SetSignInButtonLooks",
+  "status": "ported",
+  "where": "godot/src/ui/sign_in.gd:_show_pressed / _release_buttons (Start pressed during notice + scan, New 36 ticks, Practice / Exit at once)"
+ },
+ "0x0042f6eb": {
+  "name": "RemoveRosterSlot",
+  "status": "ported",
+  "where": "godot/src/autoload/save_store.gd:remove_player (erase + save_roster); asked by godot/src/ui/sign_in.gd:request_remove (Ctrl+R, and Delete as a deliberate deviation); SignIn.refresh selects the row that took the name's place (the last one if it was last); an emptied roster goes to SignIn._ask_for_first_player"
+ },
+ "0x0042f72a": {
+  "name": "SetSignInScrollThumb",
+  "status": "n/a",
+  "where": "n/a: custom scroll thumb of the 8-row list; the port uses the Godot Tree widget with its own scrollbar (sign_in.gd:tree)"
+ },
+ "0x0042f7c1": {
+  "name": "FlushSignInScrollTrack",
+  "status": "n/a",
+  "where": "n/a: dirty-rect flush of the scroll track; Godot redraws"
+ },
+ "0x0042f7ef": {
+  "name": "SignInThumbToIndex",
+  "status": "n/a",
+  "where": "n/a: thumb position -> list index; Godot Tree scrollbar"
+ },
+ "0x0042f81a": {
+  "name": "SignInIndexToThumbY",
+  "status": "n/a",
+  "where": "godot/src/ui/sign_in.gd: the port uses the native Tree scrollbar"
+ },
+ "0x0042f87d": {
+  "name": "DrawSignInScreen",
+  "status": "ported",
+  "where": "godot/src/ui/sign_in.tscn (Security Clearance frame, lamps, list frame, buttons) + sign_in.gd:_ready"
+ },
+ "0x0042fa0f": {
+  "name": "SignInLoadFilesAndPictures",
+  "status": "ported",
+  "where": "godot/src/autoload/save_store.gd (roster load), godot/src/core/hall_of_fame.gd"
+ },
+ "0x0042fb54": {
+  "name": "WriteRosterFiles",
+  "status": "ported",
+  "where": "godot/src/autoload/save_store.gd:save_roster / save_hall (JSON roster.json + hall_of_fame.json; \"Write Error\" dialog via post_write_error, DESIGN 6)"
+ },
+ "0x0042fb7d": {
+  "name": "FreeSignInPictures",
+  "status": "n/a",
+  "where": "n/a: frees sign-in picture buffers (memory)"
+ },
+ "0x0042fca0": {
+  "name": "AnimateSecurityScan",
+  "status": "ported",
+  "where": "godot/src/ui/sign_in.gd:run_scan / _scan_animation / skip_scan (6 sweeps x 4 pictures, 5 ticks each, scanner sound 0x1d, Enter shortens it exactly like the original)"
+ },
+ "0x0042fe4d": {
+  "name": "SignInSpeech",
+  "status": "ported",
+  "where": "godot/src/ui/sign_in.gd:_first_visit_speech / request_start / _speak / _listen (clips 0x2e1 0x2e4 / 0x2e7 + 0x2ea or 0x2ed, synchronous, any key cuts the first-visit speech, Esc / Enter / click cut the clearance speech). See the sign_in entry for the Begin / Resume selection gap"
+ },
+ "0x0043003b": {
+  "name": "CountRosterPlayers",
+  "status": "ported",
+  "where": "godot/src/autoload/save_store.gd:players.size() / is_full (99 = MAX_PLAYERS)"
+ },
+ "0x00430056": {
+  "name": "ChooseGameLevelInvertBox",
+  "status": "n/a",
+  "where": "no callers (dead code)"
+ },
+ "0x0043008d": {
+  "name": "ChooseGameLevelDrawLabels",
+  "status": "ported",
+  "where": "godot/src/ui/new_player_dialog.gd (game level choice)"
+ },
+ "0x0043013f": {
+  "name": "ChooseGameLevelDialog",
+  "status": "ported",
+  "where": "godot/src/ui/new_player_dialog.gd (Voyager / Expert buttons, strings 11189, 11257-11259; Esc from either step emits cancelled = the whole New is cancelled)"
+ },
+ "0x00430512": {
+  "name": "DrawNameCaret",
+  "status": "n/a",
+  "where": "godot/src/ui/new_player_dialog.gd: LineEdit caret"
+ },
+ "0x0043054a": {
+  "name": "WaitKeyBlinkCaret",
+  "status": "n/a",
+  "where": "n/a: caret blink of the name box (14 ticks) is the Godot LineEdit caret blink"
+ },
+ "0x004305ae": {
+  "name": "EnterNewPlayerNameDialog",
+  "status": "ported",
+  "where": "godot/src/ui/new_player_dialog.gd + godot/src/resources/player_profile.gd:typed_name (8 chars, first letter upper-cased, blank only after first char, Backspace, Enter ignored when empty, Esc cancels); documented small deviation: LineEdit lets the caret move"
+ },
+ "0x004307ec": {
+  "name": "RosterOpenSortedSlot",
+  "status": "ported",
+  "where": "godot/src/autoload/save_store.gd:_sorted_index"
+ },
+ "0x00430851": {
+  "name": "AddNewPlayer",
+  "status": "ported",
+  "where": "godot/src/autoload/save_store.gd:add_player(name, game, sound, music, voice) via godot/src/ui/sign_in.gd:request_new_player / _open_new_player_dialog / _on_new_player_done / add_player: a successful New starts the game at once (scan + clearance speech through _enter_game), the record copies the current Sound / Music / Voice buses, SignIn.new_player_added (NewPlayerAdded) is set"
+ },
+ "0x004309ec": {
+  "name": "DrawSignInZoneIcons",
+  "status": "ported",
+  "where": "godot/src/ui/sign_in.gd:refresh (zone / sector columns; the port shows numbers instead of icons)"
+ },
+ "0x00430a26": {
+  "name": "DrawSignInRow",
+  "status": "ported",
+  "where": "godot/src/ui/sign_in.gd:refresh"
+ },
+ "0x00430b03": {
+  "name": "DrawSignInList",
+  "status": "ported",
+  "where": "godot/src/ui/sign_in.gd:refresh (Tree rows: name, game + (c), zone, sector; the original also draws a thumbnail / zone icons per row)"
+ },
+ "0x00430ba7": {
+  "name": "SignInKeepSelectionVisible",
+  "status": "n/a",
+  "where": "n/a: scroll offset bookkeeping; Godot Tree keeps the selection visible"
+ },
+ "0x00430bc4": {
+  "name": "FlashScrollArrow",
+  "status": "n/a",
+  "where": "n/a: 2-tick highlight of the scroll arrows; Godot Tree scrollbar has no arrow flash (cosmetic)"
+ },
+ "0x00430c33": {
+  "name": "SignInScreenLoop",
+  "status": "not-ported",
+  "where": "godot/src/ui/sign_in.gd (Tree + buttons + _unhandled_key_input: Enter / double click (a port addition) / S = Start, Insert / N = New, M = Practice, Esc / E = Exit confirm 11191 / 11192 (letters of string 11208), Ctrl+R = request_remove (Delete too: a Deliberate deviation), Up / Down / PgUp / PgDn by the Tree, Home / End = _select_row (first / last row), the welcome speech on every entry except the return from Math Practice). Not matched: the list's look: zone icons, the scroll thumb and track, the arrow flash (G53)"
+ },
+ "0x0043136f": {
+  "name": "SignInRun",
+  "status": "ported",
+  "where": "godot/src/ui/sign_in.gd:_ready -> _ask_for_first_player / _on_first_player_done: with an empty roster the list and welcome speech are skipped, the New dialogs loop and a cancel asks the exit question 11191 / 11192 (Yes = quit_requested + quit)"
+ },
+ "0x00431420": {
+  "status": "ported",
+  "where": "godot/src/ui/sign_in.gd:_enter_game (apply_profile; 18-tick wait, scan, clearance clips; scene change when the last clip ends); Begin / Resume chosen by the static SignIn.new_player_added (NewPlayerAdded), never cleared"
+ },
+ "0x00431508": {
+  "status": "ported",
+  "where": "godot/src/ui/hall_of_fame_view.gd:_fill + godot/src/resources/hall_entry.gd:level_text (name, Voyager / Expert strings 11199 / 11200, \"(c)\" 11207 when customized, tries); columns laid out by a Godot GridContainer"
+ },
+ "0x004315ac": {
+  "status": "ported",
+  "where": "godot/src/autoload/save_store.gd:add_to_hall (Hall row via hall_of_fame.gd:add, then players.erase = RemoveRosterSlot, both files saved) called from godot/src/rules/game_flow.gd:finish_game"
+ },
+ "0x0043168c": {
+  "name": "Prob26_PromptSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_26 (prompt slots filled as the original)"
+ },
+ "0x004316ac": {
+  "name": "Prob26_HintSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_26 (hint (inherits {0}) slots filled as the original)"
+ },
+ "0x004316cc": {
+  "name": "Prob26_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_26 (solution slots filled as the original)"
+ },
+ "0x00431732": {
+  "name": "Prob26_Diagram",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[26]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\": panel + needle lookup by speed)"
+ },
+ "0x004317d4": {
+  "name": "Prob26_SuccessAnimation",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[26 success \"needle\"]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (sound 0x22, 20 ticks per step, counting down)"
+ },
+ "0x004318a4": {
+  "name": "Prob03_PromptSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_03 (prompt ({2} = string 11210 / 11211 by level) slots filled as the original)"
+ },
+ "0x0043190b": {
+  "name": "Prob03_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_03 (solution slots filled as the original)"
+ },
+ "0x00431973": {
+  "name": "Prob03_DrawPanel",
+  "status": "ported",
+  "where": "godot/src/problems/diagrams/ (type 3 diagram)"
+ },
+ "0x004319ad": {
+  "name": "RadarBlip",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[3 \"blip\"]) driven by godot/src/problems/diagrams/sonar_diagram.gd (sound 0x29, pictures 9-11, 2 ticks each)"
+ },
+ "0x00431a0f": {
+  "name": "RadarSweep",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[3 \"sweep\"]) driven by godot/src/problems/diagrams/sonar_diagram.gd (2 turns of 12 steps, 6 ticks each)"
+ },
+ "0x00431b7d": {
+  "name": "Prob03_Diagram",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[3]) driven by godot/src/problems/diagrams/sonar_diagram.gd"
+ },
+ "0x00431bd0": {
+  "name": "Prob06_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_06 (solution slots filled as the original)"
+ },
+ "0x00431c23": {
+  "name": "Prob06_Diagram",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[6]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\", \"5000\" literal + f0)"
+ },
+ "0x00431d18": {
+  "name": "Prob06_SuccessAnimation",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[6 success overlay]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (picture 2 + f2, no sound, no delay); game only, never in practice"
+ },
+ "0x00431db0": {
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:set_music_on (off: silence, id remembered; on: restart the remembered song) driven by godot/src/gameplay/game.gd:_on_option_changed"
+ },
+ "0x00431dd9": {
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:set_bus_enabled(SFX) (muting also stops the current effect = StopCommonSoundEffect loop) driven by game.gd:_on_option_changed"
+ },
+ "0x00431dfb": {
+  "name": "ToggleAllSound",
+  "status": "n/a",
+  "where": "n/a: dead code (no callers; no menu / hot key entry reaches it)"
+ },
+ "0x00431e4f": {
+  "name": "LoadCommonEffects",
+  "status": "n/a",
+  "where": "n/a: effect cache / buffer management; the port loads streams from godot/data/sfx_catalog.tres on demand (Audio.play_sfx)"
+ },
+ "0x00431ea5": {
+  "name": "FreeCommonEffects",
+  "status": "n/a",
+  "where": "n/a: frees the effect buffers (memory)"
+ },
+ "0x00431ef2": {
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:stop_sfx (the buffer free is memory plumbing)"
+ },
+ "0x00431f1f": {
+  "name": "PlaySoundEffect",
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:play_sfx (one effect player: a new effect cuts the previous one and a speech clip like the single wave device; nothing starts when Sound Effects is off). Deliberate: DESIGN notes effects can overlap in places"
+ },
+ "0x00431f97": {
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:play_sfx (same body as PlaySoundEffect in the 32-bit build; scanner 0x1d via sign_in.gd:run_scan)"
+ },
+ "0x0043200f": {
+  "name": "SelectSectorMusic",
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:music_for_sector (9504 + sector % 6, 9500 for sectors >= 30)"
+ },
+ "0x00432043": {
+  "name": "FreeSectorStopMusic",
+  "status": "n/a",
+  "where": "n/a: StopBackgroundMusic alias called by FreeSectorResources; port stops music in godot/src/gameplay/game.gd / Audio.stop_music at the sector boundaries"
+ },
+ "0x0043204d": {
+  "name": "PlaySectorMusic",
+  "status": "ported",
+  "where": "godot/src/rules/game_flow.gd:_play_sector_music / begin_sector -> godot/src/gameplay/game.gd:play_sector_music (Audio.play_music(music_for_sector))"
+ },
+ "0x00432064": {
+  "name": "StopSectorMusic",
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:stop_music (called by game.gd at the dock, play_closing)"
+ },
+ "0x0043206e": {
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:play_music (current id remembered; muted by the Music bus when Music is off)"
+ },
+ "0x0043208f": {
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd:stop_music (music_id := NO_MUSIC)"
+ },
+ "0x004320a3": {
+  "name": "CloseMidiKeepMusicId",
+  "status": "ported",
+  "where": "godot/src/autoload/audio.gd (music switch keeps the current song id)"
+ },
+ "0x004320ad": {
+  "name": "StopMusicUnused",
+  "status": "n/a",
+  "where": "n/a: dead alias of StopBackgroundMusic (no caller)"
+ },
+ "0x004320b7": {
+  "status": "ported",
+  "where": "godot/src/story/expert_closing.gd:_ready (Audio.play_music SONG_CLOSING)"
+ },
+ "0x004320c2": {
+  "name": "FreeClosingStopMusic",
+  "status": "n/a",
+  "where": "n/a: StopBackgroundMusic alias called by FreeClosingResources, after the Expert closing has already stopped its song (ExpertClosingSequence, expert_closing.gd:finish)"
+ },
+ "0x004320cc": {
+  "status": "ported",
+  "where": "godot/src/story/expert_closing.gd (Audio.play_music(AudioService.SONG_CLOSING = 9501))"
+ },
+ "0x004320e0": {
+  "name": "Prob02_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_02 (solution slots filled as the original)"
+ },
+ "0x00432191": {
+  "name": "Prob02_DrawPanel",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[2 item 0]) driven by godot/src/problems/diagrams/diagram_base.gd (panel picture 0 at (16, 58))"
+ },
+ "0x004321cb": {
+  "name": "Prob02_AnimateBar",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[2 intro \"bars\"]) driven by godot/src/problems/diagrams/diagram_base.gd:play_intro (one segment per 6 ticks, sound 0x22, 30 ticks between bars)"
+ },
+ "0x00432234": {
+  "name": "Prob02_Diagram",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[2]) driven by godot/src/problems/diagrams/diagram_base.gd"
+ },
+ "0x00432330": {
+  "status": "ported",
+  "where": "godot/src/rules/sim_world.gd:fire_pellet / request_fire (sound 0x18 / 0x1e when empty) + godot/src/gameplay/ink_pellet.gd + godot/src/core/sub_tuning.gd + godot/data/rules/tuning.json sub / ink (docs/data/ink_tables.json spawn offsets; max 2 in flight is ink.in_flight_max)"
+ },
+ "0x004323f0": {
+  "status": "ported",
+  "where": "godot/src/gameplay/ink_pellet.gd (3 steps per tick, rock test at the pellet centre, splash pictures 1-3 with sound 0x19, creature hit through SectorWorld.check_contacts)"
+ },
+ "0x004325c7": {
+  "status": "n/a",
+  "where": "n/a: back-buffer erase of the pellet; Godot redraws the scene tree"
+ },
+ "0x004326c0": {
+  "name": "PlaySupplyMessageSpeech",
+  "status": "ported",
+  "where": "godot/src/story/surface_ship_screen.gd:show_supply_message + godot/src/resources/voice_cues.gd:jingle / supply (4243 jingle then the sector's clips; Enter cuts the rest)"
+ },
+ "0x004327a6": {
+  "status": "ported",
+  "where": "godot/src/gameplay/supply_station.gd:set_side + original_presenter.gd:_show_station (left station on screen 0, right on screen 11, every sector incl. finales; part of the still picture, so under the mid decos, the pieces and the sub in play)"
+ },
+ "0x004328b0": {
+  "status": "ported",
+  "where": "StationSequence.launch (rules) counted by SimWorld.tick, drawn by supply_station.gd:show_sequence; original_presenter.gd:_arrange puts the layers in the order of the trip routines (MidDecos, Sub, Station, Collectibles) and holds the bubbles; via sector_world.gd:launch / begin_sector; the waiting owner goes on when the tick of the trip's last step is over (SimWorld.sequence_over, SimWorld.after_tick)"
+ },
+ "0x00432a67": {
+  "status": "ported",
+  "where": "godot/src/story/surface_ship_screen.tscn / .gd:_ready (problem picture 1780 at (12, 30), ship picture 1979 = logical 0x1c2 at (36, 126), title string 11108 \"Surface Ship\", text in the message box (364, 48, 238 x 202)); pinned by tests/engine/test_surface_ship_screen.gd"
+ },
+ "0x00432ac4": {
+  "status": "ported",
+  "where": "godot/src/rules/game_flow.gd:on_dock_reached + godot/src/gameplay/game.gd:show_pieces_missing -> godot/src/story/surface_ship_screen.gd:show_pieces_missing / pieces_missing_text (string 11212 whole with count and plural, on the surface ship screen; ship light + sound 0x2f via set_message_light; Enter, no time-out; then play on)"
+ },
+ "0x00432b96": {
+  "status": "ported",
+  "where": "StationSequence.dock (rules) counted by SimWorld.tick, drawn by supply_station.gd:show_sequence; original_presenter.gd:_arrange as for the launch (stays the trip's order until the next sector, the balloon follows); via sector_world.gd:dock + game.gd:complete_sector; the waiting owner goes on when the tick of the trip's last step is over (SimWorld.sequence_over, SimWorld.after_tick)"
+ },
+ "0x00432d58": {
+  "name": "DrawMessageBoxText",
+  "status": "ported",
+  "where": "godot/src/story/surface_ship_screen.gd:show_supply_message, godot/src/story/voyager_closing.gd:show_pages"
+ },
+ "0x00432ddb": {
+  "name": "WaitEnterOrTicks",
+  "status": "ported",
+  "where": "godot/src/story/surface_ship_screen.gd (WAIT_SECONDS = 20 = 1460 ticks, Timer started when the speech ends; Enter / KP Enter ends it, Space and clicks do nothing; Esc reaches Game.ask_to_exit = SaveAndExit)"
+ },
+ "0x00432e32": {
+  "status": "ported",
+  "where": "godot/src/story/surface_ship_screen.gd:show_supply_message (message text 10678 + n % 15 (+15) on the surface ship screen, mission-control speech, 20 s after the speech / Enter) called by game.gd:complete_sector -> show_supply_message"
+ },
+ "0x00432e8f": {
+  "status": "n/a",
+  "where": "n/a: frees the message bundle (memory)"
+ },
+ "0x00432eae": {
+  "status": "ported",
+  "where": "StationSequence.balloon (rules: 44 ticks, 4 px per tick from y 0x90) counted by SimWorld.tick, waited for by sector_world.gd:send_balloon, drawn by supply_station.gd:show_sequence (node order Balloon, bodies, door: the balloon is behind the station as in the original; original_presenter.gd:_arrange puts the station over the mid decos and under the pieces), sector song playing as in the original; the waiting owner goes on when the tick of the trip's last step is over (SimWorld.sequence_over, SimWorld.after_tick)"
+ },
+ "0x00433028": {
+  "name": "Prob20_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_20 (solution slots filled as the original)"
+ },
+ "0x004330a7": {
+  "name": "Prob20_Diagram",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[20 intro \"lockstep\"]) driven by godot/src/problems/diagrams/diagram_base.gd (sound 0x22, 10 ticks per slice)"
+ },
+ "0x004331a0": {
+  "name": "Prob25_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_25 (solution slots filled as the original)"
+ },
+ "0x004331d7": {
+  "name": "Prob25_Diagram",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[25 intro \"sequence\"]) driven by godot/src/problems/diagrams/line_graph_diagram.gd (sound 0x23, 15 ticks per step)"
+ },
+ "0x004336a4": {
+  "name": "Prob21_SolutionSubst",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_21 (solution slots filled as the original)"
+ },
+ "0x0043373f": {
+  "name": "Prob21_TextVariant",
+  "status": "ported",
+  "where": "godot/src/problems/problem_texts.gd:_type_21 (prompt index by level / gallons-given; hint +6, solution +12)"
+ },
+ "0x0043378d": {
+  "name": "Prob21_Diagram",
+  "status": "ported",
+  "where": "docs/data/problem_diagrams.json (types[21]) driven by godot/src/problems/diagrams/tank_diagram.gd (sound 0x28, 6 ticks per step, liters / gallons scale)"
+ },
+ "0x004339e0": {
+  "status": "n/a",
+  "where": "n/a: loads shared bundles into memory; the port reads pre-extracted assets (tools/extract) through godot/src/core/catalog.gd"
+ },
+ "0x00433be4": {
+  "status": "n/a",
+  "where": "n/a: per-zone bundle loading; pre-extracted zone SpriteFrames / sector data are loaded by godot/src/core/catalog.gd"
+ },
+ "0x00433d13": {
+  "status": "n/a",
+  "where": "n/a: sector bundle loading; also selects the sector song (SelectSectorMusic, ported in audio.gd:music_for_sector)"
+ },
+ "0x00433df0": {
+  "status": "n/a",
+  "where": "n/a: frees bundles (memory)"
+ },
+ "0x00433e7d": {
+  "status": "n/a",
+  "where": "n/a: frees bundles (memory)"
+ },
+ "0x00433ec2": {
+  "status": "n/a",
+  "where": "n/a: frees bundles (memory)"
+ },
+ "0x00433f1c": {
+  "status": "ported",
+  "where": "godot/src/gameplay/original_presenter.gd:_on_screen_loaded / _build_tiles / _build_decos / _show_station / _build_collectibles (background still, back decos, solid tiles, the station on screens 0 and 11, mid decos in that order: in play the layers are Station, MidDecos, then the pieces and the sub; sound 0x16 only on the first screen of a sector, SFX_BEGIN)"
+ },
+ "0x00434250": {
+  "name": "memchr",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00434270": {
+  "status": "n/a",
+  "where": "plain byte copy; the Godot port draws with textures instead of the 640-wide back buffer"
+ },
+ "0x00434294": {
+  "status": "n/a",
+  "where": "plain overlapping byte copy (roster / hall table shifts are done with Array operations in godot/src/autoload/save_store.gd)"
+ },
+ "0x004342e0": {
+  "status": "n/a",
+  "where": "plain fill"
+ },
+ "0x00434310": {
+  "status": "n/a",
+  "where": "n/a: C runtime helper; GDScript String / int / float built-ins"
+ },
+ "0x0043434c": {
+  "status": "ported",
+  "where": "godot/src/autoload/save_store.gd:_sorted_index, byte-order compare"
+ },
+ "0x00434378": {
+  "status": "n/a",
+  "where": "n/a: C runtime helper; GDScript String / int / float built-ins"
+ },
+ "0x004343a8": {
+  "status": "n/a",
+  "where": "n/a: C runtime helper; GDScript String / int / float built-ins"
+ },
+ "0x004343f8": {
+  "status": "n/a",
+  "where": "plain byte compare"
+ },
+ "0x0043448c": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004344b8": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004344e4": {
+  "status": "n/a",
+  "where": "sound-card name detection; the port uses Godot audio"
+ },
+ "0x00434588": {
+  "name": "_rtl_jump_to_handler",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043458f": {
+  "name": "type_info_name_ptr",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004345a8": {
+  "name": "type_info_equal",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043460e": {
+  "name": "rtl_is_base_class",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00434708": {
+  "name": "rtl_catch_type_match",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00434817": {
+  "name": "rtl_alloc_throw_block",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00434861": {
+  "name": "rtl_free_throw_block",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043488e": {
+  "name": "rtl_can_catch",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043494f": {
+  "name": "rtl_call_copy_ctor",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004349d3": {
+  "name": "rtl_call_destructor",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00434a20": {
+  "name": "rtl_call_destructor_simple",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00434a5a": {
+  "name": "__ThrowExceptionCore",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00434c60": {
+  "name": "__ThrowException",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00434c8d": {
+  "name": "__ReThrowException",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00434cde": {
+  "name": "rtl_unwind_to_handler",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00434d1d": {
+  "name": "rtl_run_destructor",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00434d6b": {
+  "name": "rtl_destroy_thrown_copy",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00434e14": {
+  "name": "rtl_find_base_offset",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00434e9a": {
+  "name": "rtl_adjust_to_base",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00434ef6": {
+  "name": "rtl_init_catch_param",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004350aa": {
+  "name": "rtl_unwind_frame",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004351b8": {
+  "name": "rtl_unwind_frame_wrapper",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004351cb": {
+  "name": "rtl_unwind_frame_and_unlink",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004351e8": {
+  "name": "rtl_find_catch_clause",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043523d": {
+  "name": "__CppExceptionHandler",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004354b7": {
+  "name": "rtl_destroy_object",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435523": {
+  "name": "rtl_destroy_bases_range",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435568": {
+  "name": "rtl_destroy_class_object",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043570e": {
+  "name": "rtl_destroy_array",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435780": {
+  "name": "rtl_adjust_virtual_base",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004357be": {
+  "name": "rtl_destroy_array_objects",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435a2f": {
+  "name": "rtl_exception_frame_state",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435a8f": {
+  "name": "rtl_throw_typeinfo_ctor",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435ac5": {
+  "name": "rtl_identity",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435acd": {
+  "name": "rtl_typeinfo_dtor",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435aec": {
+  "name": "type_info_eq",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435b05": {
+  "name": "type_info_ne",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435b22": {
+  "name": "type_info_before",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435b6e": {
+  "name": "type_info_name",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435b7f": {
+  "name": "__GetTypeid",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435bbd": {
+  "name": "rtl_dyncast_search",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435d34": {
+  "name": "__DynamicCast",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435e90": {
+  "name": "__InitExceptBlockLDTC",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435ed6": {
+  "name": "set_unexpected",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435efb": {
+  "name": "unexpected",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435f4f": {
+  "name": "set_terminate",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435f74": {
+  "name": "terminate",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435f88": {
+  "name": "rtl_dynamic_type_size",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00435fa7": {
+  "name": "__InitExceptContext",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436060": {
+  "name": "__GetExceptDLLinfo",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436088": {
+  "name": "rtl_return_one",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436130": {
+  "name": "rtl_init_startup_seh_frame",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043614c": {
+  "name": "rtl_unlink_seh_frame_wrapper",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043615c": {
+  "name": "rtl_swap_handler_0x44f548",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004361a8": {
+  "name": "rtl_install_startup_seh",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004361c2": {
+  "name": "rtl_call_RtlUnwind",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004361d7": {
+  "name": "rtl_call_frame_handler",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004361e0": {
+  "name": "rtl_link_seh_frame",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004361f5": {
+  "name": "rtl_unlink_seh_frame",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436250": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004362d0": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436358": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004363b8": {
+  "name": "_setfmodeptr",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436648": {
+  "name": "__scanner",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436be4": {
+  "name": "__scantol",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436db8": {
+  "status": "ported",
+  "where": "PracticeShowScore -> godot/src/problems/practice_mode.gd:_update_score ('%d' is plain integer text via Label); '%s'/'%c' uses are menu/glyph plumbing"
+ },
+ "0x00436ddc": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436e00": {
+  "name": "rtl_sscanf_getc",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436e20": {
+  "name": "rtl_sscanf_ungetc",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436e2c": {
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:parse (typed text -> NumberValue; digit limits applied there)"
+ },
+ "0x00436e50": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436f28": {
+  "name": "__vprinter_flush",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436f58": {
+  "name": "__vprinter_putc",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436f80": {
+  "name": "__vprinter_ptr_to_hex",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00436fb4": {
+  "name": "__vprinter",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437648": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437694": {
+  "name": "rtl_strip_cr",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437700": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437830": {
+  "name": "rtl_expand_lf",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004378e8": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004379c8": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437a64": {
+  "name": "rtl_alloc_handle_slot",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437aa4": {
+  "name": "rtl_dup_handle_slot",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437b0c": {
+  "name": "rtl_free_handle_slot",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437b28": {
+  "name": "_exportHandles",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437bbc": {
+  "name": "_InitHandles",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437d00": {
+  "name": "__IOerror",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437d64": {
+  "name": "__NTerror",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437d78": {
+  "status": "n/a",
+  "where": "Godot saves under user:// (DirAccess.make_dir_recursive in godot/src/autoload/save_store.gd)"
+ },
+ "0x00437dac": {
+  "status": "n/a",
+  "where": "integrity check of the sound DLL; no equivalent needed"
+ },
+ "0x00437f3c": {
+  "name": "__rtl_read",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437f84": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437fa0": {
+  "name": "__rtl_write",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00437fe8": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00438004": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00438044": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00438074": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004380ec": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004382e8": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043830c": {
+  "name": "tolower",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00438334": {
+  "status": "ported",
+  "where": "godot/src/resources/player_profile.gd:typed_name, new_player_dialog.gd"
+ },
+ "0x0043835c": {
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:round_half_even"
+ },
+ "0x00438378": {
+  "name": "_clear87",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043838c": {
+  "name": "_control87",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004383cc": {
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd / problems/answer_checker.gd (absf in comparisons)"
+ },
+ "0x004383dc": {
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:round_half_even"
+ },
+ "0x004383f8": {
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:round_half_even"
+ },
+ "0x00438448": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00438460": {
+  "name": "ftol",
+  "status": "n/a",
+  "where": "n/a: C runtime helper; GDScript String / int / float built-ins"
+ },
+ "0x004384b8": {
+  "name": "rtl_ldtoll",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004384dc": {
+  "name": "_fxam",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004384f0": {
+  "name": "rtl_div10_64",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00438548": {
+  "name": "rtl_frndint_mode",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00438574": {
+  "status": "n/a",
+  "where": "configuration plumbing (ONWINCD.INI / string-resource settings)"
+ },
+ "0x004385d0": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004385e0": {
+  "name": "rtl_printf_float_hook_default",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004385ec": {
+  "name": "rtl_scanf_float_hook_default",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004385f8": {
+  "name": "abs",
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd (fraction reduction uses absi)"
+ },
+ "0x00438610": {
+  "name": "rtl_ld_range_check",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00438708": {
+  "name": "__longtoa",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043877c": {
+  "name": "rtl_utoa_base10",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00438798": {
+  "status": "n/a",
+  "where": "n/a: C runtime helper; GDScript String / int / float built-ins"
+ },
+ "0x004387c8": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004387e8": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043886c": {
+  "name": "rtl_set_startup_hooks",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00438884": {
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:to_double (raw / pow(10, decimals))"
+ },
+ "0x00438894": {
+  "status": "not-ported",
+  "where": "godot: no srand; RandomNumberGenerator.randomize() / fixed seeds (godot/src/gameplay/bubbles.gd, problems/problem_screen.gd, practice_mode.gd, story/news_cartoon.gd rng.seed = 73); sequences differ from the Borland LCG, only the moduli are reproduced"
+ },
+ "0x004388c4": {
+  "status": "not-ported",
+  "where": "godot has no Borland LCG: RandomNumberGenerator (PCG32) via randi()/randi_range()/randomize() with the same moduli: bubbles.gd (%50 spawn, x), foe_vm.gd IF_RAND_GT (0-255, the dice of SimWorld.foe_rng, one generator per sim that no load reseeds), correct_phrase.gd (%4), problem_factory.gd (record %N, rotation %2, trigger pick), practice_set.gd (%33+1), news_cartoon.gd (%299, fixed seed 73, per-light sequences instead of the original's interleaved 6+16 draws per redraw starting from seed 1). Distributions match, sequences do not (not reproducible from the same seed)"
+ },
+ "0x00438910": {
+  "name": "rtl_strip_trailing_zeros",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00438948": {
+  "name": "__realcvt",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00438bc8": {
+  "name": "rtl_va_float_size",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439050": {
+  "name": "__scanrslt",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004390f4": {
+  "name": "rtl_strtol_ungetc",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439100": {
+  "status": "ported",
+  "where": "godot/src/core/number_value.gd:parse (whole / numerator / denominator digits)"
+ },
+ "0x004391bc": {
+  "name": "__fcvt_digits",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043948c": {
+  "name": "__pow10",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439604": {
+  "name": "rtl_heap_grow",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043973c": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x004397d4": {
+  "name": "rtl_heap_add_region",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439878": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439960": {
+  "name": "rtl_heap_try_resize",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439a7c": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439bd4": {
+  "name": "_msize",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439bf0": {
+  "name": "operator_delete",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439c00": {
+  "name": "operator_delete_array",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439c10": {
+  "name": "rtl_virtual_reserve",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439c7c": {
+  "name": "rtl_virtual_commit",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439cd0": {
+  "name": "rtl_virtual_decommit",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439d10": {
+  "name": "rtl_virtual_release",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439d4c": {
+  "name": "rtl_msgbox_flags",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439d94": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439e44": {
+  "name": "_ErrorMessage",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439e54": {
+  "name": "__ErrorExit",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439eb0": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439ec4": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439ed4": {
+  "name": "rtl_nop_hook",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439ed8": {
+  "name": "__exit",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439f30": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439f48": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439fd0": {
+  "name": "rtl_nop_stub",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x00439fd4": {
+  "name": "setjmp",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a00a": {
+  "name": "LongJmp",
+  "status": "n/a",
+  "where": "n/a: CRT longjmp used by Main / QuitProgram to unwind to the main loop; the port changes scene with SceneRouter.go_to / get_tree().quit()"
+ },
+ "0x0043a08c": {
+  "name": "rtl_copy_env_upcase_name",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a0e0": {
+  "name": "_setenvp",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a164": {
+  "name": "rtl_signal_index",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a184": {
+  "name": "_XcptFilter",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a2f4": {
+  "name": "rtl_ctrl_handler",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a318": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a378": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a3f4": {
+  "name": "rtl_get_dll_init_table",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a3f8": {
+  "name": "rtl_get_dll_exit_table",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a3fc": {
+  "name": "rtl_next_pragma_proc",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a4a8": {
+  "name": "__startup",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a60c": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a684": {
+  "name": "__ExitProcess",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a824": {
+  "name": "__isDST",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043a938": {
+  "name": "__totime",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043aab0": {
+  "name": "rtl_filetime_to_time_t",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043aafc": {
+  "name": "rtl_fill_stat_from_find",
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ },
+ "0x0043ab64": {
+  "status": "n/a",
+  "where": "Borland RTL internal; no gameplay-visible effect"
+ }
+}

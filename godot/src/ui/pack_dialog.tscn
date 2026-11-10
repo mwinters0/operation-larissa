@@ -1,0 +1,101 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/pack_dialog.gd" id="1_dialog"]
+
+[node name="PackDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dialog")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+layout_mode = 2
+theme_type_variation = &"ConsolePanel"
+
+[node name="Rows" type="VBoxContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="Center/Panel/Rows"]
+layout_mode = 2
+theme_type_variation = &"ConsoleTitle"
+text = "Packs"
+
+[node name="Intro" type="Label" parent="Center/Panel/Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(520, 0)
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "The game uses one pack, and the packs it is laid over."
+autowrap_mode = 3
+
+[node name="PackList" type="Tree" parent="Center/Panel/Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(520, 104)
+layout_mode = 2
+
+[node name="Details" type="RichTextLabel" parent="Center/Panel/Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(520, 82)
+layout_mode = 2
+bbcode_enabled = true
+
+[node name="Buttons" type="HBoxContainer" parent="Center/Panel/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Use" type="Button" parent="Center/Panel/Rows/Buttons"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Use this pack"
+
+[node name="Check" type="Button" parent="Center/Panel/Rows/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(112, 0)
+layout_mode = 2
+text = "Check"
+
+[node name="Install" type="Button" parent="Center/Panel/Rows/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Install..."
+
+[node name="Remove" type="Button" parent="Center/Panel/Rows/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Remove"
+
+[node name="Done" type="Button" parent="Center/Panel/Rows/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Done"
+
+[node name="Folder" type="Label" parent="Center/Panel/Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(520, 0)
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+autowrap_mode = 3

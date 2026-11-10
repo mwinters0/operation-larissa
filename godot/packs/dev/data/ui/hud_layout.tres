@@ -1,0 +1,62 @@
+[gd_resource type="Resource" script_class="HudLayout" format=3]
+
+[ext_resource type="Script" path="res://src/resources/hud_layout.gd" id="1_hud_layout"]
+[ext_resource type="Texture2D" uid="uid://cbunxrwrtci8m" path="res://packs/dev/assets/ui/hud/ui_1189.png" id="2_ui_1189"]
+[ext_resource type="Texture2D" uid="uid://bqpmyapwbi08t" path="res://packs/dev/assets/ui/hud/ui_1204.png" id="3_ui_1204"]
+[ext_resource type="Texture2D" uid="uid://mcqty7gtpyj6" path="res://packs/dev/assets/ui/hud/ui_1205.png" id="4_ui_1205"]
+[ext_resource type="Texture2D" uid="uid://eqn7d6dsberx" path="res://packs/dev/assets/ui/hud/ui_1206.png" id="5_ui_1206"]
+[ext_resource type="Texture2D" uid="uid://nl38hoccbgmg" path="res://packs/dev/assets/ui/hud/ui_1207.png" id="6_ui_1207"]
+[ext_resource type="Texture2D" uid="uid://kplrgrotv88a" path="res://packs/dev/assets/ui/hud/ui_1208.png" id="7_ui_1208"]
+[ext_resource type="Texture2D" uid="uid://dp3kwfi3utuqr" path="res://packs/dev/assets/ui/hud/ui_1193.png" id="8_ui_1193"]
+[ext_resource type="Texture2D" uid="uid://yg3mk3ewnuxu" path="res://packs/dev/assets/ui/hud/ui_1194.png" id="9_ui_1194"]
+[ext_resource type="Texture2D" uid="uid://cab7rpbpc11sq" path="res://packs/dev/assets/ui/hud/ui_1191.png" id="10_ui_1191"]
+[ext_resource type="Texture2D" uid="uid://coftobhm66qeo" path="res://packs/dev/assets/ui/hud/ui_1192.png" id="11_ui_1192"]
+[ext_resource type="Texture2D" uid="uid://ctknkcndrderi" path="res://packs/dev/assets/ui/hud/ui_1190.png" id="12_ui_1190"]
+[ext_resource type="Texture2D" uid="uid://c0j1ywo8slj4a" path="res://packs/dev/assets/ui/hud/ui_1195.png" id="13_ui_1195"]
+[ext_resource type="Texture2D" uid="uid://b7xs6jy8ltpoh" path="res://packs/dev/assets/ui/hud/ui_1196.png" id="14_ui_1196"]
+[ext_resource type="Texture2D" uid="uid://cb8tbcuglbtei" path="res://packs/dev/assets/ui/hud/ui_1197.png" id="15_ui_1197"]
+[ext_resource type="Texture2D" uid="uid://d0fvwxvw54u3k" path="res://packs/dev/assets/ui/hud/ui_1198.png" id="16_ui_1198"]
+[ext_resource type="Texture2D" uid="uid://c0jjdu2secaf5" path="res://packs/dev/assets/ui/hud/ui_1199.png" id="17_ui_1199"]
+[ext_resource type="Texture2D" uid="uid://dpmvf3i2a3x3s" path="res://packs/dev/assets/ui/hud/ui_1200.png" id="18_ui_1200"]
+[ext_resource type="Texture2D" uid="uid://crg4x3lfcntak" path="res://packs/dev/assets/ui/hud/ui_1201.png" id="19_ui_1201"]
+[ext_resource type="Texture2D" uid="uid://lsncpuye4gf7" path="res://packs/dev/assets/ui/hud/ui_1202.png" id="20_ui_1202"]
+[ext_resource type="Texture2D" uid="uid://bdcwgosmdqane" path="res://packs/dev/assets/ui/hud/ui_1203.png" id="21_ui_1203"]
+[ext_resource type="Texture2D" uid="uid://ds0y4vgvuy4yf" path="res://packs/dev/assets/ui/hud/ui_1210.png" id="22_ui_1210"]
+[ext_resource type="Texture2D" uid="uid://860mdya0gag2" path="res://packs/dev/assets/ui/hud/ui_1211.png" id="23_ui_1211"]
+[ext_resource type="Texture2D" uid="uid://bwmr1vi5w8tua" path="res://packs/dev/assets/ui/hud/ui_1212.png" id="24_ui_1212"]
+[ext_resource type="Texture2D" uid="uid://beft45fq1tpus" path="res://packs/dev/assets/ui/hud/ui_1213.png" id="25_ui_1213"]
+
+[resource]
+script = ExtResource("1_hud_layout")
+playfield = Rect2i(16, 32, 608, 288)
+bezel = ExtResource("2_ui_1189")
+bezel_position = Vector2i(12, 324)
+tank_positions = PackedVector2Array(100, 336, 128, 336, 156, 336, 184, 336, 212, 336, 240, 336)
+tank_full = ExtResource("3_ui_1204")
+tank_empty = ExtResource("4_ui_1205")
+oxygen_positions = PackedVector2Array(280, 338, 304, 338, 328, 338, 352, 338)
+oxygen_full = ExtResource("5_ui_1206")
+oxygen_empty = ExtResource("6_ui_1207")
+oxygen_low = ExtResource("7_ui_1208")
+ink_positions = PackedVector2Array(100, 362, 112, 362, 124, 362, 136, 362, 148, 362, 160, 362, 172, 362, 100, 372, 112, 372, 124, 372, 136, 372, 148, 372, 160, 372, 172, 372, 100, 382, 112, 382, 124, 382, 136, 382, 148, 382, 160, 382, 172, 382)
+ink_full = ExtResource("8_ui_1193")
+ink_empty = ExtResource("9_ui_1194")
+game_position = Vector2i(512, 370)
+game_textures = Array[Texture2D]([ExtResource("10_ui_1191"), ExtResource("11_ui_1192")])
+custom_position = Vector2i(408, 370)
+custom_texture = ExtResource("12_ui_1190")
+game_size = Vector2i(96, 16)
+custom_size = Vector2i(96, 16)
+zone_position = Vector2i(512, 350)
+zone_textures = Array[Texture2D]([ExtResource("13_ui_1195"), ExtResource("14_ui_1196"), ExtResource("15_ui_1197"), ExtResource("16_ui_1198"), ExtResource("17_ui_1199")])
+zone_size = Vector2i(96, 16)
+sector_position = Vector2i(512, 330)
+sector_textures = Array[Texture2D]([ExtResource("18_ui_1200"), ExtResource("19_ui_1201"), ExtResource("20_ui_1202")])
+sector_final_texture = ExtResource("21_ui_1203")
+sector_size = Vector2i(96, 16)
+ship_position = Vector2i(408, 330)
+ship_textures = Array[Texture2D]([ExtResource("22_ui_1210"), ExtResource("23_ui_1211")])
+computer_position = Vector2i(408, 350)
+computer_textures = Array[Texture2D]([ExtResource("24_ui_1212"), ExtResource("25_ui_1213")])
+frame_rects = Array[Rect2i]([Rect2i(0, 0, 640, 2), Rect2i(0, 398, 640, 2), Rect2i(0, 0, 2, 400), Rect2i(638, 0, 2, 400), Rect2i(12, 30, 616, 2), Rect2i(12, 320, 616, 2)])
+frame_colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.5, 0.5, 1, 0.5, 0.5, 0.5, 1)

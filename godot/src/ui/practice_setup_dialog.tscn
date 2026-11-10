@@ -1,0 +1,95 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/practice_setup_dialog.gd" id="1_dialog"]
+
+[node name="PracticeSetupDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dialog")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+layout_mode = 2
+theme_type_variation = &"ConsolePanel"
+
+[node name="Rows" type="VBoxContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Title" type="Label" parent="Center/Panel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ConsoleTitle"
+text = "Set Customization Options"
+
+[node name="KindHeading" type="Label" parent="Center/Panel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Type of Practice Set"
+
+[node name="Kinds" type="VBoxContainer" parent="Center/Panel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="LevelHeading" type="Label" parent="Center/Panel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Educational Level"
+
+[node name="Levels" type="VBoxContainer" parent="Center/Panel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="CalculatorHeading" type="Label" parent="Center/Panel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Calculator"
+
+[node name="CalculatorRow" type="HBoxContainer" parent="Center/Panel/Rows"]
+layout_mode = 2
+
+[node name="CalculatorOn" type="CheckBox" parent="Center/Panel/Rows/CalculatorRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "On"
+
+[node name="CalculatorOff" type="CheckBox" parent="Center/Panel/Rows/CalculatorRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Off"
+
+[node name="Buttons" type="HBoxContainer" parent="Center/Panel/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Done" type="Button" parent="Center/Panel/Rows/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Done"
+
+[node name="Cancel" type="Button" parent="Center/Panel/Rows/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Cancel"

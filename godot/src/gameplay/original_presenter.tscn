@@ -1,0 +1,56 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/original_presenter.gd" id="1_presenter"]
+[ext_resource type="PackedScene" path="res://src/gameplay/sub.tscn" id="3_sub"]
+[ext_resource type="PackedScene" path="res://src/gameplay/supply_station.tscn" id="4_station"]
+[ext_resource type="Script" path="res://src/gameplay/bubbles.gd" id="5_bubbles"]
+
+[node name="OriginalPresenter" type="Node2D"]
+script = ExtResource("1_presenter")
+
+[node name="Background" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+centered = false
+
+[node name="BackDecos" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Walls" type="TileMapLayer" parent="."]
+unique_name_in_owner = true
+
+[node name="Currents" type="TileMapLayer" parent="."]
+unique_name_in_owner = true
+visible = false
+
+[node name="Station" parent="." instance=ExtResource("4_station")]
+unique_name_in_owner = true
+visible = false
+
+[node name="MidDecos" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Collectibles" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Triggers" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Sub" parent="." instance=ExtResource("3_sub")]
+unique_name_in_owner = true
+visible = false
+
+[node name="Foes" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Pellets" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="FrontDecos" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="AnimDecos" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Bubbles" type="Node2D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("5_bubbles")

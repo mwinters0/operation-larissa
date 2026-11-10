@@ -1,0 +1,133 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/debug/skin_compare.gd" id="1_compare"]
+[ext_resource type="PackedScene" path="res://src/gameplay/sector_world.tscn" id="2_world"]
+[ext_resource type="PackedScene" path="res://src/ui/hud.tscn" id="3_hud"]
+
+[node name="SkinCompare" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_compare")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 1280.0
+offset_bottom = 440.0
+mouse_filter = 2
+color = Color(0.09, 0.1, 0.13, 1)
+
+[node name="LeftCaption" type="Label" parent="."]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 2.0
+offset_right = 316.0
+offset_bottom = 22.0
+theme_type_variation = &"HudLabel"
+text = "ORIGINAL"
+
+[node name="SkinPicker" type="OptionButton" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 656.0
+offset_top = 1.0
+offset_right = 800.0
+offset_bottom = 21.0
+focus_mode = 0
+clip_text = true
+
+[node name="SkinLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 808.0
+offset_top = 2.0
+offset_right = 1264.0
+offset_bottom = 22.0
+clip_text = true
+theme_type_variation = &"DebugLabel"
+
+[node name="TitleLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 16.0
+offset_top = 22.0
+offset_right = 1264.0
+offset_bottom = 40.0
+clip_text = true
+theme_type_variation = &"DebugLabel"
+
+[node name="LeftContainer" type="SubViewportContainer" parent="."]
+layout_mode = 0
+offset_top = 40.0
+offset_right = 640.0
+offset_bottom = 440.0
+mouse_filter = 2
+
+[node name="LeftViewport" type="SubViewport" parent="LeftContainer"]
+unique_name_in_owner = true
+handle_input_locally = false
+size = Vector2i(640, 400)
+render_target_update_mode = 4
+
+[node name="Black" type="ColorRect" parent="LeftContainer/LeftViewport"]
+offset_right = 640.0
+offset_bottom = 400.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="SectorWorld" parent="LeftContainer/LeftViewport" instance=ExtResource("2_world")]
+unique_name_in_owner = true
+offset_left = 16.0
+offset_top = 32.0
+offset_right = 624.0
+offset_bottom = 320.0
+
+[node name="Hud" parent="LeftContainer/LeftViewport" instance=ExtResource("3_hud")]
+
+[node name="RightContainer" type="SubViewportContainer" parent="."]
+layout_mode = 0
+offset_left = 640.0
+offset_top = 40.0
+offset_right = 1280.0
+offset_bottom = 440.0
+mouse_filter = 2
+
+[node name="RightViewport" type="SubViewport" parent="RightContainer"]
+unique_name_in_owner = true
+handle_input_locally = false
+size = Vector2i(640, 400)
+render_target_update_mode = 4
+
+[node name="Black" type="ColorRect" parent="RightContainer/RightViewport"]
+offset_right = 640.0
+offset_bottom = 400.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="RightPlayfield" type="Control" parent="RightContainer/RightViewport"]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 3
+anchors_preset = 0
+offset_left = 16.0
+offset_top = 32.0
+offset_right = 624.0
+offset_bottom = 320.0
+mouse_filter = 2
+
+[node name="HelpLabel" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 20.0
+offset_top = 76.0
+offset_right = 440.0
+offset_bottom = 140.0
+theme_type_variation = &"DebugLabel"
+text = "[ ]  sector      Arrows  screen      Space  pause the clock
+, .  previous / next skin on the right      O  rectangles over both
+F  fly (arrows/WASD, Space = ink)      Enter  open the problem
+L  educational level      F1  this help"

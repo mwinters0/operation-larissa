@@ -1,0 +1,57 @@
+[project]
+name = "neptune-tools"
+version = "0.1.0"
+description = "Asset extraction, analysis and import tools for Operation Larissa, a Godot engine for Operation Neptune"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy",
+    "pillow",
+    "pefile",
+    "capstone",
+    "pycdlib>=1.22.0",
+]
+
+[dependency-groups]
+dev = ["pytest", "ruff", "pyright"]
+# The dev pack generator (tools/dev_pack/): Piper text-to-speech for its speech and sounds. NOT a default group:
+# `uv run --group dev-pack tools/dev_pack/make_dev_pack.py`. The voice model (63 MB) is downloaded to ~/.cache/neptune-dev-pack/ on first use.
+dev-pack = [
+    "piper-tts>=1.8.0",
+]
+# Speech transcription, a regular importer step (tools/import/transcripts.py): large download, installed by a plain
+# `uv sync` (default-groups below). uv.lock pins faster-whisper and ctranslate2; transcripts.py refuses other versions.
+transcribe = ["faster-whisper==1.2.1", "ctranslate2==4.8.4"]
+
+[tool.uv]
+package = false
+default-groups = ["dev", "transcribe"]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+include = ["tools"]
+# Scripts import sibling modules (ne.py, tres.py, ...) from their own folder.
+extraPaths = ["tools", "tools/extract", "tools/analysis", "tools/import", "tools/analysis/ghidra"]
+executionEnvironments = [
+    # ghidra.* Java packages only exist inside a PyGhidra session.
+    { root = "tools/analysis/ghidra", extraPaths = ["tools", "tools/analysis", "tools/analysis/ghidra"], reportMissingImports = false },
+    # tools/import/foe_script.py (the importer's) shares its name with tools/analysis/foe_script.py: the importer's folder comes first.
+    { root = "tools/import", extraPaths = ["tools/import", "tools", "tools/extract", "tools/analysis"] },
+    { root = "tools" },
+]
+
+[tool.ruff]
+# The scripts are written in a compact style with long lines; 120 matches it.
+line-length = 120
+
+[tool.ruff.lint]
+ignore = [
+    # printf-style "%02x" / "%04X" is the compact idiom in the disassembler and
+    # hex-dump scripts (and mirrors the C the code was reverse-engineered from).
+    "UP031",
+    # dict(name=..., size=...) reads well for the small record-building scripts.
+    "C408",
+    # Scripts put `sys.path.insert(...)` before importing sibling modules and use
+    # aligned, wrapped `from x import (...)` lists; re-sorting adds churn only.
+    "I001",
+]

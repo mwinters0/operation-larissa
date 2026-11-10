@@ -1,0 +1,66 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/story/story_pages.gd" id="1_pages"]
+
+[node name="StoryPages" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 400.0
+script = ExtResource("1_pages")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 400.0
+color = Color(0, 0, 0, 1)
+
+[node name="Page" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 400.0
+mouse_filter = 2
+
+[node name="Background" type="TextureRect" parent="Page"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 400.0
+mouse_filter = 2
+
+[node name="Heading" type="TextureRect" parent="Page"]
+unique_name_in_owner = true
+layout_mode = 0
+mouse_filter = 2
+
+[node name="Frame" type="TextureRect" parent="Page"]
+unique_name_in_owner = true
+layout_mode = 0
+mouse_filter = 2
+
+[node name="Extras" type="Control" parent="Page"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="Ring" type="AnimatedSprite2D" parent="Page"]
+unique_name_in_owner = true
+
+[node name="Caption" type="TextureRect" parent="Page"]
+unique_name_in_owner = true
+layout_mode = 0
+mouse_filter = 2
+
+[node name="ClickLabel" type="Label" parent="Page"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 376.0
+offset_right = 640.0
+offset_bottom = 400.0
+horizontal_alignment = 1
+
+[node name="Animations" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true

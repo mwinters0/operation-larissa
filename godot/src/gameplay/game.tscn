@@ -1,0 +1,45 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/game.gd" id="1_game"]
+[ext_resource type="PackedScene" path="res://src/gameplay/sector_world.tscn" id="2_world"]
+[ext_resource type="PackedScene" path="res://src/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://src/ui/game_menu_bar.tscn" id="4_menu"]
+[ext_resource type="PackedScene" path="res://src/ui/message_box.tscn" id="5_message"]
+[ext_resource type="PackedScene" path="res://src/debug/game_debug.tscn" id="6_debug"]
+
+[node name="Game" type="Node"]
+script = ExtResource("1_game")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+offset_right = 640.0
+offset_bottom = 400.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+; The console (frame, gauges) is drawn FIRST and the playfield over it, as in the original: the frame's black
+; strip is 5 px wide (x 12-16) and the playfield covers its last column.
+[node name="Hud" parent="." instance=ExtResource("3_hud")]
+unique_name_in_owner = true
+
+[node name="SectorWorld" parent="." instance=ExtResource("2_world")]
+unique_name_in_owner = true
+offset_left = 16.0
+offset_top = 32.0
+offset_right = 624.0
+offset_bottom = 320.0
+
+[node name="MenuBar" parent="." instance=ExtResource("4_menu")]
+unique_name_in_owner = true
+
+[node name="GameDebug" parent="." instance=ExtResource("6_debug")]
+
+[node name="ProblemLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+layer = 10
+
+[node name="DialogLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+layer = 20
+
+[node name="MessageBox" parent="DialogLayer" instance=ExtResource("5_message")]
+unique_name_in_owner = true

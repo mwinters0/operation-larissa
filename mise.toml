@@ -1,0 +1,148 @@
+[env]
+# Python tools venv (created by `mise run setup`); auto-activated in this directory
+_.python.venv = ".venv"
+
+[tools]
+# `mise install` gets these, and these are the versions the project tests and supports. Every other tool comes from the system's
+# packages: docs/SETUP.md lists them all, and says how to use your own install instead of one of these (mise.local.toml,
+# MISE_DISABLE_TOOLS, GODOT_BIN). godot is the official Linux build; tools/godot.sh runs it as `godot` on the PATH, and
+# tools/import/tool_check.py reads its pin. java is for the Ghidra workflow (tools/analysis/ghidra/).
+uv = "0.13.1"
+godot = "4.7.2-stable"
+java = "temurin-25"
+
+
+# ---- Tasks: shortcuts for the commands docs/SETUP.md gives; `mise tasks` lists them. `mise run` installs the tools above first.
+
+[tasks.setup]
+description = "Create or refresh the Python environment (.venv) from pyproject.toml and uv.lock, and fetch the godot-sandbox extension (mod packs)"
+run = ["uv sync", "uv run tools/fetch_sandbox.py"]
+
+[tasks."sandbox:fetch"]
+description = "Fetch the pinned godot-sandbox extension into godot/addons/godot_sandbox (git-ignored); --force fetches again"
+run = "uv run tools/fetch_sandbox.py"
+
+[tasks."godot:import"]
+description = "Godot imports the project's assets: once in a fresh checkout, and after the importer or new assets"
+run = "tools/godot.sh --headless --path godot --import"
+
+[tasks."godot:editor"]
+description = "Open the project in the Godot editor"
+run = "tools/godot.sh --path godot -e"
+
+[tasks."godot:play"]
+description = "Play a pack by its id (dev, legacy, any other): mise run godot:play <id>"
+usage = 'arg "<pack>"'
+run = 'tools/godot.sh --path godot -- --pack=${usage_pack}'
+
+[tasks."godot:pack"]
+description = "Write <id>.larissa, a pack file of the complete pack <id> (dev, legacy, a copy of dev), into the current directory or --out: mise run godot:pack <id> [--out <dir>] [--version <v>] [--no-reach]"
+usage = '''
+arg "<pack>"
+flag "--out <dir>" help="the folder the pack file goes into (default the current directory)"
+flag "--version <version>" help="the version in the pack file's manifest (default 1.0)"
+flag "--no-reach" help="skip the reachability search of the sectors in the pack check"
+'''
+run = '''
+set -e
+out="${usage_out:-{{cwd}}}"
+case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
+mkdir -p "$out"
+tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --export-pack=${usage_pack} --archive "--out=$out" ${usage_version:+--version=$usage_version} ${usage_no_reach:+--no-reach}
+'''
+
+[tasks."test:engine"]
+description = "The engine's gdUnit4 tests, on the dev pack"
+run = "tools/run_tests.sh engine"
+
+[tasks."test:legacy"]
+description = "The gdUnit4 tests of the original game, on the legacy pack (they pass, saying so, when there is no legacy pack)"
+run = "tools/run_tests.sh legacy"
+
+[tasks."lint:tools"]
+description = "Lint and type-check the Python tools (ruff, pyright; pyright installs the dev-pack group so it sees every import)"
+run = ["uv run ruff check tools", "uv run --group dev-pack pyright"]
+
+
+# ---- The legacy pack: the original game built from your NEPTUNE.ISO (docs/play/LEGACY.md)
+
+[tasks."legacy:checktools"]
+description = "Check that every program the legacy importer needs is installed; names what is missing and how to get it"
+run = "uv run tools/import/tool_check.py"
+
+[tasks."legacy:import"]
+description = "Build the legacy pack from NEPTUNE.ISO (it checks its tools first); importer options go after --"
+run = "uv run tools/import/import_all.py"
+
+# ---- A release of the game to play: an exported game with legacy.larissa beside it (docs/play/LEGACY.md, "Quick start")
+
+[tasks."godot:fetch_templates"]
+description = "Fetch Godot's export templates (the pinned Godot's, only what our presets use; a 1.3 GB download) unless they are in place"
+run = "uv run tools/fetch_export_templates.py"
+
+[tasks."release:build"]
+description = "Export every release build: release:build_linux and release:build_web"
+run = ["mise run release:build_linux", "mise run release:build_web"]
+
+[tasks."release:build_linux"]
+description = "Export the game (Linux, release) into build/game with legacy.larissa beside it (the legacy pack must be built: mise run legacy:import); fetches the templates first when missing"
+depends = ["setup", "godot:fetch_templates"]
+usage = '''
+flag "--out <dir>" help="the folder of the game (default build/game in the repository)"
+'''
+run = '''
+set -e
+out="${usage_out:-{{config_root}}/build/game}"
+case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
+mise run godot:pack legacy --no-reach --out "$out"
+tools/godot.sh --headless --path godot --export-release "Linux" "$out/operation-larissa.x86_64"
+echo "the game is $out/operation-larissa.x86_64, legacy.larissa beside it: mise run release:play"
+'''
+
+[tasks."release:build_web"]
+description = "Export the game (Web, release) into build/web with legacy.larissa beside index.html (the legacy pack must be built: mise run legacy:import); fetches the templates first when missing"
+depends = ["setup", "godot:fetch_templates"]
+usage = '''
+flag "--out <dir>" help="the folder of the page (default build/web in the repository)"
+'''
+run = '''
+set -e
+out="${usage_out:-{{config_root}}/build/web}"
+case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
+mise run godot:pack legacy --no-reach --out "$out"
+tools/godot.sh --headless --path godot --export-release "Web" "$out/index.html"
+echo "the page is $out/index.html, legacy.larissa beside it: serve the folder (uv run python -m http.server -d $out 8080) and open http://localhost:8080"
+'''
+
+[tasks."release:play"]
+description = "Play the game that release:build_linux exported (build/game, or --out <dir>)"
+usage = 'flag "--out <dir>" help="the folder of the game (default build/game in the repository)"'
+run = '''
+out="${usage_out:-{{config_root}}/build/game}"
+case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
+[ -x "$out/operation-larissa.x86_64" ] || { echo "no game in $out: mise run release:build_linux" >&2; exit 1; }
+exec "$out/operation-larissa.x86_64"
+'''
+
+
+# ---- Reverse engineering: ONWIN32.EXE in Ghidra (docs/port/GHIDRA_GUI.md; Ghidra itself is installed by hand, docs/SETUP.md)
+
+[tasks."ghidra:gui"]
+description = "Open ONWIN32.EXE in the Ghidra GUI with our names and annotations applied (refuses while the project has GUI work not yet exported)"
+dir = "tools/analysis/ghidra"
+run = [
+  "./run.sh export_names.py --check",
+  "./run.sh export_annotations.py --check",
+  "./run.sh apply_problem_types.py",
+  "./run.sh apply_names.py",
+  "./run.sh apply_annotations.py",
+  "./run.sh open_gui.py",
+]
+
+[tasks."ghidra:export"]
+description = "Write the names and annotations made in the Ghidra GUI into the tracked JSON files (save and close Ghidra first)"
+dir = "tools/analysis/ghidra"
+run = [
+  "./run.sh export_names.py",
+  "./run.sh export_annotations.py",
+]

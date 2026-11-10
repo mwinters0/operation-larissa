@@ -1,0 +1,1 @@
+{"id": "mod_skin_spinner", "title": "Spinning skin", "version": "1.0", "mod": {"entry": "skin_spinner.sgd", "requires_api": 2, "limits": {"execution_timeout": 0}, "skin": {}}}

@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://src/gameplay/original_presenter.tscn" id="1_original"]
+[ext_resource type="Script" path="res://skins/creatures/creatures_presenter.gd" id="2_script"]
+
+; An inherited scene: the original presenter's scene with this skin's script on its root (the script extends the original's).
+[node name="CreaturesPresenter" instance=ExtResource("1_original")]
+script = ExtResource("2_script")

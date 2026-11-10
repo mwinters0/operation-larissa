@@ -1,0 +1,1 @@
+{"id": "mod_tides", "title": "Tides", "version": "1.0", "mod": {"entry": "tides.sgd", "requires_api": 3, "limits": {"execution_timeout": 100, "memory_max": 16}, "problems": {"types": [40], "shaders": ["problems/glow.gdshader"]}}}

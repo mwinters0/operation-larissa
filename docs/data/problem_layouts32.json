@@ -1,0 +1,1233 @@
+{
+ "note": "Record layouts of the 34 problem types. mem_off = byte offset in ONWIN32.EXE's in-memory struct (CompactNumber = 9 bytes), file_off = offset inside one stored record in NEP.DLL.",
+ "types": {
+  "0": {
+   "global": "0x00448cd4",
+   "record_size": 47,
+   "mem_size": 55,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "c",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "c",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "c",
+     "mem_off": 3,
+     "file_off": 3
+    },
+    {
+     "kind": "c",
+     "mem_off": 4,
+     "file_off": 4
+    },
+    {
+     "kind": "c",
+     "mem_off": 5,
+     "file_off": 5
+    },
+    {
+     "kind": "c",
+     "mem_off": 6,
+     "file_off": 6
+    },
+    {
+     "kind": "c",
+     "mem_off": 7,
+     "file_off": 7
+    },
+    {
+     "kind": "c",
+     "mem_off": 8,
+     "file_off": 8
+    },
+    {
+     "kind": "c",
+     "mem_off": 9,
+     "file_off": 9
+    },
+    {
+     "kind": "n",
+     "mem_off": 10,
+     "file_off": 10
+    },
+    {
+     "kind": "n",
+     "mem_off": 19,
+     "file_off": 17
+    },
+    {
+     "kind": "c",
+     "mem_off": 28,
+     "file_off": 24
+    },
+    {
+     "kind": "c",
+     "mem_off": 29,
+     "file_off": 25
+    },
+    {
+     "kind": "c",
+     "mem_off": 30,
+     "file_off": 26
+    },
+    {
+     "kind": "c",
+     "mem_off": 31,
+     "file_off": 27
+    },
+    {
+     "kind": "c",
+     "mem_off": 32,
+     "file_off": 28
+    },
+    {
+     "kind": "c",
+     "mem_off": 33,
+     "file_off": 29
+    },
+    {
+     "kind": "c",
+     "mem_off": 34,
+     "file_off": 30
+    },
+    {
+     "kind": "c",
+     "mem_off": 35,
+     "file_off": 31
+    },
+    {
+     "kind": "c",
+     "mem_off": 36,
+     "file_off": 32
+    },
+    {
+     "kind": "n",
+     "mem_off": 37,
+     "file_off": 33
+    },
+    {
+     "kind": "n",
+     "mem_off": 46,
+     "file_off": 40
+    }
+   ]
+  },
+  "1": {
+   "global": "0x00448660",
+   "record_size": 43,
+   "mem_size": 55,
+   "fields": [
+    {
+     "kind": "n",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "n",
+     "mem_off": 9,
+     "file_off": 7
+    },
+    {
+     "kind": "n",
+     "mem_off": 18,
+     "file_off": 14
+    },
+    {
+     "kind": "n",
+     "mem_off": 27,
+     "file_off": 21
+    },
+    {
+     "kind": "c",
+     "mem_off": 36,
+     "file_off": 28
+    },
+    {
+     "kind": "n",
+     "mem_off": 37,
+     "file_off": 29
+    },
+    {
+     "kind": "n",
+     "mem_off": 46,
+     "file_off": 36
+    }
+   ]
+  },
+  "2": {
+   "global": "0x0044b044",
+   "record_size": 14,
+   "mem_size": 16,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "c",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "c",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "c",
+     "mem_off": 3,
+     "file_off": 3
+    },
+    {
+     "kind": "c",
+     "mem_off": 4,
+     "file_off": 4
+    },
+    {
+     "kind": "c",
+     "mem_off": 5,
+     "file_off": 5
+    },
+    {
+     "kind": "c",
+     "mem_off": 6,
+     "file_off": 6
+    },
+    {
+     "kind": "n",
+     "mem_off": 7,
+     "file_off": 7
+    }
+   ]
+  },
+  "3": {
+   "global": "0x0044af60",
+   "record_size": 16,
+   "mem_size": 20,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "c",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "n",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "n",
+     "mem_off": 11,
+     "file_off": 9
+    }
+   ]
+  },
+  "4": {
+   "global": "0x00448cc4",
+   "record_size": 8,
+   "mem_size": 8,
+   "fields": [
+    {
+     "kind": "w",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "w",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "w",
+     "mem_off": 4,
+     "file_off": 4
+    },
+    {
+     "kind": "w",
+     "mem_off": 6,
+     "file_off": 6
+    }
+   ]
+  },
+  "5": {
+   "global": "0x00449ef0",
+   "record_size": 63,
+   "mem_size": 81,
+   "fields": [
+    {
+     "kind": "n",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "n",
+     "mem_off": 9,
+     "file_off": 7
+    },
+    {
+     "kind": "n",
+     "mem_off": 18,
+     "file_off": 14
+    },
+    {
+     "kind": "n",
+     "mem_off": 27,
+     "file_off": 21
+    },
+    {
+     "kind": "n",
+     "mem_off": 36,
+     "file_off": 28
+    },
+    {
+     "kind": "n",
+     "mem_off": 45,
+     "file_off": 35
+    },
+    {
+     "kind": "n",
+     "mem_off": 54,
+     "file_off": 42
+    },
+    {
+     "kind": "n",
+     "mem_off": 63,
+     "file_off": 49
+    },
+    {
+     "kind": "n",
+     "mem_off": 72,
+     "file_off": 56
+    }
+   ]
+  },
+  "6": {
+   "global": "0x0044af64",
+   "record_size": 21,
+   "mem_size": 27,
+   "fields": [
+    {
+     "kind": "n",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "n",
+     "mem_off": 9,
+     "file_off": 7
+    },
+    {
+     "kind": "n",
+     "mem_off": 18,
+     "file_off": 14
+    }
+   ]
+  },
+  "7": {
+   "global": "0x004486d8",
+   "record_size": 49,
+   "mem_size": 63,
+   "fields": [
+    {
+     "kind": "n",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "n",
+     "mem_off": 9,
+     "file_off": 7
+    },
+    {
+     "kind": "n",
+     "mem_off": 18,
+     "file_off": 14
+    },
+    {
+     "kind": "n",
+     "mem_off": 27,
+     "file_off": 21
+    },
+    {
+     "kind": "n",
+     "mem_off": 36,
+     "file_off": 28
+    },
+    {
+     "kind": "n",
+     "mem_off": 45,
+     "file_off": 35
+    },
+    {
+     "kind": "n",
+     "mem_off": 54,
+     "file_off": 42
+    }
+   ]
+  },
+  "8": {
+   "global": "0x00448c98",
+   "record_size": 15,
+   "mem_size": 19,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "n",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "n",
+     "mem_off": 10,
+     "file_off": 8
+    }
+   ]
+  },
+  "9": {
+   "global": "0x00448d30",
+   "record_size": 36,
+   "mem_size": 46,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "n",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "n",
+     "mem_off": 10,
+     "file_off": 8
+    },
+    {
+     "kind": "n",
+     "mem_off": 19,
+     "file_off": 15
+    },
+    {
+     "kind": "n",
+     "mem_off": 28,
+     "file_off": 22
+    },
+    {
+     "kind": "n",
+     "mem_off": 37,
+     "file_off": 29
+    }
+   ]
+  },
+  "10": {
+   "global": "0x00448ccc",
+   "record_size": 35,
+   "mem_size": 45,
+   "fields": [
+    {
+     "kind": "n",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "n",
+     "mem_off": 9,
+     "file_off": 7
+    },
+    {
+     "kind": "n",
+     "mem_off": 18,
+     "file_off": 14
+    },
+    {
+     "kind": "n",
+     "mem_off": 27,
+     "file_off": 21
+    },
+    {
+     "kind": "n",
+     "mem_off": 36,
+     "file_off": 28
+    }
+   ]
+  },
+  "11": {
+   "global": "0x0044a01c",
+   "record_size": 6,
+   "mem_size": 6,
+   "fields": [
+    {
+     "kind": "w",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "c",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "c",
+     "mem_off": 3,
+     "file_off": 3
+    },
+    {
+     "kind": "w",
+     "mem_off": 4,
+     "file_off": 4
+    }
+   ]
+  },
+  "12": {
+   "global": "0x00448cbc",
+   "record_size": 3,
+   "mem_size": 3,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "c",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "c",
+     "mem_off": 2,
+     "file_off": 2
+    }
+   ]
+  },
+  "13": {
+   "global": "0x00448cc0",
+   "record_size": 15,
+   "mem_size": 19,
+   "fields": [
+    {
+     "kind": "n",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "n",
+     "mem_off": 9,
+     "file_off": 7
+    },
+    {
+     "kind": "c",
+     "mem_off": 18,
+     "file_off": 14
+    }
+   ]
+  },
+  "14": {
+   "global": "0x00449d8c",
+   "record_size": 16,
+   "mem_size": 20,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "c",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "n",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "n",
+     "mem_off": 11,
+     "file_off": 9
+    }
+   ]
+  },
+  "15": {
+   "global": "0x0044aec0",
+   "record_size": 15,
+   "mem_size": 19,
+   "fields": [
+    {
+     "kind": "n",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "c",
+     "mem_off": 9,
+     "file_off": 7
+    },
+    {
+     "kind": "n",
+     "mem_off": 10,
+     "file_off": 8
+    }
+   ]
+  },
+  "16": {
+   "global": "0x00448cd0",
+   "record_size": 47,
+   "mem_size": 57,
+   "fields": [
+    {
+     "kind": "w",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "w",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "w",
+     "mem_off": 4,
+     "file_off": 4
+    },
+    {
+     "kind": "w",
+     "mem_off": 6,
+     "file_off": 6
+    },
+    {
+     "kind": "w",
+     "mem_off": 8,
+     "file_off": 8
+    },
+    {
+     "kind": "w",
+     "mem_off": 10,
+     "file_off": 10
+    },
+    {
+     "kind": "n",
+     "mem_off": 12,
+     "file_off": 12
+    },
+    {
+     "kind": "n",
+     "mem_off": 21,
+     "file_off": 19
+    },
+    {
+     "kind": "n",
+     "mem_off": 30,
+     "file_off": 26
+    },
+    {
+     "kind": "n",
+     "mem_off": 39,
+     "file_off": 33
+    },
+    {
+     "kind": "n",
+     "mem_off": 48,
+     "file_off": 40
+    }
+   ]
+  },
+  "17": {
+   "global": "0x00449ee8",
+   "record_size": 8,
+   "mem_size": 10,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "n",
+     "mem_off": 1,
+     "file_off": 1
+    }
+   ]
+  },
+  "18": {
+   "global": "0x00449dbc",
+   "record_size": 17,
+   "mem_size": 21,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "w",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "n",
+     "mem_off": 3,
+     "file_off": 3
+    },
+    {
+     "kind": "n",
+     "mem_off": 12,
+     "file_off": 10
+    }
+   ]
+  },
+  "19": {
+   "global": "0x00448a6c",
+   "record_size": 43,
+   "mem_size": 55,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "n",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "n",
+     "mem_off": 10,
+     "file_off": 8
+    },
+    {
+     "kind": "n",
+     "mem_off": 19,
+     "file_off": 15
+    },
+    {
+     "kind": "n",
+     "mem_off": 28,
+     "file_off": 22
+    },
+    {
+     "kind": "n",
+     "mem_off": 37,
+     "file_off": 29
+    },
+    {
+     "kind": "n",
+     "mem_off": 46,
+     "file_off": 36
+    }
+   ]
+  },
+  "20": {
+   "global": "0x0044b308",
+   "record_size": 20,
+   "mem_size": 24,
+   "fields": [
+    {
+     "kind": "w",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "w",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "w",
+     "mem_off": 4,
+     "file_off": 4
+    },
+    {
+     "kind": "n",
+     "mem_off": 6,
+     "file_off": 6
+    },
+    {
+     "kind": "n",
+     "mem_off": 15,
+     "file_off": 13
+    }
+   ]
+  },
+  "21": {
+   "global": "0x0044b310",
+   "record_size": 14,
+   "mem_size": 14,
+   "fields": [
+    {
+     "kind": "w",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "w",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "w",
+     "mem_off": 4,
+     "file_off": 4
+    },
+    {
+     "kind": "w",
+     "mem_off": 6,
+     "file_off": 6
+    },
+    {
+     "kind": "w",
+     "mem_off": 8,
+     "file_off": 8
+    },
+    {
+     "kind": "w",
+     "mem_off": 10,
+     "file_off": 10
+    },
+    {
+     "kind": "w",
+     "mem_off": 12,
+     "file_off": 12
+    }
+   ]
+  },
+  "22": {
+   "global": "0x00448cc8",
+   "record_size": 7,
+   "mem_size": 7,
+   "fields": [
+    {
+     "kind": "w",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "w",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "c",
+     "mem_off": 4,
+     "file_off": 4
+    },
+    {
+     "kind": "w",
+     "mem_off": 5,
+     "file_off": 5
+    }
+   ]
+  },
+  "23": {
+   "global": "0x0044aedc",
+   "record_size": 18,
+   "mem_size": 22,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "w",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "c",
+     "mem_off": 3,
+     "file_off": 3
+    },
+    {
+     "kind": "n",
+     "mem_off": 4,
+     "file_off": 4
+    },
+    {
+     "kind": "n",
+     "mem_off": 13,
+     "file_off": 11
+    }
+   ]
+  },
+  "24": {
+   "global": "0x00448754",
+   "record_size": 13,
+   "mem_size": 15,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "c",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "n",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "w",
+     "mem_off": 11,
+     "file_off": 9
+    },
+    {
+     "kind": "w",
+     "mem_off": 13,
+     "file_off": 11
+    }
+   ]
+  },
+  "25": {
+   "global": "0x0044b30c",
+   "record_size": 19,
+   "mem_size": 19,
+   "fields": [
+    {
+     "kind": "w",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "w",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "w",
+     "mem_off": 4,
+     "file_off": 4
+    },
+    {
+     "kind": "w",
+     "mem_off": 6,
+     "file_off": 6
+    },
+    {
+     "kind": "w",
+     "mem_off": 8,
+     "file_off": 8
+    },
+    {
+     "kind": "w",
+     "mem_off": 10,
+     "file_off": 10
+    },
+    {
+     "kind": "w",
+     "mem_off": 12,
+     "file_off": 12
+    },
+    {
+     "kind": "w",
+     "mem_off": 14,
+     "file_off": 14
+    },
+    {
+     "kind": "w",
+     "mem_off": 16,
+     "file_off": 16
+    },
+    {
+     "kind": "c",
+     "mem_off": 18,
+     "file_off": 18
+    }
+   ]
+  },
+  "26": {
+   "global": "0x0044af58",
+   "record_size": 10,
+   "mem_size": 12,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "n",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "c",
+     "mem_off": 10,
+     "file_off": 8
+    },
+    {
+     "kind": "c",
+     "mem_off": 11,
+     "file_off": 9
+    }
+   ]
+  },
+  "27": {
+   "global": "0x0044aee0",
+   "record_size": 17,
+   "mem_size": 21,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "n",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "n",
+     "mem_off": 10,
+     "file_off": 8
+    },
+    {
+     "kind": "c",
+     "mem_off": 19,
+     "file_off": 15
+    },
+    {
+     "kind": "c",
+     "mem_off": 20,
+     "file_off": 16
+    }
+   ]
+  },
+  "28": {
+   "global": "0x00448690",
+   "record_size": 4,
+   "mem_size": 4,
+   "fields": [
+    {
+     "kind": "w",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "w",
+     "mem_off": 2,
+     "file_off": 2
+    }
+   ]
+  },
+  "29": {
+   "global": "0x00448690",
+   "record_size": 4,
+   "mem_size": 4,
+   "fields": [
+    {
+     "kind": "w",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "w",
+     "mem_off": 2,
+     "file_off": 2
+    }
+   ]
+  },
+  "30": {
+   "global": "0x00448cb8",
+   "record_size": 14,
+   "mem_size": 14,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "c",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "c",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "w",
+     "mem_off": 3,
+     "file_off": 3
+    },
+    {
+     "kind": "c",
+     "mem_off": 5,
+     "file_off": 5
+    },
+    {
+     "kind": "c",
+     "mem_off": 6,
+     "file_off": 6
+    },
+    {
+     "kind": "c",
+     "mem_off": 7,
+     "file_off": 7
+    },
+    {
+     "kind": "w",
+     "mem_off": 8,
+     "file_off": 8
+    },
+    {
+     "kind": "w",
+     "mem_off": 10,
+     "file_off": 10
+    },
+    {
+     "kind": "c",
+     "mem_off": 12,
+     "file_off": 12
+    },
+    {
+     "kind": "c",
+     "mem_off": 13,
+     "file_off": 13
+    }
+   ]
+  },
+  "31": {
+   "global": "0x0044aec4",
+   "record_size": 10,
+   "mem_size": 10,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "c",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "c",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "c",
+     "mem_off": 3,
+     "file_off": 3
+    },
+    {
+     "kind": "c",
+     "mem_off": 4,
+     "file_off": 4
+    },
+    {
+     "kind": "c",
+     "mem_off": 5,
+     "file_off": 5
+    },
+    {
+     "kind": "c",
+     "mem_off": 6,
+     "file_off": 6
+    },
+    {
+     "kind": "c",
+     "mem_off": 7,
+     "file_off": 7
+    },
+    {
+     "kind": "c",
+     "mem_off": 8,
+     "file_off": 8
+    },
+    {
+     "kind": "c",
+     "mem_off": 9,
+     "file_off": 9
+    }
+   ]
+  },
+  "32": {
+   "global": "0x0044aed8",
+   "record_size": 16,
+   "mem_size": 20,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "c",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "n",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "n",
+     "mem_off": 11,
+     "file_off": 9
+    }
+   ]
+  },
+  "33": {
+   "global": "0x0044aed8",
+   "record_size": 16,
+   "mem_size": 20,
+   "fields": [
+    {
+     "kind": "c",
+     "mem_off": 0,
+     "file_off": 0
+    },
+    {
+     "kind": "c",
+     "mem_off": 1,
+     "file_off": 1
+    },
+    {
+     "kind": "n",
+     "mem_off": 2,
+     "file_off": 2
+    },
+    {
+     "kind": "n",
+     "mem_off": 11,
+     "file_off": 9
+    }
+   ]
+  }
+ }
+}

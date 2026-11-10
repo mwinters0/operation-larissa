@@ -1,0 +1,22 @@
+{
+ "comment": "The designers' label names and comments for the creature scripts, keyed by sector and ORIGINAL byte offset. Written by tools/import/harvest_foe_annotations.py and by the Foe Script screen; read by the importer and by tools/import/reset_foe_scripts.py. Not shipped with the game. See docs/create/FOE_SCRIPTING.md.",
+ "sectors": {
+  "3": {
+   "labels": {
+    "511": "touch_return",
+    "529": "swim_back",
+    "535": "dive_end"
+   },
+   "comments": {
+    "511": {"label_above": ["; Sector 3 creature script (example for the annotation tests).", "; Written by hand.", ""], "label_inline": "   ; creatures that only bounce back"},
+    "512": {"above": ["    ; then idle for a while"]},
+    "513": {"above": [""]},
+    "521": {"label_above": ["", "; The dive.", "; It starts with two ticks of waiting."]},
+    "523": {"inline": " ; the diving frame"},
+    "529": {"above": ["    ; three frames, then loop"]},
+    "535": {"label_above": [], "inline": "      ; 29 times"},
+    "1490": {"above": ["", "; End of the script."]}
+   }
+  }
+ }
+}

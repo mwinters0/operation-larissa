@@ -1,0 +1,9 @@
+# A problem-screen mod that raises on every frame (it asks the API for a function that is not there): the screens it spoils show the plain picture of the type's data, the loader counts the faults and quarantines it, the problem goes on.
+var api : Dictionary = {}
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func problem_frame(state : Dictionary) -> Array:
+	api["no_such_function"].call("frame")
+	return []

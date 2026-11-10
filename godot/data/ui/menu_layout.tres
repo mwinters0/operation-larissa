@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="MenuBarLayout" format=3]
+
+[ext_resource type="Script" path="res://src/resources/menu_bar_layout.gd" id="1_menu_bar_layout"]
+
+[resource]
+script = ExtResource("1_menu_bar_layout")
+title_x = PackedInt32Array(0, 36, 96)

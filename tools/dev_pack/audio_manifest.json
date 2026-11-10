@@ -1,0 +1,28 @@
+{
+ "comment": "Written by tools/dev_pack/audio.py. The dev pack's speech is Piper text-to-speech (noise settings 0, so the same words give the same samples); the model is downloaded to ~/.cache/neptune-dev-pack/ and checked against these SHA-256s.",
+ "piper_tts": "1.8.0",
+ "voice": "en_US-lessac-medium",
+ "voice_files": {
+  "en_US-lessac-medium.onnx": {
+   "url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx",
+   "sha256": "5efe09e69902187827af646e1a6e9d269dee769f9877d17b16b1b46eeaaf019f"
+  },
+  "en_US-lessac-medium.onnx.json": {
+   "url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json",
+   "sha256": "efe19c417bed055f2d69908248c6ba650fa135bc868b0e6abb3da181dab690a0"
+  }
+ },
+ "formats": {
+  "sfx": "WAV 16-bit mono 22050 Hz",
+  "voice": "WAV 16-bit mono 16000 Hz",
+  "music": "OGG Vorbis mono 44100 Hz (ffmpeg libvorbis -q:a 3)",
+  "midi": "SMF format 0"
+ },
+ "files": {
+  "sfx": 52,
+  "voice": 371,
+  "music": 20,
+  "midi": 20
+ },
+ "megabytes": 17.9
+}

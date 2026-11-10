@@ -1,0 +1,11 @@
+# Raises on every call it is given: the loader counts the faults and quarantines it, the game goes on.
+var api : Dictionary = {}
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func boom() -> void:
+	api["no_such_function"].call("tick")
+
+func _physics_process(_delta : float) -> void:
+	api["no_such_function"].call("tick")

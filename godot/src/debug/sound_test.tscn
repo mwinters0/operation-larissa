@@ -1,0 +1,54 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/debug/sound_test.gd" id="1_test"]
+
+[node name="SoundTest" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_test")
+
+[node name="Rows" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Status" type="Label" parent="Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="Tabs" type="TabContainer" parent="Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Effects" type="ItemList" parent="Rows/Tabs"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Voices" type="ItemList" parent="Rows/Tabs"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="Songs" type="ItemList" parent="Rows/Tabs"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="Log" type="RichTextLabel" parent="Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+scroll_following = true

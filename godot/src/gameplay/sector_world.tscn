@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/sector_world.gd" id="1_world"]
+[ext_resource type="PackedScene" path="res://src/gameplay/original_presenter.tscn" id="2_presenter"]
+
+[node name="SectorWorld" type="Control"]
+clip_contents = true
+custom_minimum_size = Vector2(608, 288)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 608.0
+offset_bottom = 288.0
+mouse_filter = 2
+script = ExtResource("1_world")
+
+[node name="Presenter" parent="." instance=ExtResource("2_presenter")]
+unique_name_in_owner = true

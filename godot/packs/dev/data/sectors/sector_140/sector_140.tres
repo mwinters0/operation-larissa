@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="SectorData" format=3]
+
+[ext_resource type="Script" path="res://src/resources/sector_data.gd" id="1_sector_data"]
+[ext_resource type="Script" path="res://src/resources/piece_data.gd" id="2_piece_data"]
+[ext_resource type="Script" path="res://src/resources/foe_data.gd" id="3_foe_data"]
+[ext_resource type="Script" path="res://src/resources/screen_data.gd" id="4_screen_data"]
+[ext_resource type="Resource" path="res://packs/dev/data/sectors/sector_140/screen_00.tres" id="5_screen_00"]
+[ext_resource type="Resource" path="res://packs/dev/data/sectors/sector_140/screen_01.tres" id="6_screen_01"]
+[ext_resource type="Resource" path="res://packs/dev/data/sectors/sector_140/screen_02.tres" id="7_screen_02"]
+[ext_resource type="Resource" path="res://packs/dev/data/sectors/sector_140/screen_03.tres" id="8_screen_03"]
+[ext_resource type="Resource" path="res://packs/dev/data/sectors/sector_140/screen_04.tres" id="9_screen_04"]
+[ext_resource type="Resource" path="res://packs/dev/data/sectors/sector_140/screen_05.tres" id="10_screen_05"]
+[ext_resource type="Resource" path="res://packs/dev/data/sectors/sector_140/screen_06.tres" id="11_screen_06"]
+[ext_resource type="Resource" path="res://packs/dev/data/sectors/sector_140/screen_07.tres" id="12_screen_07"]
+[ext_resource type="Resource" path="res://packs/dev/data/sectors/sector_140/screen_08.tres" id="13_screen_08"]
+[ext_resource type="Resource" path="res://packs/dev/data/sectors/sector_140/screen_09.tres" id="14_screen_09"]
+[ext_resource type="Resource" path="res://packs/dev/data/sectors/sector_140/screen_10.tres" id="15_screen_10"]
+[ext_resource type="Resource" path="res://packs/dev/data/sectors/sector_140/screen_11.tres" id="16_screen_11"]
+[ext_resource type="Resource" path="res://packs/dev/data/sectors/sector_140/sector_140.foe" id="17_sector_140"]
+
+[sub_resource type="Resource" id="Piece_1"]
+script = ExtResource("2_piece_data")
+screen = 3
+pos = Vector2i(320, 180)
+is_canister = true
+
+[sub_resource type="Resource" id="Piece_2"]
+script = ExtResource("2_piece_data")
+screen = 8
+pos = Vector2i(160, 230)
+is_canister = false
+
+[resource]
+script = ExtResource("1_sector_data")
+index = 140
+game = 0
+zone = 0
+start_pos = Vector2i(96, 160)
+start_frame = 6
+neighbors_left = PackedInt32Array(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+neighbors_right = PackedInt32Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, -1)
+neighbors_up = PackedInt32Array(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1)
+neighbors_down = PackedInt32Array(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1)
+pieces = Array[ExtResource("2_piece_data")]([SubResource("Piece_1"), SubResource("Piece_2")])
+screens = Array[ExtResource("4_screen_data")]([ExtResource("5_screen_00"), ExtResource("6_screen_01"), ExtResource("7_screen_02"), ExtResource("8_screen_03"), ExtResource("9_screen_04"), ExtResource("10_screen_05"), ExtResource("11_screen_06"), ExtResource("12_screen_07"), ExtResource("13_screen_08"), ExtResource("14_screen_09"), ExtResource("15_screen_10"), ExtResource("16_screen_11")])
+foes = Array[ExtResource("3_foe_data")]([])
+foe_script = ExtResource("17_sector_140")
+foe_script_base = 1
+music_name = "esect3"
+header_unused_3d = 0
+header_unused_40 = 0
+header_unused_41 = 0

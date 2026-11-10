@@ -1,0 +1,18 @@
+[gd_resource type="SpriteFrames" format=3]
+
+[ext_resource type="Texture2D" uid="uid://do1jcsejvhs78" path="res://packs/dev/assets/sprites/sub/sub_00.png" id="1_sub_00"]
+[ext_resource type="Texture2D" uid="uid://dbakvjv7q4w4h" path="res://packs/dev/assets/sprites/sub/sub_01.png" id="2_sub_01"]
+[ext_resource type="Texture2D" uid="uid://bevvajqwijmdd" path="res://packs/dev/assets/sprites/sub/sub_02.png" id="3_sub_02"]
+[ext_resource type="Texture2D" uid="uid://uwl3clrawr8s" path="res://packs/dev/assets/sprites/sub/sub_03.png" id="4_sub_03"]
+[ext_resource type="Texture2D" uid="uid://cyt3gxiakf5tj" path="res://packs/dev/assets/sprites/sub/sub_04.png" id="5_sub_04"]
+[ext_resource type="Texture2D" uid="uid://dotxx34m8w23j" path="res://packs/dev/assets/sprites/sub/sub_05.png" id="6_sub_05"]
+[ext_resource type="Texture2D" uid="uid://oes1vsq5i8vd" path="res://packs/dev/assets/sprites/sub/sub_06.png" id="7_sub_06"]
+[ext_resource type="Texture2D" uid="uid://c1uy3cbf24i0e" path="res://packs/dev/assets/sprites/sub/sub_07.png" id="8_sub_07"]
+[ext_resource type="Texture2D" uid="uid://c0nqe07ohg5kp" path="res://packs/dev/assets/sprites/sub/sub_08.png" id="9_sub_08"]
+[ext_resource type="Texture2D" uid="uid://dmvvyvxa1x01e" path="res://packs/dev/assets/sprites/sub/sub_09.png" id="10_sub_09"]
+[ext_resource type="Texture2D" uid="uid://dspygamvn6t1s" path="res://packs/dev/assets/sprites/sub/sub_10.png" id="11_sub_10"]
+[ext_resource type="Texture2D" uid="uid://doaxfw8ekrtxk" path="res://packs/dev/assets/sprites/sub/sub_11.png" id="12_sub_11"]
+[ext_resource type="Texture2D" uid="uid://briqpivg2jv4t" path="res://packs/dev/assets/sprites/sub/sub_12.png" id="13_sub_12"]
+
+[resource]
+animations = [{"frames": [{"duration": 1.0, "texture": ExtResource("1_sub_00")}, {"duration": 1.0, "texture": ExtResource("2_sub_01")}, {"duration": 1.0, "texture": ExtResource("3_sub_02")}, {"duration": 1.0, "texture": ExtResource("4_sub_03")}, {"duration": 1.0, "texture": ExtResource("5_sub_04")}, {"duration": 1.0, "texture": ExtResource("6_sub_05")}, {"duration": 1.0, "texture": ExtResource("7_sub_06")}, {"duration": 1.0, "texture": ExtResource("8_sub_07")}, {"duration": 1.0, "texture": ExtResource("9_sub_08")}, {"duration": 1.0, "texture": ExtResource("10_sub_09")}, {"duration": 1.0, "texture": ExtResource("11_sub_10")}, {"duration": 1.0, "texture": ExtResource("12_sub_11")}, {"duration": 1.0, "texture": ExtResource("13_sub_12")}], "loop": false, "name": &"all", "speed": 0.0}, {"frames": [{"duration": 1.0, "texture": ExtResource("10_sub_09")}, {"duration": 1.0, "texture": ExtResource("11_sub_10")}, {"duration": 1.0, "texture": ExtResource("12_sub_11")}, {"duration": 1.0, "texture": ExtResource("13_sub_12")}], "loop": true, "name": &"bubbles", "speed": 12.166667}]

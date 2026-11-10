@@ -1,0 +1,1 @@
+{"id": "mod_skin_hostile", "title": "Hostile skin", "version": "1.0", "mod": {"entry": "skin_hostile.sgd", "requires_api": 2, "limits": {"execution_timeout": 100000, "memory_max": 4096, "allocations_max": 1000000, "references_max": 100000, "coroutines_max": 100000}, "skin": {"shaders": ["skin/glow.gdshader"]}}}

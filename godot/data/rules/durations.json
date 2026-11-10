@@ -1,0 +1,17 @@
+{
+  "_about": "Every duration that holds up play, in ticks of the original's 73 Hz timer (a station trip: ticks of the 12.17 Hz game clock). The legacy pack: the original's numbers. The rules read them through Durations; a data pack may lay its own rules/durations.json over this one, key by key. Positions are integer window coordinates.",
+  "station": {
+    "launch": {"opening_ticks": 3, "closing_ticks": 3, "from_x": 0, "to_x": 96, "pixels_per_tick": 4},
+    "dock": {"opening_ticks": 3, "closing_ticks": 3, "from_x": 352, "to_x": 452, "pixels_per_tick": 4},
+    "balloon": {"x": 560, "from_y": 144, "to_y": -32, "pixels_per_tick": 4}
+  },
+  "dissolve": {"ticks": 21},
+  "log_scan": {"ticks_per_picture": 5, "sweeps": 6},
+  "sign_in": {"pre_scan_ticks": 18, "pressed_ticks": 36, "scan_ticks_per_picture": 5, "scan_sweeps": 6},
+  "problem": {"message_ticks": 146},
+  "speech": {"silent_ticks": 146},
+  "calculator": {"key_flash_ticks": 12},
+  "surface_ship": {"wait_ticks": 1460},
+  "news": {"speech_start_delay_ticks": 219, "group_pauses": [0, 248, 248, 248, 0]},
+  "fade": {"ticks": 13}
+}

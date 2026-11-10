@@ -1,0 +1,38 @@
+{
+  "_about": "Dev pack: its own lengths, in ticks of the 73 Hz timer (a station trip: ticks of the 12.17 Hz game clock). A key left out keeps the base file's number.",
+  "station": {
+    "launch": {
+      "opening_ticks": 2,
+      "closing_ticks": 2,
+      "from_x": 0,
+      "to_x": 96,
+      "pixels_per_tick": 4
+    },
+    "dock": {
+      "opening_ticks": 4,
+      "closing_ticks": 2,
+      "from_x": 352,
+      "to_x": 452,
+      "pixels_per_tick": 5
+    }
+  },
+  "sign_in": {
+    "pre_scan_ticks": 20,
+    "pressed_ticks": 30,
+    "scan_ticks_per_picture": 4,
+    "scan_sweeps": 5
+  },
+  "news": {
+    "speech_start_delay_ticks": 200,
+    "group_pauses": [
+      0,
+      200,
+      200,
+      200,
+      0
+    ]
+  },
+  "fade": {
+    "ticks": 10
+  }
+}

@@ -1,0 +1,26 @@
+; Dev pack - sector 121, the closing (I7 batch B). A sector with a finale screen (10): touching the treasure raises flag 15 and the ending starts
+; when the sub is on that screen with the flag up. The guard clears the flag on every tick while the first screen is shown.
+
+treasure_start:
+    Set_Frame clam_closed
+treasure_wait:
+    Wait_Next_Tick
+    Jump_To treasure_wait
+
+treasure_hit:
+    Hide_Foe
+    Set_Flag 15
+    Play_Sound oxygen_refill
+treasure_hold:
+    Wait_Next_Tick
+    Jump_To treasure_hold
+
+guard_start:
+    Clear_Flag 15
+    Wait_Next_Tick
+    Jump_To guard_start
+
+quiet_hit:
+    Return
+cloud_ink:
+    Return

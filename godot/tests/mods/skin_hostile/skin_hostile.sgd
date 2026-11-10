@@ -1,0 +1,179 @@
+# A hostile skin mod. Every try_* attempts something a skin must not do (a refused call raises, which the game counts); every bad_* returns a draw list full of what the game must drop; the
+# plain skin_frame draws one good rectangle. Adapted from the audit mods of godot-sandbox's examples/modding (BSD-3-Clause).
+var api : Dictionary = {}
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func skin_frame(state : Dictionary, fraction : float, events : Array) -> Array:
+	return [["rect", Rect2(0, 0, 10, 10), Color.RED]]
+
+# --- reaching the game ---
+func try_reach_an_autoload() -> String:
+	var game_state = get_node("/root/GameState")
+	return "read the rules' run: " + str(game_state.oxygen)
+
+func try_reach_the_sim_world() -> String:
+	var world = get_node("/root/Mods/Loader")
+	world.call("get_class")
+	return "reached the loader of the mods"
+
+func try_reach_the_scene_root() -> String:
+	var root = get_node("/root")
+	root.call("get_class")
+	return "called a method on the scene root"
+
+func try_reach_the_presenter_parent() -> String:
+	var parent = get_parent()
+	parent.call("get_class")
+	return "called a method on its parent"
+
+func try_reach_another_mods_node() -> String:
+	var other = get_node("/root/Mods/Loader/mod_skinny")
+	other.call("skin_frame", {}, 0.0, [])
+	return "called another mod"
+
+func try_find_the_presenter() -> String:
+	var presenter = get_tree().get_first_node_in_group("presenter")
+	return "found a node by group: " + str(presenter)
+
+func try_quit_the_game() -> String:
+	get_tree().quit()
+	return "quit the game"
+
+# --- making and using objects of its own ---
+func try_make_a_canvas_item() -> String:
+	var canvas = Node2D.new()
+	canvas.queue_redraw()
+	return "made a canvas: " + str(canvas)
+
+func try_make_a_material() -> String:
+	var material = ShaderMaterial.new()
+	var shader = Shader.new()
+	shader.code = "shader_type canvas_item; void fragment() { COLOR = vec4(1.0); }"
+	material.shader = shader
+	return "made a shader material: " + str(material)
+
+func try_load_a_shader_of_the_game() -> String:
+	var shader = load("res://src/gameplay/sub_dissolve.gdshader")
+	return "loaded the game's shader: " + str(shader)
+
+func try_load_a_texture_of_the_game() -> String:
+	var texture = load("res://icon.svg")
+	return "loaded a picture of the game: " + str(texture)
+
+func try_unwrap_a_callable() -> String:
+	var host = api["load"].get_object()
+	host.call("get_class")
+	return "reached the object behind a granted Callable"
+
+# --- the state it is given is read-only ---
+func try_write_the_state(state : Dictionary) -> String:
+	state["sub"] = "pwned"
+	return "wrote the state of the sector"
+
+func try_write_the_state_deep(state : Dictionary) -> String:
+	state["sub"]["current"] = Vector2(0, 0)
+	return "wrote the sub of the state"
+
+func try_append_to_the_state(state : Dictionary) -> String:
+	state["creatures"].append({})
+	return "added a creature to the state"
+
+func try_write_the_events(events : Array) -> String:
+	events.append(["pwned"])
+	return "added an event"
+
+func try_write_the_skin_facts() -> String:
+	api["skin"]["max_commands"] = 1000000000
+	return "raised a limit of the skin API"
+
+# --- the API answers nothing for these ---
+func check_load_a_picture_of_another_pack() -> Variant:
+	return api["load"].call("../mod_skinny/skin/sub.png")
+
+func check_load_the_pack_of_the_chain() -> Variant:
+	return api["load"].call("pictures/ui_picture/dot.png")
+
+# --- draw lists the game must drop (or cut) ---
+func bad_not_a_list() -> Variant:
+	return {"rect": 1}
+
+func bad_a_string() -> Variant:
+	return "draw everything"
+
+func bad_commands() -> Array:
+	# (appended one at a time: a script holds about a hundred host objects at once, and one big literal holds them all)
+	var out := []
+	out.append("not a command")
+	out.append([])
+	out.append([1, 2, 3])
+	out.append(["unknown_op", 1])
+	out.append(["rect"])
+	out.append(["rect", Rect2(0, 0, 4, 4)])
+	out.append(["rect", Rect2(0, 0, 4, 4), "red"])
+	out.append(["rect", Rect2(0, 0, -4, 4), Color.RED])
+	out.append(["rect", Rect2(0, 0, 1e30, 4), Color.RED])
+	out.append(["rect", Rect2(Vector2(pow(10.0, 300.0), 0), Vector2(4, 4)), Color.RED])
+	out.append(["rect", Rect2(0, 0, 4, 4), Color.RED, "extra"])
+	out.append(["line", Vector2(0, 0), Vector2(5, 5), Color.RED])
+	out.append(["line", Vector2(0, 0), Vector2(5, 5), Color.RED, "wide"])
+	out.append(["picture", "skin/missing.png", Vector2(0, 0)])
+	out.append(["picture", "../mod_skinny/skin/sub.png", Vector2(0, 0)])
+	out.append(["picture", "skin/../pack.json", Vector2(0, 0)])
+	out.append(["picture", "/etc/passwd", Vector2(0, 0)])
+	out.append(["picture", "res://icon.svg", Vector2(0, 0)])
+	out.append(["picture", "user://x.png", Vector2(0, 0)])
+	out.append(["picture", "pictures/ui_picture/dot.png", Vector2(0, 0)])
+	out.append(["picture", "skin/dot.txt", Vector2(0, 0)])
+	out.append(["picture", 42, Vector2(0, 0)])
+	out.append(["picture", "skin/dot.png", "here"])
+	out.append(["picture", "skin/dot.png", Vector2(0, 0), 5])
+	out.append(["picture", "skin/dot.png", Vector2(0, 0), Color.RED, true])
+	out.append(["picture", "skin/dot.png", Vector2(0, 0), true, Color.RED, 1])
+	out.append(["region", "skin/dot.png", Rect2(0, 0, 4, 4)])
+	return out
+
+# (a second function: a script holds about a hundred host objects at once, and it counts the dictionaries it makes)
+func bad_layer_commands() -> Array:
+	var out := []
+	out.append(["rect", Rect2(2, 2, 4, 4), Color.GREEN])
+	out.append(["layer", "res://src/gameplay/sub_dissolve.gdshader"])
+	out.append(["rect", Rect2(50, 50, 4, 4), Color.RED])
+	out.append(["layer", "skin/other.gdshader"])
+	out.append(["rect", Rect2(60, 60, 4, 4), Color.RED])
+	out.append(["layer", "skin/glow.gdshader", {"Strength": 1.0}])
+	out.append(["layer", "skin/glow.gdshader", {"strength": "lots"}])
+	out.append(["layer", "skin/glow.gdshader", {7: 1.0}])
+	out.append(["layer", "skin/glow.gdshader", "uniforms"])
+	out.append(["layer", 5])
+	out.append(["picture", "skin/dot.png", Vector2(1, 1)])
+	out.append(["layer", ""])
+	out.append(["picture", "skin/dot.png", Vector2(3, 3)])
+	return out
+
+
+func bad_layers() -> Array:
+	var out := []
+	for i in 20:
+		out.append(["layer", ""])
+		out.append(["rect", Rect2(i, i, 2, 2), Color.WHITE])
+	return out
+
+func bad_uniforms() -> Array:
+	var uniforms := {}
+	for i in 17:
+		uniforms["u%d" % i] = 1.0
+	return [["layer", "skin/glow.gdshader", uniforms], ["rect", Rect2(0, 0, 2, 2), Color.WHITE]]
+
+func bad_huge_list(count : int) -> Array:
+	var out := []
+	for i in count:
+		out.append(["rect", Rect2(i % 600, 0, 1, 1), Color.WHITE])
+	return out
+
+func bad_cycle() -> Array:
+	var a := []
+	a.append(a)
+	a.append(["rect", Rect2(0, 0, 3, 3), Color.WHITE])
+	return a

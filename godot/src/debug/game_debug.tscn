@@ -1,0 +1,46 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/debug/game_debug.gd" id="1_debug"]
+[ext_resource type="Script" path="res://src/debug/debug_hud.gd" id="2_hud"]
+[ext_resource type="Script" path="res://src/debug/piece_counter.gd" id="3_pieces"]
+
+[node name="GameDebug" type="CanvasLayer"]
+layer = 5
+script = ExtResource("1_debug")
+
+[node name="DebugHud" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+offset_left = 20.0
+offset_top = 36.0
+offset_right = 260.0
+offset_bottom = 90.0
+theme_type_variation = &"DebugLabel"
+script = ExtResource("2_hud")
+
+[node name="Pieces" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 92.0
+offset_right = 252.0
+offset_bottom = 112.0
+mouse_filter = 2
+script = ExtResource("3_pieces")
+
+[node name="DebugKeys" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+offset_left = 20.0
+offset_top = 116.0
+offset_right = 330.0
+offset_bottom = 230.0
+theme_type_variation = &"DebugLabel"
+text = "F3 debug keys:  1 lose oxygen   2 gain oxygen
+3 take a piece   4 refill ink   5 message light
+6 open a problem   7 toggle Cust
+8 jump to the finale   9 set the finale bit
+0 finish this sector   R debug rectangles
+O rectangles over the picture   S next skin"

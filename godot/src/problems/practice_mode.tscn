@@ -1,0 +1,75 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/problems/practice_mode.gd" id="1_practice"]
+[ext_resource type="Script" path="res://src/ui/console_frame.gd" id="2_frame"]
+[ext_resource type="PackedScene" path="res://src/ui/game_menu_bar.tscn" id="3_menu"]
+[ext_resource type="PackedScene" path="res://src/ui/message_box.tscn" id="4_message"]
+
+[node name="PracticeMode" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 400.0
+script = ExtResource("1_practice")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 400.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Frame" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 400.0
+mouse_filter = 2
+script = ExtResource("2_frame")
+
+[node name="ScorePanel" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 16.0
+offset_top = 327.0
+offset_right = 332.0
+offset_bottom = 392.0
+mouse_filter = 2
+color = Color(0.333, 0.333, 0.333, 1)
+
+[node name="ScoreRows" type="GridContainer" parent="ScorePanel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 16.0
+offset_top = 4.0
+offset_right = 300.0
+offset_bottom = 62.0
+mouse_filter = 2
+theme_override_constants/v_separation = 0
+columns = 2
+
+[node name="ProblemHost" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 400.0
+mouse_filter = 2
+
+[node name="MenuBar" parent="." instance=ExtResource("3_menu")]
+unique_name_in_owner = true
+practice_mode = true
+
+[node name="Overlay" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MessageBox" parent="." instance=ExtResource("4_message")]
+unique_name_in_owner = true

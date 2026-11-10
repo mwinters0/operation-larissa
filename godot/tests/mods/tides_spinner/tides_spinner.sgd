@@ -1,0 +1,11 @@
+# A problem-screen mod that never returns, and asks for no instruction limit at all (0): the game gives a mod that draws a limit anyway, so a screen costs it a little and no more.
+var api : Dictionary = {}
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func problem_frame(state : Dictionary) -> Array:
+	var n := 0
+	while true:
+		n += 1
+	return []

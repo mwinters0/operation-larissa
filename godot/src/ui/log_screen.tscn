@@ -1,0 +1,80 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/log_screen.gd" id="1_log"]
+
+[node name="LogScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 400.0
+script = ExtResource("1_log")
+
+[node name="Background" type="TextureRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 40.0
+offset_top = 36.0
+offset_right = 308.0
+offset_bottom = 56.0
+mouse_filter = 2
+horizontal_alignment = 1
+
+[node name="MonitorClear" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 357.0
+offset_top = 48.0
+offset_right = 602.0
+offset_bottom = 250.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MenuTitle" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 364.0
+offset_top = 48.0
+offset_right = 602.0
+offset_bottom = 68.0
+mouse_filter = 2
+horizontal_alignment = 1
+
+[node name="Cursor" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 360.0
+offset_top = 88.0
+offset_right = 475.0
+offset_bottom = 104.0
+mouse_filter = 2
+
+[node name="Rows" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 400.0
+mouse_filter = 2
+
+[node name="EntryText" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 44.0
+offset_top = 84.0
+offset_right = 308.0
+offset_bottom = 284.0
+mouse_filter = 2
+autowrap_mode = 3
+
+[node name="Lights" type="TextureRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 368.0
+offset_top = 278.0
+offset_right = 596.0
+offset_bottom = 304.0
+mouse_filter = 2

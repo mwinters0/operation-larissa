@@ -1,0 +1,1222 @@
+{
+ "_doc": "Writes docs/data/problem_fields.json: per-field meaning, answer rule and text-slot mapping for the 34\nstored problem types.  Every entry was read from the decompiled ONWIN32.EXE (see tools/analysis/ghidra/ and\ndocs/port/DESIGN.md section 5.4); items tagged \"I\" are inferences (diagram code not followed to the end).\n\nNotation\n  L            educational level 0..3 (the table's level index = Player+0x0E)\n  fN           field N of the record, in file order (kinds in problem_layouts32.json / problem_records.json)\n  prompt/hint/solution/success   index into the type's text bundle (BNDL real id = text_bundle_real_id)\n  slots        {k: source}: value substituted for template marker \\x08 + (0xD0+k)  == \"{k}\" in NEP_text.json dumps\n               num(fN) = CompactNumber text (decimals keep their stored exp digits, fractions print \"w n/d\")\n               int(fN) = decimal integer, str(ID) = EXE string-table string ID (see ONWIN32_strings.json)\n  answer       field the typed answer is compared against; cmp = exact | near(tol, relative) | close(tol, absolute)",
+ "compare_primitives": {
+  "NumberCmp": "equal iff |a-b| < 1e-10 after converting both to double (fractions == decimals)",
+  "NumbersNear": "|expected-answer| <= |expected| * tol",
+  "NumbersClose": "|expected-answer| <= tol",
+  "kind": "0 = decimal (u8 exp digits, i32 raw -> raw/10^exp), 1 = mixed fraction (i8 whole, u8 num, u16 den -> whole+num/den)"
+ },
+ "types": {
+  "0": {
+   "name": "Combination Lock",
+   "fields": [
+    "wheel_set (0 whole 2..9 | 5 quarter-steps | 8 tenths | 11 hundredths; selects operand wheel table @0x441e9c and answer wheel table @0x44201c)",
+    "stage1 program byte 0 = operand slot (0-7)",
+    "s1 op code (1 '+',2 '-',3 'x',4 '/', 0 '=' ends the expression)",
+    "s1 operand slot",
+    "s1 op",
+    "s1 operand slot",
+    "s1 op / or answer slot",
+    "s1 answer slot or pad",
+    "pad",
+    "pad",
+    "s1 intermediate result (num)",
+    "s1 second intermediate (num)",
+    "stage2 program (same grammar, 9 bytes: f12..f20)",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "s2 intermediate (num)",
+    "s2 second intermediate (num)"
+   ],
+   "answer": "answer = label of ANSWER-wheel slot that follows the terminating '=' code (a 0 op byte)",
+   "compare": {
+    "mode": "wheel",
+    "note": "no typed answer; see docs/port/DESIGN.md 3.7"
+   },
+   "text": {
+    "prompt": "0 (shown before the wheel)",
+    "hint": "1 (after a miss: 'directed to ship')",
+    "solution": "LockShowSolution (0x4223db) shows the worked solution (text 4..15 by wheel_set; not decoded)",
+    "success": "2 after stage 1 ('First number accepted'), 3 after stage 2 ('Lock opened')"
+   },
+   "slots": {},
+   "notes": "Record = wheel_set byte, then TWO programs of 9 bytes each (f1-f9 and f12-f20) each followed by compact numbers (intermediate results for the solution text).",
+   "confidence": "V"
+  },
+  "1": {
+   "name": "Data Canister (access code sequence)",
+   "fields": [
+    "n0 sequence[0]",
+    "n1 sequence[1]",
+    "n2 sequence[2]",
+    "n3 sequence[3]",
+    "pattern kind: 0 +N, 1 -N, 2 xN, 3 /N, 4 increments grow by 1, >=5 grow by 2",
+    "n5 step / ratio (kind>=4: first increment)",
+    "n6 ANSWER = sequence[4]"
+   ],
+   "answer": 6,
+   "compare": {
+    "mode": "near",
+    "tolerance": 0.03,
+    "levels": [
+     1
+    ],
+    "otherwise": "exact"
+   },
+   "text": {
+    "prompt": "0",
+    "hint": "L==0: f4+6 else min(f4,4)+1",
+    "solution": "min(f4,4)+9",
+    "success": "special do_access_closing (0x417f56) (log entry)"
+   },
+   "slots": {
+    "hint": {
+     "0": "num(f0)",
+     "1": "num(f1)",
+     "2": "num(f2)",
+     "3": "num(f3)",
+     "4": "int(round(f5))",
+     "5": "int(f5)+d (f4>=4)",
+     "6": "int(f5)+2d (f4>=4); d=1 if f4==4 else 2"
+    },
+    "solution": {
+     "0": "num(f0)",
+     "1": "num(f1)",
+     "2": "num(f2)",
+     "3": "num(f3)",
+     "4": "num(f6)",
+     "5": "num(f5) (f4<4) else int(f5)",
+     "6": "5+d",
+     "7": "5+2d",
+     "8": "5+3d"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "2": {
+   "name": "Speed Graph",
+   "fields": [
+    "u8 speed log 1",
+    "speed 2",
+    "speed 3",
+    "speed 4",
+    "speed 5",
+    "speed 6",
+    "u8 sum of the six",
+    "n7 ANSWER average (num)"
+   ],
+   "answer": 7,
+   "compare": {
+    "mode": "close",
+    "tolerance": 0.01,
+    "levels": "all"
+   },
+   "text": {
+    "prompt": "0",
+    "hint": "1",
+    "solution": "2",
+    "success": "3"
+   },
+   "slots": {
+    "solution": {
+     "0": "int(f0)",
+     "1": "int(f1)",
+     "2": "int(f2)",
+     "3": "int(f3)",
+     "4": "int(f4)",
+     "5": "int(f5)",
+     "6": "int(f6)",
+     "7": "num(f7)"
+    }
+   },
+   "notes": "Diagram plots f0..f5 [I].",
+   "confidence": "V"
+  },
+  "3": {
+   "name": "Sonar",
+   "fields": [
+    "u8 distance (miles)",
+    "u8 speed (MPH)",
+    "n2 ANSWER hours (used when L==0)",
+    "n3 ANSWER minutes (used when L>0; junk at L0)"
+   ],
+   "answer": "L==0: 2 else 3",
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "0",
+    "hint": "L+1",
+    "solution": "L+5",
+    "success": "9"
+   },
+   "slots": {
+    "prompt": {
+     "0": "int(f0)",
+     "1": "int(f1)",
+     "2": "str(11210 'hours') if L==0 else str(11211 'minutes')"
+    },
+    "solution": {
+     "0": "int(f0)",
+     "1": "int(f1)",
+     "2": "num(f2)",
+     "3": "num(f3)"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "4": {
+   "name": "Water Pressure",
+   "fields": [
+    "w0 depth (feet)",
+    "w1 ANSWER psi (L0, exact)",
+    "w2 lower bound (L>0)",
+    "w3 upper bound (L>0)"
+   ],
+   "answer": "L==0: 1; else any value strictly between f2 and f3",
+   "compare": {
+    "mode": "range",
+    "levels": "L>0 accept f2 < ans < f3 (exclusive), L0 exact f1"
+   },
+   "text": {
+    "prompt": "0",
+    "hint": "1",
+    "solution": "2",
+    "success": "3"
+   },
+   "slots": {
+    "prompt": {
+     "0": "int(f0)"
+    },
+    "solution": {
+     "0": "int(f0)",
+     "1": "int(f1)"
+    }
+   },
+   "notes": "Practice mode divides f1..f3 by 5. Pressure graph drawn from f0 [I].",
+   "confidence": "V"
+  },
+  "5": {
+   "name": "Power Supply",
+   "fields": [
+    "n0 speed (MPH)",
+    "n1 hours (1 at L0)",
+    "n2 kJ per hour",
+    "n3 ANSWER total kJ",
+    "f4-f8: unused padding / authoring leftovers (junk beyond L0)"
+   ],
+   "answer": 3,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "L!=0",
+    "hint": "(L!=0)+2",
+    "solution": "(L!=0)+4",
+    "success": "6"
+   },
+   "slots": {
+    "prompt": {
+     "0": "num(f0)",
+     "1": "num(f1)",
+     "2": "num(f4)",
+     "3": "num(f5)"
+    },
+    "solution": {
+     "0": "num(f0)",
+     "1": "num(f1)",
+     "4": "num(f2)",
+     "5": "num(f3)"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "6": {
+   "name": "Sounder",
+   "fields": [
+    "n0 echo time (s)",
+    "n1 total path = 5000*f0",
+    "n2 ANSWER depth = f1/2"
+   ],
+   "answer": 2,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "0",
+    "hint": "1",
+    "solution": "2",
+    "success": "3"
+   },
+   "slots": {
+    "solution": {
+     "0": "num(f0)",
+     "1": "num(f1)",
+     "2": "num(f2)"
+    }
+   },
+   "notes": "Practice mode re-randomises f0/f1 (rand 0x4388c4).",
+   "confidence": "V"
+  },
+  "7": {
+   "name": "Capsule Piece Inventory",
+   "fields": [
+    "n0..n4 five piece masses (grams, or oz at L2)",
+    "n5 their total",
+    "n6 ANSWER (g / kg / lb)"
+   ],
+   "answer": 6,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "L0:0; L1: 0 if practice else 2; L2: 1; L3: 1 if practice else 2",
+    "hint": "prompt+3",
+    "solution": "prompt+6",
+    "success": "9 + (L in {1,3})"
+   },
+   "slots": {
+    "solution": {
+     "0": "num(f5)",
+     "1": "num(f6)"
+    }
+   },
+   "notes": "L0 grams, L1 kg (divide 1000), L2 pounds from ounces (divide 16).",
+   "confidence": "V"
+  },
+  "8": {
+   "name": "Depth Gauge",
+   "fields": [
+    "u8 conversion kind: 0 ft->in, 1 ft->yd, 2 fathom->ft, 3 m->km, 4 ft->fathom",
+    "n1 given depth",
+    "n2 ANSWER"
+   ],
+   "answer": 2,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "0",
+    "hint": "f0+1",
+    "solution": "f0+6",
+    "success": "11"
+   },
+   "slots": {
+    "prompt": {
+     "0": "str(11036 + f0): inches, yards, feet, kilometers, fathoms"
+    },
+    "solution": {
+     "0": "num(f1)",
+     "1": "num(f2)"
+    }
+   },
+   "notes": "Practice L0 remaps record index.",
+   "confidence": "V"
+  },
+  "9": {
+   "name": "Navigation Chart",
+   "fields": [
+    "u8 0=longitude 1=latitude",
+    "n1 sub lon",
+    "n2 sub lat",
+    "n3 station lon",
+    "n4 station lat",
+    "n5 ANSWER difference"
+   ],
+   "answer": 5,
+   "compare": {
+    "mode": "close",
+    "tolerance": {
+     "L1": 0.5,
+     "L2": 0.2
+    },
+    "otherwise": "exact"
+   },
+   "text": {
+    "prompt": "0",
+    "hint": "1",
+    "solution": "2",
+    "success": "3"
+   },
+   "slots": {
+    "prompt": {
+     "0": "'' at L0 else str(11047 'approximate ')",
+     "1": "str(11048 'longitude') if f0==0 else str(11049 'latitude')"
+    },
+    "solution": {
+     "0": "str(11050 'D') at L0 else str(11051 'Approximate D')",
+     "1": "longitude/latitude word",
+     "2": "num(f3) (lon) | num(f4) (lat)",
+     "3": "num(f1) (lon) | num(f2) (lat)",
+     "4": "num(f5)"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "10": {
+   "name": "Heat Sensor",
+   "fields": [
+    "n0 eruption temperature",
+    "n1 current temperature",
+    "n2 rate (deg/s)",
+    "n3 difference f0-f1",
+    "n4 ANSWER seconds"
+   ],
+   "answer": 4,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "0",
+    "hint": "1",
+    "solution": "2",
+    "success": "3"
+   },
+   "slots": {
+    "solution": {
+     "0": "num(f0)",
+     "1": "num(f1)",
+     "2": "num(f3)",
+     "3": "num(f2)",
+     "4": "num(f4)"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "11": {
+   "name": "Radio-Telephone",
+   "fields": [
+    "w0 contacts",
+    "u8 period 0 hour/1 day/2 week",
+    "u8 answer unit 0 minutes/1 hours/2 seconds",
+    "w3 ANSWER (integer)"
+   ],
+   "answer": 3,
+   "compare": {
+    "mode": "close",
+    "tolerance": 0.3,
+    "levels": [
+     1,
+     2
+    ]
+   },
+   "text": {
+    "prompt": "0",
+    "hint": "1",
+    "solution": "solution = f1==0 ? (f2==0 ? 2 : 4) : f1==1 ? 3 : 5",
+    "success": "6"
+   },
+   "slots": {
+    "prompt": {
+     "0": "int(f0)",
+     "1": "str(11172+f1)",
+     "2": "str(11175+f2)"
+    },
+    "hint": {
+     "3": "str(11178+f1) (an hour/a day/a week)"
+    },
+    "solution": {
+     "0": "int(f0)",
+     "1": "int(f3)"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "12": {
+   "name": "Temperature (refrigerator)",
+   "fields": [
+    "i8 current F",
+    "u8 change amount",
+    "i8 ANSWER new F"
+   ],
+   "answer": 2,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "1 if f2<f0 else 0",
+    "hint": "prompt+2",
+    "solution": "prompt+4",
+    "success": "6"
+   },
+   "slots": {
+    "prompt": {
+     "0": "int(f1)"
+    },
+    "solution": {
+     "0": "int(f0)",
+     "1": "int(f1)",
+     "2": "int(f2)"
+    }
+   },
+   "notes": "f0 and f2 are SIGNED bytes (e.g. 246 == -10). Practice mode clamps to <16 by subtracting 5.",
+   "confidence": "V"
+  },
+  "13": {
+   "name": "Temperature conversion",
+   "fields": [
+    "n0 given",
+    "n1 ANSWER (may be a negative mixed number: whole and numerator both negative)",
+    "u8 direction 0 F->C, 1 C->F"
+   ],
+   "answer": 1,
+   "compare": {
+    "mode": "close",
+    "tolerance": 0.01,
+    "levels": "all"
+   },
+   "text": {
+    "prompt": "f2",
+    "hint": "f2+2",
+    "solution": "f2+4",
+    "success": "6"
+   },
+   "slots": {
+    "solution": {
+     "0": "num(f0)",
+     "1": "num(f1)"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "14": {
+   "name": "Closed-Circuit Monitor (barnacles)",
+   "fields": [
+    "u8 total barnacles",
+    "u8 unhealthy barnacles",
+    "n2 ANSWER fraction f1/f0 (L1, kind 1) or percent (other levels, kind 0)",
+    "n3 decimal ratio f1/f0 (percent hint)"
+   ],
+   "answer": 2,
+   "compare": {
+    "mode": "exact",
+    "kind_rule": "L1: answer must be typed as a fraction (kind 1)"
+   },
+   "text": {
+    "prompt": "L!=1 ? 1 : 0",
+    "hint": "prompt+2",
+    "solution": "prompt+4",
+    "success": "6"
+   },
+   "slots": {
+    "solution": {
+     "0": "int(f1)",
+     "1": "int(f0)",
+     "2": "num(f2)",
+     "3": "num(f3)"
+    }
+   },
+   "notes": "Solution text shows f1 / f0.",
+   "confidence": "V"
+  },
+  "15": {
+   "name": "Scale (rounding)",
+   "fields": [
+    "n0 mass",
+    "u8 rounding place 1 ten, 2 hundred, 3 tenth, 4 hundredth, 5 thousandth",
+    "n2 ANSWER rounded"
+   ],
+   "answer": 2,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "f1-1",
+    "hint": "f1+4",
+    "solution": "f1+9",
+    "success": "15"
+   },
+   "slots": {
+    "solution": {
+     "0": "num(f0)",
+     "1": "num(f2)"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "16": {
+   "name": "Distance Traveled Chart",
+   "fields": [
+    "w0 speed A",
+    "w1 speed B (0 = single leg)",
+    "f2-f5 diagram/unused",
+    "n6 time A",
+    "n7 time B",
+    "n8 dist A = f0*f6",
+    "n9 dist B",
+    "n10 ANSWER total"
+   ],
+   "answer": 10,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "0",
+    "hint": "(L>1)+1",
+    "solution": "(L>1)+3",
+    "success": "5"
+   },
+   "slots": {
+    "solution": {
+     "0": "int(f0)",
+     "3": "num(f6)",
+     "4": "num(f8)",
+     "5": "int(f1)",
+     "8": "num(f7)",
+     "9": "num(f9)",
+     "10": "num(f10)"
+    }
+   },
+   "notes": "Field order in the file is f0..f5 words then f6..f10 numbers.",
+   "confidence": "V (f2-f5 meaning I)"
+  },
+  "17": {
+   "name": "Food Supply Pie Chart",
+   "fields": [
+    "u8 slice selection (0..2: which food(s) the question names)",
+    "n1 ANSWER (fraction kind 1 or percent kind 0)"
+   ],
+   "answer": 1,
+   "compare": {
+    "mode": "exact",
+    "kind_rule": "answer kind must equal stored f1 kind",
+    "tolerance_L2": 0.7
+   },
+   "text": {
+    "prompt": "(f1 fraction or L!=3 ? 0 : 1) + L - 1",
+    "hint": "prompt+3",
+    "solution": "prompt+7",
+    "success": "12"
+   },
+   "slots": {
+    "prompt": {
+     "0": "food name from text idx 13+pie-slice A",
+     "1": "food name idx 13+slice B"
+    },
+    "hint": {
+     "2": "'fraction'/'percent' words"
+    },
+    "solution": {
+     "2": "num(f1)"
+    }
+   },
+   "notes": "Pie slice sizes are random at draw time, not stored [I].",
+   "confidence": "I for slice semantics"
+  },
+  "18": {
+   "name": "Oil Gauge",
+   "fields": [
+    "u8 gauge variant",
+    "w1 max gallons",
+    "n2 fraction of tank left",
+    "n3 ANSWER gallons"
+   ],
+   "answer": 3,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "0",
+    "hint": "1",
+    "solution": "2",
+    "success": "3"
+   },
+   "slots": {
+    "solution": {
+     "0": "num(f2)",
+     "1": "int(f1)",
+     "2": "num(f3)"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "19": {
+   "name": "Window Crack (ruler)",
+   "fields": [
+    "u8 ruler 0 inch, 1 quarter-inch(L0..), 2 cm, 3 mm (selects unit word 17+f0)",
+    "n1 end A",
+    "n2 end B",
+    "f3-f5 unused (0)",
+    "n6 ANSWER length"
+   ],
+   "answer": 6,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "ruler(L,f0): L0: f0==0?0:1; L1: 2; L2: f0==3?3:4; L3: f0==3?5:6",
+    "hint": "same",
+    "solution": "same+9",
+    "success": "16"
+   },
+   "slots": {
+    "prompt": {
+     "0": "str(text idx 17+f0): inch / quarter inch / centimeter / millimeter"
+    },
+    "solution": {
+     "0": "num(f1)",
+     "1": "num(f2)",
+     "5": "num(f6)"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "20": {
+   "name": "Toxicity Graph",
+   "fields": [
+    "w0 yesterday PPM",
+    "w1 today PPM",
+    "w2 difference",
+    "n3 ratio",
+    "n4 ANSWER"
+   ],
+   "answer": 4,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "(f1<f0)*2 + (L!=0)  [0 dec ppm, 1 dec %, 2 inc ppm, 3 inc %]",
+    "hint": "prompt+4",
+    "solution": "prompt+8",
+    "success": "12"
+   },
+   "slots": {
+    "solution": {
+     "0": "int(f0)",
+     "1": "int(f1)",
+     "2": "int(f2)",
+     "3": "num(f3)",
+     "4": "num(f4)"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "21": {
+   "name": "Water Tank",
+   "fields": [
+    "w0 liters",
+    "w1 milliliters",
+    "w2 gallons (0 => liters given)",
+    "w3 quarts",
+    "w4 pints",
+    "w5 cups",
+    "w6 ANSWER days"
+   ],
+   "answer": 6,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "L0: f2==0?1:0; L1: f2==0?3:2; L2: 4; L3: 5",
+    "hint": "prompt+6",
+    "solution": "prompt+12",
+    "success": "18"
+   },
+   "slots": {
+    "solution": {
+     "0": "int(f0)",
+     "1": "int(f1)",
+     "2": "int(f2)",
+     "3": "int(f3)",
+     "4": "int(f4)",
+     "5": "int(f5)",
+     "6": "int(f6)"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "22": {
+   "name": "Heading Indicator",
+   "fields": [
+    "w0 turn (degrees)",
+    "w1 present heading",
+    "u8 direction 0 port 1 starboard",
+    "w3 ANSWER new heading"
+   ],
+   "answer": 3,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "f2",
+    "hint": "L*2+f2",
+    "solution": "L*2+f2+4",
+    "success": "10"
+   },
+   "slots": {
+    "prompt": {
+     "0": "int(f0)",
+     "1": "int(f3)",
+     "2": "int(f1)"
+    }
+   },
+   "notes": "Some solution entries (idx 6,7) are empty strings in NEP.DLL.",
+   "confidence": "V"
+  },
+  "23": {
+   "name": "Side Ballast",
+   "fields": [
+    "u8 percent",
+    "w1 total weight (lb)",
+    "u8 side 0 starboard? 1 port (solution word str(11182) if f2==0 else str(11181))",
+    "n3 decimal fraction of total",
+    "n4 ANSWER pounds"
+   ],
+   "answer": 4,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "f2",
+    "hint": "f2+2",
+    "solution": "4",
+    "success": "5"
+   },
+   "slots": {
+    "prompt": {
+     "0": "int(f0)",
+     "1": "int(f1)"
+    },
+    "hint": {
+     "0": "int(f0)",
+     "1": "num(f3)"
+    },
+    "solution": {
+     "0": "side word",
+     "1": "int(f1)",
+     "2": "int(f0)",
+     "3": "num(f4)"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "24": {
+   "name": "Clock",
+   "fields": [
+    "u8 distance (miles; 0 for the 'left station' variant)",
+    "u8 speed (MPH)",
+    "n2 hours",
+    "w3 present time hhmm",
+    "w4 ANSWER time hhmm"
+   ],
+   "answer": 4,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "(L==3 and f0!=0) ? 1 : 0",
+    "hint": "prompt+2",
+    "solution": "prompt+4",
+    "success": "6"
+   },
+   "slots": {
+    "prompt": {
+     "0": "num(f2)",
+     "1": "int(f3)",
+     "2": "int(f0)",
+     "3": "int(f1)",
+     "5": "'0' if f3<1000 else ''"
+    },
+    "solution": {
+     "0": "num(f2)",
+     "1": "int(f3)",
+     "2": "int(f4)",
+     "3": "int(f0)",
+     "4": "int(f1)",
+     "5": "zero pad f3",
+     "6": "zero pad f4"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "25": {
+   "name": "Toxicity Level Graph",
+   "fields": [
+    "w0..w6 seven hourly readings (PPM, 10-minute spacing)",
+    "w7 reading asked about (L0) / intervals above normal (L>0)",
+    "w8 ANSWER",
+    "u8 question 0 =1000h / minutes, 1 =1100h"
+   ],
+   "answer": 8,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "f9 + (L!=0)*2",
+    "hint": "prompt+3",
+    "solution": "prompt+6",
+    "success": "9"
+   },
+   "slots": {
+    "solution": {
+     "0": "int(f7)",
+     "1": "int(f8)"
+    }
+   },
+   "notes": "Normal level is 1200 PPM.",
+   "confidence": "V"
+  },
+  "26": {
+   "name": "Speed Indicator (fast->slow)",
+   "fields": [
+    "u8 current speed",
+    "n1 reduction (fraction, or percent at L2)",
+    "u8 amount removed",
+    "u8 ANSWER new speed"
+   ],
+   "answer": 3,
+   "compare": {
+    "mode": "near",
+    "tolerance": 0.03,
+    "levels": [
+     1,
+     3
+    ]
+   },
+   "text": {
+    "prompt": "L==2",
+    "hint": "(L==2)+2",
+    "solution": "(L==2)+4",
+    "success": "6"
+   },
+   "slots": {
+    "prompt": {
+     "0": "num(f1)"
+    },
+    "solution": {
+     "0": "int(f0)",
+     "1": "num(f1)",
+     "2": "int(f2)",
+     "3": "int(f3)"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "27": {
+   "name": "Speed Indicator (slow->fast)",
+   "fields": [
+    "u8 current speed",
+    "n1 increase factor",
+    "n2 unused",
+    "u8 amount added",
+    "u8 ANSWER new speed"
+   ],
+   "answer": 4,
+   "compare": {
+    "mode": "near",
+    "tolerance": 0.03,
+    "levels": [
+     1,
+     3
+    ]
+   },
+   "text": {
+    "prompt": "(L==3 and f1.kind!=0) + (L>1)",
+    "hint": "prompt+3",
+    "solution": "(L==3 and f1.kind!=0) + (L>1) + 6",
+    "success": "9"
+   },
+   "slots": {
+    "prompt": {
+     "0": "num(f1)"
+    },
+    "solution": {
+     "0": "int(f0)",
+     "1": "num(f1)",
+     "3": "int(f3)",
+     "4": "int(f4)"
+    }
+   },
+   "notes": "",
+   "confidence": "V"
+  },
+  "28": {
+   "name": "Ballast (increase)",
+   "fields": [
+    "w0 target amount (lb or cents)",
+    "w1 bitmask of one valid solution (bit i = denomination i, 10 denominations)"
+   ],
+   "answer": "sum of selected denominations == f0",
+   "compare": {
+    "mode": "sum",
+    "denominations": {
+     "L0": [
+      1,
+      1,
+      1,
+      1,
+      5,
+      5,
+      10,
+      25,
+      25,
+      25
+     ],
+     "L2 (decimal display .01 .05 .10 .25)": [
+      1,
+      1,
+      1,
+      1,
+      5,
+      5,
+      10,
+      25,
+      25,
+      25
+     ],
+     "L1,L3 (powers of two)": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32,
+      64,
+      128,
+      256,
+      512
+     ]
+    }
+   },
+   "text": {
+    "prompt": "0",
+    "hint": "1",
+    "solution": "2",
+    "success": "4"
+   },
+   "slots": {
+    "prompt": {
+     "0": "int(f0) (L2: shown as f0/100 decimal)"
+    },
+    "solution": {
+     "0": "'=' amount",
+     "2..11": "denominations of f1 mask"
+    }
+   },
+   "notes": "Denomination set by BallastMode (0x448694): L0 ->0 (cents), L1 ->2 (binary), L2 ->1 (dollars .01..), L3 ->2.",
+   "confidence": "V"
+  },
+  "29": {
+   "name": "Ballast (decrease)",
+   "fields": [
+    "w0 target amount (lb or cents)",
+    "w1 bitmask of one valid solution (bit i = denomination i, 10 denominations)"
+   ],
+   "answer": "sum of selected denominations == f0",
+   "compare": {
+    "mode": "sum",
+    "denominations": {
+     "L0": [
+      1,
+      1,
+      1,
+      1,
+      5,
+      5,
+      10,
+      25,
+      25,
+      25
+     ],
+     "L2 (decimal display .01 .05 .10 .25)": [
+      1,
+      1,
+      1,
+      1,
+      5,
+      5,
+      10,
+      25,
+      25,
+      25
+     ],
+     "L1,L3 (powers of two)": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32,
+      64,
+      128,
+      256,
+      512
+     ]
+    }
+   },
+   "text": {
+    "prompt": "0",
+    "hint": "1",
+    "solution": "2",
+    "success": "4"
+   },
+   "slots": {
+    "prompt": {
+     "0": "int(f0) (L2: shown as f0/100 decimal)"
+    },
+    "solution": {
+     "0": "'=' amount",
+     "2..11": "denominations of f1 mask"
+    }
+   },
+   "notes": "Denomination set by BallastMode (0x448694): L0 ->0 (cents), L1 ->2 (binary), L2 ->1 (dollars .01..), L3 ->2.",
+   "confidence": "V"
+  },
+  "30": {
+   "name": "Food Storage",
+   "fields": [
+    "u8 length",
+    "u8 width",
+    "u8 height",
+    "w3 stacked volume (L>=2)",
+    "f4-f7 unused",
+    "w8 ANSWER boxes",
+    "u8 extra boxes (L3)",
+    "u8 flag 1 = add extras"
+   ],
+   "answer": 8,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "L==2",
+    "hint": "(L==0?0:L-1)+f10+2",
+    "solution": "(L==0?0:L-1)+f10+6",
+    "success": "10"
+   },
+   "slots": {
+    "solution": {
+     "0": "int(f0)",
+     "1": "int(f1)",
+     "2": "int(f2)",
+     "3": "int(f3)",
+     "8": "int(f8)",
+     "9": "int(f9)"
+    }
+   },
+   "notes": "Storage compartment holds 6 x 8 x 4 = 192 boxes (solution text 7).",
+   "confidence": "V"
+  },
+  "31": {
+   "name": "Search Grid (area/perimeter)",
+   "fields": [
+    "u8 shape code",
+    "u8 dim 1",
+    "u8 dim 2",
+    "u8 area 1",
+    "u8 dim 3",
+    "u8 dim 4",
+    "u8 area 2",
+    "u8 unused",
+    "u8 ANSWER",
+    "u8 variant 0..9 (text selector)"
+   ],
+   "answer": 8,
+   "compare": {
+    "mode": "exact"
+   },
+   "text": {
+    "prompt": "f9",
+    "hint": "f9+10",
+    "solution": "f9+20",
+    "success": "30"
+   },
+   "slots": {
+    "solution": {
+     "0": "int(f0)",
+     "1": "int(f2)",
+     "2": "int(f1)",
+     "3": "int(f3)",
+     "4": "int(f5)",
+     "5": "int(f4)",
+     "6": "int(f6)",
+     "7": "int(f7)",
+     "8": "int(f8)"
+    }
+   },
+   "notes": "Total search area is 100 sq km (text 21).",
+   "confidence": "V text slots / I shapes"
+  },
+  "32": {
+   "name": "Search Grid (fraction/decimal of grid) A",
+   "fields": [
+    "u8 shaded squares",
+    "u8 total squares",
+    "n2 unreduced fraction (junk if already reduced)",
+    "n3 ANSWER (fraction kind 1 or decimal kind 0)"
+   ],
+   "answer": 3,
+   "compare": {
+    "mode": "exact",
+    "kind_rule": "answer kind must equal stored f3 kind"
+   },
+   "text": {
+    "prompt": "f3.kind==1",
+    "hint": "prompt+2",
+    "solution": "prompt+4",
+    "success": "7"
+   },
+   "slots": {
+    "solution": {
+     "0": "int(f0)",
+     "1": "int(f1)",
+     "2": "num(f2)",
+     "3": "num(f3)"
+    }
+   },
+   "notes": "Types 32 and 33 share all code.",
+   "confidence": "V"
+  },
+  "33": {
+   "name": "Search Grid (fraction/decimal of grid) B",
+   "fields": [
+    "u8 shaded squares",
+    "u8 total squares",
+    "n2 unreduced fraction (junk if already reduced)",
+    "n3 ANSWER (fraction kind 1 or decimal kind 0)"
+   ],
+   "answer": 3,
+   "compare": {
+    "mode": "exact",
+    "kind_rule": "answer kind must equal stored f3 kind"
+   },
+   "text": {
+    "prompt": "f3.kind==1",
+    "hint": "prompt+2",
+    "solution": "prompt+4",
+    "success": "7"
+   },
+   "slots": {
+    "solution": {
+     "0": "int(f0)",
+     "1": "int(f1)",
+     "2": "num(f2)",
+     "3": "num(f3)"
+    }
+   },
+   "notes": "Types 32 and 33 share all code.",
+   "confidence": "V"
+  }
+ }
+}

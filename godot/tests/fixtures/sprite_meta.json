@@ -1,0 +1,50 @@
+{
+ "comment": "Provenance and SHA-256 hashes of the ORIGINAL sprite size and hit rectangle tables, written by tools/import/step_sprites.py (import_all.py) from the NEP.DLL resources named under \"real_id\" (saved by tools/extract/extract_data.py from your copy of the game), never hand-edited. It holds no original bytes: per set (godot/data/sprite_meta/sprite_meta_<name>.tres) the three tables widths (1 byte per sprite), heights (1 byte per sprite) and hit_rects (8 bytes per sprite), each the whole resource exactly as NEP.DLL holds it, \"size\" bytes (the used entries, then zeros; the extracted files are shorter only because the extractor cuts trailing zeros, which is padded back), \"sha256\" the hash of all of it. godot/tests/legacy/test_sprite_meta_fidelity.gd checks that SpriteMetaTable.encode_widths() / encode_heights() / encode_hit_rects() hash to these. The table bytes themselves are written to the git-ignored tests/fixtures/original/sprite_meta.json by the same importer run, for first-difference messages. See docs/port/FIDELITY.md, \"Fixtures commit hashes, not bytes\".",
+ "sets": [
+  {"name": "common", "tables": {
+    "widths": {"source": {"file": "NEP.DLL", "real_id": 10018, "extracted": "data/NEP_raw/NEP_10018.bin"}, "offset": 0, "size": 512, "sha256": "080cedb4978a84cd6fef434053c773bd8b86150335c591c9a73abd17d3fcd189"},
+    "heights": {"source": {"file": "NEP.DLL", "real_id": 10019, "extracted": "data/NEP_raw/NEP_10019.bin"}, "offset": 0, "size": 512, "sha256": "fe342e274e9a1f3e707e51ea58f89a55074abb3c9772da233447a5f7a176da15"},
+    "hit_rects": {"source": {"file": "NEP.DLL", "real_id": 10020, "extracted": "data/NEP_raw/NEP_10020.bin"}, "offset": 0, "size": 512, "sha256": "a230267288e2a3d15dea18800ec6bf6888ac5f4acc75a167c9190d0f57156675"}
+  }},
+  {"name": "ink", "tables": {
+    "widths": {"source": {"file": "NEP.DLL", "real_id": 10015, "extracted": "data/NEP_raw/NEP_10015.bin"}, "offset": 0, "size": 512, "sha256": "0be78845ac678bafee37d85b4dd2e431645fe8d9aecc009ab2c556a9e9c2cbcf"},
+    "heights": {"source": {"file": "NEP.DLL", "real_id": 10016, "extracted": "data/NEP_raw/NEP_10016.bin"}, "offset": 0, "size": 512, "sha256": "0e9ceaf0f8826fb94ffa5b39ca113b4ce21691ef4ed4c0cc32b2c3440fbfce89"},
+    "hit_rects": {"source": {"file": "NEP.DLL", "real_id": 10017, "extracted": "data/NEP_raw/NEP_10017.bin"}, "offset": 0, "size": 512, "sha256": "700be0cbaf435a9bad29eae6c6f3e625f116735a76cde3cb337e00a615b0d76e"}
+  }},
+  {"name": "zone0", "tables": {
+    "widths": {"source": {"file": "NEP.DLL", "real_id": 10033, "extracted": "data/NEP_raw/NEP_10033.bin"}, "offset": 0, "size": 512, "sha256": "ae622ec46b08d507853dec77b4c41239147527946ba103d6ae713dba8c9e3a3b"},
+    "heights": {"source": {"file": "NEP.DLL", "real_id": 10034, "extracted": "data/NEP_raw/NEP_10034.bin"}, "offset": 0, "size": 512, "sha256": "901dbf30cd52dde9e5cc2fa65e4608879723ea9140dd7d243dd3cf44702b6570"},
+    "hit_rects": {"source": {"file": "NEP.DLL", "real_id": 10035, "extracted": "data/NEP_raw/NEP_10035.bin"}, "offset": 0, "size": 512, "sha256": "d90ab9c5844680b49ff43635472ff44fb6f5d5bcbe908ee8960d8a5455edc414"}
+  }},
+  {"name": "zone1", "tables": {
+    "widths": {"source": {"file": "NEP.DLL", "real_id": 10048, "extracted": "data/NEP_raw/NEP_10048.bin"}, "offset": 0, "size": 512, "sha256": "341b63bdca4775e47c042792a3455c6aedb776de5823ad25074993e665b9876e"},
+    "heights": {"source": {"file": "NEP.DLL", "real_id": 10049, "extracted": "data/NEP_raw/NEP_10049.bin"}, "offset": 0, "size": 512, "sha256": "a443d57f14fedb36d37f357909cb439dea0635995a706aa7114a0c7304c29c09"},
+    "hit_rects": {"source": {"file": "NEP.DLL", "real_id": 10050, "extracted": "data/NEP_raw/NEP_10050.bin"}, "offset": 0, "size": 512, "sha256": "7831ce30565d63891b07195f333a502c1cae984b553cf17a7fb375ded2f421e3"}
+  }},
+  {"name": "zone2", "tables": {
+    "widths": {"source": {"file": "NEP.DLL", "real_id": 10063, "extracted": "data/NEP_raw/NEP_10063.bin"}, "offset": 0, "size": 512, "sha256": "50a98fcb530c6e6b203c92d4432af2f9052b70f8f2ee0902ffda6fda0884105b"},
+    "heights": {"source": {"file": "NEP.DLL", "real_id": 10064, "extracted": "data/NEP_raw/NEP_10064.bin"}, "offset": 0, "size": 512, "sha256": "acb5e971d4dcdc6b1ace0d71cbabb90a44a79667003c7c6a50a23198c8ad8790"},
+    "hit_rects": {"source": {"file": "NEP.DLL", "real_id": 10065, "extracted": "data/NEP_raw/NEP_10065.bin"}, "offset": 0, "size": 512, "sha256": "c135c50382b3a0ca3a36331fc073a00d946405eb7da8cb5ea983b1a186e6d112"}
+  }},
+  {"name": "zone3", "tables": {
+    "widths": {"source": {"file": "NEP.DLL", "real_id": 10078, "extracted": "data/NEP_raw/NEP_10078.bin"}, "offset": 0, "size": 512, "sha256": "37d5fad650a5c2e41a911add2acc4f21de188c56ac3454d4b8a294a615294370"},
+    "heights": {"source": {"file": "NEP.DLL", "real_id": 10079, "extracted": "data/NEP_raw/NEP_10079.bin"}, "offset": 0, "size": 512, "sha256": "22524abc5e94b5e6543692c94ec4ba7987cfd60affd1f89eb432dea6f37b835a"},
+    "hit_rects": {"source": {"file": "NEP.DLL", "real_id": 10080, "extracted": "data/NEP_raw/NEP_10080.bin"}, "offset": 0, "size": 512, "sha256": "ff606c2a48f63f3170b702e3bdf5b6bf088e025c674494edc88e3ca895f0765a"}
+  }},
+  {"name": "zone4", "tables": {
+    "widths": {"source": {"file": "NEP.DLL", "real_id": 10093, "extracted": "data/NEP_raw/NEP_10093.bin"}, "offset": 0, "size": 512, "sha256": "d9755b39ad3f7f1dc30be1e541ba1020eb30932eb0aca0199b3c756db5447bbb"},
+    "heights": {"source": {"file": "NEP.DLL", "real_id": 10094, "extracted": "data/NEP_raw/NEP_10094.bin"}, "offset": 0, "size": 512, "sha256": "b57fc13af534dc9360229f7395926911ffe8103cb3c230fb1bfa34f73b0c50ae"},
+    "hit_rects": {"source": {"file": "NEP.DLL", "real_id": 10095, "extracted": "data/NEP_raw/NEP_10095.bin"}, "offset": 0, "size": 512, "sha256": "8e7af18296efa8abd0924c2a596acbf4077b9397abab5ec96b13db734deda7ca"}
+  }},
+  {"name": "zone5", "tables": {
+    "widths": {"source": {"file": "NEP.DLL", "real_id": 10712, "extracted": "data/NEP_raw/NEP_10712.bin"}, "offset": 0, "size": 512, "sha256": "644861a551bd858bf2a257ef5c13a7ede486586c35b00e1c17b2010ae328a97f"},
+    "heights": {"source": {"file": "NEP.DLL", "real_id": 10713, "extracted": "data/NEP_raw/NEP_10713.bin"}, "offset": 0, "size": 512, "sha256": "98eb88834e46e168885caea03b4a3450ea57088a143263ac0c5991d98fb903ff"},
+    "hit_rects": {"source": {"file": "NEP.DLL", "real_id": 10714, "extracted": "data/NEP_raw/NEP_10714.bin"}, "offset": 0, "size": 512, "sha256": "a2b420f2d98c96565adf3d15ef22ed076da7810f7ba9d530dee5aafcad8f4be3"}
+  }},
+  {"name": "zone6", "tables": {
+    "widths": {"source": {"file": "NEP.DLL", "real_id": 10718, "extracted": "data/NEP_raw/NEP_10718.bin"}, "offset": 0, "size": 512, "sha256": "a5be3d4f94b7506a867c0c1b6de47e1659d02d91510b77375488f8cb27c20450"},
+    "heights": {"source": {"file": "NEP.DLL", "real_id": 10719, "extracted": "data/NEP_raw/NEP_10719.bin"}, "offset": 0, "size": 512, "sha256": "d75d2497f530b0a5ed99535e050610cfbf4385294bc57df0e676480765ad9b73"},
+    "hit_rects": {"source": {"file": "NEP.DLL", "real_id": 10720, "extracted": "data/NEP_raw/NEP_10720.bin"}, "offset": 0, "size": 512, "sha256": "1ad3268ba9f6bba87cda1b3251f715b6ab9fe62165b9620bfc0be2c5c2a442df"}
+  }}
+ ]
+}
