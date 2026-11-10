@@ -29,9 +29,18 @@ import transcripts
 WINDOWS = os.name == "nt"
 LAUNCHER = "tools/godot.py" if WINDOWS else "tools/godot.sh"      # what runs Godot here (godot.command())
 DNF_MUSIC = "sudo dnf install ffmpeg-free fluidsynth fluid-soundfont-common fluid-soundfont-gm"
-WINDOWS_MUSIC = ("winget install --id Gyan.FFmpeg -e, FluidSynth's Windows release on the PATH and FluidR3_GM.sf2 in soundfonts/ "
-                 "(docs/SETUP.md, \"On Windows\")")
-MUSIC = WINDOWS_MUSIC if WINDOWS else DNF_MUSIC
+# How to get each music tool on Windows (docs/SETUP.md, "On Windows"); on Linux the one dnf line installs all three.
+WINDOWS_HINTS = {
+    "ffmpeg": "winget install --id Gyan.FFmpeg -e",
+    "fluidsynth": "download the win10-x64 zip of a FluidSynth release (github.com/FluidSynth/fluidsynth/releases) and put its bin "
+                  "folder on the PATH",
+    "soundfont": "copy FluidR3_GM.sf2 (Linux's fluid-soundfont-gm package) to soundfonts\\FluidR3_GM.sf2",
+}
+
+
+def music_hint(tool: str) -> str:
+    """How to get one of the music tools here (ffmpeg, fluidsynth, soundfont)."""
+    return WINDOWS_HINTS[tool] if WINDOWS else DNF_MUSIC
 
 
 def godot_pin() -> str:
@@ -78,16 +87,16 @@ def check_audio(soundfont: str) -> list[str]:
     problems = []
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
-        problems.append("ffmpeg (step audio): not found: " + MUSIC)
+        problems.append("ffmpeg (step audio): not found: " + music_hint("ffmpeg"))
     else:
         encoders = subprocess.run([ffmpeg, "-hide_banner", "-encoders"], capture_output=True, text=True, check=False).stdout
         if " libvorbis " not in encoders:
             problems.append("ffmpeg (step audio): %s has no libvorbis encoder: %s" % (
                 ffmpeg, "install Gyan.FFmpeg (its builds have it)" if WINDOWS else "on Fedora install ffmpeg-free (or RPM Fusion's ffmpeg)"))
     if not shutil.which("fluidsynth"):
-        problems.append("fluidsynth (step audio): not found: " + MUSIC)
+        problems.append("fluidsynth (step audio): not found: " + music_hint("fluidsynth"))
     if not Path(soundfont).is_file():
-        problems.append("General MIDI soundfont (step audio): %s not found: %s, or name another with --soundfont" % (soundfont, MUSIC))
+        problems.append("General MIDI soundfont (step audio): %s not found: %s, or name another with --soundfont" % (soundfont, music_hint("soundfont")))
     return problems
 
 
