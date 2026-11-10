@@ -253,15 +253,83 @@ static func start(args: PackedStringArray = OS.get_cmdline_user_args()) -> void:
 	for arg in args:
 		if arg.begins_with(PACK_OPTION):
 			asked = StringName(arg.trim_prefix(PACK_OPTION))
-	choose(asked)
+	for line in search_report():
+		_log_once("search", line)
+	var found := available()                                   # (prints why a pack was left out, `_leave_out`)
+	for line in found_report(found):
+		_log_once("found", line)
+	_choose_among(asked, found)                                # (prints the fallback, `_settle`)
+	for line in choice_report(asked, found):
+		_log_once("chose", line)
+
+
+# --- the start-up report ------------------------------------------------------------------------------------------------
+# What `start` writes to stdout, each line once, prefixed "Packs: ": where it looks, what it found, what it chose and why. An exported game has no
+# other way to say which pack file next to it, or in the user folder, it is playing.
+
+## Where packs are looked for, and what a chain that is not whole gets in this build (`dev_fallback`). A `user://` folder is given with its real path too.
+static func search_report() -> PackedStringArray:
+	var lines := PackedStringArray()
+	var looked := PackedStringArray()
+	for dir in folders:
+		looked.append(_place_text(dir) + ("" if DirAccess.dir_exists_absolute(dir) else ", not there"))
+	lines.append("looking for pack folders and <id>.%s files in: %s" % [Pack.FILE_EXTENSION, "; ".join(looked)])
+	var names := PackedStringArray(bundled.map(func(id: StringName) -> String: return "%s.%s" % [id, Pack.FILE_EXTENSION]))
+	if archive_folders.is_empty():
+		lines.append("not looking for the bundled pack files (%s): only an exported game looks for them, next to its executable" % ", ".join(names))
+	else:
+		lines.append("looking for the bundled pack files %s in: %s" % [", ".join(names), "; ".join(PackedStringArray(archive_folders.map(func(dir: String) -> String: return _place_text(dir))))])
+	lines.append("debug build: a chain that is not whole gets dev at its bottom" if dev_fallback else "release build: a chain that is not whole is refused")
+	return lines
+
+
+## The packs `available` found (`found`), one line each with where it is, and the dev pack.
+static func found_report(found: Array[Pack]) -> PackedStringArray:
+	var lines := PackedStringArray()
+	if found.is_empty():
+		lines.append("found no pack")
+	for each in found:
+		lines.append("found '%s' at %s%s" % [each.id, _place_text(each.root), "" if each.is_valid() else " (it has errors: %s)" % each.errors[0]])
+	lines.append("dev pack: %s" % (_place_text(dev().root) if dev() != null else "none"))
+	return lines
+
+
+## What was chosen and why: the `--pack=` asked for (`asked`, `&""` for none) or the default among `found`, then the chain, chosen pack first.
+static func choice_report(asked: StringName, found: Array[Pack]) -> PackedStringArray:
+	var lines := PackedStringArray()
+	if asked != &"":
+		lines.append("%s%s asked for '%s'" % [PACK_OPTION, asked, asked])
+	else:
+		var ids := PackedStringArray(found.filter(func(each: Pack) -> bool: return each.is_valid()).map(func(each: Pack) -> String: return String(each.id)))
+		if ids.is_empty():
+			lines.append("no %s given and no usable pack found" % PACK_OPTION)
+		else:
+			lines.append("no %s given: chose '%s', the first in id order of: %s" % [PACK_OPTION, ids[0], ", ".join(ids)])
+	if _chain.is_empty():
+		lines.append("no chain: the game refuses to play")
+	else:
+		lines.append("chain: %s%s" % [" > ".join(PackedStringArray(_chain.map(func(each: Pack) -> String: return "%s (%s)" % [each.id, _place_text(each.root)]))),
+				"" if _fallback == null else (", refused" if _fallback.refused else ", dev stands in for what is missing")])
+	return lines
+
+
+## `path` as the report writes it: a `user://` path with its real path after it (an installed pack is somewhere on the disk the player has to find).
+static func _place_text(path: String) -> String:
+	if path.begins_with("user://"):
+		return "%s (%s)" % [path, ProjectSettings.globalize_path(path)]
+	return path
 
 
 ## Chooses the pack `id` among the packs found (`available`, and `dev`) and builds its chain; `&""` is the default choice, the first pack found in the
 ## lexical order of the ids. True when the chain is whole; false when it is not (`fallback_reason` says why; `dev` is put at the bottom of it, or the chain is refused,
 ## by `dev_fallback`). A chain that resolves is then checked for what the game needs (`_checked`), once.
 static func choose(id: StringName = &"") -> bool:
+	return _choose_among(id, available())
+
+
+## `choose` among the packs `found` (what `available` just listed).
+static func _choose_among(id: StringName, found: Array[Pack]) -> bool:
 	_wanted = id
-	var found := available()
 	var first: Pack = null
 	if id == &"":
 		for each in found:

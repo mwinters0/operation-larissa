@@ -54,7 +54,10 @@ is [`../create/CONTENT.md`](../create/CONTENT.md), section 4; this page is the c
     `user://packs/` is used instead.
   - **Installed.** `PackInstall.install` copies a pack file whole to `user://packs/<id>.larissa` ("Pack tools"); an id is installed in one form, folder or file, at a time.
 - **Chosen.** `main.gd` calls `Packs.start(args)` once: `--pack=<id>` after `--`, else the first pack found in the lexical order of the
-  ids. `Packs.choose(id)` chooses in code; `Packs.resolve` follows the `base` links.
+  ids. `Packs.choose(id)` chooses in code; `Packs.resolve` follows the `base` links. `start` writes a report to stdout, each line once and
+  prefixed `Packs:`: where it looks (`search_report`: `folders` with the real path of `user://`, the bundled pack files and `archive_folders`, debug or release),
+  what it found (`found_report`: each id and where it is, the dev pack), the packs it left out and why, and what it chose (`choice_report`: `--pack=` or
+  the first id, then the chain with each pack's place, and whether dev stands in or the chain is refused). An exported game says this way which pack file it plays.
 - **Checked, once per choice.** A chain that resolves is asked what it lacks: `PackNeeds.gaps` on the chain with no `dev` under it and
   no skin (a pack is complete whatever skin is on), see "What a chain needs". A hard gap makes the chain incomplete; a soft gap is only
   logged. A chain that holds `dev` for real (`--pack=dev`, a pack whose `base` is `dev`) is whole and not asked: dev is complete.

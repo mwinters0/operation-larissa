@@ -134,3 +134,20 @@ func test_an_installed_dev_is_listed_by_the_pack_screen_and_is_the_fallback() ->
 	var listed := PackChoice.entries().filter(func(entry: PackChoice.Entry) -> bool: return entry.id() == Packs.DEV)
 	assert_array(listed).has_size(1)
 	assert_array(Packs.available().map(func(pack: Pack) -> StringName: return pack.id)).not_contains([Packs.DEV])
+
+
+## The start-up report (stdout of an exported game): where it looked, the bundled pack file it found (by its path), and why that pack was chosen.
+func test_the_start_report_says_where_it_looked_and_what_it_chose() -> void:
+	var file := _pack_file(ID, "1.0")
+	_look()
+	Packs.folders = [_scratch + "/none"]
+	var search := "\n".join(Packs.search_report())
+	assert_str(search).contains(_scratch + "/shipped").contains("%s.%s" % [ID, Pack.FILE_EXTENSION]).contains(_scratch + "/none")
+	assert_str(search).contains(ProjectSettings.globalize_path(_scratch))
+	var found := Packs.available()
+	assert_str("\n".join(Packs.found_report(found))).contains("found '%s' at %s" % [ID, file])
+	Packs.choose(ID)
+	assert_str("\n".join(Packs.choice_report(ID, found))).contains("--pack=%s asked for" % ID).contains("chain: %s (%s (" % [ID, file]).contains("dev stands in for what is missing")
+	Packs.choose()
+	var chose := "\n".join(Packs.choice_report(&"", found))
+	assert_str(chose).contains("no --pack= given: chose '%s'" % found.filter(func(pack: Pack) -> bool: return pack.is_valid())[0].id)

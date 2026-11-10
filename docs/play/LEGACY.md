@@ -475,7 +475,7 @@ repository never ships one: you make it from your own legacy pack, on your own m
 4. Run the exported game. `legacy` is the only pack found, so it is chosen by itself: no warning, no flag, no dev. With other packs
    installed, `-- --pack=legacy` chooses it. `pack_tool --check=legacy` (or the pack screen's Check) tests it. The game looks for a pack in the user folder first and for the pack files next to the executable last, and
    the first place that has an id wins: a folder `<user dir>/packs/legacy/` (or a file `<user dir>/packs/legacy.larissa`) is used and the `legacy.larissa` next to the executable is left out (the pack
-   screen and the log say so). Delete that folder to use the file. The user folder of the game is:
+   screen and the log say so: run the game from a terminal and the lines that start `Packs:` say where it looked, what it found and which pack it chose). Delete that folder to use the file. The user folder of the game is:
 
    | OS | `<user dir>` (`user://`) |
    |---|---|
