@@ -1531,5 +1531,13 @@
  "0x00449ee4": {
   "name": "CartoonSpeechDeadline",
   "evidence": "CartoonSpeech (0x42984d): tick count when the next clip may start: now + 0xdb (219) at the start, now + 0xf8 (248) for the later pauses; 0 = none [V decompile of CartoonSpeech]"
+ },
+ "0x00428257": "too_large",
+ "0x00428374": "float_neg_9",
+ "0x00428378": "float_99_0",
+ "0x004283b4": "float8_zero",
+ "0x0044144e": {
+  "name": "CalcHotkeys_DecimalPoint",
+  "evidence": "the last character ('.') of CalcHotkeys (0x441444), string 11246 'FfSsNnRrCc.': NumberToString (0x4289cc) copies it into the text as the decimal point, DrawCalcDisplay (0x420b73) compares it with ',' IsCalcEntryKey (0x420d46) accepts it as a key, and TranslateCalcKey (0x41b843) and GetNumber (0x41fb34) read it as byte 10 of the buffer [V]. Loaded from the string table, so a translation can change it"
  }
 }

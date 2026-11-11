@@ -82,6 +82,11 @@ a GUI name that is a MAP public as its reference. The docs and code comments nam
 * Win32 build, 4-byte `int`; the Win16 original used 2-byte `int`, so record offsets differ (a CompactNumber is 9 bytes in
   memory, 7 in the file).
 * `CompactNumber` arguments are passed by value (3 dwords), so the decompiler shows `CompactNumberToString(kind, a, b, buf)`.
+* The calculator's arithmetic works on `Number` (`/neptune/Number` in `annotations_onwin32.json`), 16 bytes passed by value as 4 dwords,
+  which `CompactToNumber` (0x427ee4) builds from the 9-byte `CompactNumber`: `kind` (int32) then, for a decimal (0), an int16 exponent
+  and a **double mantissa at +6** (the digits as a whole number: value = mantissa * 10^-exponent), for a fraction (1) three int32:
+  whole, numerator, denominator. `NumberToDouble`, `Negate`, `UnifyNumberKinds`, `FractionToDecimal` take it; `NormalizeDecimal`
+  gets a pointer to `Number + 4`, `NormalizeFraction` too.
 * Timer units are 73 ticks/second (`timeGetTime()*73/1000`); `set_alarm(0, n)` / `alarm_expired(0)` are used everywhere.
 * Sound ids are indexes into the common effect bundle (`PlaySoundEffect(0x20)` = right answer).
 * The decompiler drops x87 floating-point instructions: wherever a function does arithmetic on doubles, read the assembly

@@ -19,6 +19,30 @@
   "0x00411c18": {
    "eol": "screen_y=y+ScreenOriginY"
   },
+  "0x00411c1f": {
+   "eol": "jump if screen_y >= 0"
+  },
+  "0x00411c21": {
+   "eol": "EAX=screen_y"
+  },
+  "0x00411c24": {
+   "eol": "y-=screen_y"
+  },
+  "0x00411c27": {
+   "eol": "EAX=screen_y"
+  },
+  "0x00411c2a": {
+   "eol": "height+=screen_y"
+  },
+  "0x00411c2d": {
+   "eol": "EAX=0"
+  },
+  "0x00411c2f": {
+   "eol": "screen_y=0"
+  },
+  "0x00411c36": {
+   "eol": "return if x<= 0"
+  },
   "0x004120bc": {
    "plate": "end of prologue",
    "eol": "EDI=height"
@@ -128,6 +152,66 @@
   },
   "0x00412121": {
    "eol": "call_height=height"
+  },
+  "0x00428143": {
+   "pre": "? denominator is 0"
+  },
+  "0x00428157": {
+   "pre": "ret=1 means 'too large'"
+  },
+  "0x004281c1": {
+   "pre": "error, denominator is 0"
+  },
+  "0x00428238": {
+   "eol": "whole < -9"
+  },
+  "0x0042823d": {
+   "eol": "whole > 99"
+  },
+  "0x00428242": {
+   "eol": "numerator < -99"
+  },
+  "0x00428248": {
+   "eol": "numerator > 99"
+  },
+  "0x0042824e": {
+   "eol": "denominator > 999"
+  },
+  "0x00428257": {
+   "pre": "too large"
+  },
+  "0x0042825e": {
+   "pre": "ok"
+  },
+  "0x00428364": {
+   "pre": "return 1 (both fractions)"
+  },
+  "0x0042836b": {
+   "pre": "return 0 (both decimal)"
+  },
+  "0x0042838b": {
+   "pre": "decimal"
+  },
+  "0x0042839d": {
+   "pre": "fraction"
+  },
+  "0x004284f2": {
+   "pre": "return NormalizeFraction(rawResult)"
+  },
+  "0x00428516": {
+   "pre": "decimal"
+  },
+  "0x00428536": {
+   "pre": "fraction"
+  },
+  "0x0042855b": {
+   "pre": "error, probably too big"
+  },
+  "0x00428856": {
+   "pre": "decimal"
+  },
+  "0x0042886a": {
+   "pre": "fraction"
   }
  },
  "functions": {
@@ -202,6 +286,573 @@
     "0x00412110": "call_draw",
     "0x00412138": "return"
    }
+  },
+  "0x00427ee4": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/neptune/CompactNumber compact",
+     "/neptune/Number * number"
+    ]
+   }
+  },
+  "0x00427f20": {
+   "name": "RoundHalfEven",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/float10",
+    "params": [
+     "/double x"
+    ],
+    "custom_storage": true,
+    "return_storage": "ST0:10",
+    "storage": [
+     "Stack[0x4]:8"
+    ]
+   }
+  },
+  "0x00427fe8": {
+   "name": "NormalizeDecimal",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/NumberDecimalBody * decimal"
+    ]
+   }
+  },
+  "0x0042812c": {
+   "name": "FractionToDecimal",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/Number * number"
+    ]
+   },
+   "locals": {
+    "Stack[-0x14]:16": {
+     "name": "result",
+     "type": "/neptune/Number"
+    },
+    "EAX:4@0x2b": {
+     "name": "ret",
+     "type": "/undefined4"
+    },
+    "ECX:4@0x57": {
+     "name": "i",
+     "type": "/undefined4"
+    }
+   }
+  },
+  "0x00428191": {
+   "name": "Gcd",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int a",
+     "/int b"
+    ]
+   }
+  },
+  "0x004281b3": {
+   "name": "NormalizeFraction",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/NumberFractionBody * fraction"
+    ]
+   },
+   "locals": {
+    "EAX:4@0x58": {
+     "name": "numer",
+     "type": "/int"
+    },
+    "EAX:4@0x62": {
+     "name": "denom",
+     "type": "/int"
+    },
+    "EAX:4@0x69": {
+     "name": "gcd",
+     "type": "/undefined4"
+    },
+    "EAX:4@0xe": {
+     "name": "ret",
+     "type": "/int"
+    }
+   },
+   "labels": {
+    "0x004281cb": "denominator_ok",
+    "0x0042825e": "ok",
+    "0x00428260": "return"
+   }
+  },
+  "0x00428264": {
+   "name": "UnifyNumberKinds",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/Number * a",
+     "/neptune/Number * b"
+    ]
+   },
+   "labels": {
+    "0x00428364": "return_1",
+    "0x0042836b": "return_0",
+    "0x0042836d": "return"
+   }
+  },
+  "0x0042837c": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/float10",
+    "params": [
+     "/neptune/Number number"
+    ],
+    "custom_storage": true,
+    "return_storage": "ST0:10",
+    "storage": [
+     "Stack[0x4]:16"
+    ]
+   },
+   "labels": {
+    "0x0042838b": "kind_decimal",
+    "0x0042839d": "kind_fraction",
+    "0x004283ac": "return_zero"
+   }
+  },
+  "0x004283bc": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/neptune/Number number",
+     "/int * result"
+    ]
+   }
+  },
+  "0x004283ed": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int value",
+     "/neptune/Number * number"
+    ]
+   }
+  },
+  "0x00428405": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/neptune/Number * number"
+    ]
+   }
+  },
+  "0x0042841f": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/Number number"
+    ]
+   }
+  },
+  "0x00428463": {
+   "name": "AddDecimals",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/NumberDecimalBody a",
+     "/neptune/NumberDecimalBody b",
+     "/neptune/NumberDecimalBody * result"
+    ]
+   }
+  },
+  "0x004284bf": {
+   "name": "AddFractions",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/NumberFractionBody a",
+     "/neptune/NumberFractionBody b",
+     "/neptune/NumberFractionBody * result"
+    ]
+   },
+   "locals": {
+    "EAX:4@0x2c": {
+     "name": "spill_ret",
+     "type": "/int"
+    }
+   }
+  },
+  "0x004284f3": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/Number a",
+     "/neptune/Number b",
+     "/neptune/Number * result"
+    ]
+   },
+   "locals": {
+    "EAX:4@0x10": {
+     "name": "kind",
+     "type": "/int"
+    },
+    "EAX:4@0x59": {
+     "name": "ok",
+     "type": "/undefined4"
+    },
+    "EAX:4@0x74": {
+     "name": "ret",
+     "type": "/undefined4"
+    }
+   },
+   "labels": {
+    "0x00428516": "kind_decimal",
+    "0x00428536": "kind_fraction"
+   }
+  },
+  "0x0042856d": {
+   "name": "SubtractDecimals",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/NumberDecimalBody a",
+     "/neptune/NumberDecimalBody b",
+     "/neptune/NumberDecimalBody * result"
+    ]
+   }
+  },
+  "0x004285c9": {
+   "name": "SubtractFractions",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/NumberFractionBody a",
+     "/neptune/NumberFractionBody b",
+     "/neptune/NumberFractionBody * result"
+    ]
+   }
+  },
+  "0x004285fd": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/Number a",
+     "/neptune/Number b",
+     "/neptune/Number * result"
+    ]
+   }
+  },
+  "0x00428677": {
+   "name": "MultiplyDecimals",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/NumberDecimalBody a",
+     "/neptune/NumberDecimalBody b",
+     "/neptune/NumberDecimalBody * result"
+    ]
+   }
+  },
+  "0x0042869a": {
+   "name": "MultiplyFractions",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/NumberFractionBody a",
+     "/neptune/NumberFractionBody b",
+     "/neptune/NumberFractionBody * result"
+    ]
+   }
+  },
+  "0x004286e0": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/Number a",
+     "/neptune/Number b",
+     "/neptune/Number * result"
+    ]
+   }
+  },
+  "0x0042875a": {
+   "name": "DivideDecimals",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/NumberDecimalBody a",
+     "/neptune/NumberDecimalBody b",
+     "/neptune/NumberDecimalBody * result"
+    ]
+   }
+  },
+  "0x00428796": {
+   "name": "DivideFractions",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/NumberFractionBody a",
+     "/neptune/NumberFractionBody b",
+     "/neptune/NumberFractionBody * result"
+    ]
+   }
+  },
+  "0x004287cb": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/Number a",
+     "/neptune/Number b",
+     "/neptune/Number * result"
+    ]
+   }
+  },
+  "0x00428845": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/Number * number"
+    ]
+   },
+   "labels": {
+    "0x00428856": "kind_decimal",
+    "0x0042886a": "kind_fraction"
+   }
+  },
+  "0x00428880": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/Number a",
+     "/neptune/Number b"
+    ]
+   }
+  },
+  "0x00428908": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/Number a",
+     "/neptune/Number b",
+     "/double relativeTolerance"
+    ]
+   }
+  },
+  "0x00428974": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/neptune/Number a",
+     "/neptune/Number b",
+     "/double absoluteTolerance"
+    ]
+   }
+  },
+  "0x004289cc": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/neptune/Number number",
+     "/char * buf",
+     "/int leftAlign"
+    ]
+   },
+   "locals": {
+    "Stack[-0xc]:4": {
+     "name": "i",
+     "type": "/undefined4"
+    },
+    "EAX:4@0x2f": {
+     "name": "mantissa",
+     "type": "/undefined4"
+    },
+    "EAX:4@0xb6": {
+     "name": "j",
+     "type": "/undefined4"
+    },
+    "EBX:4@0x18": {
+     "name": "curChar",
+     "type": "/undefined4"
+    },
+    "SF:1@0x4a": {
+     "name": "isNegative",
+     "type": "/undefined1"
+    }
+   }
+  },
+  "0x00428c10": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/neptune/CompactNumberArg compact",
+     "/char * buf"
+    ]
+   }
+  }
+ },
+ "types": {
+  "/neptune/CompactNumberArg": {
+   "kind": "struct",
+   "packed": false,
+   "size": 12,
+   "fields": [
+    {
+     "offset": 0,
+     "type": "/int",
+     "name": "kind"
+    },
+    {
+     "offset": 4,
+     "type": "/byte",
+     "name": "a"
+    },
+    {
+     "offset": 5,
+     "type": "/byte[4]",
+     "name": "raw"
+    },
+    {
+     "offset": 9,
+     "type": "/byte[3]",
+     "name": "pad"
+    }
+   ],
+   "comment": "A CompactNumber as the stack passes it: padded to 12 bytes (3 dwords), which CompactNumberToString forwards whole to CompactToNumber."
+  },
+  "/neptune/Number": {
+   "kind": "union",
+   "packed": false,
+   "fields": [
+    {
+     "type": "/neptune/NumberDecimal",
+     "name": "decimal"
+    },
+    {
+     "type": "/neptune/NumberFraction",
+     "name": "fraction"
+    }
+   ],
+   "comment": "The calculator's number in memory (16 bytes, passed by value as 4 dwords): CompactToNumber (0x427ee4) builds it from the 9-byte CompactNumber of a problem record, NumberToDouble (0x42837c) reads it. kind 0 = decimal, 1 = fraction."
+  },
+  "/neptune/NumberDecimal": {
+   "kind": "struct",
+   "packed": false,
+   "size": 16,
+   "fields": [
+    {
+     "offset": 0,
+     "type": "/int",
+     "name": "kind"
+    },
+    {
+     "offset": 4,
+     "type": "/short",
+     "name": "exponent",
+     "comment": "digits after the point"
+    },
+    {
+     "offset": 6,
+     "type": "/double",
+     "name": "mantissa",
+     "comment": "the digits as a whole number; value = mantissa * 10^-exponent (unaligned)"
+    }
+   ]
+  },
+  "/neptune/NumberDecimalBody": {
+   "kind": "struct",
+   "packed": false,
+   "size": 12,
+   "fields": [
+    {
+     "offset": 0,
+     "type": "/short",
+     "name": "exponent",
+     "comment": "digits after the point"
+    },
+    {
+     "offset": 2,
+     "type": "/double",
+     "name": "mantissa",
+     "comment": "the digits as a whole number; value = mantissa * 10^-exponent"
+    }
+   ],
+   "comment": "A decimal Number without its kind: what the per-kind arithmetic (AddDecimals ...) and NormalizeDecimal take (Number + 4)."
+  },
+  "/neptune/NumberFraction": {
+   "kind": "struct",
+   "packed": false,
+   "size": 16,
+   "fields": [
+    {
+     "offset": 0,
+     "type": "/int",
+     "name": "kind"
+    },
+    {
+     "offset": 4,
+     "type": "/int",
+     "name": "whole"
+    },
+    {
+     "offset": 8,
+     "type": "/int",
+     "name": "numerator"
+    },
+    {
+     "offset": 12,
+     "type": "/int",
+     "name": "denominator"
+    }
+   ]
+  },
+  "/neptune/NumberFractionBody": {
+   "kind": "struct",
+   "packed": false,
+   "size": 12,
+   "fields": [
+    {
+     "offset": 0,
+     "type": "/int",
+     "name": "whole"
+    },
+    {
+     "offset": 4,
+     "type": "/int",
+     "name": "numerator"
+    },
+    {
+     "offset": 8,
+     "type": "/int",
+     "name": "denominator"
+    }
+   ],
+   "comment": "A fraction Number without its kind: what the per-kind arithmetic (AddFractions ...) and NormalizeFraction take (Number + 4)."
   }
  }
 }

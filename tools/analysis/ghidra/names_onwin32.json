@@ -733,7 +733,7 @@
  },
  "0x004289cc": {
   "map": "0010:1855",
-  "evidence": "NUMBERS.C: Number -> text [V asm]: kind 0 prints the mantissa (double -> int by ftol 0x438460) with `exponent` fraction digits and the decimal point char (0x44144e; no point and no fraction digits when the exponent is <= 0, so the short mantissa left by Negate (0x428845) prints as it is), a '0' before the point when the value is below 1; kind 1 prints 'numerator/denominator' with '  ' and the whole part in front when it is not 0, a leading '-' when whole < 0 or (whole == 0 and numerator < 0)"
+  "evidence": "NUMBERS.C: Number -> text [V asm]: kind 0 prints the mantissa (double -> int by ftol 0x438460) with `exponent` fraction digits and the decimal point char (CalcHotkeys_DecimalPoint 0x44144e, the last character of string 11246 at CalcHotkeys 0x441444; no point and no fraction digits when the exponent is <= 0, so the short mantissa left by Negate (0x428845) prints as it is), a '0' before the point when the value is below 1; kind 1 prints 'numerator/denominator' with '  ' and the whole part in front when it is not 0, a leading '-' when whole < 0 or (whole == 0 and numerator < 0)"
  },
  "0x00428c10": {
   "map": "0010:1B70",
@@ -1621,7 +1621,7 @@
  },
  "0x004281b3": {
   "name": "NormalizeFraction",
-  "evidence": "NUMBERS.C: reduces a fraction (whole, numerator, denominator): carries the numerator into the whole part, fixes the signs, divides by the gcd (0x428191); returns 1 ('too large') when whole is outside -9 .. 99, |numerator| > 99 or denominator > 999 (or the denominator is 0) [V]"
+  "evidence": "NUMBERS.C: reduces a fraction (whole, numerator, denominator): carries the numerator into the whole part, fixes the signs, divides by the gcd (0x428191); returns 1 ('too large') when whole is outside -9 .. 99, |numerator| > 99 or denominator > 999 (or the denominator is 0) [V] Operates on the fields after `kind` of a Number (whole, numerator, denominator: three int32, widened from the record's i8, i8, i16 by CompactToNumber 0x427ee4). Its parameter is the `NumberFractionBody` (Number + 4)."
  },
  "0x00428463": {
   "name": "AddDecimals",
