@@ -1,1 +1,1 @@
-{"id": "mod_tides_faulty", "title": "Faulty tides", "version": "1.0", "mod": {"entry": "tides_faulty.sgd", "requires_api": 10, "problems": {"types": [40, 3, 5]}}}
+{"id": "mod_tides_faulty", "title": "Faulty tides", "version": "1.0", "mod": {"entry": "tides_faulty.sgd", "requires_api": 5, "problems": {"types": [40, 3, 5]}}}

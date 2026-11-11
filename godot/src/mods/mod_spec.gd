@@ -7,25 +7,25 @@ extends RefCounted
 ##     "mod": {"entry": "reef.sgd", "requires_api": 2, "skin": {"shaders": ["skin/glow.gdshader"]}}
 ##     "mod": {"requires_api": 5, "skin": {"render": {"texture_filter": "linear"}, "pictures": {"ui_picture/title_sky": "skin/sky.png"}}}
 ##     "mod": {"requires_api": 5, "skin": {"hud_font": {"file": "skin/hud.ttf", "size": 14, "color": "#dcf7ff"}}}
-##     "mod": {"requires_api": 12, "skin": {"theme": {"font": {"file": "skin/menu.ttf", "weight": 600}, "colors": {"title": "#9fe8ff"}, "console": {"fill": "#0b1d2b", "radius": 6}, "button": {"normal": {"picture": "ui_picture/title_sky", "slice": [4, 4, 4, 4]}}}}}
+##     "mod": {"requires_api": 5, "skin": {"theme": {"font": {"file": "skin/menu.ttf", "weight": 600}, "colors": {"title": "#9fe8ff"}, "console": {"fill": "#0b1d2b", "radius": 6}, "button": {"normal": {"picture": "ui_picture/title_sky", "slice": [4, 4, 4, 4]}}}}}
 ##     "mod": {"requires_api": 5, "skin": {"shaders": ["skin/shimmer.gdshader"], "layers": {"background": {"shader": "skin/shimmer.gdshader", "uniforms": {"glint": 0.25, "tint": "#ff8800"}}}}}
-##     "mod": {"entry": "reef.sgd", "requires_api": 7, "skin": {"script_layers": ["background", "bubbles"]}}
-##     "mod": {"entry": "reef.sgd", "requires_api": 8, "skin": {"script_layers": ["background", "hud_oxygen", "hud_ship"]}}
+##     "mod": {"entry": "reef.sgd", "requires_api": 5, "skin": {"script_layers": ["background", "bubbles"]}}
+##     "mod": {"entry": "reef.sgd", "requires_api": 5, "skin": {"script_layers": ["background", "hud_oxygen", "hud_ship"]}}
 ##     "mod": {"entry": "tides.sgd", "requires_api": 3, "problems": {"types": [40], "shaders": ["problems/wave.gdshader"]}}
-##     "mod": {"entry": "tides.sgd", "requires_api": 9, "problems": {"types": [5, 9, 40]}}
-##     "mod": {"entry": "tides.sgd", "requires_api": 11, "problems": {"types": [3, 23], "own_sounds": true}}
+##     "mod": {"entry": "tides.sgd", "requires_api": 5, "problems": {"types": [5, 9, 40]}}
+##     "mod": {"entry": "tides.sgd", "requires_api": 5, "problems": {"types": [3, 23], "own_sounds": true}}
 ##     "mod": {"entry": "rules.sgd", "requires_api": 4, "rules": {"answers": [41], "instructions": [0, 1], "sub": true}}
 ##
 ## `entry` is a plain file name (no folder) ending `.sgd`, in the pack's root; only a skin whose script draws nothing may leave it out (a DATA skin: no script, so no Sandbox is needed to wear it). `requires_api` (default 1) is the lowest API version the script needs; a game that provides less
 ## refuses the pack. `limits` is optional, and so is every key in it. `skin` makes the mod a SKIN (`ModSkin`: the mod draws the sector, `docs/create/SKIN_API.md`); it needs API version 2,
 ## and lists the shaders the skin may use, text files `skin/<name>.gdshader` of the pack (`ModShader`), at most `MAX_SHADERS`; `render` (`texture_filter`, `snap_transforms`, `snap_vertices`: the `RenderSettings` the skin puts on the window)
-## and `pictures` (skin key `ui_picture/<name>`, or from API version 13 `problem_art/<name>`, to a PNG `skin/<name>.png` of the pack, at most `MAX_PICTURES`, worn only while the skin is) and `hud_font` (`file`: a `.ttf` of the pack's `skin/` folder, read from its bytes,
-## at most `Pack.MAX_FONT_BYTES`; `size` from `MIN_HUD_FONT_SIZE` to `MAX_HUD_FONT_SIZE`; `color`: `#rrggbb` or `#rrggbbaa`; `weight` (API version 12, `FontSpec`): the lettering of the HUD's boxes, `HudLabels`; from API version 12 `file` may be left out, and the boxes are lettered in the theme's font) and `layers` (a layer of the original presenter by name, `SkinLayers.NODES`, to one of the listed `shaders` and the values of its uniforms: a number, `true` / `false`, a list of 2 to 4 numbers or a colour string, at most `MAX_LAYER_UNIFORMS`, each number within
-## `MAX_UNIFORM_VALUE`; the game sets `phase`) are API version 5, which a skin without `entry` needs too. `script_layers` (API version 7; needs an `entry`) lists the layers of the original presenter (`SkinLayers.NODES`) and, from API version 8, the parts of the console (`SkinLayers.HUD_NODES`, or the whole console, `SkinLayers.HUD`)
+## and `pictures` (skin key `ui_picture/<name>` or `problem_art/<name>`, to a PNG `skin/<name>.png` of the pack, at most `MAX_PICTURES`, worn only while the skin is) and `hud_font` (`file`: a `.ttf` of the pack's `skin/` folder, read from its bytes,
+## at most `Pack.MAX_FONT_BYTES`; `size` from `MIN_HUD_FONT_SIZE` to `MAX_HUD_FONT_SIZE`; `color`: `#rrggbb` or `#rrggbbaa`; `weight` (`FontSpec`): the lettering of the HUD's boxes, `HudLabels`; `file` may be left out, and the boxes are lettered in the theme's font) and `layers` (a layer of the original presenter by name, `SkinLayers.NODES`, to one of the listed `shaders` and the values of its uniforms: a number, `true` / `false`, a list of 2 to 4 numbers or a colour string, at most `MAX_LAYER_UNIFORMS`, each number within
+## `MAX_UNIFORM_VALUE`; the game sets `phase`) are API version 5 (`DRAWS_THE_GAME_API_VERSION`), which a skin without `entry` needs too. `script_layers` (needs an `entry`) lists the layers of the original presenter (`SkinLayers.NODES`) and the parts of the console (`SkinLayers.HUD_NODES`, or the whole console, `SkinLayers.HUD`)
 ## whose picture the script draws, one call of `skin_layer(name, state, fraction, events)` for each; the others stay the original's, and the layers of `layers` are dressed by their shader on those the script does not draw. A skin with an `entry` and no `script_layers` draws the whole
-## screen with `skin_frame(state, fraction, events)`: every layer at once. `theme` (API version 12, a skin with a script may have it too: it is data) is the look of the menus as `SkinTheme` says it: `font` (a `FontSpec`: `file`, `weight`, `size` from `MIN_THEME_FONT_SIZE` to `MAX_THEME_FONT_SIZE`), `colors` (`SkinTheme.COLORS`), and the styles `panel`, `console`, `button`, `input` and `key` (`SkinTheme.STYLES`; the colour `display` and the style `key` are API version 13, `FRAME_API_VERSION`) as the fields of `STYLE_KEYS`, each within its bound. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from 0 to
-## `Catalog.LAST_PROBLEM_TYPE`, at most `MAX_PROBLEM_TYPES`: a number below `Catalog.PROBLEM_TYPE_COUNT` is an ORIGINAL type, drawn by number in place of the original diagram (API version 9; the lock and the ballast panels are the engine's and cannot be listed), a number from it up
-## is a type the pack adds and holds as data); it needs API version 3 and lists its shaders like a skin, in the pack's `problems/` folder. `own_sounds` (true or false, API version 11) says the script asks for the sounds of the build-up and the replay itself, so the original diagram's own are not played while the mod runs. `rules` makes the mod
+## screen with `skin_frame(state, fraction, events)`: every layer at once. `theme` (a skin with a script may have it too: it is data) is the look of the menus as `SkinTheme` says it: `font` (a `FontSpec`: `file`, `weight`, `size` from `MIN_THEME_FONT_SIZE` to `MAX_THEME_FONT_SIZE`), `colors` (`SkinTheme.COLORS`), and the styles `panel`, `console`, `button`, `input` and `key` (`SkinTheme.STYLES`) as the fields of `STYLE_KEYS`, each within its bound. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from 0 to
+## `Catalog.LAST_PROBLEM_TYPE`, at most `MAX_PROBLEM_TYPES`: a number below `Catalog.PROBLEM_TYPE_COUNT` is an ORIGINAL type, drawn by number in place of the original diagram (the lock and the ballast panels are the engine's and cannot be listed), a number from it up
+## is a type the pack adds and holds as data); it needs API version 3 (5 to draw an original type or to say `own_sounds`) and lists its shaders like a skin, in the pack's `problems/` folder. `own_sounds` (true or false) says the script asks for the sounds of the build-up and the replay itself, so the original diagram's own are not played while the mod runs. `rules` makes the mod
 ## add GAMEPLAY inside the rules (`RuleHooks`), for a campaign that declares the mod: `answers` lists problem types it judges instead of their `compare_mode` (numbers as for `problems.types`, the pack holds each as data),
 ## `instructions` the numbers 0 to `RuleHooks.MAX_INSTRUCTIONS - 1` of the creature instruction `Mod_Instruction` it defines, `sub` (true) a sub ability; it needs API version 4, at least one of the three, and a mod with `rules`
 ## runs under an instruction limit of 1 to `MAX_RULE_EXECUTION_TIMEOUT` million per call. The instruction limit of every mod is at least 1: counting is never off. `Pack` reads this entry (`Pack.mod`), `PackCheck` judges what it names,
@@ -34,31 +34,18 @@ extends RefCounted
 ## Teaches: validating an untrusted description by naming each rule in one place, and clamping a request to a ceiling instead of refusing it (a limit is a request; the host decides).
 
 ## The version of the API a mod is given (`ModApi.build`). A mod that requires a higher one is refused. The version goes up when the API gains something a mod can ask for (2: the skin API, 3: the problem
-## screens, 4: the rule hooks, 5: the data skin, 6: a picture of the game by key in the draw list, 7: the skin's script draws chosen layers, 8: the console's parts are layers too, 9: a problem-screen mod draws the original's types by number, 10: a problem-screen mod is told what happened, 11: a problem-screen mod is told where the animation is and may ask for sounds, 12: a skin's theme for the menus, and the weight of a skin's font, 13: the theme reaches the problem screen's frame: its pictures may be replaced, the keys and the display have a look), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
-const API_VERSION := 13
+## screens, 4: the rule hooks, 5: a mod draws the game, `DRAWS_THE_GAME_API_VERSION`), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
+const API_VERSION := 5
 ## The first version with the skin API: a skin mod requires it.
 const SKIN_API_VERSION := 2
-## The first version with data skins: `render` and `pictures` in `skin`, and a skin with no `entry`.
-const DATA_SKIN_API_VERSION := 5
-## The first version with a script that draws chosen layers: a skin with `script_layers` requires it.
-const LAYER_API_VERSION := 7
-## The first version with the console's parts as layers: a skin whose `script_layers` names one requires it.
-const HUD_API_VERSION := 8
 ## The first version with problem screens: a mod that draws problem types requires it.
 const PROBLEM_API_VERSION := 3
-## The first version with the original's problem types drawn by number: a mod whose `problems.types` lists one (below `Catalog.PROBLEM_TYPE_COUNT`) requires it.
-const ORIGINAL_PROBLEM_API_VERSION := 9
-## The first version with the presentation events of a problem (`ProblemEvents`): a mod that requires it defines `problem_frame(state, events)`, an older one `problem_frame(state)` and is told none.
-const PROBLEM_EVENTS_API_VERSION := 10
-## The first version with the animation's clock in the state of a problem screen and the sounds it may ask for (`ModSounds`): a mod that requires it is told where the build-up and the replay are, may return `{"draw": ..., "sounds": [...]}` and may
-## say `own_sounds`.
-const PROBLEM_CLOCK_API_VERSION := 11
-## The first version with the menus' theme (`skin.theme`) and the weight of a font (`weight` in `hud_font` and in the theme's font), and with a `hud_font` that has no `file` (the lettering is then in the theme's font): a manifest that has any of them requires it.
-const THEME_API_VERSION := 12
-## The first version with the problem screen's frame in the theme: the `key` style and the `display` colour, and the pictures of the kind `problem_art` in a skin's `pictures` (the screen's picture, the calculator's and the "Ans:" panel's and the calculator's digits): a manifest that has any of them requires it.
-const FRAME_API_VERSION := 13
 ## The first version with rule hooks: a mod with `rules` requires it.
 const RULE_API_VERSION := 4
+## The first version in which a mod draws the game: a skin with no `entry`, `render`, `pictures` (the kinds `ui_picture` and `problem_art`), `hud_font` (with or without a `file`, with a `weight`), `layers`, `script_layers` (the original presenter's layers and the console's) and
+## a `theme` (with the colour `display` and the style `key`) in `skin`; a mod that draws the original's problem types by number and may say `own_sounds`. A mod that requires it is told the presentation events of a problem (`ProblemEvents`) and where the animation is
+## (`ProblemState.clock`) and may return sounds (`ModSounds`): its `problem_frame` takes `(state, events)`, where an older problem-screen mod defines `problem_frame(state)` and is told none of it. A manifest that has any of these requires it.
+const DRAWS_THE_GAME_API_VERSION := 5
 ## The game's ceilings. A manifest can lower these, never raise them (the same numbers as the godot-sandbox example's loader).
 const MAX_EXECUTION_TIMEOUT := 200       # millions of instructions per call into the mod
 const MAX_MEMORY := 32                   # MiB of guest memory
@@ -81,6 +68,8 @@ const LIMITS: Dictionary[String, int] = {
 const KNOWN_KEYS: Array[String] = ["entry", "requires_api", "limits", "skin", "problems", "rules"]
 ## The keys of the `skin` entry.
 const SKIN_KEYS: Array[String] = ["shaders", "render", "pictures", "hud_font", "layers", "script_layers", "theme"]
+## The keys of `skin` that need `DRAWS_THE_GAME_API_VERSION` (every key but `shaders`).
+const DRAWING_SKIN_KEYS: Array[String] = ["render", "pictures", "hud_font", "layers", "script_layers", "theme"]
 ## The keys of a layer's entry in `layers`, the uniform the game sets itself (the game's time, `SectorPresenter.game_phase`: a manifest cannot give it a value), and the limits of a layer's uniforms.
 const LAYER_KEYS: Array[String] = ["shader", "uniforms"]
 const PHASE_UNIFORM := "phase"
@@ -105,7 +94,7 @@ const MAX_SLICE := 64
 const RENDER_KEYS: Array[String] = ["texture_filter", "snap_transforms", "snap_vertices"]
 ## The kinds of picture key (`<kind>/<name>`, as `GameSkin.pictures` has them) a skin's `pictures` may REPLACE. A draw list may NAME a picture of more kinds (`GameSkin.KEY_KINDS`, `is_drawable_key`): it only shows
 ## what the game would show, where a replaced picture changes what the game shows everywhere.
-const PICTURE_KINDS: Array[String] = ["ui_picture", "problem_art"]
+const REPLACEABLE_KINDS: Array[String] = ["ui_picture", "problem_art"]
 ## The longest a picture key a draw list names may be (a file's name under a kind: the registry's names are shorter, `NameRegistry.MAX_NAME_LENGTH`, but a stem the importer keeps is not).
 const MAX_KEY := 96
 ## The most pictures a skin lists.
@@ -222,8 +211,8 @@ static func _parse_skin(value: Variant, spec: ModSpec, scripted: bool, found: Ar
 	spec.is_skin = true
 	if spec.requires_api < SKIN_API_VERSION:
 		found.append("a skin needs \"requires_api\": %d (the skin API came with that version)" % SKIN_API_VERSION)
-	elif spec.requires_api < DATA_SKIN_API_VERSION and (not scripted or value.has("render") or value.has("pictures") or value.has("hud_font") or value.has("layers")):
-		found.append("a skin with \"render\", \"pictures\", \"hud_font\" or \"layers\", or with no \"entry\", needs \"requires_api\": %d (data skins came with that version)" % DATA_SKIN_API_VERSION)
+	elif spec.requires_api < DRAWS_THE_GAME_API_VERSION and (not scripted or DRAWING_SKIN_KEYS.any(func(key: String) -> bool: return value.has(key))):
+		found.append("a skin with %s, or with no \"entry\", needs \"requires_api\": %d (a mod draws the game from that version)" % [", ".join(DRAWING_SKIN_KEYS.map(func(key: String) -> String: return "\"%s\"" % key)), DRAWS_THE_GAME_API_VERSION])
 	for key: String in value:
 		if not SKIN_KEYS.has(key):
 			found.append("\"skin\" has no \"%s\" (it has %s)" % [key, ", ".join(SKIN_KEYS)])
@@ -245,13 +234,11 @@ static func _parse_skin(value: Variant, spec: ModSpec, scripted: bool, found: Ar
 			_parse_layers(value["layers"], spec, found)
 
 
-## The `script_layers` of a skin: the layers its script draws (of the original presenter, and, from `HUD_API_VERSION`, of the console), into `spec.script_layers`. The whole console and its parts are not both listed: the whole is every part.
+## The `script_layers` of a skin: the layers its script draws (of the original presenter, and of the console), into `spec.script_layers`. The whole console and its parts are not both listed: the whole is every part.
 static func _parse_script_layers(value: Variant, spec: ModSpec, scripted: bool, found: Array[String]) -> void:
 	if not scripted:
 		found.append("\"script_layers\" belong to a skin with an \"entry\": the script that draws them")
 		return
-	if spec.requires_api < LAYER_API_VERSION:
-		found.append("a skin with \"script_layers\" needs \"requires_api\": %d (the layers a script draws came with that version)" % LAYER_API_VERSION)
 	var names := ", ".join(PackedStringArray(SkinLayers.NODES.keys() + SkinLayers.hud_layers()))
 	if not value is Array or (value as Array).is_empty():
 		found.append("\"script_layers\" must be a list of the layers the script draws, like [\"background\", \"bubbles\"] (the layers are %s); leave it out for a script that draws the whole screen" % names)
@@ -266,8 +253,6 @@ static func _parse_script_layers(value: Variant, spec: ModSpec, scripted: bool, 
 		else:
 			if SkinLayers.is_hud_layer(named):
 				console = true
-				if spec.requires_api < HUD_API_VERSION:
-					found.append("a skin whose \"script_layers\" has the console's layer \"%s\" needs \"requires_api\": %d (the console's layers came with that version)" % [layer, HUD_API_VERSION])
 			spec.script_layers.append(named)
 	if console and spec.script_layers.has(SkinLayers.HUD) and spec.script_layers.any(func(layer: StringName) -> bool: return SkinLayers.HUD_NODES.has(layer)):
 		found.append("\"script_layers\" has the whole console (\"%s\") and a part of it: the whole console is every part, list one or the other" % SkinLayers.HUD)
@@ -308,20 +293,18 @@ static func _parse_pictures(value: Variant, spec: ModSpec, found: Array[String])
 	for key: String in value:
 		var path: Variant = value[key]
 		if not is_picture_key(key):
-			found.append("the picture key \"%s\" must be <kind>/<name> with a kind of %s and a name of lowercase letters, digits and underscores" % [key, ", ".join(PICTURE_KINDS)])
+			found.append("the picture key \"%s\" must be <kind>/<name> with a kind of %s and a name of lowercase letters, digits and underscores" % [key, ", ".join(REPLACEABLE_KINDS)])
 		elif not path is String or not is_picture_path(path):
 			found.append("the picture of \"%s\", %s, must be a file of the pack's %s folder ending .png" % [key, JSON.stringify(path), SKIN_FOLDER])
-		elif key.begins_with("problem_art/") and spec.requires_api < FRAME_API_VERSION:
-			found.append("a skin that replaces the problem screen's picture \"%s\" needs \"requires_api\": %d (the problem screen's frame came with that version)" % [key, FRAME_API_VERSION])
 		else:
 			spec.pictures[key] = path
 
 
-## The `hud_font` of a skin: its font (`FontSpec`: the file of its `skin/` folder, the weight) and the size and colour of the letters, into `spec.hud_font_spec` and `spec.hud_font`. The file may be left out from `THEME_API_VERSION` on.
+## The `hud_font` of a skin: its font (`FontSpec`: the file of its `skin/` folder, the weight) and the size and colour of the letters, into `spec.hud_font_spec` and `spec.hud_font`. The file may be left out.
 static func _parse_hud_font(value: Variant, spec: ModSpec, found: Array[String]) -> void:
 	var before := found.size()
 	var example := "{\"file\": \"%shud.%s\", \"size\": 14, \"color\": \"#dcf7ff\"}" % [SKIN_FOLDER, Pack.FONT_EXTENSION]
-	var font := FontSpec.parse(value, "hud_font", example, HUD_FONT_KEYS, Vector2i(MIN_HUD_FONT_SIZE, MAX_HUD_FONT_SIZE), spec.requires_api < THEME_API_VERSION, spec.requires_api >= THEME_API_VERSION, found)
+	var font := FontSpec.parse(value, "hud_font", example, HUD_FONT_KEYS, Vector2i(MIN_HUD_FONT_SIZE, MAX_HUD_FONT_SIZE), found)
 	var labels := HudLabels.new()
 	if value is Dictionary and value.has("color"):
 		var colour: Variant = _color_of(value["color"])
@@ -348,8 +331,6 @@ static func _parse_theme(value: Variant, spec: ModSpec, found: Array[String]) ->
 	if not value is Dictionary:
 		found.append("\"theme\" must be an object like {\"colors\": {\"title\": \"#9fe8ff\"}, \"console\": {\"fill\": \"#0b1d2b\"}}")
 		return
-	if spec.requires_api < THEME_API_VERSION:
-		found.append("a skin with \"theme\" needs \"requires_api\": %d (the menus' theme came with that version)" % THEME_API_VERSION)
 	var before := found.size()
 	var made := SkinTheme.new()
 	for key: String in value:
@@ -357,7 +338,7 @@ static func _parse_theme(value: Variant, spec: ModSpec, found: Array[String]) ->
 			found.append("\"theme\" has no \"%s\" (it has %s)" % [key, ", ".join(THEME_KEYS)])
 	var font: FontSpec = null
 	if value.has("font"):
-		font = FontSpec.parse(value["font"], "font", "{\"file\": \"%smenu.%s\", \"weight\": 600, \"size\": 17}" % [SKIN_FOLDER, Pack.FONT_EXTENSION], THEME_FONT_KEYS, Vector2i(MIN_THEME_FONT_SIZE, MAX_THEME_FONT_SIZE), false, spec.requires_api >= THEME_API_VERSION, found)
+		font = FontSpec.parse(value["font"], "font", "{\"file\": \"%smenu.%s\", \"weight\": 600, \"size\": 17}" % [SKIN_FOLDER, Pack.FONT_EXTENSION], THEME_FONT_KEYS, Vector2i(MIN_THEME_FONT_SIZE, MAX_THEME_FONT_SIZE), found)
 		if font != null:
 			made.font_size = font.size
 	if value.has("colors"):
@@ -375,8 +356,6 @@ static func _parse_theme(value: Variant, spec: ModSpec, found: Array[String]) ->
 					found.append("the theme's \"%s\" has no \"%s\" (it has %s)" % [style, state, ", ".join(SkinTheme.STYLES[style])])
 				else:
 					_parse_style("%s/%s" % [style, state], value[style][state], made, found)
-	if spec.requires_api < FRAME_API_VERSION and (made.colors.has("display") or made.styles.keys().any(func(style: String) -> bool: return style.begins_with("key/"))):
-		found.append("a theme with the colour \"display\" or the style \"key\" needs \"requires_api\": %d (the problem screen's frame came with that version)" % FRAME_API_VERSION)
 	if found.size() == before:
 		spec.theme = made
 		spec.theme_font = font
@@ -560,14 +539,14 @@ static func _parse_problems(value: Variant, spec: ModSpec, found: Array[String])
 				found.append("the problem type %d is listed twice" % int(number))
 			else:
 				spec.problem_types.append(int(number))
-				if int(number) < Catalog.PROBLEM_TYPE_COUNT and spec.requires_api < ORIGINAL_PROBLEM_API_VERSION:
-					found.append("a mod that draws the original's problem type %d needs \"requires_api\": %d (the original's types came with that version)" % [int(number), ORIGINAL_PROBLEM_API_VERSION])
+				if int(number) < Catalog.PROBLEM_TYPE_COUNT and spec.requires_api < DRAWS_THE_GAME_API_VERSION:
+					found.append("a mod that draws the original's problem type %d needs \"requires_api\": %d (a mod draws the game from that version)" % [int(number), DRAWS_THE_GAME_API_VERSION])
 	spec.problem_shaders = _parse_shaders(value, PROBLEM_FOLDER, found)
 	if value.has("own_sounds"):
 		if not value["own_sounds"] is bool:
 			found.append("\"own_sounds\" must be true or false")
-		elif spec.requires_api < PROBLEM_CLOCK_API_VERSION:
-			found.append("a mod with \"own_sounds\" needs \"requires_api\": %d (the sounds of a problem screen came with that version)" % PROBLEM_CLOCK_API_VERSION)
+		elif spec.requires_api < DRAWS_THE_GAME_API_VERSION:
+			found.append("a mod with \"own_sounds\" needs \"requires_api\": %d (a mod draws the game from that version)" % DRAWS_THE_GAME_API_VERSION)
 		else:
 			spec.problem_own_sounds = value["own_sounds"]
 
@@ -643,18 +622,23 @@ static func is_shader_path(path: String, folder: String = SKIN_FOLDER) -> bool:
 	return path.begins_with(folder) and path.get_extension() == SHADER_EXTENSION and path.length() <= 96 and not path.get_basename().get_file().is_empty() and Pack.is_safe(path)
 
 
-## Is `key` a picture key a skin may map (`PICTURE_KINDS`, then a name)?
+## Is `name` the name part of a picture key: lowercase letters, digits and underscores, starting with a letter? The ONE rule of it: a registry name (`NameRegistry.name_problem`) is shorter and not a reserved word, but the name of a picture file the importer keeps may be neither.
+static func is_key_name(name: String) -> bool:
+	return _key_name.search(name) != null
+
+
+## Is `key` a picture key a skin may map (`REPLACEABLE_KINDS`, then a name: `is_key_name`)?
 static func is_picture_key(key: String) -> bool:
 	var parts := key.split("/")
-	return parts.size() == 2 and PICTURE_KINDS.has(parts[0]) and NameRegistry.is_valid_name(parts[1])
+	return key.length() <= MAX_KEY and parts.size() == 2 and REPLACEABLE_KINDS.has(parts[0]) and is_key_name(parts[1])
 
 
-## Is `key` a picture key a draw list may name (`GameSkin.KEY_KINDS`, then a name of lowercase letters, digits and underscores starting with a letter)? A shape only: whether the chain holds a picture for it is `Assets.picture_by_key`'s answer.
+## Is `key` a picture key a draw list may name (`GameSkin.KEY_KINDS`, then a name: `is_key_name`)? A shape only: whether the chain holds a picture for it is `Assets.picture_by_key`'s answer.
 static func is_drawable_key(key: String) -> bool:
 	if key.length() > MAX_KEY:
 		return false
 	var parts := key.split("/")
-	return parts.size() == 2 and GameSkin.KEY_KINDS.has(parts[0]) and _key_name.search(parts[1]) != null
+	return parts.size() == 2 and GameSkin.KEY_KINDS.has(parts[0]) and is_key_name(parts[1])
 
 
 ## Is `path` a place a skin's picture may be: `skin/` and then a plain relative path ending `.png`?
@@ -703,14 +687,10 @@ func draws_frame() -> bool:
 	return is_skin and has_entry() and script_layers.is_empty()
 
 
-## Is the mod's `problem_frame` told what happened (`ProblemEvents`)? It is when the mod requires the API version that has them.
-func problem_events() -> bool:
-	return requires_api >= PROBLEM_EVENTS_API_VERSION
-
-
-## Is the mod's `problem_frame` told where the animation is (`ProblemState.clock`) and may it return sounds (`ModSounds`)? It is when the mod requires the API version that has them.
-func problem_clock() -> bool:
-	return requires_api >= PROBLEM_CLOCK_API_VERSION
+## Is the mod's `problem_frame` told what happened (`ProblemEvents`) and where the animation is (`ProblemState.clock`), and may it return sounds (`ModSounds`)? It is when the mod requires the API version that draws the game: `problem_frame(state, events)`; an
+## older mod defines `problem_frame(state)` and is told none of it.
+func tells_problem_state() -> bool:
+	return requires_api >= DRAWS_THE_GAME_API_VERSION
 
 
 ## Does the mod draw anything (a skin, or the screens of problem types)?
@@ -728,7 +708,7 @@ func functions() -> Dictionary[String, PackedStringArray]:
 		else:
 			found[ModSkin.LAYER_FUNCTION] = PackedStringArray(["name", "state", "fraction", "events"])
 	if has_problems:
-		found[ModProblems.FUNCTION] = PackedStringArray(["state", "events"] if problem_events() else ["state"])
+		found[ModProblems.FUNCTION] = PackedStringArray(["state", "events"] if tells_problem_state() else ["state"])
 	if not rule_answers.is_empty():
 		found[RuleHooks.FUNCTION_JUDGE] = PackedStringArray(["state"])
 	if not rule_instructions.is_empty():

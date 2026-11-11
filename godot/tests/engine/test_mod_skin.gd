@@ -457,7 +457,7 @@ func test_a_key_the_game_cannot_resolve_or_that_has_a_wrong_shape_draws_nothing(
 	assert_bool(ModSpec.is_drawable_key("frame/sub_00") and ModSpec.is_drawable_key("deco/coral_fan_cyan") and ModSpec.is_drawable_key("ui_picture/ui_1189")).is_true()
 	assert_bool(ModSpec.is_drawable_key("tile/zone0_tiles") and ModSpec.is_drawable_key("problem_art/log_scan_0") and ModSpec.is_drawable_key("background/bg_s00_00")).is_true()
 	assert_array(GameSkin.KEY_KINDS).is_equal(["ui_picture", "background", "problem_art", "frame", "deco", "tile"])
-	for kind: String in ModSpec.PICTURE_KINDS:                                                           # (what a skin may replace is among what a list may name)
+	for kind: String in ModSpec.REPLACEABLE_KINDS:                                                           # (what a skin may replace is among what a list may name)
 		assert_bool(GameSkin.KEY_KINDS.has(kind)).is_true()
 
 

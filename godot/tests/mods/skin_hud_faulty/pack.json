@@ -1,1 +1,1 @@
-{"id": "mod_skin_hud_faulty", "title": "Faulty console", "version": "1.0", "mod": {"entry": "skin_hud_faulty.sgd", "requires_api": 8, "skin": {"script_layers": ["hud_bezel", "hud_oxygen"]}}}
+{"id": "mod_skin_hud_faulty", "title": "Faulty console", "version": "1.0", "mod": {"entry": "skin_hud_faulty.sgd", "requires_api": 5, "skin": {"script_layers": ["hud_bezel", "hud_oxygen"]}}}

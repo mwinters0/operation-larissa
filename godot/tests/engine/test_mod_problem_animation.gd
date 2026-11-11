@@ -1,6 +1,6 @@
 class_name TestModProblemAnimation
 extends GdUnitTestSuite
-## Teaches: a stranger's code that animates on the game's clock and asks for sounds, and cannot change a length. A problem-screen mod of API version 11 is told where the build-up and the replay are (`state["clock"]`: the animation,
+## Teaches: a stranger's code that animates on the game's clock and asks for sounds, and cannot change a length. A problem-screen mod of API version 5 is told where the build-up and the replay are (`state["clock"]`: the animation,
 ## its tick, its length and the tick it was last told, all read off the diagram that the step machine's count drives), so it draws frame N of a length the engine owns; it may return `{"draw": ..., "sounds": [names]}`, and the game
 ## plays the names of its sounds (`ModSounds`: a closed list, a few per answer, a bucket that refills) through the one `Audio` door. The tests count the ticks the flow takes with and without a mod (the exact number, the data's), read
 ## what the script was told from the worked example `tests/mods/tides` and flood the sounds with `tests/mods/tides_hostile`.
@@ -199,20 +199,6 @@ func test_the_flow_takes_the_same_ticks_whichever_mod_draws_or_none() -> void:
 		ModProblemShelf.release(_shelves)
 
 
-func test_a_mod_of_the_api_before_the_clock_is_told_the_idle_clock_and_is_not_asked_per_tick() -> void:
-	var old := _mount("tides", {"requires_api": 10})
-	var mod := _mod(old)
-	assert_bool(ModHost.problem_screen(ORIGINAL).tells_clock).is_false()
-	var screen := _screen(ORIGINAL)
-	var asked: int = mod.call("times_asked")
-	for i in 40:
-		screen.advance_ticks(1)
-	assert_int(mod.call("times_asked")).override_failure_message("the build-up moved 40 ticks and the script was not asked").is_equal(asked)
-	assert_array(mod.call("clocks_seen")).is_empty()
-	assert_int(_count(_lines(screen), "intro")).is_equal(0)
-	screen.free()
-
-
 # --- the sounds ---------------------------------------------------------------------------------------------------------------
 
 func test_a_mod_asks_for_sounds_by_name_and_the_game_plays_them_with_the_originals() -> void:
@@ -409,21 +395,21 @@ func test_a_sound_the_mods_own_pack_ships_is_a_sound_of_the_chain() -> void:
 
 # --- the manifest -------------------------------------------------------------------------------------------------------------
 
-func test_own_sounds_is_a_manifest_key_of_api_eleven() -> void:
+func test_own_sounds_is_a_manifest_key_of_api_five() -> void:
 	var errors: Array[String] = []
-	var spec := ModSpec.parse({"entry": "a.sgd", "requires_api": 11, "problems": {"types": [40], "own_sounds": true}}, errors)
+	var spec := ModSpec.parse({"entry": "a.sgd", "requires_api": 5, "problems": {"types": [40], "own_sounds": true}}, errors)
 	assert_array(errors).is_empty()
 	assert_bool(spec.problem_own_sounds).is_true()
-	assert_bool(spec.problem_clock()).is_true()
+	assert_bool(spec.tells_problem_state()).is_true()
 	assert_dict(spec.to_dict()["problems"]).is_equal({"types": [40], "own_sounds": true})
 	var off := ModSpec.parse({"entry": "a.sgd", "requires_api": 3, "problems": {"types": [40], "own_sounds": false}}, [] as Array[String])
 	assert_bool(off == null or not off.problem_own_sounds).is_true()
 	errors = []
-	ModSpec.parse({"entry": "a.sgd", "requires_api": 10, "problems": {"types": [40], "own_sounds": true}}, errors)
+	ModSpec.parse({"entry": "a.sgd", "requires_api": 4, "problems": {"types": [40], "own_sounds": true}}, errors)
 	assert_array(errors).is_not_empty()
-	assert_str(errors[0]).contains("own_sounds").contains("11")
+	assert_str(errors[0]).contains("own_sounds").contains("5")
 	errors = []
-	ModSpec.parse({"entry": "a.sgd", "requires_api": 11, "problems": {"types": [40], "own_sounds": "yes"}}, errors)
+	ModSpec.parse({"entry": "a.sgd", "requires_api": 5, "problems": {"types": [40], "own_sounds": "yes"}}, errors)
 	assert_str(errors[0]).contains("own_sounds").contains("true or false")
-	assert_int(ModSpec.PROBLEM_CLOCK_API_VERSION).is_less_equal(ModSpec.API_VERSION)
-	assert_bool(ModSpec.parse({"entry": "a.sgd", "requires_api": 10, "problems": {"types": [40]}}, [] as Array[String]).problem_clock()).is_false()
+	assert_int(ModSpec.DRAWS_THE_GAME_API_VERSION).is_less_equal(ModSpec.API_VERSION)
+	assert_bool(ModSpec.parse({"entry": "a.sgd", "requires_api": 4, "problems": {"types": [40]}}, [] as Array[String]).tells_problem_state()).is_false()

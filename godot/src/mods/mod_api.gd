@@ -4,7 +4,7 @@ extends RefCounted
 ## `property_allowed` / `method_allowed` are the policies for the objects the game hands over. To give mods a new ability, add its key to `build` and its function below;
 ## to let a mod touch an object, grant the object (`_grant`) and allow the property or method in the policy. Nothing else in the game is reachable from a mod.
 ##
-## The API (`ModSpec.API_VERSION` 11; the first four keys are version 1, `skin` is version 2, `problems` is version 3, `rules` is version 4; version 5 adds to the manifest of a skin, version 6 to the draw list (`ModDraw`: a picture of the game by key) version 7 the layers a skin's script draws (`skin_layer`) and version 8 the console's parts among them, version 9 the original's problem types by number, version 10 the events a problem screen is told and version 11 its clock and its sounds, not to this table):
+## The API (`ModSpec.API_VERSION` 5; the first four keys are version 1, `skin` is version 2, `problems` is version 3, `rules` is version 4; version 5 adds to the manifest of a skin, to the draw list (`ModDraw`: a picture of the game by key), the layers a skin's script draws (`skin_layer`) and the console's parts among them, the original's problem types by number, the events a problem screen is told and its clock and its sounds, not to this table):
 ##
 ##     api_version  int       the version of this API
 ##     id           String    the mod's id (= its pack's id)
@@ -17,7 +17,7 @@ extends RefCounted
 ##                            events arrive as arguments of its own `skin_layer` (or `skin_frame`), and what it draws is a list it returns (`ModDraw`); no node, texture or material is granted.
 ##     problems     Dictionary   only for a mod whose manifest says `problems`: the facts a problem screen needs, plain values (docs/create/CONTENT.md, "Problem screens"): `types` (the problem types it draws),
 ##                            `window` (the size in pixels), `max_commands`, `max_layers`, `max_uniforms`, `max_texts`, `max_text`, `min_font_size`, `max_font_size`, `shaders` (the paths its manifest lists), `events` (the names of `ProblemEvents`), `max_sounds`, `sound_burst` and `sounds_per_second` (the bounds of `ModSounds`).
-##                            A problem screen gets nothing else: the problem, the entry and the step arrive as the argument of its own `problem_frame`, what happened as its `events` (API version 10) and where the animation is as the state's `clock` (API version 11), and what it draws is a list it returns (`ModDraw`), with the sounds it asks for by name (version 11).
+##                            A problem screen gets nothing else: the problem, the entry and the step arrive as the argument of its own `problem_frame`, what happened as its `events` and where the animation is as the state's `clock` (both API version 5), and what it draws is a list it returns (`ModDraw`), with the sounds it asks for by name (version 5).
 ##     rules        Dictionary   only for a mod whose manifest says `rules`: the facts a rule hook needs, plain values (docs/create/CONTENT.md, "Rule hooks"): `answers`, `instructions` and `sub` (what its manifest lists),
 ##                            `max_calls_per_tick`, `max_faults`, and the bounds of what a hook may answer: `max_memory_keys`, `max_memory_key`, `max_memory_text`, `max_memory_items`, `max_move`. A hook gets nothing else:
 ##                            its snapshot arrives as the argument of its own function (`HookState`), and what it answers is plain data the game validates and cuts (`RuleHooks`).

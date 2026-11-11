@@ -10,8 +10,8 @@ extends RefCounted
 
 ## The family a mod's problem type names in its diagram data: `DiagramFactory` makes a `ModDiagram` for it.
 const FAMILY := "mod"
-## The function a problem-screen mod defines, called by `ModDiagram` when the problem, the entry or the step changes, when something happened (`ProblemEvents`) and, from API version `ModSpec.PROBLEM_CLOCK_API_VERSION`, as the build-up or the replay moves a tick. From API version `ModSpec.PROBLEM_EVENTS_API_VERSION` it takes
-## `(state, events)`; a mod that requires less takes `(state)` and is told no events (`ModSpec.functions`).
+## The function a problem-screen mod defines, called by `ModDiagram` when the problem, the entry or the step changes, when something happened (`ProblemEvents`) and, for a mod that `ModSpec.tells_problem_state`, as the build-up or the replay moves a tick. That
+## mod's function takes `(state, events)`; an older one takes `(state)` and is told no events (`ModSpec.functions`).
 const FUNCTION := "problem_frame"
 
 ## The mod pack's id.
@@ -20,10 +20,8 @@ var pack_id: StringName = &""
 var types: Array[int] = []
 ## What the script may name: the pictures of `problems/` and the shaders of the manifest (`ModAssets`).
 var assets: ModAssets
-## Is the script told what happened (`ProblemEvents`)? It is when the mod requires the API version that has them: its `problem_frame` then takes the events as a second argument.
-var tells_events := false
-## Is the script told where the animation is (`ProblemState.clock`) and may it return sounds (`ModSounds`)? It is when the mod requires the API version that has them (`ModSpec.PROBLEM_CLOCK_API_VERSION`).
-var tells_clock := false
+## The mod's manifest entry: it says whether the script is told what happened, where the animation is and may return sounds (`ModSpec.tells_problem_state`).
+var spec: ModSpec
 ## Does the mod make the sounds of the build-up and the replay itself (`problems.own_sounds`)? The original diagram's are then not played while the mod runs.
 var own_sounds := false
 
@@ -36,8 +34,7 @@ static func make(pack: Pack, reasons: Array[String]) -> ModProblems:
 	var screens := ModProblems.new()
 	screens.pack_id = pack.id
 	screens.types = pack.mod.problem_types.duplicate()
-	screens.tells_events = pack.mod.problem_events()
-	screens.tells_clock = pack.mod.problem_clock()
+	screens.spec = pack.mod
 	screens.own_sounds = pack.mod.problem_own_sounds
 	for type_id in screens.types:
 		if type_id < Catalog.PROBLEM_TYPE_COUNT:

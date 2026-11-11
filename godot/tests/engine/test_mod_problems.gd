@@ -107,8 +107,8 @@ func test_every_mistake_in_a_problems_entry_is_a_sentence() -> void:
 		"no types listed": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": []}}, "needs \"types\""],
 		"types not a list": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": 40}}, "needs \"types\""],
 		"an unknown key": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": [40], "fonts": []}}, "no \"fonts\""],
-		"an original type under the first API that has them": [{"entry": "a.sgd", "requires_api": 8, "problems": {"types": [count - 1]}}, "\"requires_api\": %d" % ModSpec.ORIGINAL_PROBLEM_API_VERSION],
-		"a type below the first": [{"entry": "a.sgd", "requires_api": 9, "problems": {"types": [-1]}}, "must be a whole number from 0"],
+		"an original type under the API before drawing the game": [{"entry": "a.sgd", "requires_api": 4, "problems": {"types": [count - 1]}}, "\"requires_api\": %d" % ModSpec.DRAWS_THE_GAME_API_VERSION],
+		"a type below the first": [{"entry": "a.sgd", "requires_api": 5, "problems": {"types": [-1]}}, "must be a whole number from 0"],
 		"a type past the trigger table's byte": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": [256]}}, "to 255"],
 		"a type that is not a number": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": ["forty"]}}, "must be a whole number"],
 		"a type twice": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": [40, 40]}}, "listed twice"],
@@ -724,14 +724,14 @@ func _original_screen(type_id: int = ModProblemShelf.ORIGINAL) -> ProblemScreen:
 	return screen
 
 
-func test_a_manifest_lists_original_types_by_number_from_the_api_that_has_them() -> void:
-	var got := _parse({"entry": "tides.sgd", "requires_api": 9, "problems": {"types": [5, 33, 40]}})
+func test_a_manifest_lists_original_types_by_number_from_the_api_that_draws_the_game() -> void:
+	var got := _parse({"entry": "tides.sgd", "requires_api": 5, "problems": {"types": [5, 33, 40]}})
 	var spec: ModSpec = got[0]
 	assert_array(got[1]).is_empty()
 	assert_array(spec.problem_types).is_equal([5, 33, 40])
-	assert_dict(spec.to_dict()).is_equal({"entry": "tides.sgd", "requires_api": 9, "problems": {"types": [5, 33, 40]}})
-	assert_int(ModSpec.ORIGINAL_PROBLEM_API_VERSION).is_less_equal(ModSpec.API_VERSION)
-	assert_array(_parse({"entry": "a.sgd", "requires_api": 9, "problems": {"types": range(ModSpec.MAX_PROBLEM_TYPES)}})[1]).is_empty()
+	assert_dict(spec.to_dict()).is_equal({"entry": "tides.sgd", "requires_api": 5, "problems": {"types": [5, 33, 40]}})
+	assert_int(ModSpec.DRAWS_THE_GAME_API_VERSION).is_less_equal(ModSpec.API_VERSION)
+	assert_array(_parse({"entry": "a.sgd", "requires_api": 5, "problems": {"types": range(ModSpec.MAX_PROBLEM_TYPES)}})[1]).is_empty()
 	assert_array(_parse({"entry": "a.sgd", "requires_api": 3, "problems": {"types": [34, 40]}})[1]).is_empty()               # (a mod that adds types only keeps its old version)
 
 
@@ -1115,13 +1115,13 @@ func test_a_mod_that_is_not_running_is_told_nothing_and_what_it_missed_is_not_to
 func test_a_mod_of_the_api_before_the_events_is_called_with_the_state_alone_and_is_told_none() -> void:
 	var old := PackShelf.new()
 	_shelves.append(old)
-	old.add_mod_fixture("%s/tides" % ModProblemShelf.FIXTURES, {"requires_api": 9})
+	old.add_mod_fixture("%s/tides" % ModProblemShelf.FIXTURES, {"requires_api": ModSpec.RULE_API_VERSION, "problems": {"types": [TYPE], "shaders": [ModProblemShelf.GLOW]}})
 	ModProblemShelf.add_files(old)
 	old.write_text("tides.sgd", "var api = {}\nvar asked = 0\nfunc mod_init(a):\n\tapi = a\nfunc times_asked():\n\treturn asked\nfunc problem_frame(state):\n\tasked += 1\n\treturn [[\"rect\", Rect2(0, 0, 10, 10), Color.RED]]\n")
 	old.mount()
 	Mods.sync()
 	assert_object(ModHost.mod(String(old.id))).override_failure_message("an older mod is refused: %s" % ModHost.failure(String(old.id))).is_not_null()
-	assert_bool(ModHost.problem_screen(TYPE).tells_events).is_false()
+	assert_bool(ModHost.problem_screen(TYPE).spec.tells_problem_state()).is_false()
 	var screen := _screen(0)
 	screen.submit_answer(NumberValue.parse("12"))
 	await get_tree().process_frame

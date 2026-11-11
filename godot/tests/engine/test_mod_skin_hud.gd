@@ -87,26 +87,26 @@ func _commands(stack: ModLayerStack) -> Array:
 # --- the manifest --------------------------------------------------------------------------------------------------------
 
 func test_the_manifest_names_parts_of_the_console_among_the_layers_the_script_draws() -> void:
-	var got := _parse({"entry": "a.sgd", "requires_api": 8, "skin": {"script_layers": ["background", "hud_oxygen", "hud_ship"]}})
+	var got := _parse({"entry": "a.sgd", "requires_api": 5, "skin": {"script_layers": ["background", "hud_oxygen", "hud_ship"]}})
 	assert_array(got[1]).is_empty()
 	var spec: ModSpec = got[0]
 	assert_array(spec.script_layers).is_equal([&"background", &"hud_oxygen", &"hud_ship"])
 	assert_bool(spec.draws_frame()).is_false()
-	assert_dict(spec.to_dict()).is_equal({"entry": "a.sgd", "requires_api": 8, "skin": {"script_layers": ["background", "hud_oxygen", "hud_ship"]}})
+	assert_dict(spec.to_dict()).is_equal({"entry": "a.sgd", "requires_api": 5, "skin": {"script_layers": ["background", "hud_oxygen", "hud_ship"]}})
 	assert_array(spec.functions().keys()).is_equal([ModSkin.LAYER_FUNCTION])
-	var whole: ModSpec = _parse({"entry": "a.sgd", "requires_api": 8, "skin": {"script_layers": ["hud"]}})[0]
+	var whole: ModSpec = _parse({"entry": "a.sgd", "requires_api": 5, "skin": {"script_layers": ["hud"]}})[0]
 	assert_array(whole.script_layers).is_equal([&"hud"])
-	assert_int(ModSpec.API_VERSION).is_greater_equal(ModSpec.HUD_API_VERSION)
+	assert_int(ModSpec.API_VERSION).is_greater_equal(ModSpec.DRAWS_THE_GAME_API_VERSION)
 	assert_array(SkinLayers.hud_layers()).is_equal([&"hud", &"hud_bezel", &"hud_tanks", &"hud_oxygen", &"hud_ink", &"hud_game", &"hud_custom", &"hud_zone", &"hud_sector", &"hud_ship", &"hud_computer"])
 
 
 func test_every_mistake_about_the_consoles_layers_is_a_sentence() -> void:
 	var bad := {
-		"an API without the console": [{"entry": "a.sgd", "requires_api": 7, "skin": {"script_layers": ["hud_oxygen"]}}, "needs \"requires_api\": 8"],
-		"the whole and a part": [{"entry": "a.sgd", "requires_api": 8, "skin": {"script_layers": ["hud", "hud_ink"]}}, "the whole console"],
-		"a part twice": [{"entry": "a.sgd", "requires_api": 8, "skin": {"script_layers": ["hud_ink", "hud_ink"]}}, "twice"],
-		"a part that is not one": [{"entry": "a.sgd", "requires_api": 8, "skin": {"script_layers": ["hud_frame"]}}, "no layer \"hud_frame\""],
-		"a shader on a part": [{"entry": "a.sgd", "requires_api": 8, "skin": {"shaders": ["skin/a.gdshader"], "script_layers": ["hud_ink"], "layers": {"hud_ink": {"shader": "skin/a.gdshader"}}}}, "no layer \"hud_ink\""],
+		"an API before drawing the game": [{"entry": "a.sgd", "requires_api": 4, "skin": {"script_layers": ["hud_oxygen"]}}, "needs \"requires_api\": 5"],
+		"the whole and a part": [{"entry": "a.sgd", "requires_api": 5, "skin": {"script_layers": ["hud", "hud_ink"]}}, "the whole console"],
+		"a part twice": [{"entry": "a.sgd", "requires_api": 5, "skin": {"script_layers": ["hud_ink", "hud_ink"]}}, "twice"],
+		"a part that is not one": [{"entry": "a.sgd", "requires_api": 5, "skin": {"script_layers": ["hud_frame"]}}, "no layer \"hud_frame\""],
+		"a shader on a part": [{"entry": "a.sgd", "requires_api": 5, "skin": {"shaders": ["skin/a.gdshader"], "script_layers": ["hud_ink"], "layers": {"hud_ink": {"shader": "skin/a.gdshader"}}}}, "no layer \"hud_ink\""],
 	}
 	for what: String in bad:
 		var got := _parse(bad[what][0])
@@ -428,5 +428,5 @@ func test_the_document_names_the_layers_the_rectangles_and_the_version() -> void
 	assert_str(doc).is_not_empty()
 	for layer in SkinLayers.hud_layers():
 		assert_bool(doc.contains("`%s`" % layer)).override_failure_message("SKIN_API.md does not name the layer `%s`" % layer).is_true()
-	for part in ["\"requires_api\": %d" % ModSpec.HUD_API_VERSION, "`rects`", "`phase`", "`size`", "`ConsoleState.rects`", "hud_layer/"]:
+	for part in ["\"requires_api\": %d" % ModSpec.DRAWS_THE_GAME_API_VERSION, "`rects`", "`phase`", "`size`", "`ConsoleState.rects`", "hud_layer/"]:
 		assert_bool(doc.contains(part)).override_failure_message("SKIN_API.md does not mention %s" % part).is_true()

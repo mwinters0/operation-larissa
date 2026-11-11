@@ -1,7 +1,7 @@
 class_name ProblemEvents
 extends RefCounted
 ## The presentation events of a problem: what HAPPENED on the problem screen, named, after the rules decided it. `ProblemFlow` is the one emitter (it decides when each thing happens, so no diagram infers one from what it sees), `ProblemScreen` passes
-## each to its diagram (`DiagramBase.told`), and a diagram that a mod draws (`ModDiagram`) hands the ones since its last frame to the script, `problem_frame(state, events)` (API version `ModSpec.PROBLEM_EVENTS_API_VERSION`).
+## each to its diagram (`DiagramBase.told`), and a diagram that a mod draws (`ModDiagram`) hands the ones since its last frame to the script, `problem_frame(state, events)` (API version `ModSpec.DRAWS_THE_GAME_API_VERSION`).
 ## An event is a plain Array `[name, arguments...]`, the shape of the sector's events (`SkinState.event`): the name a String, each argument a number, a bool or a name. It says what happened and is told AFTER the rules decided it: a verdict is never
 ## told before the answer is judged, and nothing a script returns reaches the flow, so an event is no way to change an outcome.
 ##

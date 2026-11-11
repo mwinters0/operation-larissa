@@ -1,1 +1,1 @@
-{"id": "mod_skinny", "title": "Skinny", "version": "1.0", "mod": {"entry": "skinny.sgd", "requires_api": 6, "limits": {"execution_timeout": 100, "memory_max": 16}, "skin": {"shaders": ["skin/glow.gdshader"]}}}
+{"id": "mod_skinny", "title": "Skinny", "version": "1.0", "mod": {"entry": "skinny.sgd", "requires_api": 5, "limits": {"execution_timeout": 100, "memory_max": 16}, "skin": {"shaders": ["skin/glow.gdshader"]}}}

@@ -1,1 +1,1 @@
-{"id": "mod_skin_layers_faulty", "title": "Faulty layers", "version": "1.0", "mod": {"entry": "skin_layers_faulty.sgd", "requires_api": 7, "skin": {"script_layers": ["background", "walls"]}}}
+{"id": "mod_skin_layers_faulty", "title": "Faulty layers", "version": "1.0", "mod": {"entry": "skin_layers_faulty.sgd", "requires_api": 5, "skin": {"script_layers": ["background", "walls"]}}}

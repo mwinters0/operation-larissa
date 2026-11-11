@@ -6,7 +6,7 @@
  "description": "The example skin pack: a water shimmer behind the screen, Exo 2 on the HUD and in the menus (a theme of cool blues that reaches the problem screen's text, calculator keys and display), smooth filtering, and the HUD's pictures as flat templates to draw over, with templates for the problem screen's frame beside them. Laid over the legacy pack.",
  "base": "legacy",
  "mod": {
-  "requires_api": 13,
+  "requires_api": 5,
   "skin": {
    "render": {
     "texture_filter": "linear",

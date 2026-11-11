@@ -37,7 +37,7 @@ static func build(problem: ProblemInstance, entry: String, step: ProblemFlow.Ste
 	return state
 
 
-## WHERE THE PRESENTATION IS (`clock` of the state, API version `ModSpec.PROBLEM_CLOCK_API_VERSION`): `animation` is "intro" (the diagram builds up), "replay" (the right answer is replayed) or "" (no animation runs), `tick` how many of its ticks are over (0 to
+## WHERE THE PRESENTATION IS (`clock` of the state, API version `ModSpec.DRAWS_THE_GAME_API_VERSION`): `animation` is "intro" (the diagram builds up), "replay" (the right answer is replayed) or "" (no animation runs), `tick` how many of its ticks are over (0 to
 ## `length`), `length` how many ticks it lasts and `since` the tick the script was last told in this animation (-1: this is the first call of it), so that tick `n` went by since the last call exactly when `since < n <= tick`. The ticks are the original's (1/73 s)
 ## and the lengths are the original's data, counted by `ProblemFlow` and shown by `DiagramBase.animate_to`: the clock only reports them, stands still when they do, and the script cannot make an animation longer or shorter.
 static func clock(animation: String, tick: int, length: int, since: int) -> Dictionary:

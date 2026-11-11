@@ -78,7 +78,7 @@ in the order of the keys, each with the sentence that says what it does and the 
 
 | Key | What it does | Reference |
 | --- | --- | --- |
-| `"requires_api": 13` | the version of the skin API the manifest is written for. A manifest with `render`, `pictures`, `hud_font` or `layers` and no `entry` says at least 5, one with a `theme` (or a font `weight`) says 12, one that dresses the problem screen's calculator or frame (`key`, `display`, `problem_art` pictures) says 13 | `SKIN_API.md`, "A skin with no script" |
+| `"requires_api": 5` | the version of the skin API the manifest is written for. A manifest with `render`, `pictures` (the problem screen's `problem_art` too), `hud_font`, `layers`, `theme` (the calculator's `key` and `display` too) and no `entry` says at least 5 | `SKIN_API.md`, "A skin with no script" |
 | `render` | filtering and pixel snapping while the skin is worn. The example's `"linear"` and `false` make the original's small pictures smooth; leave `render` out and the original's `"nearest"` stays | the first bullet of the list there |
 | `hud_font` | the console's three boxes (game, zone, sector) as text in your font, with a size and a colour (step 5) | `hud_font` bullet |
 | `theme` | the look of the menus (sign-in, the dialogs, the message box) and of the problem screen's text and calculator keys: a font, colours, panel and button styles, pictures by key (step 5) | "The menus' theme" |
@@ -176,13 +176,13 @@ font, named colours, and the styles of panels and buttons, each field optional a
 }
 ```
 
-Put it in (the manifest says `"requires_api": 12`, or 13 with the problem screen's `key` and `display`), start the game and open a dialog: the message box, with its title in your colour and its
+Put it in (the manifest says `"requires_api": 5`), start the game and open a dialog: the message box, with its title in your colour and its
 frame in your fill, is the quickest look. Leave `hud_font`'s `file` out and the console's boxes use the theme's font, so one font dresses the console and the menus.
 A style may also be a picture of yours: `"pressed": { "picture": "ui_picture/button_pressed", "slice": [4, 4, 4, 4] }` (map the key in `pictures`; `slice` is
 the margins of the picture that stay unstretched). The controls keep their places and what they do: only fonts, colours, borders and pictures change.
 The problem screen wears the same theme: its text takes the `text` colour and the font, the glass that lights a calculator key is the `key` style
 (`"key": { "hover": { "fill": "#5fd0f038" }, "pressed": { "fill": "#ffe27a60" } }`) and `display` is the colour of the field behind the calculator's digits (these
-two say `"requires_api": 13`). Its frame is pictures: the screen, the calculator and the "Ans:" panel are `problem_art/pa_1780`, `pa_1781` and `pa_1802`
+two are in the same manifest). Its frame is pictures: the screen, the calculator and the "Ans:" panel are `problem_art/pa_1780`, `pa_1781` and `pa_1802`
 in `pictures`, drawn over the templates in `skin/problem_art/` (step 4's tool writes them with the console's; the example ships them unmapped, since a flat
 calculator has no key faces). The diagrams' text stays the engine's font. All of it is in [`SKIN_API.md`](SKIN_API.md), "The menus' theme" and "The problem screen's frame".
 The keys, their bounds and what each name dresses are in the same place.

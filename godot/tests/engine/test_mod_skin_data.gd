@@ -149,7 +149,6 @@ func test_hud_font_is_a_file_with_a_size_and_a_colour() -> void:
 func test_every_mistake_in_a_hud_font_is_a_sentence() -> void:
 	var bad := {
 		"not an object": [{"requires_api": 5, "skin": {"hud_font": FONT}}, "\"hud_font\" must be an object"],
-		"no file": [{"requires_api": 5, "skin": {"hud_font": {"size": 12}}}, "needs a \"file\""],
 		"a key it does not know": [{"requires_api": 5, "skin": {"hud_font": {"file": FONT, "bold": true}}}, "no \"bold\""],
 		"a file outside skin/": [{"requires_api": 5, "skin": {"hud_font": {"file": "fonts/hud.ttf"}}}, "must be a file"],
 		"a file climbing out": [{"requires_api": 5, "skin": {"hud_font": {"file": "skin/../hud.ttf"}}}, "must be a file"],

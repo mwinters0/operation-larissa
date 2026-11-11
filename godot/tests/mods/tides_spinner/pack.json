@@ -1,1 +1,1 @@
-{"id": "mod_tides_spinner", "title": "Tides that never end", "version": "1.0", "mod": {"entry": "tides_spinner.sgd", "requires_api": 10, "limits": {"execution_timeout": 0}, "problems": {"types": [40, 3, 5]}}}
+{"id": "mod_tides_spinner", "title": "Tides that never end", "version": "1.0", "mod": {"entry": "tides_spinner.sgd", "requires_api": 5, "limits": {"execution_timeout": 0}, "problems": {"types": [40, 3, 5]}}}

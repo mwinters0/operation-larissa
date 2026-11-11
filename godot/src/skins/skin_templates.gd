@@ -4,13 +4,13 @@ extends RefCounted
 ## for a person to draw the real art over (`docs/create/SKIN_API.md` "Art templates"; the command line is `skin_templates_tool.tscn`).
 ##
 ## WHICH PICTURES. `SOURCES` is the one table: the layout files (of the pack in use, as the pack holds them, no skin) whose pictures a skin may replace. Each texture a layout holds is a picture
-## of its own, whose key and size are read off the texture: the key is the one `GameSkin.key_of` makes, which is the key a skin's `pictures` names (`ModSpec.PICTURE_KINDS`), and the size is the
+## of its own, whose key and size are read off the texture: the key is the one `GameSkin.key_of` makes, which is the key a skin's `pictures` names (`ModSpec.REPLACEABLE_KINDS`), and the size is the
 ## texture's. The sizes come from the layout, so a template has nothing of any picture in it, only its key and its size. A phase that lets a skin replace more pictures adds the layout that holds them
 ## to `SOURCES`; nothing else changes.
 ## THE LAYERS OF THE CONSOLE. A skin's script may draw a part of the console, or all of it (`SkinLayers.HUD_NODES`), in the part's rectangle (`ConsoleState.rects`): the HUD layout in `SOURCES` also gives one template for each such layer, key `hud_layer/<layer>`
 ## (`hud_layer/hud_oxygen`), the size of the layer's rectangle in the layout's own data, for a picture of the whole part that the script draws (`skin/<name>.png`, a path in a draw list) at the size it will show.
 ##
-## THE PROBLEM SCREEN. The frame of the problem screen is pictures a skin replaces (`pictures` takes the kind `problem_art` too, `ModSpec.PICTURE_KINDS`): the screen picture the layout holds (`problem_art/pa_1780`), the calculator (`pa_1781`), the "Ans:" panel (`pa_1802`)
+## THE PROBLEM SCREEN. The frame of the problem screen is pictures a skin replaces (`pictures` takes the kind `problem_art` too, `ModSpec.REPLACEABLE_KINDS`): the screen picture the layout holds (`problem_art/pa_1780`), the calculator (`pa_1781`), the "Ans:" panel (`pa_1802`)
 ## and the calculator's digits and signs, all in the layouts of the screen and of the calculator in `SOURCES`, and the sender's two pictures beside the first line of a prompt (`ui_picture/prompt_sender_ship`, `PromptSender.PICTURE_SIZE`, which the screen stretches
 ## to); each has a template at its size. A mod that draws the screen of a problem type (`ModDiagram`, `docs/create/CONTENT.md` "Problem screens") draws in the window's 640 x 400 pixels and may name the same pictures by key: the screen's layout also gives one template for the whole window a
 ## mod draws, key `problem_layer/window`, for a picture of the whole screen of a type. It is not a picture a skin replaces: it is drawn over and put in the `problems/` folder of a problem mod, named in its draw list.

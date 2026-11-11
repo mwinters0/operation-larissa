@@ -74,10 +74,15 @@ func test_the_key_of_a_file_is_its_kind_and_its_registry_name() -> void:
 	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/problem_art/single/pa_1780.png")).is_equal("problem_art/pa_1780")
 	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/sprites/foes/dolphin_swim_0_0.png")).is_equal("frame/dolphin_swim_0")
 	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/sprites/decos/anemone_blue_37.png")).is_equal("deco/anemone_blue")
+	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/sprites/sub/sub_00.png")).is_equal("frame/sub_00")        # (no registry name: "sub_00" stays)
 	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/tiles/zone0_tiles.png")).is_equal("tile/zone0_tiles")
 	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/backgrounds/bg_s00_00.png")).is_equal("background/bg_s00_00")
 	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/audio/sfx/lock_tick_3.ogg")).is_equal("")        # (not a picture)
 	assert_str(GameSkin.key_of("res://somewhere/else.png")).is_equal("")
+	var kinds := {}                                                                                              # (the kinds are the table's values, each once: one table, read twice)
+	for kind: String in GameSkin.KIND_FOLDERS.values():
+		kinds[kind] = true
+	assert_array(GameSkin.KEY_KINDS).contains_exactly_in_any_order(kinds.keys())
 
 
 func test_the_key_of_every_ui_and_problem_picture_is_its_registry_name() -> void:

@@ -76,41 +76,41 @@ func _original_shows(presenter: OriginalPresenter, layer: StringName) -> bool:
 # --- the manifest --------------------------------------------------------------------------------------------------------
 
 func test_the_manifest_names_the_layers_the_script_draws() -> void:
-	var got := _parse({"entry": "a.sgd", "requires_api": 7, "skin": {"script_layers": ["background", "bubbles"]}})
+	var got := _parse({"entry": "a.sgd", "requires_api": 5, "skin": {"script_layers": ["background", "bubbles"]}})
 	assert_array(got[1]).is_empty()
 	var spec: ModSpec = got[0]
 	assert_array(spec.script_layers).is_equal([&"background", &"bubbles"])
 	assert_bool(spec.draws_frame()).is_false()
-	assert_dict(spec.to_dict()).is_equal({"entry": "a.sgd", "requires_api": 7, "skin": {"script_layers": ["background", "bubbles"]}})
+	assert_dict(spec.to_dict()).is_equal({"entry": "a.sgd", "requires_api": 5, "skin": {"script_layers": ["background", "bubbles"]}})
 	assert_array(spec.functions().keys()).is_equal([ModSkin.LAYER_FUNCTION])
 	assert_array(spec.functions()[ModSkin.LAYER_FUNCTION]).is_equal(["name", "state", "fraction", "events"])
 	var whole: ModSpec = _parse({"entry": "a.sgd", "requires_api": 2, "skin": {}})[0]
 	assert_bool(whole.draws_frame()).is_true()                                                         # (no `script_layers`: the script draws the whole screen)
 	assert_array(whole.functions().keys()).is_equal([ModSkin.FRAME_FUNCTION])
-	assert_int(ModSpec.API_VERSION).is_greater_equal(ModSpec.LAYER_API_VERSION)
+	assert_int(ModSpec.API_VERSION).is_greater_equal(ModSpec.DRAWS_THE_GAME_API_VERSION)
 
 
 func test_a_layer_the_script_draws_may_not_also_have_a_shader_in_the_manifest_but_the_others_may() -> void:
 	var shaders := ["skin/glow.gdshader"]
-	var dressed := _parse({"entry": "a.sgd", "requires_api": 7, "skin": {"shaders": shaders, "script_layers": ["background"], "layers": {"sub": {"shader": shaders[0]}}}})
+	var dressed := _parse({"entry": "a.sgd", "requires_api": 5, "skin": {"shaders": shaders, "script_layers": ["background"], "layers": {"sub": {"shader": shaders[0]}}}})
 	assert_array(dressed[1]).is_empty()
 	assert_array((dressed[0] as ModSpec).layers.keys()).is_equal(["sub"])
-	var clash := _parse({"entry": "a.sgd", "requires_api": 7, "skin": {"shaders": shaders, "script_layers": ["background"], "layers": {"background": {"shader": shaders[0]}}}})
+	var clash := _parse({"entry": "a.sgd", "requires_api": 5, "skin": {"shaders": shaders, "script_layers": ["background"], "layers": {"background": {"shader": shaders[0]}}}})
 	assert_object(clash[0]).is_null()
 	assert_bool((clash[1] as Array[String]).any(func(e: String) -> bool: return e.contains("drawn by the script"))).is_true()
 
 
 func test_every_mistake_in_script_layers_is_a_sentence() -> void:
 	var bad := {
-		"no entry": [{"requires_api": 7, "skin": {"script_layers": ["background"]}}, "belong to a skin with an \"entry\""],
-		"an older API": [{"entry": "a.sgd", "requires_api": 6, "skin": {"script_layers": ["background"]}}, "requires_api"],
-		"not a list": [{"entry": "a.sgd", "requires_api": 7, "skin": {"script_layers": "background"}}, "must be a list"],
-		"an empty list": [{"entry": "a.sgd", "requires_api": 7, "skin": {"script_layers": []}}, "must be a list"],
-		"a layer that is not one": [{"entry": "a.sgd", "requires_api": 7, "skin": {"script_layers": ["sky"]}}, "no layer \"sky\""],
-		"a name that is a number": [{"entry": "a.sgd", "requires_api": 7, "skin": {"script_layers": [3]}}, "no layer 3"],
-		"a layer twice": [{"entry": "a.sgd", "requires_api": 7, "skin": {"script_layers": ["walls", "walls"]}}, "twice"],
-		"the debug overlay": [{"entry": "a.sgd", "requires_api": 7, "skin": {"script_layers": ["currents"]}}, "no layer \"currents\""],
-		"layers of a script that draws the whole screen": [{"entry": "a.sgd", "requires_api": 7, "skin": {"shaders": ["skin/a.gdshader"], "layers": {"sub": {"shader": "skin/a.gdshader"}}}}, "script_layers"],
+		"no entry": [{"requires_api": 5, "skin": {"script_layers": ["background"]}}, "belong to a skin with an \"entry\""],
+		"an older API": [{"entry": "a.sgd", "requires_api": 4, "skin": {"script_layers": ["background"]}}, "requires_api"],
+		"not a list": [{"entry": "a.sgd", "requires_api": 5, "skin": {"script_layers": "background"}}, "must be a list"],
+		"an empty list": [{"entry": "a.sgd", "requires_api": 5, "skin": {"script_layers": []}}, "must be a list"],
+		"a layer that is not one": [{"entry": "a.sgd", "requires_api": 5, "skin": {"script_layers": ["sky"]}}, "no layer \"sky\""],
+		"a name that is a number": [{"entry": "a.sgd", "requires_api": 5, "skin": {"script_layers": [3]}}, "no layer 3"],
+		"a layer twice": [{"entry": "a.sgd", "requires_api": 5, "skin": {"script_layers": ["walls", "walls"]}}, "twice"],
+		"the debug overlay": [{"entry": "a.sgd", "requires_api": 5, "skin": {"script_layers": ["currents"]}}, "no layer \"currents\""],
+		"layers of a script that draws the whole screen": [{"entry": "a.sgd", "requires_api": 5, "skin": {"shaders": ["skin/a.gdshader"], "layers": {"sub": {"shader": "skin/a.gdshader"}}}}, "script_layers"],
 	}
 	for what: String in bad:
 		var got := _parse(bad[what][0])
@@ -399,5 +399,5 @@ func test_the_document_names_the_layers_the_function_and_the_version() -> void:
 	assert_str(doc).is_not_empty()
 	for layer in SkinLayers.NODES:
 		assert_bool(doc.contains("`%s`" % layer)).override_failure_message("SKIN_API.md does not name the layer `%s`" % layer).is_true()
-	for part in ["script_layers", "skin_layer(name, state, fraction, events)", "skin_frame", "\"requires_api\": %d" % ModSpec.LAYER_API_VERSION]:
+	for part in ["script_layers", "skin_layer(name, state, fraction, events)", "skin_frame", "\"requires_api\": %d" % ModSpec.DRAWS_THE_GAME_API_VERSION]:
 		assert_bool(doc.contains(part)).override_failure_message("SKIN_API.md does not mention %s" % part).is_true()

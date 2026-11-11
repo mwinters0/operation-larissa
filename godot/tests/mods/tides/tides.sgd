@@ -1,10 +1,10 @@
 # A small problem-screen mod: it draws the screen of problem type 40 ("fish in rows") from the problem it is told: a pool, a row of fish pictures of its own pack (problems/fish.png) for each row of the problem, what the player has
 # typed so far, and the prompt, through the game's font. It also opts in to draw two ORIGINAL types, 3 and 5, by number: for those it draws the pictures of the type's art bundle by their keys (the game's own pictures, under the skin in
 # use), the family the type's data names and what was typed; the other original types stay the original's. Every picture is built from `state`, so a screen shown late is the screen shown early.
-# From API version 11 it also draws a progress bar from the CLOCK of the state (which animation, how many of its ticks are over, how long it is: the bar is `tick / length` of the build-up or of the replay, drawn by what the engine says
+# It also draws a progress bar from the CLOCK of the state (which animation, how many of its ticks are over, how long it is: the bar is `tick / length` of the build-up or of the replay, drawn by what the engine says
 # and never by a timer of its own) and, when the test switches `sound_on()`, asks for the sound `diagram_bar` at every 15th tick the clock passed since it was last asked (`since`), as `{"draw": ..., "sounds": [...]}`; `sound_only_on()` answers
 # the sounds alone. It is silent otherwise, so the plays of a problem are the same under it as under no mod. It keeps what the clock told it (for the tests to ask).
-# It also REACTS to what happened (the `events` of API version 10): a banner under the picture names the last event it was told and a bar changes colour with it (green for a right verdict, red for a wrong one, gold for a success,
+# It also REACTS to what happened (the `events`): a banner under the picture names the last event it was told and a bar changes colour with it (green for a right verdict, red for a wrong one, gold for a success,
 # grey for a time out, a damage bar per oxygen lost). That is memory of events, which a picture should not be built from; here it is what the tests look at. It keeps the count of the times it was asked and every event
 # it was told (for the tests to ask).
 var api : Dictionary = {}

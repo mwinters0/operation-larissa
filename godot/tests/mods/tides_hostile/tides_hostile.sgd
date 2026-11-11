@@ -1,7 +1,7 @@
 # A hostile problem-screen mod. Every try_* attempts something a mod that draws a problem must not do (a refused call raises, which the game counts); every bad_* returns a draw list full of what the game must drop; the
 # plain problem_frame draws a good rectangle and then CLAIMS to have judged the answer, in every way a list could: the game draws none of the claims, and what it draws changes no answer.
 #
-# From API version 11 it can also FLOOD the sounds: once the test calls `flood_on()` every answer carries a hundred names, some of them sounds of the game, some made up, some not names at all, some far too long, some that try to reach
+# It can also FLOOD the sounds: once the test calls `flood_on()` every answer carries a hundred names, some of them sounds of the game, some made up, some not names at all, some far too long, some that try to reach
 # a file of the game, beside the claims above. Until then it is silent, so the plays of a problem are the same under it as under no mod (`return` is the same list as before).
 var api : Dictionary = {}
 var flooding := false

@@ -56,7 +56,7 @@ func _parse(data: Variant) -> Array:
 	return [spec, errors]
 
 
-func _data(theme: Dictionary, api := ModSpec.THEME_API_VERSION) -> Dictionary:
+func _data(theme: Dictionary, api := ModSpec.DRAWS_THE_GAME_API_VERSION) -> Dictionary:
 	return {"requires_api": api, "skin": {"theme": theme}}
 
 
@@ -121,8 +121,8 @@ func test_a_theme_may_say_a_little_or_nothing() -> void:
 
 func test_every_mistake_in_a_theme_is_a_sentence() -> void:
 	var bad := {
-		"the API before the theme": [_data({}, 11), "requires_api\": %d" % ModSpec.THEME_API_VERSION],
-		"not an object": [{"requires_api": 12, "skin": {"theme": "dark"}}, "\"theme\" must be an object"],
+		"the API before drawing the game": [_data({}, ModSpec.RULE_API_VERSION), "requires_api\": %d" % ModSpec.DRAWS_THE_GAME_API_VERSION],
+		"not an object": [{"requires_api": 5, "skin": {"theme": "dark"}}, "\"theme\" must be an object"],
 		"a key it does not know": [_data({"sounds": {}}), "no \"sounds\""],
 		"a font that is not an object": [_data({"font": FONT}), "\"font\" must be an object"],
 		"a font key it does not know": [_data({"font": {"file": FONT, "color": "#ffffff"}}), "no \"color\""],
@@ -133,7 +133,7 @@ func test_every_mistake_in_a_theme_is_a_sentence() -> void:
 		"a weight too heavy": [_data({"font": {"file": FONT, "weight": FontSpec.MAX_WEIGHT + 1}}), "\"weight\""],
 		"a weight not whole": [_data({"font": {"file": FONT, "weight": 450.5}}), "\"weight\""],
 		"a weight with no file": [_data({"font": {"weight": 600}}), "needs a \"file\""],
-		"a weight of the API before it": [{"requires_api": 11, "skin": {"hud_font": {"file": FONT, "weight": 600}}}, "requires_api\": %d" % ModSpec.THEME_API_VERSION],
+		"a weight of the API before drawing the game": [{"requires_api": ModSpec.RULE_API_VERSION, "skin": {"hud_font": {"file": FONT, "weight": 600}}}, "requires_api\": %d" % ModSpec.DRAWS_THE_GAME_API_VERSION],
 		"colors not an object": [_data({"colors": ["#ffffff"]}), "\"colors\" must be an object"],
 		"a colour it does not know": [_data({"colors": {"sky": "#ffffff"}}), "no \"sky\""],
 		"a colour that is none": [_data({"colors": {"text": "white"}}), "colour \"text\""],
@@ -163,24 +163,21 @@ func test_every_mistake_in_a_theme_is_a_sentence() -> void:
 
 
 func test_a_scripted_skin_may_have_a_theme_too_because_it_is_data() -> void:
-	var spec: ModSpec = _parse({"entry": "reef.sgd", "requires_api": 12, "skin": {"theme": {"colors": {"title": "#ffffff"}}}})[0]
+	var spec: ModSpec = _parse({"entry": "reef.sgd", "requires_api": 5, "skin": {"theme": {"colors": {"title": "#ffffff"}}}})[0]
 	assert_object(spec).is_not_null()
 	assert_bool(spec.has_entry()).is_true()
 	assert_bool(spec.theme.colors.has("title")).is_true()
 
 
-func test_a_hud_font_may_have_a_weight_and_from_api_12_no_file() -> void:
-	var weighted: ModSpec = _parse({"requires_api": 12, "skin": {"hud_font": {"file": FONT, "weight": 700, "size": 12}}})[0]
+func test_a_hud_font_may_have_a_weight_and_no_file() -> void:
+	var weighted: ModSpec = _parse({"requires_api": 5, "skin": {"hud_font": {"file": FONT, "weight": 700, "size": 12}}})[0]
 	assert_int(weighted.hud_font_spec.weight).is_equal(700)
 	assert_int(weighted.hud_font.font_size).is_equal(12)
 	assert_dict(weighted.to_dict()["skin"]["hud_font"]).is_equal({"file": FONT, "weight": 700, "size": 12})
-	var fileless: ModSpec = _parse({"requires_api": 12, "skin": {"hud_font": {"size": 12, "color": "#ffffff"}}})[0]
+	var fileless: ModSpec = _parse({"requires_api": 5, "skin": {"hud_font": {"size": 12, "color": "#ffffff"}}})[0]
 	assert_str(fileless.hud_font_spec.file).is_empty()
 	assert_array(fileless.font_files()).is_empty()
 	assert_dict(fileless.to_dict()["skin"]["hud_font"]).is_equal({"size": 12, "color": "#ffffff"})
-	var old: Array = _parse({"requires_api": 5, "skin": {"hud_font": {"size": 12}}})                 # (the API before it: a file is needed)
-	assert_object(old[0]).is_null()
-	assert_bool((old[1] as Array[String]).any(func(e: String) -> bool: return e.contains("needs a \"file\""))).is_true()
 
 
 # --- the pack and the skin the host makes ------------------------------------------------------------------------------------

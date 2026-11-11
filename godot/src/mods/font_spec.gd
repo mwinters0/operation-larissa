@@ -26,8 +26,8 @@ var size := 0
 
 
 ## The spec `value` (the manifest's object) describes, or null with every mistake appended to `found`. `name` is what the manifest calls the object (it begins each sentence), `example` shows its shape, `allowed` are the keys the object may have
-## (`KEYS` and what the caller reads itself: a colour), `sizes` is the smallest and largest `size` (x, y), `file_required` whether `file` must be there, and `weighted` whether `weight` may be said (a manifest of an older API has none).
-static func parse(value: Variant, name: String, example: String, allowed: Array[String], sizes: Vector2i, file_required: bool, weighted: bool, found: Array[String]) -> FontSpec:
+## (`KEYS` and what the caller reads itself: a colour), `sizes` is the smallest and largest `size` (x, y). The file may be left out.
+static func parse(value: Variant, name: String, example: String, allowed: Array[String], sizes: Vector2i, found: Array[String]) -> FontSpec:
 	if not value is Dictionary:
 		found.append("\"%s\" must be an object like %s" % [name, example])
 		return null
@@ -36,22 +36,18 @@ static func parse(value: Variant, name: String, example: String, allowed: Array[
 	for key: String in value:
 		if not allowed.has(key):
 			found.append("\"%s\" has no \"%s\" (it has %s)" % [name, key, ", ".join(allowed)])
-	if not value.has("file"):
-		if file_required:
-			found.append("\"%s\" needs a \"file\": a .%s file of the pack's %s folder" % [name, Pack.FONT_EXTENSION, ModSpec.SKIN_FOLDER])
-	elif not value["file"] is String or not ModSpec.is_font_path(value["file"]):
-		found.append("the font %s must be a file of the pack's %s folder ending .%s" % [JSON.stringify(value["file"]), ModSpec.SKIN_FOLDER, Pack.FONT_EXTENSION])
-	else:
-		spec.file = value["file"]
+	if value.has("file"):
+		if not value["file"] is String or not ModSpec.is_font_path(value["file"]):
+			found.append("the font %s must be a file of the pack's %s folder ending .%s" % [JSON.stringify(value["file"]), ModSpec.SKIN_FOLDER, Pack.FONT_EXTENSION])
+		else:
+			spec.file = value["file"]
 	if value.has("size"):
 		if not ModSpec.is_whole(value["size"]) or int(value["size"]) < sizes.x or int(value["size"]) > sizes.y:
 			found.append("the font's \"size\" must be a whole number from %d to %d" % [sizes.x, sizes.y])
 		else:
 			spec.size = int(value["size"])
 	if value.has("weight"):
-		if not weighted:
-			found.append("a font with a \"weight\" needs \"requires_api\": %d (the weight came with that version)" % ModSpec.THEME_API_VERSION)
-		elif not ModSpec.is_whole(value["weight"]) or int(value["weight"]) < MIN_WEIGHT or int(value["weight"]) > MAX_WEIGHT:
+		if not ModSpec.is_whole(value["weight"]) or int(value["weight"]) < MIN_WEIGHT or int(value["weight"]) > MAX_WEIGHT:
 			found.append("the font's \"weight\" must be a whole number from %d to %d" % [MIN_WEIGHT, MAX_WEIGHT])
 		elif not value.has("file"):
 			found.append("a \"weight\" is the weight of the \"file\" it is with: \"%s\" needs a \"file\"" % name)

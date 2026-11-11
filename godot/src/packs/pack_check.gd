@@ -18,8 +18,6 @@ extends RefCounted
 ##
 ## Teaches: validation as the same code path as use (check by loading, not by a parallel description), and a result that is data.
 
-## The kinds of picture a pack may hold under `pictures/<kind>/<name>.png` (the first part of a skin key, `GameSkin.key_of`).
-const PICTURE_KINDS: Array[String] = GameSkin.KEY_KINDS
 ## The songs a campaign names when it names none (`Campaign.DEFAULT_SONG`) and the closing scenes the game has of its own.
 const OWN_CLOSINGS: Array[StringName] = [&"voyager", &"expert"]
 ## How many names of what is missing one finding shows.
@@ -188,10 +186,10 @@ static func _mod(live: Pack, report: PackReport) -> void:
 		for message in ModParts.problems(live):
 			report.error("mod", message)
 		for key in live.mod.pictures:
-			if NameRegistry.original().index_of(StringName(key.get_slice("/", 0)), key.get_slice("/", 1)) < 0:
+			if not _game_names_picture(key):
 				report.warn("mod", "the skin's picture %s names no picture of the game: it is never asked for" % key)
 		for key in live.mod.theme_pictures():
-			if (key.begins_with("ui_picture/") or key.begins_with("problem_art/")) and not live.mod.pictures.has(key) and NameRegistry.original().index_of(StringName(key.get_slice("/", 0)), key.get_slice("/", 1)) < 0:
+			if ModSpec.is_picture_key(key) and not live.mod.pictures.has(key) and not _game_names_picture(key):
 				report.warn("mod", "the theme's picture %s is neither one the skin maps nor one of the game's: the style is drawn flat" % key)
 		scripts.erase(live.mod.entry)
 	for rel in live.all_files():
@@ -199,6 +197,11 @@ static func _mod(live: Pack, report: PackReport) -> void:
 			report.warn("mod", "%s is never used: %s" % [rel, "a skin names its font in \"skin\": {\"hud_font\": {\"file\": ...}} or {\"theme\": {\"font\": {\"file\": ...}}}" if live.mod != null and live.mod.is_skin else "a font is read by a skin mod only"])
 	for rel in scripts:
 		report.warn("mod", "%s is never run: %s" % [rel, "a mod pack's manifest names one entry script (\"mod\": {\"entry\": ...})" if live.mod != null else "the manifest has no \"mod\" entry"])
+
+
+## Does the game's own registry name the picture a skin key (`<kind>/<name>`) says? A skin that replaces a picture the game never asks for changes nothing.
+static func _game_names_picture(key: String) -> bool:
+	return NameRegistry.original().index_of(StringName(key.get_slice("/", 0)), key.get_slice("/", 1)) >= 0
 
 
 ## The entry script of the mod `live`: in the pack, within the size limit, with `mod_init(api)` and the functions the manifest lists.
@@ -259,8 +262,8 @@ static func _voice_cues(live: Pack, report: PackReport) -> void:
 
 static func _pictures(live: Pack, report: PackReport) -> void:
 	for kind in live.folders_in("pictures"):
-		if not PICTURE_KINDS.has(kind):
-			report.warn("pictures", "pictures/%s: the game looks for pictures in %s only" % [kind, ", ".join(PICTURE_KINDS)])
+		if not GameSkin.KEY_KINDS.has(kind):
+			report.warn("pictures", "pictures/%s: the game looks for pictures in %s only" % [kind, ", ".join(GameSkin.KEY_KINDS)])
 			continue
 		for file in live.files_in("pictures/" + kind):
 			var rel := "pictures/%s/%s" % [kind, file]

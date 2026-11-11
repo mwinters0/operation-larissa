@@ -39,9 +39,22 @@ extends Resource
 ## map through `pictures`).
 const REPLACEABLE: Array[String] = ["ui/", "sprite_frames/", "neptune_tileset", "problems/screen_layout"]
 
-## The kinds of picture key there are (the part of a key before the `/`, `key_of`). A pack's `pictures/` folder holds these kinds (`PackCheck`), and a mod's draw list may name a picture of any of them (`ModSpec.is_drawable_key`);
-## a skin mod's `pictures` may replace only `ModSpec.PICTURE_KINDS` of them.
-const KEY_KINDS: Array[String] = ["ui_picture", "background", "problem_art", "frame", "deco", "tile"]
+## The ONE table of picture kinds: the folder of a picture file below a pack's `assets/` (`sprites/decos`, or the first folder alone when the first two are not a key here) -> the kind of its key (the part of a key before the `/`, `key_of_rel`).
+## The two-folder keys come first, as they are looked up before the one-folder ones.
+const KIND_FOLDERS: Dictionary[String, String] = {
+	"ui": "ui_picture",
+	"backgrounds": "background",
+	"problem_art": "problem_art",
+	"sprites/foes": "frame",
+	"sprites/decos": "deco",
+	"sprites": "frame",
+	"tiles": "tile",
+}
+## The folders whose file names are the key's name as they are. The names of the other folders carry the number the importer appends to a registry name (`_registry_name`).
+const PLAIN_FOLDERS: Array[String] = ["backgrounds", "sprites", "tiles"]
+## The kinds of picture key there are (`KIND_FOLDERS`' values, each once). A pack's `pictures/` folder holds these kinds (`PackCheck`), and a mod's draw list may name a picture of any of them (`ModSpec.is_drawable_key`);
+## a skin mod's `pictures` may replace only `ModSpec.REPLACEABLE_KINDS` of them.
+static var KEY_KINDS: Array[String] = _kinds()
 
 ## The skin's id: the folder name under `res://skins/` and the word of `--skin=<id>`.
 @export var id: StringName = &""
@@ -226,21 +239,23 @@ static func key_of_rel(assets: String) -> String:
 	if parts.size() < 2:
 		return ""
 	var stem := parts[parts.size() - 1].get_basename()
-	match parts[0]:
-		"ui":
-			return "ui_picture/" + _registry_name(&"ui_picture", stem)
-		"problem_art":
-			return "problem_art/" + _registry_name(&"problem_art", stem)
-		"sprites":
-			if parts[1] != "foes" and parts[1] != "decos":
-				return "frame/" + stem      # the sub, pieces, station and bubbles: no registry names, so "sub_00" must not become "sub"
-			var kind := &"deco" if parts[1] == "decos" else &"frame"
-			return "%s/%s" % [kind, _registry_name(kind, stem)]
-		"tiles":
-			return "tile/" + stem
-		"backgrounds":
-			return "background/" + stem
-	return ""
+	var folder := "%s/%s" % [parts[0], parts[1]] if parts.size() > 2 else parts[0]
+	if not KIND_FOLDERS.has(folder):
+		folder = parts[0]
+		if not KIND_FOLDERS.has(folder):
+			return ""
+	var kind := KIND_FOLDERS[folder]
+	if PLAIN_FOLDERS.has(folder):
+		return "%s/%s" % [kind, stem]      # (the sub, pieces, station and bubbles: no registry names, so "sub_00" must not become "sub")
+	return "%s/%s" % [kind, _registry_name(StringName(kind), stem)]
+
+
+static func _kinds() -> Array[String]:
+	var kinds: Array[String] = []
+	for kind: String in KIND_FOLDERS.values():
+		if not kinds.has(kind):
+			kinds.append(kind)
+	return kinds
 
 
 static func _registry_name(kind: StringName, stem: String) -> String:

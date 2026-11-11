@@ -1,6 +1,6 @@
 class_name ModSounds
 extends RefCounted
-## The sounds a problem-screen mod may ask for: NAMES, never audio. The script returns `{"sounds": ["diagram_pop", ...]}` beside (or instead of) its draw list (API version `ModSpec.PROBLEM_CLOCK_API_VERSION`); the game keeps what is
+## The sounds a problem-screen mod may ask for: NAMES, never audio. The script returns `{"sounds": ["diagram_pop", ...]}` beside (or instead of) its draw list (API version `ModSpec.DRAWS_THE_GAME_API_VERSION`); the game keeps what is
 ## exactly one `sound` name of the chain (`SfxCatalog.can_play`: one of the original's effects by its name in `names/original.json`, or a file `audio/sound/<name>.ogg` of any pack of the chain, the mod's own pack included),
 ## and `ModDiagram` plays it through the same door every other sound of the screen takes (`sfx_requested`, `Audio.play_sfx`). A mod holds no stream and no player, and it cannot stop, loop or mix anything: it can only ask.
 ##

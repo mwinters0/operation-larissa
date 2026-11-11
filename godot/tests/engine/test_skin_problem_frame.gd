@@ -25,7 +25,7 @@ func after_test() -> void:
 	GameState.reset()
 
 
-func _data(changes: Dictionary, api := ModSpec.FRAME_API_VERSION) -> Dictionary:
+func _data(changes: Dictionary, api := ModSpec.DRAWS_THE_GAME_API_VERSION) -> Dictionary:
 	return {"requires_api": api, "skin": changes}
 
 
@@ -105,10 +105,10 @@ func test_the_keys_display_and_frame_pictures_are_in_the_manifest_from_the_api_t
 	assert_dict(spec.pictures).is_equal({"problem_art/pa_1780": SKY})
 	assert_dict(spec.to_dict()["skin"]).is_equal(look)
 	assert_dict((_parse(spec.to_dict())[0] as ModSpec).to_dict()).is_equal(spec.to_dict())
-	var old := ModSpec.THEME_API_VERSION                                                              # (the API before: each of them is refused by name)
-	assert_bool(_complains(_parse(_data({"theme": {"colors": {"display": "#001a33"}}}, old)), "requires_api\": %d" % ModSpec.FRAME_API_VERSION)).is_true()
-	assert_bool(_complains(_parse(_data({"theme": {"key": {"hover": {}}}}, old)), "requires_api\": %d" % ModSpec.FRAME_API_VERSION)).is_true()
-	assert_bool(_complains(_parse(_data({"pictures": {"problem_art/pa_1780": SKY}}, old)), "requires_api\": %d" % ModSpec.FRAME_API_VERSION)).is_true()
+	var old := ModSpec.RULE_API_VERSION                                                               # (the API before: each of them is refused by name)
+	assert_bool(_complains(_parse(_data({"theme": {"colors": {"display": "#001a33"}}}, old)), "requires_api\": %d" % ModSpec.DRAWS_THE_GAME_API_VERSION)).is_true()
+	assert_bool(_complains(_parse(_data({"theme": {"key": {"hover": {}}}}, old)), "requires_api\": %d" % ModSpec.DRAWS_THE_GAME_API_VERSION)).is_true()
+	assert_bool(_complains(_parse(_data({"pictures": {"problem_art/pa_1780": SKY}}, old)), "requires_api\": %d" % ModSpec.DRAWS_THE_GAME_API_VERSION)).is_true()
 	assert_bool(_complains(_parse(_data({"theme": {"key": {"focus": {}}}})), "no \"focus\"")).is_true()   # (a key has three states)
 	assert_bool(_complains(_parse(_data({"pictures": {"frame/foe_0": SKY}})), "must be <kind>/<name>")).is_true()   # (the creatures' pictures are still not a theme's to replace)
 

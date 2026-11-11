@@ -3,10 +3,10 @@ extends DiagramBase
 ## The diagram of a problem type whose screen a MOD draws: a type a pack adds (diagram family `mod`) or an original type a mod opted in to draw by number (`ModProblems`, `DiagramFactory`). The type is plain data like the
 ## original's 34 (words, records, how an answer is judged); this node only shows the picture on the left monitor, by asking the mod's sandboxed script what to draw: `problem_frame(state)` gets the problem's values and the
 ## screen's state as plain data (`ProblemState.build`) and returns a draw list that the game checks (`ModDraw.validate`) and draws in the `ModLayer` nodes of a `ModLayerStack` of its own. The script is asked again only when
-## what it was told changes (the entry the player has typed so far, the step, and, for a script of API 11, the clock of the build-up or the replay), never per frame, and it decides nothing: the calculator or the answer box, `AnswerChecker`, `ProblemSession` and `ProblemFlow` are the game's,
+## what it was told changes (the entry the player has typed so far, the step, and, for a script that `ModSpec.tells_problem_state`, the clock of the build-up or the replay), never per frame, and it decides nothing: the calculator or the answer box, `AnswerChecker`, `ProblemSession` and `ProblemFlow` are the game's,
 ## so the answer, the tries, the oxygen and every duration are what they are for any type whatever the script returns.
 ##
-## WHAT HAPPENED. The screen tells each presentation event (`ProblemEvents`: started, step, verdict, damage, success, timeout, decided by `ProblemFlow` before this node hears of it) to `told`. A script of the API version that has them is
+## WHAT HAPPENED. The screen tells each presentation event (`ProblemEvents`: started, step, verdict, damage, success, timeout, decided by `ProblemFlow` before this node hears of it) to `told`. A script that is told them (`ModSpec.tells_problem_state`) is
 ## handed the ones since its last call as the second argument of `problem_frame(state, events)`, on the FRAME AFTER they happened (`_process`), the newest `ProblemEvents.MAX_EVENTS`; the state it is given is as of that call. An event
 ## of a call that faults, or that comes while no mod runs, is not told again; a script that is bound later is told what happens after it (the state, with the step, the entry and the try, is what it builds from). The plain diagram under
 ## the layers hears the same events (`DiagramBase.told`).
@@ -16,12 +16,12 @@ extends DiagramBase
 ## always completes. A frame the script spoils (an error, a result that is not a list) leaves the last good one on. The plain diagram is also what plays the build-up and the replay after a right answer: the lengths, the
 ## ticks and the sounds are the original's whether it is seen or the mod's layers are, and a mod cannot add a tick to a problem.
 ##
-## THE CLOCK (API version `ModSpec.PROBLEM_CLOCK_API_VERSION`). While the plain diagram plays the build-up or the replay, the script is asked again as each tick of it goes by and the state's `clock` (`ProblemState.clock`) says which animation, how many
+## THE CLOCK (for a script that `ModSpec.tells_problem_state`). While the plain diagram plays the build-up or the replay, the script is asked again as each tick of it goes by and the state's `clock` (`ProblemState.clock`) says which animation, how many
 ## of its ticks are over, how long it is and the tick the script was last told: all of it the plain diagram's (`animation_name`, `animation_tick`, `animation_length`, from the `animate_to` the step machine's count drives), so a mod draws frame N of a
-## length the engine owns, stands still when the machine's time does (a held clock feeds no tick) and cannot lengthen or shorten anything: the flow waits for the plain diagram's timeline, whatever is drawn over it. A script of an older API is told
+## length the engine owns, stands still when the machine's time does (a held clock feeds no tick) and cannot lengthen or shorten anything: the flow waits for the plain diagram's timeline, whatever is drawn over it. A script of an older API (before `ModSpec.DRAWS_THE_GAME_API_VERSION`) is told
 ## the idle clock and asked as before. The animation's last call carries the end tick, so a sound due at the end is not missed; the call after it carries the idle clock. The flow ends an animation a moment before the screen has shown its last tick, so the step that ends it is told on the frame after, with the clock caught up
 ## (the end tick was told, then the idle clock).
-## SOUNDS. A script of that API may return `{"draw": [...], "sounds": ["diagram_pop"]}` instead of a draw list (a `draw` that is missing leaves what is on screen, a `sounds` that is missing asks for none): `ModSounds` keeps the names of the chain's sounds
+## SOUNDS. A script of the API that has the clock may return `{"draw": [...], "sounds": ["diagram_pop"]}` instead of a draw list (a `draw` that is missing leaves what is on screen, a `sounds` that is missing asks for none): `ModSounds` keeps the names of the chain's sounds
 ## within its bounds and this node asks for each as the plain diagram does (`sfx_requested`). A mod whose manifest says `own_sounds` has the plain diagram's own sounds (the build-up's, the replay's) left unplayed for as long as it runs and is not quarantined; the lengths are
 ## the same, since a sound holds nothing up.
 ##
@@ -93,7 +93,7 @@ func told(event: Array) -> void:
 	if _plain != null:
 		_plain.told(event)
 	var screens := ModHost.problem_screen(type.id)
-	if screens == null or not screens.tells_events:
+	if screens == null or not screens.spec.tells_problem_state():
 		return
 	ProblemEvents.push(_events, event)
 	set_process(true)
@@ -134,7 +134,7 @@ func _refresh(with_events := false) -> void:
 		return
 	_asked_hash = state.hash()
 	var told_events: Array = _events if with_events else []
-	var arguments: Array = [state, told_events] if screens.tells_events else [state]
+	var arguments: Array = [state, told_events] if screens.spec.tells_problem_state() else [state]
 	if with_events:
 		_events = []
 	var answer := ModLoader.call_mod(node, ModProblems.FUNCTION, arguments)
@@ -143,7 +143,7 @@ func _refresh(with_events := false) -> void:
 	if not answer["ok"]:                        # (a fault: the frame went wrong, the last one stays)
 		return
 	var value: Variant = answer["value"]
-	if screens.tells_clock and value is Dictionary:        # (`{"draw": ..., "sounds": ...}`)
+	if screens.spec.tells_problem_state() and value is Dictionary:        # (`{"draw": ..., "sounds": ...}`)
 		var parts: Dictionary = value
 		if parts.has("draw"):
 			_answer = parts["draw"]
@@ -157,7 +157,7 @@ func _refresh(with_events := false) -> void:
 
 ## Where the animation is, for a script that is told (`ProblemState.clock`): the plain diagram's, which the step machine's ticks drive; the idle clock for one that is not.
 func _clock(screens: ModProblems) -> Dictionary:
-	if not screens.tells_clock or _plain == null:
+	if not screens.spec.tells_problem_state() or _plain == null:
 		return ProblemState.idle_clock()
 	var animation := _plain.animation_name()
 	var since := _told_tick if animation == _told_animation and animation != &"" else -1
@@ -169,7 +169,7 @@ func _on_animation_moved() -> void:
 	if problem == null:
 		return
 	var screens := ModHost.problem_screen(type.id)
-	if screens == null or not screens.tells_clock:
+	if screens == null or not screens.spec.tells_problem_state():
 		return
 	var animation := _plain.animation_name()
 	if animation != &"" and animation == _told_animation and _plain.animation_tick() == _told_tick:
