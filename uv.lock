@@ -274,7 +274,7 @@ wheels = [
 name = "neptune-tools"
 version = "0.1.0"
 source = { virtual = "." }
-default-groups = ["dev"]
+default-groups = ["dev", "transcribe"]
 dependencies = [
     { name = "capstone" },
     { name = "numpy" },

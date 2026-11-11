@@ -14,9 +14,7 @@ import validate
 def test_only_runs_the_steps_in_pipeline_order():
     """`--only` names steps in any order; they run in the order of the pipeline (a step reads what an earlier one writes), each once."""
     import import_all
-    assert import_all.steps_to_run(None) == [n for n in import_all.STEPS if n != "transcripts"]      # the optional step is left out
-    assert import_all.steps_to_run(None, ("transcripts",)) == list(import_all.STEPS)                    # --transcripts
-    assert import_all.steps_to_run("transcripts,audio") == ["transcripts", "audio"]                     # or named
+    assert import_all.steps_to_run(None) == list(import_all.STEPS)
     assert import_all.steps_to_run("audio,sectors,tiles") == ["tiles", "sectors", "audio"]
     assert import_all.steps_to_run("godot,extract,godot") == ["extract", "godot"]
     assert import_all.steps_to_run("story, campaigns") == ["story", "campaigns"]
