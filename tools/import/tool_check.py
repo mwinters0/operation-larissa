@@ -5,7 +5,7 @@ it and how to get it, so a run that cannot finish refuses at once and lists ever
 program that is there but not the version the project pins (Godot: mise.toml; the speech engine: uv.lock); `warn` prints them
 loudly and the run goes on, so you can try another version (a beta, your distribution's build) at your own risk.
 The supported way to get a tool is mise when mise has it (`mise install`: uv, Godot), else the system's packages; the hints name
-Fedora's (docs/SETUP.md).
+Fedora's on Linux and the Windows ones on Windows (docs/SETUP.md).
 
     uv run tools/import/tool_check.py            # the check alone, for every step
 """
@@ -29,6 +29,18 @@ import transcripts
 WINDOWS = os.name == "nt"
 LAUNCHER = "tools/godot.py" if WINDOWS else "tools/godot.sh"      # what runs Godot here (godot.command())
 DNF_MUSIC = "sudo dnf install ffmpeg-free fluidsynth fluid-soundfont-common fluid-soundfont-gm"
+# How to get each music tool on Windows (docs/SETUP.md, "On Windows"); on Linux the one dnf line installs all three.
+WINDOWS_HINTS = {
+    "ffmpeg": "tools\\setup_windows.ps1 installs it (or: winget install --id Gyan.FFmpeg.Essentials -e)",
+    "fluidsynth": "tools\\setup_windows.ps1 installs it (or: the win10-x64 zip of a release from "
+                  "github.com/FluidSynth/fluidsynth/releases, its bin folder on the PATH)",
+    "soundfont": "uv run tools/fetch_soundfont.py (mise run setup and tools\\setup_windows.ps1 run it)",
+}
+
+
+def music_hint(tool: str) -> str:
+    """How to get one of the music tools here (ffmpeg, fluidsynth, soundfont)."""
+    return WINDOWS_HINTS[tool] if WINDOWS else DNF_MUSIC
 
 
 def godot_pin() -> str:
@@ -75,15 +87,16 @@ def check_audio(soundfont: str) -> list[str]:
     problems = []
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
-        problems.append("ffmpeg (step audio): not found: " + DNF_MUSIC)
+        problems.append("ffmpeg (step audio): not found: " + music_hint("ffmpeg"))
     else:
         encoders = subprocess.run([ffmpeg, "-hide_banner", "-encoders"], capture_output=True, text=True, check=False).stdout
         if " libvorbis " not in encoders:
-            problems.append("ffmpeg (step audio): %s has no libvorbis encoder: on Fedora install ffmpeg-free (or RPM Fusion's ffmpeg)" % ffmpeg)
+            problems.append("ffmpeg (step audio): %s has no libvorbis encoder: %s" % (
+                ffmpeg, "install Gyan.FFmpeg.Essentials (Gyan's builds have it)" if WINDOWS else "on Fedora install ffmpeg-free (or RPM Fusion's ffmpeg)"))
     if not shutil.which("fluidsynth"):
-        problems.append("fluidsynth (step audio): not found: " + DNF_MUSIC)
+        problems.append("fluidsynth (step audio): not found: " + music_hint("fluidsynth"))
     if not Path(soundfont).is_file():
-        problems.append("General MIDI soundfont (step audio): %s not found: %s, or name another with --soundfont" % (soundfont, DNF_MUSIC))
+        problems.append("General MIDI soundfont (step audio): %s not found: %s, or name another with --soundfont" % (soundfont, music_hint("soundfont")))
     return problems
 
 
