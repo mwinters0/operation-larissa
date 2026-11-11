@@ -18,8 +18,8 @@ dev = ["pytest", "ruff", "pyright"]
 dev-pack = [
     "piper-tts>=1.8.0",
 ]
-# Speech transcription, a regular importer step (tools/import/transcripts.py): large download, installed by a plain
-# `uv sync` (default-groups below). uv.lock pins faster-whisper and ctranslate2; transcripts.py refuses other versions.
+# Speech transcription, the importer's optional transcripts step (tools/import/transcripts.py): large download, NOT a
+# default group: `uv sync --group transcribe`. uv.lock pins faster-whisper and ctranslate2; transcripts.py refuses other versions.
 transcribe = ["faster-whisper==1.2.1", "ctranslate2==4.8.4"]
 
 [tool.uv]

@@ -8,6 +8,52 @@ there.  (Feel free to test elsewhere / make a pull request.)  Everything which i
 wherever Godot runs.  Content packs don't care what platform you're on.  Windows runs the importer
 and the game: see "On Windows: build the original game and play it" below.
 
+## Windows setup in plain terms
+
+What `tools\setup_windows.ps1` needs and does, without the jargon ("On Windows: build the original game and play it" below says how
+to run it). Feedback on any of it is welcome, especially on how many tools it takes.
+
+**The tools it installs or uses**
+
+- **winget**: Windows' built-in app installer, used to install some of the tools below. It comes with Windows 10 and 11.
+- **Git**: to download the project itself. You need it before you start; the script does not install it.
+- **mise**: a tool manager that installs the exact versions of the other tools the project expects.
+- **uv**: a Python package manager that runs the project's Python scripts. It downloads its own copy of Python.
+- **Python packages**: a handful of libraries the scripts use (to read the CD image, handle pictures, read the game's program files),
+  and the project's test and code-checking tools.
+- **FFmpeg**: an audio and video converter. It turns the game's music into a modern format (Ogg Vorbis).
+- **FluidSynth**: a music synthesizer. It plays the game's MIDI music so it can be recorded as audio.
+- **A soundfont (FluidR3_GM)**: the instrument sounds FluidSynth plays with. It comes out of a Debian Linux package, but it is only a
+  data file; nothing Linux runs.
+- **Godot 4.7.2**: the game engine the game runs on.
+- **godot-sandbox**: a small add-on for Godot that the project uses.
+
+**The steps it takes**
+
+1. **Asks for your copy of the game.** A file picker asks for your Operation Neptune CD image (`.iso`); the script remembers where it
+   is for next time.
+2. **Installs mise** with winget, if it is not already there.
+3. **Installs uv** with mise.
+4. **Checks your CD image** with uv: the image must be the exact 1998 Windows release the project supports, which it checks by
+   comparing fingerprints (SHA-256 hashes) of 31 game files. If it does not match, the script stops here, before installing anything
+   else.
+5. **Installs FFmpeg** with winget, if it is missing.
+6. **Installs FluidSynth**, if it is missing: it downloads the latest Windows release from FluidSynth's GitHub page, checks the
+   download's fingerprint against the one GitHub publishes, unpacks it in your user folder and adds it to your `PATH`.
+7. **Installs Godot 4.7.2** with mise. If mise cannot, it downloads the official Windows build from Godot's GitHub page, checks it
+   the same way, and records where it is.
+8. **Sets up the project's Python environment** with mise and uv: it installs the Python packages, downloads the godot-sandbox
+   add-on, and downloads the soundfont (checked against a fingerprint the project records).
+9. **Checks that every tool the build needs is there**, at the version the project expects.
+10. **Builds the game from your CD image** with Python, FFmpeg, FluidSynth and Godot: it extracts the pictures, sounds, music,
+    levels and text from the disc, converts them, and has Godot import them. This takes a minute or two.
+11. **Starts the game** in Godot.
+
+Run it again and it skips everything that is already done.
+
+Optional, and not done by the script: turning the game's spoken dialogue into text. That needs a speech-recognition engine and a
+480 MB model, and only debugging tools and some tests use the result ([`play/LEGACY.md`](play/LEGACY.md), "Voice transcripts").
+
 ## Quick start
 
 We use [mise](https://mise.jdx.dev/) (very similar to homebrew) as much as possible to ensure the
