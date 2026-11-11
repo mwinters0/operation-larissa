@@ -3,7 +3,7 @@ extends OriginalPresenter
 ## shimmer of the water behind the screen. `modern_presenter.tscn` is the original's scene with a `ShaderMaterial` on its `Background`
 ## sprite; this script only gives that shader the time.
 ##
-## The time is the GAME's, not the engine's: ticks so far plus the fraction of the current tick, both from the skin API (`view.tick_number`
+## The time is the GAME's, not the engine's: ticks so far plus the fraction of the current tick (`SectorPresenter.game_phase`, from the skin API: `view.tick_number`
 ## and the `fraction` that `show_between_ticks` is given). So the water stops when the game clock does (a problem or a message is open,
 ## the sub dissolves, a pause) and runs at the speed of play otherwise. A shader's `TIME` could do neither.
 ##
@@ -30,4 +30,4 @@ func _ready() -> void:
 func show_between_ticks(fraction: float) -> void:
 	super.show_between_ticks(fraction)
 	if view != null:
-		_water.set_shader_parameter(&"phase", view.tick_number + fraction)
+		_water.set_shader_parameter(&"phase", game_phase(fraction))

@@ -77,6 +77,8 @@ var _show_currents := false
 var _show_collisions := false
 ## The nodes of the pellets in flight, by `PelletModel.id`.
 var _pellet_nodes := {}
+## The materials this presenter put on its layers (`_dress_layers`), by layer name: the ones whose `phase` it sets.
+var _layer_materials: Dictionary[StringName, ShaderMaterial] = {}
 
 # `%Name` finds a node by its unique name inside this scene.
 @onready var background: Sprite2D = %Background
@@ -100,6 +102,7 @@ func _ready() -> void:
 	var tiles := Catalog.tileset()
 	walls.tile_set = tiles
 	currents.tile_set = tiles
+	_dress_layers()
 
 
 ## Connects the events of `sim_world` and builds everything from what it holds already: a presenter may be bound in the middle of a
@@ -129,6 +132,7 @@ func bind(sim_world: SimWorld) -> void:
 		_on_screen_loaded(sim.sector_index, sim.screen_index)
 	_arrange()
 	_show_dissolve()
+	_show_phase(GameClock.tick_fraction())
 
 
 ## Shows the whole state of the rules now: the sub, every creature (picture, mirror, place) and every pellet.
@@ -143,6 +147,7 @@ func refresh() -> void:
 
 ## Every moving picture glides from its previous to its current place, `fraction` of the way into the tick.
 func show_between_ticks(fraction: float) -> void:
+	_show_phase(fraction)
 	sub.show_between_ticks(fraction)
 	station.show_between_ticks(sim.sequence, fraction)
 	for foe in foes:
@@ -164,6 +169,36 @@ func show_debug(triggers: bool, show_currents: bool, collisions: bool) -> void:
 		foe.debug_draw = collisions
 	for trigger: MathTrigger in triggers_layer.get_children():
 		trigger.debug_draw = triggers
+
+
+# --- the shaders of a skin ----------------------------------------------------------------------------------
+
+## The node of the layer `layer` (a key of `SkinLayers.NODES`). The nodes inside a layer have `use_parent_material` set, so the material of the layer is the one every picture in it is drawn with, those made later too; the sub's dissolve (`Sub.show_dissolve`) is its own material while it runs.
+func layer_node(layer: StringName) -> CanvasItem:
+	return get_node("%" + SkinLayers.NODES[layer]) as CanvasItem
+
+
+## The shader of each layer the skin in use dresses (the presenter's own `skin`, else the one in use: `GameSkin.layer_material`), put on the layer's node, and nothing on the others: built from the skin each time it is asked, so a
+## presenter made in the middle of anything wears what one made at the start wears. A layer's node needs `use_parent_material` off for its own material to count (a `TileMapLayer` has it on).
+func _dress_layers() -> void:
+	var worn := skin if skin != null else SkinChoice.current()
+	for layer in SkinLayers.NODES:
+		var node := layer_node(layer)
+		var material := worn.layer_material(layer)
+		if material != null:
+			node.use_parent_material = false
+			node.material = material
+			_layer_materials[layer] = material
+		elif _layer_materials.has(layer):
+			node.material = null
+			_layer_materials.erase(layer)
+
+
+## The `phase` of every material a layer wears: the game's time (`SectorPresenter.game_phase`), the same one the modern skin's water has.
+func _show_phase(fraction: float) -> void:
+	var phase := game_phase(fraction)
+	for material in _layer_materials.values():
+		material.set_shader_parameter(&"phase", phase)
 
 
 # --- what takes time (told by the rules) ------------------------------------------------

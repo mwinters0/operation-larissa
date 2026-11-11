@@ -3,5 +3,6 @@
 [ext_resource type="Script" path="res://src/gameplay/deco.gd" id="1_deco"]
 
 [node name="Deco" type="AnimatedSprite2D"]
+use_parent_material = true
 centered = false
 script = ExtResource("1_deco")

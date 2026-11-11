@@ -9,6 +9,8 @@ extends RefCounted
 ## game), brackets that match, and a `fragment`, `vertex` or `light` function. This is a check of the text; the renderer is the compiler, and a shader it cannot compile only logs its
 ## error and draws nothing different from what the game draws (a headless run has no renderer, so only the checks here run).
 ##
+## A data skin's `layers` set the uniforms of a shader by name: `uniform_types` reads what the text declares and `uniform_problem` says whether a manifest's value fills one (`ModSkin` judges, `PackCheck` tells the author).
+##
 ## Teaches: containing what you cannot sandbox by checking it before it is used: a small allow-list of the language, a size cap, and the comment-stripping that makes a keyword scan honest.
 
 ## A shader source is at most this many bytes.
@@ -16,6 +18,10 @@ const MAX_BYTES := 8192
 ## Words a shader may not use: loops.
 const FORBIDDEN_WORDS: Array[String] = ["for", "while", "do"]
 
+## The uniform types a manifest's value may fill, and how: `float` and `int` a number (an `int` a whole one), `bool` true or false, `vec2` / `vec3` / `vec4` a list of that many numbers, `vec3` / `vec4` also a colour string.
+const SETTABLE_TYPES: Array[String] = ["float", "int", "bool", "vec2", "vec3", "vec4"]
+
+static var _uniform := RegEx.create_from_string("\\buniform\\s+(?:(?:lowp|mediump|highp)\\s+)?(\\w+)\\s+(\\w+)\\s*(\\[?)")
 static var _type_line := RegEx.create_from_string("^\\s*shader_type\\s+canvas_item\\s*;")
 static var _function := RegEx.create_from_string("\\bvoid\\s+(?:fragment|vertex|light)\\s*\\(")
 
@@ -85,6 +91,37 @@ static func make(pack: Pack, rel: String, folder: String, reasons: Array[String]
 	var shader := Shader.new()
 	shader.code = pack.read_text(rel)
 	return shader
+
+
+## The uniforms the shader text declares, name -> type (an array reads as "array"; a name a comma list declares after the first is not seen). Read from the text, so that it works where no renderer compiles the shader (a headless run, the pack check).
+static func uniform_types(source: String) -> Dictionary[String, String]:
+	var found: Dictionary[String, String] = {}
+	for declared in _uniform.search_all(without_comments(source)):
+		found[declared.get_string(2)] = "array" if not declared.get_string(3).is_empty() else declared.get_string(1)
+	return found
+
+
+## What is wrong with `value` (as `ModSpec` reads a manifest's uniform value: a float, a bool, a `Vector2` / `Vector3` / `Vector4` or a `Color`) for a uniform of `type`, or "".
+static func uniform_problem(type: String, value: Variant) -> String:
+	if not SETTABLE_TYPES.has(type):
+		return "is a %s, which a manifest cannot set (it can set %s)" % [type, ", ".join(SETTABLE_TYPES)]
+	match type:
+		"float":
+			return "" if value is float else "is a float: a number is needed"
+		"int":
+			return "" if value is float and is_equal_approx(value, roundf(value)) else "is an int: a whole number is needed"
+		"bool":
+			return "" if value is bool else "is a bool: true or false is needed"
+		"vec2":
+			return "" if value is Vector2 else "is a vec2: a list of 2 numbers is needed"
+		"vec3":
+			return "" if value is Vector3 or value is Color else "is a vec3: a list of 3 numbers, or a colour like \"#ff8800\", is needed"
+	return "" if value is Vector4 or value is Color else "is a vec4: a list of 4 numbers, or a colour like \"#ff8800\", is needed"
+
+
+## `value` as the shader's uniform of `type` has it (after `uniform_problem` found nothing): an `int` uniform gets an int.
+static func uniform_value(type: String, value: Variant) -> Variant:
+	return int(value) if type == "int" else value
 
 
 static func _balanced(code: String) -> bool:

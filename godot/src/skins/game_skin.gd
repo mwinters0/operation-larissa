@@ -23,6 +23,8 @@ extends Resource
 ##  * `presenter_scene`: the scene that shows a sector (`PresenterChoice.ORIGINAL_SCENE` is the original's); its root extends
 ##    `SectorPresenter`.
 ##  * `render`: filter and pixel snapping (`RenderSettings`); `hud_labels`: the HUD's zone / sector / game lettering as text.
+##  * `layer_materials`: a shader (with its uniforms) on a layer of the original presenter, by the layer's name (`SkinLayers.NODES`). Presentation only: the presenter makes its own copy of the material each time it is built (`layer_material`) and
+##    sets the `phase` uniform itself, so a skin holds no state of a run.
 ## An empty field means "not mine": the lookup goes on to `fallback` (another skin, for a skin that builds on a skin) and ends at the
 ## original, which maps nothing at all and keeps today's pictures, files and settings.
 ##
@@ -53,6 +55,8 @@ const REPLACEABLE: Array[String] = ["ui/", "sprite_frames/", "neptune_tileset", 
 @export var presenter_scene: PackedScene
 @export var render: RenderSettings
 @export var hud_labels: HudLabels
+## A material for a layer of the original presenter: layer name (`SkinLayers.NODES`) -> a `ShaderMaterial` with the shader and the values of its uniforms. Never put on a node as it is: `layer_material` hands out copies.
+@export var layer_materials: Dictionary[StringName, ShaderMaterial] = {}
 
 ## A made-up name of the registry (`ui_1189`, `pa_1780`) already holds its number; a real one is followed by it in the file name.
 static var _trailing_number := RegEx.create_from_string("^(.+)_(\\d+)$")
@@ -134,6 +138,14 @@ func render_settings() -> RenderSettings:
 		return render
 	var next := next_skin()
 	return next.render_settings() if next != null else RenderSettings.new()
+
+
+## A new copy of the material this skin, else the skin behind it, puts on the layer `layer` of the original presenter (`SkinLayers.NODES`), or null for a layer no skin dresses. A copy, so that two presenters on screen have a `phase` each.
+func layer_material(layer: StringName) -> ShaderMaterial:
+	if layer_materials.has(layer):
+		return layer_materials[layer].duplicate() as ShaderMaterial
+	var next := next_skin()
+	return next.layer_material(layer) if next != null else null
 
 
 ## The HUD's text lettering, or null while the skin shows the original's pictures of the words.

@@ -128,9 +128,11 @@ func _make_dissolve_material() -> ShaderMaterial:
 	return material
 
 
+## The dissolve's `material` on the pictures, or none: a picture with no material of its own wears its parent's (`use_parent_material`: the shader a data skin puts on the `sub` layer, `SkinLayers.NODES`), and one with the dissolve's wears that alone.
 func _set_dissolve_material(material: ShaderMaterial) -> void:
 	for picture: AnimatedSprite2D in [sprite, bubbles, light]:
 		picture.material = material
+		picture.use_parent_material = material == null
 
 
 # --- placing ---------------------------------------------------------------------

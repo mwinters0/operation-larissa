@@ -3,8 +3,10 @@
 [ext_resource type="Script" path="res://src/gameplay/collectible.gd" id="1_collectible"]
 
 [node name="Collectible" type="Node2D"]
+use_parent_material = true
 script = ExtResource("1_collectible")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
+use_parent_material = true
 unique_name_in_owner = true
 centered = false

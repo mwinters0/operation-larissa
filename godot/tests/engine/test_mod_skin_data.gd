@@ -2,7 +2,7 @@ class_name TestModSkinData
 extends GdUnitTestSuite
 ## Teaches: a skin that is only data. A mod pack whose manifest says `skin` and has no `entry` is the same `ModSkin` in `SkinChoice` as a skin that runs a script, and it needs no godot-sandbox
 ## extension: its `render` (`RenderSettings`) goes on the window, its `pictures` (a skin key to a PNG of the pack's `skin/` folder) replace the base game's while this skin is worn, and only then, and its `hud_font` (a `.ttf` of the pack, with a
-## size and a colour) is the lettering of the HUD's boxes, which keep their rectangles.
+## size and a colour) is the lettering of the HUD's boxes, which keep their rectangles, and its `layers` put a shader (a compiled `ModShader`, with the values of its uniforms) on a layer of the original presenter, which sets the `phase` uniform to the game's time.
 ## The tests cover the manifest (every mistake is a sentence), the pack check, the skin the host makes (also in a build without the extension), and what wearing it changes and does not. That a skin of any
 ## kind changes no rule is `test_plays_identically.gd`, `test_skins_dont_change_the_game.gd` and `test_presenter_binds_late.gd`, which play this skin through `SkinRoster`.
 
@@ -13,6 +13,9 @@ const FILE := "skin/sky.png"
 ## The font the fixture ships (`tools/make_test_font.py`: blocks for every printable ASCII letter), and the name inside it.
 const FONT := "skin/hud.ttf"
 const FONT_NAME := "Larissa Test Block"
+## The shader the fixture lists and puts on two layers (`uniform float phase`, `glint`, `vec4 tint`, `vec2 size`).
+const SHADER := "skin/glow.gdshader"
+const WORLD_SCENE := "res://src/gameplay/sector_world.tscn"
 
 var _shelves: Array[PackShelf] = []
 
@@ -114,6 +117,7 @@ func test_every_mistake_in_a_data_skin_is_a_sentence() -> void:
 		"a picture that is no png": [{"requires_api": 5, "skin": {"pictures": {KEY: "skin/sky.jpg"}}}, "must be a file"],
 		"a picture not a string": [{"requires_api": 5, "skin": {"pictures": {KEY: 3}}}, "must be a file"],
 		"too many pictures": [{"requires_api": 5, "skin": {"pictures": many}}, "at most"],
+		"layers of the skin API": [{"requires_api": 2, "skin": {"shaders": [SHADER], "layers": {}}}, "requires_api"],
 	}
 	for what: String in bad:
 		var got := _parse(bad[what][0])
@@ -411,3 +415,276 @@ func test_a_changed_manifest_is_a_new_skin() -> void:
 	assert_object(second).is_not_same(first)
 	assert_bool(first.alive).is_false()
 	assert_int((second as ModSkin).render.texture_filter).is_equal(Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST)
+
+
+# --- layers: shaders on the layers of the original presenter ------------------------------------------------------------------
+
+func _layers(layers: Dictionary) -> Dictionary:
+	return {"requires_api": 5, "skin": {"shaders": [SHADER], "layers": layers}}
+
+
+func test_the_layers_are_the_original_presenters_and_each_is_a_node_of_its_scene() -> void:
+	assert_array(SkinLayers.NODES.keys()).contains_exactly_in_any_order([&"background", &"back_decos", &"walls", &"station", &"mid_decos", &"collectibles", &"sub", &"foes", &"pellets", &"front_decos", &"anim_decos", &"bubbles"])
+	var presenter := auto_free((load(PresenterChoice.ORIGINAL_SCENE) as PackedScene).instantiate()) as OriginalPresenter
+	add_child(presenter)
+	for layer: StringName in SkinLayers.NODES:
+		assert_object(presenter.layer_node(layer)).override_failure_message(String(layer)).is_not_null()
+		assert_bool(presenter.is_ancestor_of(presenter.layer_node(layer))).is_true()
+		assert_str(String(presenter.layer_node(layer).name)).is_equal(SkinLayers.NODES[layer])
+		var data := _layers({String(layer): {"shader": SHADER}})
+		assert_array(_parse(data)[1]).override_failure_message(String(layer)).is_empty()
+
+
+func test_a_layer_has_a_shader_and_the_values_of_its_uniforms() -> void:
+	var data := _layers({
+		"background": {"shader": SHADER, "uniforms": {"glint": 0.25, "tint": "#ff8800", "size": [608.0, 288.0], "on": true, "shade": [0.5, 0.25, 1.0], "plane": [1.0, 2.0, 3.0, 4.0], "see_through": "#ff880080"}},
+		"sub": {"shader": SHADER},
+	})
+	var got := _parse(data)
+	var spec: ModSpec = got[0]
+	assert_array(got[1]).is_empty()
+	var uniforms: Dictionary = spec.layers["background"]["uniforms"]
+	assert_float(uniforms["glint"]).is_equal(0.25)
+	assert_str((uniforms["tint"] as Color).to_html(false)).is_equal("ff8800")
+	assert_object(uniforms["size"]).is_equal(Vector2(608, 288))
+	assert_bool(uniforms["on"]).is_true()
+	assert_object(uniforms["shade"]).is_equal(Vector3(0.5, 0.25, 1.0))
+	assert_object(uniforms["plane"]).is_equal(Vector4(1, 2, 3, 4))
+	assert_float((uniforms["see_through"] as Color).a).is_equal_approx(0x80 / 255.0, 0.001)
+	assert_dict(spec.layers["sub"]).is_equal({"shader": SHADER, "uniforms": {}})
+	assert_dict(spec.to_dict()).is_equal(data)
+	assert_dict((_parse(spec.to_dict())[0] as ModSpec).to_dict()).is_equal(data)
+	assert_dict((_parse({"requires_api": 5, "skin": {}})[0] as ModSpec).layers).is_empty()
+
+
+func test_every_mistake_in_a_layer_is_a_sentence() -> void:
+	var many := {}
+	for i in ModSpec.MAX_LAYER_UNIFORMS + 1:
+		many["u%d" % i] = 1.0
+	var bad := {
+		"layers not an object": [{"requires_api": 5, "skin": {"shaders": [SHADER], "layers": [SHADER]}}, "\"layers\" must be an object"],
+		"a layer the presenter has not": [_layers({"currents": {"shader": SHADER}}), "no layer \"currents\""],
+		"a layer with a capital": [_layers({"Background": {"shader": SHADER}}), "no layer \"Background\""],
+		"a layer not an object": [_layers({"background": SHADER}), "must be an object"],
+		"a key it does not know": [_layers({"background": {"shader": SHADER, "blend": "add"}}), "no \"blend\""],
+		"no shader": [_layers({"background": {}}), "needs a \"shader\""],
+		"a shader the skin does not list": [_layers({"background": {"shader": "skin/other.gdshader"}}), "needs a \"shader\""],
+		"a shader not a string": [_layers({"background": {"shader": 3}}), "needs a \"shader\""],
+		"uniforms not an object": [_layers({"background": {"shader": SHADER, "uniforms": [1.0]}}), "\"uniforms\""],
+		"too many uniforms": [_layers({"background": {"shader": SHADER, "uniforms": many}}), "at most"],
+		"a name with a space": [_layers({"background": {"shader": SHADER, "uniforms": {"two words": 1.0}}}), "uniform name"],
+		"a name starting with a digit": [_layers({"background": {"shader": SHADER, "uniforms": {"2d": 1.0}}}), "uniform name"],
+		"phase, which the game sets": [_layers({"background": {"shader": SHADER, "uniforms": {"phase": 1.0}}}), "the game sets it"],
+		"a number too large": [_layers({"background": {"shader": SHADER, "uniforms": {"glint": ModSpec.MAX_UNIFORM_VALUE + 1.0}}}), "\"glint\""],
+		"a number too small": [_layers({"background": {"shader": SHADER, "uniforms": {"glint": -ModSpec.MAX_UNIFORM_VALUE - 1.0}}}), "\"glint\""],
+		"a vector with one number": [_layers({"background": {"shader": SHADER, "uniforms": {"size": [1.0]}}}), "\"size\""],
+		"a vector with five": [_layers({"background": {"shader": SHADER, "uniforms": {"size": [1.0, 2.0, 3.0, 4.0, 5.0]}}}), "\"size\""],
+		"a vector with a word": [_layers({"background": {"shader": SHADER, "uniforms": {"size": [1.0, "2"]}}}), "\"size\""],
+		"a vector too large": [_layers({"background": {"shader": SHADER, "uniforms": {"size": [1.0, 1e9]}}}), "\"size\""],
+		"a colour name": [_layers({"background": {"shader": SHADER, "uniforms": {"tint": "orange"}}}), "\"tint\""],
+		"a colour that is no colour": [_layers({"background": {"shader": SHADER, "uniforms": {"tint": "#xyz"}}}), "\"tint\""],
+		"an object": [_layers({"background": {"shader": SHADER, "uniforms": {"tint": {"r": 1.0}}}}), "\"tint\""],
+		"a script's skin": [{"entry": "a.sgd", "requires_api": 5, "skin": {"shaders": [SHADER], "layers": {"background": {"shader": SHADER}}}}, "no \"entry\""],
+	}
+	for what: String in bad:
+		var got := _parse(bad[what][0])
+		assert_object(got[0]).override_failure_message("%s was accepted" % what).is_null()
+		assert_bool((got[1] as Array[String]).any(func(e: String) -> bool: return e.contains(bad[what][1]))) \
+				.override_failure_message("%s: %s" % [what, got[1]]).is_true()
+
+
+## A scratch data skin pack whose layers are `layers` (the fixture's own shader listed), running; its skin.
+func _mount_layers(layers: Dictionary, shader_text := "") -> ModSkin:
+	var shelf := PackShelf.new()
+	_shelves.append(shelf)
+	shelf.add_mod_fixture(FIXTURE, {"skin": {"shaders": [SHADER], "layers": layers}})
+	ModSkinShelf.add_files(shelf)
+	if not shader_text.is_empty():
+		shelf.write_text(SHADER, shader_text)
+	shelf.mount()
+	Mods.sync()
+	return SkinChoice.load_skin(shelf.id) as ModSkin
+
+
+func test_the_check_says_what_is_wrong_with_a_layer() -> void:
+	var cases := {
+		"a uniform the shader does not declare": [{"background": {"shader": SHADER, "uniforms": {"glow": 0.5}}}, "does not declare"],
+		"a number for a colour": [{"background": {"shader": SHADER, "uniforms": {"tint": 0.5}}}, "a vec4"],
+		"a colour for a float": [{"background": {"shader": SHADER, "uniforms": {"glint": "#ff8800"}}}, "a number is needed"],
+		"a list of three for a vec2": [{"background": {"shader": SHADER, "uniforms": {"size": [1.0, 2.0, 3.0]}}}, "a list of 2 numbers"],
+	}
+	for what: String in cases:
+		var shelf := PackShelf.new()
+		_shelves.append(shelf)
+		shelf.add_mod_fixture(FIXTURE, {"skin": {"shaders": [SHADER], "layers": cases[what][0]}})
+		ModSkinShelf.add_files(shelf)
+		var report := _report(shelf)
+		assert_bool(report.errors().any(func(f: PackReport.Finding) -> bool: return f.message.contains(cases[what][1]) and f.message.contains("\"background\""))).override_failure_message("%s: %s" % [what, report.text()]).is_true()
+	var odd := PackShelf.new()                                                                           # (a shader that fails ModShader: a loop)
+	_shelves.append(odd)
+	odd.add_mod_fixture(FIXTURE, {"skin": {"shaders": [SHADER], "layers": {"background": {"shader": SHADER}}}})
+	ModSkinShelf.add_files(odd)
+	odd.write_text(SHADER, "shader_type canvas_item;\nvoid fragment() { for (int i = 0; i < 3; i++) { COLOR = vec4(1.0); } }")
+	assert_bool(_report(odd).errors().any(func(f: PackReport.Finding) -> bool: return f.message.contains(SHADER) and f.message.contains("no loops"))).is_true()
+	var no_shader := PackShelf.new()                                                                     # (a layer's shader the pack lacks)
+	_shelves.append(no_shader)
+	no_shader.add_mod_fixture(FIXTURE)
+	DirAccess.remove_absolute("%s/%s" % [no_shader.root, SHADER])
+	assert_bool(_report(no_shader).errors().any(func(f: PackReport.Finding) -> bool: return f.message.contains(SHADER) and f.message.contains("not in the pack"))).is_true()
+
+
+func test_a_shader_declares_its_uniforms_in_its_text() -> void:
+	var source := "shader_type canvas_item;\n// uniform float hidden;\nuniform float phase = 0.0;\ninstance uniform vec4 tint : source_color;\nuniform lowp int bands = 3;\nuniform sampler2D noise;\nuniform float list[3];\nvoid fragment() {}"
+	assert_dict(ModShader.uniform_types(source)).is_equal({"phase": "float", "tint": "vec4", "bands": "int", "noise": "sampler2D", "list": "array"})
+	assert_str(ModShader.uniform_problem("sampler2D", 1.0)).contains("cannot set")
+	assert_str(ModShader.uniform_problem("int", 2.5)).contains("whole number")
+	assert_str(ModShader.uniform_problem("int", 2.0)).is_empty()
+	assert_int(ModShader.uniform_value("int", 2.0)).is_equal(2)
+	assert_str(ModShader.uniform_problem("bool", 1.0)).contains("true or false")
+	assert_str(ModShader.uniform_problem("vec3", Color.RED)).is_empty()
+	assert_str(ModShader.uniform_problem("vec2", Color.RED)).contains("2 numbers")
+
+
+func test_the_skin_holds_a_material_for_each_layer_and_hands_out_copies() -> void:
+	var shelf := _mount()
+	var skin := SkinChoice.load_skin(shelf.id)
+	assert_array(skin.layer_materials.keys()).contains_exactly_in_any_order([&"background", &"foes"])
+	var material := skin.layer_materials[&"background"]
+	assert_str(material.shader.code).is_equal((skin as ModSkin).assets.shaders[SHADER].code)
+	assert_float(material.get_shader_parameter(&"glint")).is_equal(0.25)
+	assert_str((material.get_shader_parameter(&"tint") as Color).to_html(false)).is_equal("ff8800")
+	assert_object(material.get_shader_parameter(&"size")).is_equal(Vector2(608, 288))
+	assert_object(skin.layer_materials[&"foes"].get_shader_parameter(&"glint")).is_null()               # (what the manifest does not say is the shader's own default)
+	var copy := skin.layer_material(&"background")
+	assert_object(copy).is_not_same(material)
+	assert_object(copy.shader).is_same(material.shader)
+	assert_float(copy.get_shader_parameter(&"glint")).is_equal(0.25)
+	assert_object(skin.layer_material(&"walls")).is_null()
+	assert_object(SkinChoice.original().layer_material(&"background")).is_null()
+	var int_skin := _mount_layers({"background": {"shader": SHADER, "uniforms": {"bands": 3.0, "soft": true}}}, "shader_type canvas_item;\nuniform int bands = 1;\nuniform bool soft = false;\nvoid fragment() { COLOR = vec4(float(bands)); }")
+	assert_int(int_skin.layer_materials[&"background"].get_shader_parameter(&"bands")).is_equal(3)
+	assert_bool(int_skin.layer_materials[&"background"].get_shader_parameter(&"soft")).is_true()
+
+
+# --- what a layer's shader does and does not touch (that no rule changes is `test_plays_identically`, which plays this skin) ---------------------------------------------------------------------------
+
+## A presenter of the original kind dressed in `skin`, in the tree and bound to `sim` (what `SectorWorld` does with the skin in use).
+func _presenter(skin: GameSkin, sim: SimWorld) -> OriginalPresenter:
+	var presenter := auto_free(PresenterChoice.make_presenter_for(skin)) as OriginalPresenter
+	presenter.run_in_skin(func() -> void:
+		add_child(presenter)
+		presenter.bind(sim))
+	return presenter
+
+
+## A sim with the arena loaded, the sub flying and `ticks` ticks run.
+func _sim(ticks: int) -> SimWorld:
+	var sim := SimWorld.new(GameState)
+	sim.load_sector(DevCreatures.ARENA, 0)
+	sim.foe_context.rng.seed = 4242
+	sim.start_flight(200, 150, 6)
+	for i in ticks:
+		sim.tick()
+	return sim
+
+
+func _shader_of(node: CanvasItem) -> String:
+	var material := node.material as ShaderMaterial
+	return "" if material == null else material.shader.code
+
+
+func test_the_layers_the_manifest_names_wear_the_shader_and_no_other() -> void:
+	var skin := SkinChoice.load_skin(_mount().id)
+	var presenter := _presenter(skin, _sim(2))
+	var shader := (skin as ModSkin).assets.shaders[SHADER].code
+	for layer: StringName in SkinLayers.NODES:
+		assert_str(_shader_of(presenter.layer_node(layer))).override_failure_message(String(layer)).is_equal(shader if [&"background", &"foes"].has(layer) else "")
+	assert_float((presenter.background.material as ShaderMaterial).get_shader_parameter(&"glint")).is_equal(0.25)
+	assert_object(presenter.background.material).is_not_same(presenter.foes_layer.material)             # (a material to a layer)
+	var plain := _presenter(SkinChoice.original(), _sim(0))
+	for layer: StringName in SkinLayers.NODES:
+		assert_object(plain.layer_node(layer).material).override_failure_message(String(layer)).is_null()
+
+
+func test_every_picture_inside_a_layer_wears_the_layers_material() -> void:
+	var skin := SkinChoice.load_skin(_mount().id)
+	var sim := _sim(2)
+	sim.tick(InputSnapshot.firing())                                                                      # (a pellet in flight: a node made after the presenter was bound)
+	var presenter := _presenter(skin, sim)
+	sim.tick()
+	var checked := 0
+	for layer: StringName in SkinLayers.NODES:
+		var found: Array[Node] = presenter.layer_node(layer).find_children("*", "CanvasItem", true, false)
+		for node: Node in found:
+			var item := node as CanvasItem
+			assert_bool(item.use_parent_material).override_failure_message("%s of %s" % [item.get_path(), layer]).is_true()
+			assert_object(item.material).override_failure_message("%s of %s has a material of its own" % [item.get_path(), layer]).is_null()
+			checked += 1
+	assert_int(checked).is_greater(10)                                                                    # (decorations, creatures with their sprites, the sub's pictures, the pellet, the bubbles, the station)
+	assert_int(presenter.foes_layer.get_child_count()).is_greater(0)
+
+
+func test_the_sub_dissolve_is_its_own_material_and_the_layers_comes_back() -> void:
+	var skin := SkinChoice.load_skin(_mount_layers({"sub": {"shader": SHADER}}).id)
+	var sim := _sim(2)
+	var presenter := _presenter(skin, sim)
+	assert_bool(presenter.sub.sprite.use_parent_material).is_true()
+	sim.begin_dissolve()
+	sim.advance_dissolve(SimWorld.dissolve_length() / 3)
+	assert_bool(presenter.sub.dissolve_material() != null).is_true()
+	assert_bool(presenter.sub.sprite.use_parent_material).is_false()
+	sim.abandon_damage()
+	presenter.sub.show_dissolve(Sub.NO_DISSOLVE)
+	assert_object(presenter.sub.dissolve_material()).is_null()
+	assert_bool(presenter.sub.sprite.use_parent_material).is_true()
+	assert_str(_shader_of(presenter.sub)).is_equal((skin as ModSkin).assets.shaders[SHADER].code)
+
+
+func _phase(presenter: OriginalPresenter, layer := &"background") -> float:
+	return (presenter.layer_node(layer).material as ShaderMaterial).get_shader_parameter(&"phase")
+
+
+func test_phase_is_the_games_time_from_the_start_and_when_bound_late() -> void:
+	var skin := SkinChoice.load_skin(_mount().id)
+	var sim := SimWorld.new(GameState)
+	var first := _presenter(skin, sim)
+	sim.load_sector(DevCreatures.ARENA, 0)
+	sim.start_flight(200, 150, 6)
+	for i in 3:
+		sim.tick()
+	var late := _presenter(skin, sim)
+	for presenter in [first, late]:
+		presenter.show_between_ticks(0.5)
+		assert_float(_phase(presenter)).is_equal_approx(presenter.view.tick_number + 0.5, 0.0001)
+		assert_float(_phase(presenter, &"foes")).is_equal(_phase(presenter))                              # (every layer has the one time)
+	assert_float(_phase(late)).is_equal(_phase(first))
+	assert_float(_phase(late)).is_greater(3.0)
+	late.show_between_ticks(0.0)                                                                           # (a frame without a tick: the same time; the clock held: it stands still)
+	var held := _phase(late)
+	for i in 5:
+		late.show_between_ticks(0.0)
+	assert_float(_phase(late)).is_equal(held)
+	assert_float(_phase(first)).is_not_equal(held)                                                         # (a presenter's phase is its own: the other one was not moved)
+	assert_float(late.game_phase(0.25)).is_equal(late.view.tick_number + 0.25)
+	late.unbind()
+	assert_float(late.game_phase(0.25)).is_equal(0.0)
+
+
+func test_the_skin_goes_and_the_material_goes_with_it() -> void:
+	var shelf := _mount()
+	SkinChoice.select_id(shelf.id)
+	var world := scene_runner(WORLD_SCENE).scene() as SectorWorld
+	world.load_sector(DevCreatures.ARENA, 0)
+	var worn := world.original.background.material
+	assert_object(worn).is_instanceof(ShaderMaterial)
+	assert_object(world.original.foes_layer.material).is_instanceof(ShaderMaterial)
+	world.presenter.show_between_ticks(0.5)
+	assert_float(_phase(world.original)).is_equal_approx(world.presenter.view.tick_number + 0.5, 0.0001)
+	SkinChoice.select(SkinChoice.original())
+	for layer: StringName in SkinLayers.NODES:
+		assert_object(world.original.layer_node(layer).material).override_failure_message(String(layer)).is_null()
+	SkinChoice.select_id(shelf.id)
+	assert_object(world.original.background.material).is_instanceof(ShaderMaterial)
+	assert_object(world.original.background.material).is_not_same(worn)                                    # (made again from the skin and the clock, not kept)
+	world.presenter.show_between_ticks(0.5)
+	assert_float(_phase(world.original)).is_equal_approx(world.presenter.view.tick_number + 0.5, 0.0001)

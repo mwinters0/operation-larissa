@@ -3,8 +3,10 @@
 [ext_resource type="Script" path="res://src/gameplay/ink_pellet.gd" id="1_pellet"]
 
 [node name="InkPellet" type="Node2D"]
+use_parent_material = true
 script = ExtResource("1_pellet")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
+use_parent_material = true
 unique_name_in_owner = true
 centered = false

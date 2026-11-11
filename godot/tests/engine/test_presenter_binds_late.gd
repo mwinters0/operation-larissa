@@ -203,6 +203,7 @@ func _shows(node: Node) -> String:
 	var parts: Array[String] = []
 	if node is CanvasItem:
 		parts.append(_material((node as CanvasItem).material))
+		parts.append("parent_material=%s" % (node as CanvasItem).use_parent_material)
 	if node is Node2D:
 		var node_2d := node as Node2D
 		parts.append("at=%s rot=%s scale=%s" % [node_2d.position, node_2d.rotation, node_2d.scale])
@@ -223,14 +224,15 @@ func _shows(node: Node) -> String:
 	return " " + " ".join(parts)
 
 
-## A material by what decides the picture: its shader and, for the dissolve, how many passes are drawn.
+## A material by what decides the picture: its shader, for the dissolve how many passes are drawn, for the shader of a layer (a data skin's) its `phase` and a value it was given.
 func _material(material: Material) -> String:
 	if material == null:
 		return "material=none"
 	var shader_material := material as ShaderMaterial
 	if shader_material == null:
 		return "material=%s" % material.get_class()
-	return "material=%s passes=%s" % [shader_material.shader.resource_path, shader_material.get_shader_parameter("passes_done")]
+	return "material=%s code=%d passes=%s phase=%s glint=%s" % [shader_material.shader.resource_path, shader_material.shader.code.hash(), shader_material.get_shader_parameter("passes_done"),
+			shader_material.get_shader_parameter("phase"), shader_material.get_shader_parameter("glint")]
 
 
 func _texture(texture: Texture2D) -> String:

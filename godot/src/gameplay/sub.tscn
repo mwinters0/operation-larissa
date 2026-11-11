@@ -6,16 +6,20 @@
 script = ExtResource("1_sub")
 
 [node name="Visual" type="Node2D" parent="."]
+use_parent_material = true
 unique_name_in_owner = true
 
 [node name="Sprite" type="AnimatedSprite2D" parent="Visual"]
+use_parent_material = true
 unique_name_in_owner = true
 
 [node name="Bubbles" type="AnimatedSprite2D" parent="Visual"]
+use_parent_material = true
 unique_name_in_owner = true
 visible = false
 
 [node name="Light" type="AnimatedSprite2D" parent="Visual"]
+use_parent_material = true
 unique_name_in_owner = true
 visible = false
 centered = false

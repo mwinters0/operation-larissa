@@ -3,8 +3,10 @@
 [ext_resource type="Script" path="res://src/gameplay/foe.gd" id="1_foe"]
 
 [node name="Foe" type="Node2D"]
+use_parent_material = true
 script = ExtResource("1_foe")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
+use_parent_material = true
 unique_name_in_owner = true
 centered = false

@@ -58,6 +58,7 @@ func _ready() -> void:
 		bubble.sprite_frames = frames
 		bubble.animation = &"all"
 		bubble.centered = false
+		bubble.use_parent_material = true    # (the shader of the `bubbles` layer, if the skin puts one on it)
 		bubble.visible = false
 		bubble.pause()                       # the frame is chosen by `step`, never by the animation player
 		_pool.append(bubble)
