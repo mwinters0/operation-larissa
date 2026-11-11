@@ -17,6 +17,8 @@ java = "temurin-25"
 [tasks.setup]
 description = "Create or refresh the Python environment (.venv) from pyproject.toml and uv.lock, and fetch the godot-sandbox extension (mod packs)"
 run = ["uv sync", "uv run tools/fetch_sandbox.py"]
+# Windows has no package for the General MIDI soundfont, so setup fetches it there (docs/SETUP.md, "On Windows").
+run_windows = ["uv sync", "uv run tools/fetch_sandbox.py", "uv run tools/fetch_soundfont.py"]
 
 [tasks."sandbox:fetch"]
 description = "Fetch the pinned godot-sandbox extension into godot/addons/godot_sandbox (git-ignored); --force fetches again"
@@ -25,15 +27,18 @@ run = "uv run tools/fetch_sandbox.py"
 [tasks."godot:import"]
 description = "Godot imports the project's assets: once in a fresh checkout, and after the importer or new assets"
 run = "tools/godot.sh --headless --path godot --import"
+run_windows = "uv run tools/godot.py --headless --path godot --import"
 
 [tasks."godot:editor"]
 description = "Open the project in the Godot editor"
 run = "tools/godot.sh --path godot -e"
+run_windows = "uv run tools/godot.py --path godot -e"
 
 [tasks."godot:play"]
 description = "Play a pack by its id (dev, legacy, any other): mise run godot:play <id>"
 usage = 'arg "<pack>"'
 run = 'tools/godot.sh --path godot -- --pack=${usage_pack}'
+run_windows = 'uv run tools/godot.py --path godot -- --pack=%usage_pack%'
 
 [tasks."godot:pack"]
 description = "Write <id>.larissa, a pack file of the complete pack <id> (dev, legacy, a copy of dev), into the current directory or --out: mise run godot:pack <id> [--out <dir>] [--version <v>] [--no-reach]"
@@ -50,14 +55,17 @@ case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
 mkdir -p "$out"
 tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --export-pack=${usage_pack} --archive "--out=$out" ${usage_version:+--version=$usage_version} ${usage_no_reach:+--no-reach}
 '''
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."test:engine"]
 description = "The engine's gdUnit4 tests, on the dev pack"
 run = "tools/run_tests.sh engine"
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."test:legacy"]
 description = "The gdUnit4 tests of the original game, on the legacy pack (they pass, saying so, when there is no legacy pack)"
 run = "tools/run_tests.sh legacy"
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."lint:tools"]
 description = "Lint and type-check the Python tools (ruff, pyright; pyright installs the dev-pack group so it sees every import)"

@@ -177,7 +177,7 @@ def add_correction(path: Path, machine: dict[str, str], name: str, text: str) ->
     path.parent.mkdir(parents=True, exist_ok=True)
     document = {"comment": "Hand corrections of the machine voice transcripts (tools/import/transcripts.py). Not committed: "
                            "the text is the game's speech.", "corrections": dict(sorted(entries.items()))}
-    path.write_text(json.dumps(document, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(document, indent=1, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
 
 
 # --- the engine -------------------------------------------------------------------------------------------------------
@@ -256,6 +256,18 @@ def transcribe(compute_type: str, names: list[str], sounds: Path = SOUNDS, progr
 
 # --- the step ---------------------------------------------------------------------------------------------------------
 
+def counter(total: int, every: int = 25):
+    """A `progress` callback for `transcribe` that prints how many clips are done every `every` clips and at the end, so the
+    several minutes of transcription show they are moving."""
+    done = [0]
+
+    def tick(name: str, text: str) -> None:
+        done[0] += 1
+        if done[0] % every == 0 or done[0] == total:
+            print("  transcribed %d of %d clips" % (done[0], total), flush=True)
+    return tick
+
+
 def write_json(path: Path, data: dict) -> None:
     common.Stats.record(common.write_text(path, json.dumps(data, indent=1, ensure_ascii=False) + "\n"))
 
@@ -272,7 +284,7 @@ def run(compute_type: str | None = None, write_fixture: bool = False) -> int:
                          % (len(missing), SOUNDS, missing[0]))
     print("  transcribing %d clips: faster-whisper %s, ctranslate2 %s, %s@%s, greedy, %s, %d threads"
           % (len(names), FASTER_WHISPER, CTRANSLATE2, MODEL_REPO, MODEL_REVISION[:8], compute_type, CPU_THREADS))
-    machine = transcribe(compute_type, names)
+    machine = transcribe(compute_type, names, progress=counter(len(names)))
     write_json(OUT_MACHINE, machine)
 
     if write_fixture:

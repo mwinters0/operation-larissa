@@ -6,8 +6,9 @@ var _cues: VoiceCues
 var _index: VoiceIndex
 
 
-## Without the legacy pack (the original game, made by the importer from your own copy) this suite skips.
-func before(do_skip := not LegacyPack.present(), skip_reason := "run the importer on your copy of the game (uv run tools/import/import_all.py)") -> void:
+## Without the legacy pack (the original game, made by the importer from your own copy), or without the voice transcripts of the importer's
+## optional step, this suite skips.
+func before(do_skip := not LegacyPack.has_transcripts(), skip_reason := "run the importer with its transcripts step (uv run tools/import/import_all.py --transcripts)") -> void:
 	pass
 
 

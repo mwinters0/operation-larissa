@@ -111,3 +111,11 @@ def test_the_import_goes_on_after_a_version_warning(monkeypatch, capsys):
     with pytest.raises(Made):
         import_all.main()
     assert "4.8.beta1" in capsys.readouterr().err
+
+
+def test_on_windows_each_missing_music_tool_has_its_own_hint(path_of_fakes, tmp_path, monkeypatch):
+    monkeypatch.setattr(tool_check, "WINDOWS", True)
+    problems = tool_check.missing(["audio"], str(tmp_path / "no.sf2"))
+    assert [p.split(" ")[0] for p in problems] == ["ffmpeg", "fluidsynth", "General"]
+    assert "Gyan.FFmpeg" in problems[0] and "Gyan.FFmpeg" not in problems[1] + problems[2]
+    assert "FluidSynth" in problems[1] and "fetch_soundfont.py" in problems[2]

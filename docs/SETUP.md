@@ -5,7 +5,8 @@ to use it.
 
 The author uses Fedora Linux, and all custom tools are written for that environment and tested
 there.  (Feel free to test elsewhere / make a pull request.)  Everything which is Godot runs
-wherever Godot runs.  Content packs don't care what platform you're on.
+wherever Godot runs.  Content packs don't care what platform you're on.  Windows runs the importer
+and the game: see "On Windows: build the original game and play it" below.
 
 ## Quick start
 
@@ -40,7 +41,7 @@ All of the above, and also:
 sudo dnf install ffmpeg-free fluidsynth fluid-soundfont-common fluid-soundfont-gm   # the music
 cp /path/to/your/copy.iso NEPTUNE.ISO   # or: export NEP_ISO=/path/to/your/copy.iso
 mise run legacy:checktools              # is every tool here? It names what is missing and how to get it
-mise run legacy:import                  # NEPTUNE.ISO -> the legacy pack (about 10 minutes; plan on 1 GB free)
+mise run legacy:import                  # NEPTUNE.ISO -> the legacy pack (a minute or two; plan on 500 MB free)
 mise run test:legacy                    # the tests of the original game, on the legacy pack
 mise run godot:play legacy              # play the original
 mise run godot:pack legacy              # ./legacy.larissa, for an exported game (any pack id works; --out <dir>)
@@ -52,6 +53,52 @@ mise run release:play                   # play the Linux one
 
 Importer options go after `--`: `mise run legacy:import -- --only audio`. What the importer does,
 its options, and what to do when it refuses: [`play/LEGACY.md`](play/LEGACY.md).
+
+### On Windows: build the original game and play it
+
+Windows runs the importer and the game, and the editor opens. The tests (`tools/run_tests.sh`), the pack files (`godot:pack`) and the
+release builds call bash scripts, so they are Linux-only; their mise tasks say so on Windows.
+
+With Git installed (`winget install --id Git.Git -e`) and the repository cloned, one script does the rest. In PowerShell, in the
+repository root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\setup_windows.ps1
+```
+
+It asks for your CD image (or takes `-Iso C:\path\to\copy.iso`) and checks it against the reference release before it installs
+anything, then installs what is missing: mise and uv, FFmpeg (winget `Gyan.FFmpeg.Essentials`, which has the libvorbis encoder), FluidSynth (the
+`win10-x64` zip of its latest GitHub release, checked against the SHA-256 GitHub publishes, into `%LOCALAPPDATA%\Programs\FluidSynth`
+and onto your user `PATH`), Godot (mise's, else the official Windows build of the pinned version, named by `GODOT_BIN`), and through
+`mise run setup` the Python environment, the godot-sandbox extension and the General MIDI soundfont (`tools/fetch_soundfont.py`:
+`FluidR3_GM.sf2` from Debian's `fluid-soundfont-gm` package, version and SHA-256 pinned, into the git-ignored `soundfonts\`). Then it
+runs `legacy:checktools` and `legacy:import` (without the optional voice transcripts), and starts the game (`-NoPlay` stops before). It keeps your image's path in the user
+variable `NEP_ISO`, and a second run skips everything already in place.
+
+Afterwards, from the repository root:
+
+```powershell
+mise run godot:play legacy        # play the original
+mise run godot:editor             # the project in the Godot editor
+mise run legacy:import            # build the legacy pack again (importer options after --)
+```
+
+To type `uv` and `godot` directly as well, activate mise's shims in your PowerShell profile:
+`Add-Content $PROFILE 'mise activate pwsh --shims | Out-String | Invoke-Expression'`.
+
+What differs from Linux:
+
+- **Godot.** `tools/godot.py` takes the place of `tools/godot.sh`: where a manual writes `tools/godot.sh <arguments>`, Windows runs
+  `uv run tools/godot.py <arguments>`, and the importer and the mise tasks call it themselves. It runs `GODOT_BIN`, else `godot` on the
+  `PATH`, else mise's install of the pinned Godot, and always the `_console.exe` of a Windows Godot ("Godot" below). When mise cannot
+  install Godot, `setup_windows.ps1` puts the official Windows build in `%LOCALAPPDATA%\Programs\Godot\` and sets the user variables
+  `GODOT_BIN` (its `_console.exe`) and `MISE_DISABLE_TOOLS=godot`.
+- **Text.** The Python tools switch themselves to Python's UTF-8 mode (`tools/utf8_mode.py`) and write LF line endings, so a Windows
+  run writes the same files as a Linux one. `.gitattributes` keeps LF in the checkout too. A clone made before that file was in it
+  still has CRLF files: `git rm -r --cached -q .` then `git reset --hard` checks them out again with LF (commit or stash your own work
+  first).
+- **Paths.** Saves and installed packs are in `%APPDATA%\Godot\app_userdata\Operation Larissa\`; the optional speech model goes to
+  `%USERPROFILE%\.cache\huggingface\hub`.
 
 ### For AI coding assistants: the Godot editor over MCP
 
@@ -110,17 +157,17 @@ version is yours to find.
 
 | Tool | Needed for | Get it | Notes |
 | --- | --- | --- | --- |
-| mise | everything | [mise.jdx.dev](https://mise.jdx.dev/) (installer or COPR `jdxcode/mise`) | Installs uv, Godot and the JDK. Runs the tasks of `mise.toml` and the Proton tasks (`mise.proton.toml`). |
+| mise | everything | [mise.jdx.dev](https://mise.jdx.dev/) (installer or COPR `jdxcode/mise`; Windows: `winget install --id jdx.mise -e`) | Installs uv, Godot and the JDK. Runs the tasks of `mise.toml` and the Proton tasks (`mise.proton.toml`). |
 | uv | every Python tool and test | `mise install` | uv fetches Python 3.12 or newer as `pyproject.toml` asks. See "The Python environment". |
 | Godot 4.7.2 | the game, the editors, the tests, the importer's last step | `mise install` | The official Linux build, as `godot`. See "Godot". |
 | Godot export templates 4.7.2 | exporting a runnable game (Linux, Windows, Web) | `mise run godot:fetch_templates` (`tools/fetch_export_templates.py`: the pinned release's archive, 1.3 GB, checked against its SHA-512; only the templates of our presets are kept), or Editor > Manage Export Templates | They go to `~/.local/share/godot/export_templates/4.7.2.stable/` (`$XDG_DATA_HOME`). `mise run release:build_linux` / `release:build_web` fetch them when they are missing. Making a pack file (`pack_tool --export-pack ... --archive`) needs none. [`engine/DEVELOPING.md`](engine/DEVELOPING.md), "Exporting builds". |
 | godot-sandbox 0.60 (a GDExtension) | running a mod pack's SafeGDScript; the mod tests (`test_mod_*`); exporting a game that can run mod packs | `mise run setup`, or `uv run tools/fetch_sandbox.py` | Downloaded from the [GitHub release](https://github.com/libriscv/godot-sandbox/releases/tag/v0.60) over HTTPS, checked against the SHA-256 pinned in `tools/fetch_sandbox.py`, and extracted into `godot/addons/godot_sandbox/` (git-ignored; only the Linux, Windows and Web libraries, `gdscript.elf` and the licences). Run `godot:import` after the first fetch, so Godot learns of the extension. The game plays without it and every data pack works; a mod pack is refused with the reason, and the mod tests fail naming this step. Opt out by not fetching (`mise run setup` is `uv sync` plus the fetch; `uv sync` alone is enough for everything but mod packs). [`engine/PACKS.md`](engine/PACKS.md), "Mod packs". [github.com/libriscv/godot-sandbox](https://github.com/libriscv/godot-sandbox). |
 | Godot AI (editor plugin and its MCP server) | optional: an AI assistant working in the open editor | in the repository (`godot/addons/godot_ai`); the server comes through `uv` | Quick start above, "For AI coding assistants". [github.com/hi-godot/godot-ai](https://github.com/hi-godot/godot-ai). |
-| `ffmpeg` with the libvorbis encoder | the importer's `audio` step; the dev pack's `audio` stage | `sudo dnf install ffmpeg-free` | RPM Fusion's `ffmpeg` works too. |
-| `fluidsynth` | the importer's `audio` step (MIDI to WAV); the Proton tasks' MIDI | `sudo dnf install fluidsynth` | |
-| A General MIDI soundfont | the importer's `audio` step | `sudo dnf install fluid-soundfont-common fluid-soundfont-gm` | Installs `/usr/share/soundfonts/FluidR3_GM.sf2`, the importer's default. `--soundfont` names another. |
+| `ffmpeg` with the libvorbis encoder | the importer's `audio` step; the dev pack's `audio` stage | `sudo dnf install ffmpeg-free`; Windows: `winget install --id Gyan.FFmpeg.Essentials -e` | RPM Fusion's `ffmpeg` works too. |
+| `fluidsynth` | the importer's `audio` step (MIDI to WAV); the Proton tasks' MIDI | `sudo dnf install fluidsynth`; Windows: the `win10-x64` zip of a [release](https://github.com/FluidSynth/fluidsynth/releases), its `bin` on the `PATH` | |
+| A General MIDI soundfont | the importer's `audio` step | `sudo dnf install fluid-soundfont-common fluid-soundfont-gm`; Windows: `uv run tools/fetch_soundfont.py` (`mise run setup` runs it) | Installs `/usr/share/soundfonts/FluidR3_GM.sf2`, the importer's default on Linux; on Windows the default is `soundfonts\FluidR3_GM.sf2`. `--soundfont` names another. |
 | `soundfonts/opl.sf2` | optional: the AdLib set of songs | your own copy (135 MB) | Not in the repository, git-ignored. Without it the AdLib set sounds like General MIDI. See [`play/LEGACY.md`](play/LEGACY.md), "Soundfonts". |
-| The speech engine (faster-whisper, CTranslate2) and its model | the importer's `transcripts` step | `uv sync` | Pinned versions. The model (about 480 MB) is downloaded on first use. |
+| The speech engine (faster-whisper, CTranslate2) and its model | optional: the importer's `transcripts` step | `uv sync --group transcribe` | Pinned versions. The model (about 480 MB) is downloaded on first use. |
 | Piper text-to-speech | regenerating the dev pack's audio | `uv run --group dev-pack ...` | Not installed by default. Its voice (63 MB) goes to `~/.cache/neptune-dev-pack/` on first use. [`../tools/dev_pack/README.md`](../tools/dev_pack/README.md). |
 | Steam with *Proton Experimental*, `7z`, `xxd`, PipeWire | running the *original* game under Wine (the `mise -E proton run` tasks) | Steam; `sudo dnf install 7zip xxd` | The Proton path is `PROTON` in `mise.proton.toml`. Quick start above. Music also needs `fluidsynth` and the GM soundfont. [`port/FIDELITY.md`](port/FIDELITY.md), "Comparing with the original game". |
 | A JDK 21 or newer | the Ghidra workflow | `mise install` (Temurin 25) | |
@@ -137,7 +184,10 @@ The importer checks its own tools before it writes anything and refuses with the
 2. `godot` on the `PATH` (mise's);
 3. the Flatpak `org.godotengine.Godot`.
 
-Everything goes through it: `tools/run_tests.sh`, the importer and every `tools/godot.sh ...` command of the manuals. Any `godot` binary
+Everything goes through it: `tools/run_tests.sh`, the importer (through `tools/godot.py`, whose `command()` is this wrapper on Linux)
+and every `tools/godot.sh ...` command of the manuals. On Windows, which cannot run it, `tools/godot.py` finds Godot itself:
+`$GODOT_BIN`, else `godot` on the `PATH`, else mise's install (`mise where godot`), and it runs the `_console.exe` beside a Windows
+Godot, because only that one writes its output to the terminal ("On Windows" above). Any `godot` binary
 also works directly with `--path godot`. Check with `tools/godot.sh --version`: the pinned one begins `4.7.2.stable`; the importer warns about any other. Another 4.7.2 binary works
 through `export GODOT_BIN=/path/to/godot` ("mise, and using your own installs").
 
@@ -156,11 +206,13 @@ packages:
 
 - the image-reading and picture libraries the tools use (`pycdlib`, `numpy`, `pillow`, `pefile`, `capstone`);
 - the developer tools (`pytest`, `ruff`, `pyright`);
-- the `transcribe` group: `faster-whisper` 1.2.1 and `ctranslate2` 4.8.4, the speech engine for the voice transcripts, with the Hugging
-  Face client that downloads its model.
+- only when you ask for it, the `transcribe` group: `faster-whisper` 1.2.1 and `ctranslate2` 4.8.4, the speech engine for the importer's
+  optional voice transcripts, with the Hugging Face client that downloads its model.
 
-`transcribe` is a default group, so a plain `uv sync` installs it, and it is large. With any other versions of those two packages the importer warns
-and runs its `transcripts` step anyway; the text may then differ from the fixture. `uv run ...` syncs by itself the first time.
+`transcribe` is not a default group, because it is large and nothing the game plays needs it: install it with `uv sync --group
+transcribe` when you want the transcripts ([`play/LEGACY.md`](play/LEGACY.md), "Voice transcripts"). With any other versions of those two
+packages the importer warns and runs its `transcripts` step anyway; the text may then differ from the fixture. `uv run ...` syncs by itself
+the first time.
 
 The `dev-pack` group (Piper) is not a default group: name it, `uv run --group dev-pack ...`. The Ghidra scripts build their own
 environment (`tools/analysis/ghidra/run.sh`).
@@ -173,9 +225,8 @@ On the author's machine a finished legacy pack takes:
 - 58 MB in `extracted/`;
 - about 120 MB for Godot's own import cache, `godot/.godot/`.
 
-The speech model is a separate download of about 480 MB into the Hugging Face cache. That is `~/.cache/huggingface/hub` by default, or
-wherever `HF_HOME` / `HF_HUB_CACHE` point. It is fetched once and reused. `soundfonts/opl.sf2`, if you have it, is another 135 MB. Plan
-on 1 GB free.
+`soundfonts/opl.sf2`, if you have it, is another 135 MB. Plan on 500 MB free.
 
-A full importer run takes about 10 minutes, nearly all of it the voice transcripts (423 clips on the CPU). The first run adds the
-model download.
+An importer run takes a minute or two. The optional voice transcripts add about 10 minutes (423 clips on the CPU) and, the first time, a
+download of about 480 MB into the Hugging Face cache (`~/.cache/huggingface/hub` by default, or wherever `HF_HOME` / `HF_HUB_CACHE`
+point), fetched once and reused.
