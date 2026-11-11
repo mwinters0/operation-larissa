@@ -59,7 +59,7 @@ func test_the_folder_is_a_skin_pack_with_no_script() -> void:
 	assert_bool(pack.mod.render.snap_vertices).is_false()
 	assert_dict(pack.mod.layers).contains_keys([&"background", &"walls"])
 	assert_int(pack.mod.pictures.size()).is_equal(PICTURE_COUNT)
-	assert_str(pack.mod.hud_font_file).is_equal(FONT)
+	assert_str(pack.mod.hud_font_spec.file).is_equal(FONT)
 
 
 func test_the_font_ships_with_its_licence() -> void:
@@ -200,3 +200,25 @@ func test_the_skin_goes_and_the_water_goes_with_it() -> void:
 	SkinChoice.select(SkinChoice.original())
 	for layer: StringName in SkinLayers.NODES:
 		assert_object(world.original.layer_node(layer).material).override_failure_message(String(layer)).is_null()
+
+
+func test_the_menus_are_in_exo_2_at_weight_600_in_a_theme_of_cool_blues() -> void:
+	var shelf := _mount()
+	var pack := Pack.open(_folder())
+	assert_int(pack.mod.theme_font.weight).is_equal(600)
+	assert_int(pack.mod.hud_font_spec.weight).is_equal(600)                                         # (the old project skin's weight, which a data skin could not say)
+	assert_array(pack.mod.font_files()).is_equal([FONT])
+	SkinChoice.select_id(shelf.id)
+	var project := ThemeDB.get_project_theme()
+	var font := project.default_font as FontVariation
+	assert_object(font).is_not_null()
+	assert_str(font.base_font.get_font_name()).contains("Exo 2")
+	assert_float(font.variation_opentype[FontSpec.WEIGHT_TAG]).is_equal(600.0)
+	assert_bool((font.base_font as FontFile).get_supported_variation_list().has(FontSpec.WEIGHT_TAG)).override_failure_message("Exo 2 has a weight axis").is_true()
+	assert_int(project.default_font_size).is_equal(16)
+	assert_str(project.get_color("font_color", "ConsoleTitle").to_html(false)).is_equal("7fe0ff")
+	assert_str((project.get_stylebox("panel", "ConsolePanel") as StyleBoxFlat).bg_color.to_html(false)).is_equal("07151f")
+	assert_int((project.get_stylebox("normal", "Button") as StyleBoxFlat).corner_radius_top_left).is_equal(6)
+	assert_float((project.get_stylebox("normal", "Button") as StyleBoxFlat).content_margin_left).is_equal(ThemeBuilder.engine().get_stylebox("normal", "Button").content_margin_left)   # (it says no margin: the controls keep their sizes)
+	SkinChoice.select(SkinChoice.original())
+	assert_object(project.default_font).is_same(ThemeBuilder.engine().default_font)

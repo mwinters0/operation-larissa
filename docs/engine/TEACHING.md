@@ -160,7 +160,8 @@ readable examples of how to check the same idea.
 | `Tree` as a table, `ItemList`-style keyboard navigation | `src/ui/sign_in.gd` |
 | Modal dialogs answered with signals | `src/ui/new_player_dialog.gd`, `customization_dialog.gd`, `practice_setup_dialog.gd` |
 | Radio buttons (`CheckBox` + `ButtonGroup`) | `src/ui/customization_dialog.gd`, `practice_setup_dialog.gd` |
-| `RichTextLabel`, `Label` autowrap, fonts and `FontVariation` | `src/problems/problem_screen.gd`, `src/ui/help_viewer.gd`, `src/ui/theme_builder.gd` (`FontVariation`) |
+| `RichTextLabel`, `Label` autowrap, fonts and `FontVariation` | `src/problems/problem_screen.gd`, `src/ui/help_viewer.gd`, `src/ui/theme_builder.gd` (`FontVariation`), `src/mods/font_spec.gd` (the `wght` axis of a variable font) |
+| A look as data, laid on the project `Theme` in place (a `CanvasLayer` breaks a theme set on a node) | `src/skins/skin_theme.gd`, `src/ui/theme_builder.gd` (`derive`, `apply`) (T: `tests/engine/test_skin_theme.gd`) |
 
 ## Singletons and the flow between scenes
 

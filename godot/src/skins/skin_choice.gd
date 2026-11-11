@@ -7,7 +7,7 @@ extends RefCounted
 ## game running. Whoever shows something skin-dependent LISTENS for a change (`events.changed`) and shows it again:
 ##   * `SectorWorld` makes a new presenter (the one of the new skin) that builds the screen from the rules' state,
 ##   * `Hud` puts its layout and lettering on again,
-##   * `select` itself puts the skin's `RenderSettings` on the window.
+##   * `select` itself puts the skin's `RenderSettings` on the window and its menu theme on the project theme (`ThemeBuilder.apply`: every control that has no theme of its own looks it up, so open screens change with no step of their own).
 ## Screens that are made when they are entered (a problem, a story page, the log) simply ask `Assets` / `Catalog` when they are
 ## built and so have the skin that is current then.
 ##
@@ -119,6 +119,7 @@ static func select(skin: GameSkin) -> void:
 	var tree := Engine.get_main_loop() as SceneTree
 	if tree != null:
 		skin.render_settings().apply_to(tree.root)
+	ThemeBuilder.apply(skin)
 	events.changed.emit(skin)
 
 

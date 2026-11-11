@@ -75,8 +75,6 @@ not from the original's pixels, so the templates carry no original content and a
 real art from them. The tool is `SkinTemplates` (`docs/create/SKIN_API.md` "Art templates"); the original's exact sizes are those of the legacy pack's layouts (`--pack=legacy` reads sizes only), the dev pack's pictures having sizes of their own; each later phase's last item adds the layouts that hold its keys to `SkinTemplates.SOURCES`.
 
 **K5: the menus' style.** The controls, their order and what they do stay the engine's.
-- **K5a: a theme as data.** Fonts, colours, panel and button styles and pictures by key, applied by `ThemeBuilder` to sign-in, the
-  dialogs and the message box.
 - **K5b: the problem screen's frame.** The theme reaches the problem screen's frame; templates for each picture the theme may replace.
 
 ## After this: the remake

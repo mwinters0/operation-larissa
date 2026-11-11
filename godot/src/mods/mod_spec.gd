@@ -7,6 +7,7 @@ extends RefCounted
 ##     "mod": {"entry": "reef.sgd", "requires_api": 2, "skin": {"shaders": ["skin/glow.gdshader"]}}
 ##     "mod": {"requires_api": 5, "skin": {"render": {"texture_filter": "linear"}, "pictures": {"ui_picture/title_sky": "skin/sky.png"}}}
 ##     "mod": {"requires_api": 5, "skin": {"hud_font": {"file": "skin/hud.ttf", "size": 14, "color": "#dcf7ff"}}}
+##     "mod": {"requires_api": 12, "skin": {"theme": {"font": {"file": "skin/menu.ttf", "weight": 600}, "colors": {"title": "#9fe8ff"}, "console": {"fill": "#0b1d2b", "radius": 6}, "button": {"normal": {"picture": "ui_picture/title_sky", "slice": [4, 4, 4, 4]}}}}}
 ##     "mod": {"requires_api": 5, "skin": {"shaders": ["skin/shimmer.gdshader"], "layers": {"background": {"shader": "skin/shimmer.gdshader", "uniforms": {"glint": 0.25, "tint": "#ff8800"}}}}}
 ##     "mod": {"entry": "reef.sgd", "requires_api": 7, "skin": {"script_layers": ["background", "bubbles"]}}
 ##     "mod": {"entry": "reef.sgd", "requires_api": 8, "skin": {"script_layers": ["background", "hud_oxygen", "hud_ship"]}}
@@ -19,10 +20,10 @@ extends RefCounted
 ## refuses the pack. `limits` is optional, and so is every key in it. `skin` makes the mod a SKIN (`ModSkin`: the mod draws the sector, `docs/create/SKIN_API.md`); it needs API version 2,
 ## and lists the shaders the skin may use, text files `skin/<name>.gdshader` of the pack (`ModShader`), at most `MAX_SHADERS`; `render` (`texture_filter`, `snap_transforms`, `snap_vertices`: the `RenderSettings` the skin puts on the window)
 ## and `pictures` (skin key `ui_picture/<name>` to a PNG `skin/<name>.png` of the pack, at most `MAX_PICTURES`, worn only while the skin is) and `hud_font` (`file`: a `.ttf` of the pack's `skin/` folder, read from its bytes,
-## at most `Pack.MAX_FONT_BYTES`; `size` from `MIN_HUD_FONT_SIZE` to `MAX_HUD_FONT_SIZE`; `color`: `#rrggbb` or `#rrggbbaa`: the lettering of the HUD's boxes, `HudLabels`) and `layers` (a layer of the original presenter by name, `SkinLayers.NODES`, to one of the listed `shaders` and the values of its uniforms: a number, `true` / `false`, a list of 2 to 4 numbers or a colour string, at most `MAX_LAYER_UNIFORMS`, each number within
+## at most `Pack.MAX_FONT_BYTES`; `size` from `MIN_HUD_FONT_SIZE` to `MAX_HUD_FONT_SIZE`; `color`: `#rrggbb` or `#rrggbbaa`; `weight` (API version 12, `FontSpec`): the lettering of the HUD's boxes, `HudLabels`; from API version 12 `file` may be left out, and the boxes are lettered in the theme's font) and `layers` (a layer of the original presenter by name, `SkinLayers.NODES`, to one of the listed `shaders` and the values of its uniforms: a number, `true` / `false`, a list of 2 to 4 numbers or a colour string, at most `MAX_LAYER_UNIFORMS`, each number within
 ## `MAX_UNIFORM_VALUE`; the game sets `phase`) are API version 5, which a skin without `entry` needs too. `script_layers` (API version 7; needs an `entry`) lists the layers of the original presenter (`SkinLayers.NODES`) and, from API version 8, the parts of the console (`SkinLayers.HUD_NODES`, or the whole console, `SkinLayers.HUD`)
 ## whose picture the script draws, one call of `skin_layer(name, state, fraction, events)` for each; the others stay the original's, and the layers of `layers` are dressed by their shader on those the script does not draw. A skin with an `entry` and no `script_layers` draws the whole
-## screen with `skin_frame(state, fraction, events)`: every layer at once. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from 0 to
+## screen with `skin_frame(state, fraction, events)`: every layer at once. `theme` (API version 12, a skin with a script may have it too: it is data) is the look of the menus as `SkinTheme` says it: `font` (a `FontSpec`: `file`, `weight`, `size` from `MIN_THEME_FONT_SIZE` to `MAX_THEME_FONT_SIZE`), `colors` (`SkinTheme.COLORS`), and the styles `panel`, `console`, `button` and `input` (`SkinTheme.STYLES`) as the fields of `STYLE_KEYS`, each within its bound. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from 0 to
 ## `Catalog.LAST_PROBLEM_TYPE`, at most `MAX_PROBLEM_TYPES`: a number below `Catalog.PROBLEM_TYPE_COUNT` is an ORIGINAL type, drawn by number in place of the original diagram (API version 9; the lock and the ballast panels are the engine's and cannot be listed), a number from it up
 ## is a type the pack adds and holds as data); it needs API version 3 and lists its shaders like a skin, in the pack's `problems/` folder. `own_sounds` (true or false, API version 11) says the script asks for the sounds of the build-up and the replay itself, so the original diagram's own are not played while the mod runs. `rules` makes the mod
 ## add GAMEPLAY inside the rules (`RuleHooks`), for a campaign that declares the mod: `answers` lists problem types it judges instead of their `compare_mode` (numbers as for `problems.types`, the pack holds each as data),
@@ -33,8 +34,8 @@ extends RefCounted
 ## Teaches: validating an untrusted description by naming each rule in one place, and clamping a request to a ceiling instead of refusing it (a limit is a request; the host decides).
 
 ## The version of the API a mod is given (`ModApi.build`). A mod that requires a higher one is refused. The version goes up when the API gains something a mod can ask for (2: the skin API, 3: the problem
-## screens, 4: the rule hooks, 5: the data skin, 6: a picture of the game by key in the draw list, 7: the skin's script draws chosen layers, 8: the console's parts are layers too, 9: a problem-screen mod draws the original's types by number, 10: a problem-screen mod is told what happened, 11: a problem-screen mod is told where the animation is and may ask for sounds), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
-const API_VERSION := 11
+## screens, 4: the rule hooks, 5: the data skin, 6: a picture of the game by key in the draw list, 7: the skin's script draws chosen layers, 8: the console's parts are layers too, 9: a problem-screen mod draws the original's types by number, 10: a problem-screen mod is told what happened, 11: a problem-screen mod is told where the animation is and may ask for sounds, 12: a skin's theme for the menus, and the weight of a skin's font), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
+const API_VERSION := 12
 ## The first version with the skin API: a skin mod requires it.
 const SKIN_API_VERSION := 2
 ## The first version with data skins: `render` and `pictures` in `skin`, and a skin with no `entry`.
@@ -52,6 +53,8 @@ const PROBLEM_EVENTS_API_VERSION := 10
 ## The first version with the animation's clock in the state of a problem screen and the sounds it may ask for (`ModSounds`): a mod that requires it is told where the build-up and the replay are, may return `{"draw": ..., "sounds": [...]}` and may
 ## say `own_sounds`.
 const PROBLEM_CLOCK_API_VERSION := 11
+## The first version with the menus' theme (`skin.theme`) and the weight of a font (`weight` in `hud_font` and in the theme's font), and with a `hud_font` that has no `file` (the lettering is then in the theme's font): a manifest that has any of them requires it.
+const THEME_API_VERSION := 12
 ## The first version with rule hooks: a mod with `rules` requires it.
 const RULE_API_VERSION := 4
 ## The game's ceilings. A manifest can lower these, never raise them (the same numbers as the godot-sandbox example's loader).
@@ -75,16 +78,27 @@ const LIMITS: Dictionary[String, int] = {
 }
 const KNOWN_KEYS: Array[String] = ["entry", "requires_api", "limits", "skin", "problems", "rules"]
 ## The keys of the `skin` entry.
-const SKIN_KEYS: Array[String] = ["shaders", "render", "pictures", "hud_font", "layers", "script_layers"]
+const SKIN_KEYS: Array[String] = ["shaders", "render", "pictures", "hud_font", "layers", "script_layers", "theme"]
 ## The keys of a layer's entry in `layers`, the uniform the game sets itself (the game's time, `SectorPresenter.game_phase`: a manifest cannot give it a value), and the limits of a layer's uniforms.
 const LAYER_KEYS: Array[String] = ["shader", "uniforms"]
 const PHASE_UNIFORM := "phase"
 const MAX_LAYER_UNIFORMS := 16
 const MAX_UNIFORM_VALUE := 1000.0
 ## The keys of the `hud_font` entry of a skin, and the sizes (in pixels) its `size` may be: the boxes of the HUD keep their size, so what a larger font does not fit in a box is cut off.
-const HUD_FONT_KEYS: Array[String] = ["file", "size", "color"]
+const HUD_FONT_KEYS: Array[String] = ["file", "weight", "size", "color"]
 const MIN_HUD_FONT_SIZE := 6
 const MAX_HUD_FONT_SIZE := 32
+## The keys of a skin's `theme`, and the bounds of what it may say. The menus' controls keep their rectangles (the layouts are the engine's), and a control grows when its text or margins do not fit its rectangle, so the font
+## stays near the engine's (17 pixels) and the spaces small: `MIN_THEME_FONT_SIZE` to `MAX_THEME_FONT_SIZE` for the default font, a border of `MAX_BORDER_WIDTH`, corners of `MAX_RADIUS`, a margin of `MAX_MARGIN` and a picture's slice of `MAX_SLICE` at most.
+const THEME_KEYS: Array[String] = ["font", "colors", "panel", "console", "button", "input"]
+const THEME_FONT_KEYS: Array[String] = ["file", "weight", "size"]
+const MIN_THEME_FONT_SIZE := 10
+const MAX_THEME_FONT_SIZE := 20
+const STYLE_KEYS: Array[String] = ["fill", "border", "border_width", "radius", "margin", "picture", "slice"]
+const MAX_BORDER_WIDTH := 4
+const MAX_RADIUS := 16
+const MAX_MARGIN := 12
+const MAX_SLICE := 64
 ## The keys of the `render` entry of a skin (`RenderSettings`).
 const RENDER_KEYS: Array[String] = ["texture_filter", "snap_transforms", "snap_vertices"]
 ## The kinds of picture key (`<kind>/<name>`, as `GameSkin.pictures` has them) a skin's `pictures` may REPLACE. A draw list may NAME a picture of more kinds (`GameSkin.KEY_KINDS`, `is_drawable_key`): it only shows
@@ -123,9 +137,13 @@ var shaders: Array[String] = []
 ## What the skin asks of the renderer (`skin.render`), or null when it does not say. And its pictures: skin key -> path in the pack (`skin/....png`).
 var render: RenderSettings = null
 var pictures: Dictionary[String, String] = {}
-## The lettering the skin asks for (`skin.hud_font`): the file in the pack (`skin/....ttf`, "" when the skin says none) and the `HudLabels` with the size and colour it set (null when it says none; its `font` is not set: `ModSkin.make` reads the file).
-var hud_font_file := ""
+## The lettering the skin asks for (`skin.hud_font`): its font (`FontSpec`: the file in the pack, `skin/....ttf`, "" when it names none, and the weight) and the `HudLabels` with the size and colour it set (both null when the skin says none; the
+## labels' `font` is not set: `ModSkin.make` reads the file).
+var hud_font_spec: FontSpec = null
 var hud_font: HudLabels = null
+## The menus' look the skin asks for (`skin.theme`), or null: `SkinTheme` with no `font` yet (`ModSkin.make` reads the file of `theme_font`, the font it names, null when it names none).
+var theme: SkinTheme = null
+var theme_font: FontSpec = null
 ## The shaders on the layers of the original presenter (`skin.layers`): layer name -> {"shader": the path of one of `shaders`, "uniforms": name -> a float, bool, `Vector2` / `Vector3` / `Vector4` or `Color`}. Which uniforms the shader has is judged by `ModSkin.make`.
 var layers: Dictionary[String, Dictionary] = {}
 ## The layers the skin's script draws (`skin.script_layers`: names of `SkinLayers.NODES`, the original presenter's, and of `SkinLayers.HUD_NODES` or `SkinLayers.HUD`, the console's, in the manifest's order): empty for a skin with no script and for one whose script draws the whole screen (`draws_frame`).
@@ -163,7 +181,7 @@ static func parse(data: Variant, errors: Array[String]) -> ModSpec:
 			spec.entry = entry_value
 	if data.has("requires_api"):
 		var api: Variant = data["requires_api"]
-		if not _is_whole(api) or int(api) < 1:
+		if not is_whole(api) or int(api) < 1:
 			found.append("\"requires_api\" must be a whole number of 1 or more")
 		elif int(api) > API_VERSION:
 			found.append("the mod needs API version %d, this game provides %d" % [int(api), API_VERSION])
@@ -187,7 +205,7 @@ static func parse(data: Variant, errors: Array[String]) -> ModSpec:
 				var value: Variant = data["limits"][key]
 				if not LIMITS.has(key):
 					found.append("\"limits\" has no \"%s\" (it has %s)" % [key, ", ".join(LIMITS.keys())])
-				elif not _is_whole(value):
+				elif not is_whole(value):
 					found.append("limit \"%s\" must be a whole number" % key)
 				else:
 					spec.limits[key] = clampi(int(value), 1, spec.ceiling(key))
@@ -214,6 +232,8 @@ static func _parse_skin(value: Variant, spec: ModSpec, scripted: bool, found: Ar
 		_parse_pictures(value["pictures"], spec, found)
 	if value.has("hud_font"):
 		_parse_hud_font(value["hud_font"], spec, found)
+	if value.has("theme"):
+		_parse_theme(value["theme"], spec, found)
 	if value.has("script_layers"):
 		_parse_script_layers(value["script_layers"], spec, scripted, found)
 	if value.has("layers"):
@@ -293,34 +313,142 @@ static func _parse_pictures(value: Variant, spec: ModSpec, found: Array[String])
 			spec.pictures[key] = path
 
 
-## The `hud_font` of a skin: the file of its `skin/` folder, and the size and colour of the letters, into `spec.hud_font_file` and `spec.hud_font`.
+## The `hud_font` of a skin: its font (`FontSpec`: the file of its `skin/` folder, the weight) and the size and colour of the letters, into `spec.hud_font_spec` and `spec.hud_font`. The file may be left out from `THEME_API_VERSION` on.
 static func _parse_hud_font(value: Variant, spec: ModSpec, found: Array[String]) -> void:
-	if not value is Dictionary:
-		found.append("\"hud_font\" must be an object like {\"file\": \"%shud.%s\", \"size\": 14, \"color\": \"#dcf7ff\"}" % [SKIN_FOLDER, Pack.FONT_EXTENSION])
-		return
 	var before := found.size()
+	var example := "{\"file\": \"%shud.%s\", \"size\": 14, \"color\": \"#dcf7ff\"}" % [SKIN_FOLDER, Pack.FONT_EXTENSION]
+	var font := FontSpec.parse(value, "hud_font", example, HUD_FONT_KEYS, Vector2i(MIN_HUD_FONT_SIZE, MAX_HUD_FONT_SIZE), spec.requires_api < THEME_API_VERSION, spec.requires_api >= THEME_API_VERSION, found)
 	var labels := HudLabels.new()
-	for key: String in value:
-		if not HUD_FONT_KEYS.has(key):
-			found.append("\"hud_font\" has no \"%s\" (it has %s)" % [key, ", ".join(HUD_FONT_KEYS)])
-	if not value.has("file"):
-		found.append("\"hud_font\" needs a \"file\": a .%s file of the pack's %s folder" % [Pack.FONT_EXTENSION, SKIN_FOLDER])
-	elif not value["file"] is String or not is_font_path(value["file"]):
-		found.append("the font %s must be a file of the pack's %s folder ending .%s" % [JSON.stringify(value["file"]), SKIN_FOLDER, Pack.FONT_EXTENSION])
-	else:
-		spec.hud_font_file = value["file"]
-	if value.has("size"):
-		if not _is_whole(value["size"]) or int(value["size"]) < MIN_HUD_FONT_SIZE or int(value["size"]) > MAX_HUD_FONT_SIZE:
-			found.append("the font's \"size\" must be a whole number from %d to %d" % [MIN_HUD_FONT_SIZE, MAX_HUD_FONT_SIZE])
-		else:
-			labels.font_size = int(value["size"])
-	if value.has("color"):
-		if not value["color"] is String or not (value["color"] as String).begins_with("#") or not Color.html_is_valid(value["color"]):
+	if value is Dictionary and value.has("color"):
+		var colour: Variant = _color_of(value["color"])
+		if colour == null:
 			found.append("the font's \"color\" must be a string like \"#dcf7ff\" (#rrggbb, or #rrggbbaa)")
 		else:
-			labels.font_color = Color.html(value["color"])
-	if found.size() == before:
+			labels.font_color = colour
+	if font != null and found.size() == before:
+		if font.size != 0:
+			labels.font_size = font.size
+		spec.hud_font_spec = font
 		spec.hud_font = labels
+
+
+## The colour a manifest's string says (`"#rrggbb"` or `"#rrggbbaa"`), or null for anything else.
+static func _color_of(value: Variant) -> Variant:
+	if not value is String or not (value as String).begins_with("#") or not Color.html_is_valid(value):
+		return null
+	return Color.html(value)
+
+
+## The `theme` of a skin: the menus' look (`SkinTheme`), into `spec.theme` (with the font it names in `spec.theme_font`). Every field is checked within its bound; a mistake is a sentence, and the theme says nothing of it.
+static func _parse_theme(value: Variant, spec: ModSpec, found: Array[String]) -> void:
+	if not value is Dictionary:
+		found.append("\"theme\" must be an object like {\"colors\": {\"title\": \"#9fe8ff\"}, \"console\": {\"fill\": \"#0b1d2b\"}}")
+		return
+	if spec.requires_api < THEME_API_VERSION:
+		found.append("a skin with \"theme\" needs \"requires_api\": %d (the menus' theme came with that version)" % THEME_API_VERSION)
+	var before := found.size()
+	var made := SkinTheme.new()
+	for key: String in value:
+		if not THEME_KEYS.has(key):
+			found.append("\"theme\" has no \"%s\" (it has %s)" % [key, ", ".join(THEME_KEYS)])
+	var font: FontSpec = null
+	if value.has("font"):
+		font = FontSpec.parse(value["font"], "font", "{\"file\": \"%smenu.%s\", \"weight\": 600, \"size\": 17}" % [SKIN_FOLDER, Pack.FONT_EXTENSION], THEME_FONT_KEYS, Vector2i(MIN_THEME_FONT_SIZE, MAX_THEME_FONT_SIZE), false, spec.requires_api >= THEME_API_VERSION, found)
+		if font != null:
+			made.font_size = font.size
+	if value.has("colors"):
+		_parse_theme_colors(value["colors"], made, found)
+	for style: String in SkinTheme.STYLES:
+		if not value.has(style):
+			continue
+		if (SkinTheme.STYLES[style] as Array).is_empty():
+			_parse_style(style, value[style], made, found)
+		elif not value[style] is Dictionary:
+			found.append("the theme's \"%s\" must be an object of its states (%s)" % [style, ", ".join(SkinTheme.STYLES[style])])
+		else:
+			for state: String in value[style]:
+				if not (SkinTheme.STYLES[style] as Array).has(state):
+					found.append("the theme's \"%s\" has no \"%s\" (it has %s)" % [style, state, ", ".join(SkinTheme.STYLES[style])])
+				else:
+					_parse_style("%s/%s" % [style, state], value[style][state], made, found)
+	if found.size() == before:
+		spec.theme = made
+		spec.theme_font = font
+
+
+static func _parse_theme_colors(value: Variant, made: SkinTheme, found: Array[String]) -> void:
+	if not value is Dictionary:
+		found.append("the theme's \"colors\" must be an object like {\"title\": \"#9fe8ff\"}")
+		return
+	for name: String in value:
+		var colour: Variant = _color_of(value[name])
+		if not SkinTheme.COLORS.has(name):
+			found.append("the theme's \"colors\" has no \"%s\" (it has %s)" % [name, ", ".join(SkinTheme.COLORS)])
+		elif colour == null:
+			found.append("the theme's colour \"%s\" must be a string like \"#9fe8ff\" (#rrggbb, or #rrggbbaa)" % name)
+		else:
+			made.colors[name] = colour
+
+
+## One style of the theme (`name`: `console`, `button/hover`, ...) into `made.styles`: the fields of `STYLE_KEYS`, each within its bound.
+static func _parse_style(name: String, value: Variant, made: SkinTheme, found: Array[String]) -> void:
+	if not value is Dictionary:
+		found.append("the theme's \"%s\" must be an object like {\"fill\": \"#0b1d2b\", \"border_width\": 1, \"radius\": 6}" % name)
+		return
+	var before := found.size()
+	var fields := {}
+	for key: String in value:
+		if not STYLE_KEYS.has(key):
+			found.append("the theme's \"%s\" has no \"%s\" (it has %s)" % [name, key, ", ".join(STYLE_KEYS)])
+	for key in ["fill", "border"]:
+		if value.has(key):
+			var colour: Variant = _color_of(value[key])
+			if colour == null:
+				found.append("the \"%s\" of the theme's \"%s\" must be a string like \"#0b1d2b\" (#rrggbb, or #rrggbbaa)" % [key, name])
+			else:
+				fields[key] = colour
+	for key in ["border_width", "radius"]:
+		if value.has(key):
+			var most: int = MAX_BORDER_WIDTH if key == "border_width" else MAX_RADIUS
+			if not is_whole(value[key]) or int(value[key]) < 0 or int(value[key]) > most:
+				found.append("the \"%s\" of the theme's \"%s\" must be a whole number from 0 to %d" % [key, name, most])
+			else:
+				fields[key] = int(value[key])
+	if value.has("margin"):
+		var margin := _whole_list(value["margin"], 2, MAX_MARGIN)
+		if margin.is_empty():
+			found.append("the \"margin\" of the theme's \"%s\" must be a list of 2 whole numbers from 0 to %d (across, down)" % [name, MAX_MARGIN])
+		else:
+			fields["margin"] = Vector2i(margin[0], margin[1])
+	if value.has("slice"):
+		var cut := _whole_list(value["slice"], 4, MAX_SLICE)
+		if cut.is_empty():
+			found.append("the \"slice\" of the theme's \"%s\" must be a list of 4 whole numbers from 0 to %d (left, top, right, bottom)" % [name, MAX_SLICE])
+		else:
+			fields["slice"] = Vector4i(cut[0], cut[1], cut[2], cut[3])
+	if value.has("picture"):
+		if not value["picture"] is String or not is_drawable_key(value["picture"]):
+			found.append("the \"picture\" of the theme's \"%s\" must be a picture key, <kind>/<name> with a kind of %s" % [name, ", ".join(GameSkin.KEY_KINDS)])
+		else:
+			fields["picture"] = value["picture"]
+		if not value.has("slice"):
+			found.append("the \"picture\" of the theme's \"%s\" needs a \"slice\": the margins that stay unstretched" % name)
+	elif value.has("slice"):
+		found.append("the \"slice\" of the theme's \"%s\" is the slice of a \"picture\", which it has not" % name)
+	if found.size() == before:
+		made.styles[name] = fields
+
+
+## `count` whole numbers from 0 to `most`, or [] when `value` is no such list.
+static func _whole_list(value: Variant, count: int, most: int) -> Array[int]:
+	var numbers: Array[int] = []
+	if not value is Array or (value as Array).size() != count:
+		return numbers
+	for number: Variant in value:
+		if not is_whole(number) or int(number) < 0 or int(number) > most:
+			return [] as Array[int]
+		numbers.append(int(number))
+	return numbers
 
 
 ## The `layers` of a skin: layer name -> its shader (one of the skin's `shaders`) and the values of its uniforms, into `spec.layers`.
@@ -420,7 +548,7 @@ static func _parse_problems(value: Variant, spec: ModSpec, found: Array[String])
 		found.append("a mod draws at most %d problem types (it lists %d)" % [MAX_PROBLEM_TYPES, (types as Array).size()])
 	else:
 		for number: Variant in types:
-			if not _is_whole(number) or int(number) < 0 or int(number) > Catalog.LAST_PROBLEM_TYPE:
+			if not is_whole(number) or int(number) < 0 or int(number) > Catalog.LAST_PROBLEM_TYPE:
 				found.append("the problem type %s must be a whole number from 0 to %d (0 to %d are the original's, the rest are types the pack adds)" % [JSON.stringify(number), Catalog.LAST_PROBLEM_TYPE, Catalog.PROBLEM_TYPE_COUNT - 1])
 			elif spec.problem_types.has(int(number)):
 				found.append("the problem type %d is listed twice" % int(number))
@@ -455,7 +583,7 @@ static func _parse_rules(value: Variant, spec: ModSpec, found: Array[String]) ->
 			found.append("\"answers\" must be a list of at most %d problem types, like [41]" % MAX_PROBLEM_TYPES)
 		else:
 			for number: Variant in answers:
-				if not _is_whole(number) or int(number) < Catalog.PROBLEM_TYPE_COUNT or int(number) > Catalog.LAST_PROBLEM_TYPE:
+				if not is_whole(number) or int(number) < Catalog.PROBLEM_TYPE_COUNT or int(number) > Catalog.LAST_PROBLEM_TYPE:
 					found.append("the problem type %s in \"answers\" must be a whole number from %d (the first the original does not have) to %d" % [JSON.stringify(number), Catalog.PROBLEM_TYPE_COUNT, Catalog.LAST_PROBLEM_TYPE])
 				elif spec.rule_answers.has(int(number)):
 					found.append("the problem type %d is listed twice in \"answers\"" % int(number))
@@ -467,7 +595,7 @@ static func _parse_rules(value: Variant, spec: ModSpec, found: Array[String]) ->
 			found.append("\"instructions\" must be a list of at most %d instruction numbers, like [0, 1]" % RuleHooks.MAX_INSTRUCTIONS)
 		else:
 			for number: Variant in numbers:
-				if not _is_whole(number) or int(number) < 0 or int(number) >= RuleHooks.MAX_INSTRUCTIONS:
+				if not is_whole(number) or int(number) < 0 or int(number) >= RuleHooks.MAX_INSTRUCTIONS:
 					found.append("the instruction number %s must be a whole number from 0 to %d" % [JSON.stringify(number), RuleHooks.MAX_INSTRUCTIONS - 1])
 				elif spec.rule_instructions.has(int(number)):
 					found.append("the instruction number %d is listed twice" % int(number))
@@ -531,6 +659,26 @@ static func is_picture_path(path: String) -> bool:
 ## Is `path` a place a skin's font may be: `skin/` and then a plain relative path ending `.ttf`?
 static func is_font_path(path: String) -> bool:
 	return path.begins_with(SKIN_FOLDER) and path.get_extension() == Pack.FONT_EXTENSION and path.length() <= 96 and not path.get_basename().get_file().is_empty() and Pack.is_safe(path)
+
+
+## The font files of the pack the manifest names, the HUD's and the theme's (`PackCheck` warns about any other `.ttf`).
+func font_files() -> Array[String]:
+	var files: Array[String] = []
+	for font in [hud_font_spec, theme_font]:
+		if font != null and not (font as FontSpec).file.is_empty() and not files.has((font as FontSpec).file):
+			files.append((font as FontSpec).file)
+	return files
+
+
+## The skin keys of the pictures the theme's styles name (`theme.styles`' `picture`), each once.
+func theme_pictures() -> Array[String]:
+	var keys: Array[String] = []
+	if theme != null:
+		for style: String in theme.styles:
+			var key: String = theme.styles[style].get("picture", "")
+			if not key.is_empty() and not keys.has(key):
+				keys.append(key)
+	return keys
 
 
 ## Does the mod have a script (`entry`)? A data skin has none: it is worn with no Sandbox.
@@ -622,6 +770,8 @@ func to_dict() -> Dictionary:
 			data["skin"]["pictures"] = pictures.duplicate()
 		if hud_font != null:
 			data["skin"]["hud_font"] = _hud_font_dict()
+		if theme != null:
+			data["skin"]["theme"] = _theme_dict()
 		if not layers.is_empty():
 			data["skin"]["layers"] = _layers_dict()
 		if not script_layers.is_empty():
@@ -655,15 +805,60 @@ func _render_dict() -> Dictionary:
 	return written
 
 
-## The `hud_font` entry as the manifest writes it: the file, and the size and colour when they differ from `HudLabels`'.
+## The `hud_font` entry as the manifest writes it: the file and weight of its font, and the size and colour when they differ from `HudLabels`'.
 func _hud_font_dict() -> Dictionary:
 	var plain := HudLabels.new()
-	var written := {"file": hud_font_file}
+	var written := hud_font_spec.to_dict()
+	written.erase("size")
 	if hud_font.font_size != plain.font_size:
 		written["size"] = hud_font.font_size
 	if hud_font.font_color != plain.font_color:
-		written["color"] = "#" + hud_font.font_color.to_html(not is_equal_approx(hud_font.font_color.a, 1.0))
+		written["color"] = _color_text(hud_font.font_color)
 	return written
+
+
+## The `theme` entry as the manifest writes it: only what the theme says.
+func _theme_dict() -> Dictionary:
+	var written := {}
+	var font := theme_font.to_dict() if theme_font != null else {}
+	if theme.font_size != 0:
+		font["size"] = theme.font_size
+	if not font.is_empty():
+		written["font"] = font
+	if not theme.colors.is_empty():
+		written["colors"] = {}
+		for name in theme.colors:
+			written["colors"][name] = _color_text(theme.colors[name])
+	for name: String in theme.styles:
+		var entry := _style_dict(theme.styles[name])
+		if "/" in name:
+			var parts := name.split("/")
+			if not written.has(parts[0]):
+				written[parts[0]] = {}
+			written[parts[0]][parts[1]] = entry
+		else:
+			written[name] = entry
+	return written
+
+
+static func _style_dict(fields: Dictionary) -> Dictionary:
+	var written := {}
+	for key: String in fields:
+		var value: Variant = fields[key]
+		if value is Color:
+			written[key] = _color_text(value)
+		elif value is Vector2i:
+			written[key] = [value.x, value.y]
+		elif value is Vector4i:
+			written[key] = [value.x, value.y, value.z, value.w]
+		else:
+			written[key] = value
+	return written
+
+
+## A colour as the manifest writes it: `#rrggbb`, or `#rrggbbaa` for one that is not opaque.
+static func _color_text(colour: Color) -> String:
+	return "#" + colour.to_html(not is_equal_approx(colour.a, 1.0))
 
 
 ## The `layers` entry as the manifest writes it (a vector as a list, a colour as a string).
@@ -688,9 +883,9 @@ static func _written_uniform(value: Variant) -> Variant:
 	if value is Vector4:
 		return [value.x, value.y, value.z, value.w]
 	if value is Color:
-		return "#" + (value as Color).to_html(not is_equal_approx((value as Color).a, 1.0))
+		return _color_text(value)
 	return value
 
 
-static func _is_whole(value: Variant) -> bool:
+static func is_whole(value: Variant) -> bool:
 	return value is int or (value is float and is_equal_approx(value, roundf(value)))

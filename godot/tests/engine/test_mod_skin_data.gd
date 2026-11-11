@@ -131,7 +131,7 @@ func test_hud_font_is_a_file_with_a_size_and_a_colour() -> void:
 	var got := _parse(data)
 	var spec: ModSpec = got[0]
 	assert_array(got[1]).is_empty()
-	assert_str(spec.hud_font_file).is_equal(FONT)
+	assert_str(spec.hud_font_spec.file).is_equal(FONT)
 	assert_int(spec.hud_font.font_size).is_equal(20)
 	assert_str(spec.hud_font.font_color.to_html(false)).is_equal("dcf7ff")
 	assert_object(spec.hud_font.font).is_null()                                                     # (the file is read when the skin is made)
@@ -331,7 +331,10 @@ func test_the_font_is_the_hud_lettering_only_while_the_skin_is_worn() -> void:
 	assert_object(SkinChoice.current().labels()).is_null()
 	SkinChoice.select_id(shelf.id)
 	assert_object(SkinChoice.current().labels()).is_same(skin.hud_labels)
-	assert_object(SkinChoice.current().labels().font).is_same(shelf.pack.font(FONT))                    # (the pack's one door made it)
+	var font := SkinChoice.current().labels().font as FontVariation                                     # (the fixture says a weight: the font is its file, varied)
+	assert_object(font).is_not_null()
+	assert_object(font.base_font).is_same(shelf.pack.font(FONT))                                        # (the pack's one door made it)
+	assert_float(font.variation_opentype[FontSpec.WEIGHT_TAG]).is_equal(600.0)
 	SkinChoice.select(SkinChoice.original())
 	assert_object(SkinChoice.current().labels()).is_null()
 

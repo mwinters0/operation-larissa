@@ -190,10 +190,13 @@ static func _mod(live: Pack, report: PackReport) -> void:
 		for key in live.mod.pictures:
 			if NameRegistry.original().index_of(&"ui_picture", key.get_slice("/", 1)) < 0:
 				report.warn("mod", "the skin's picture %s names no picture of the game: it is never asked for" % key)
+		for key in live.mod.theme_pictures():
+			if key.begins_with("ui_picture/") and not live.mod.pictures.has(key) and NameRegistry.original().index_of(&"ui_picture", key.get_slice("/", 1)) < 0:
+				report.warn("mod", "the theme's picture %s is neither one the skin maps nor one of the game's: the style is drawn flat" % key)
 		scripts.erase(live.mod.entry)
 	for rel in live.all_files():
-		if rel.get_extension() == Pack.FONT_EXTENSION and (live.mod == null or live.mod.hud_font_file != rel):
-			report.warn("mod", "%s is never used: %s" % [rel, "a skin names its font in \"skin\": {\"hud_font\": {\"file\": ...}}" if live.mod != null and live.mod.is_skin else "a font is read for the HUD of a skin mod only"])
+		if rel.get_extension() == Pack.FONT_EXTENSION and (live.mod == null or not live.mod.font_files().has(rel)):
+			report.warn("mod", "%s is never used: %s" % [rel, "a skin names its font in \"skin\": {\"hud_font\": {\"file\": ...}} or {\"theme\": {\"font\": {\"file\": ...}}}" if live.mod != null and live.mod.is_skin else "a font is read by a skin mod only"])
 	for rel in scripts:
 		report.warn("mod", "%s is never run: %s" % [rel, "a mod pack's manifest names one entry script (\"mod\": {\"entry\": ...})" if live.mod != null else "the manifest has no \"mod\" entry"])
 

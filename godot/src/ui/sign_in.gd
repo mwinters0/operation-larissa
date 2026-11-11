@@ -104,6 +104,8 @@ var quits_program: bool = true
 @onready var packs_button: Button = %Packs
 @onready var menu_bar: GameMenuBar = %MenuBar
 @onready var message_view: MessageBoxView = %MessageBox
+## The button that wears the pressed look (`_show_pressed`), or null.
+var _pressed_button: Button = null
 @onready var overlay: CanvasLayer = %Overlay
 @onready var info_label: Label = %Info
 @onready var frame: TextureRect = $Frame
@@ -564,17 +566,35 @@ func _ask_exit_question() -> bool:
 
 
 ## The pressed look of the original's picture buttons (`SetSignInButtonLooks` 0x42f611 draws the pressed picture of one of
-## the four buttons): the theme's "pressed" box and font colour, put over the normal ones.
+## the four buttons): the theme's "pressed" box and font colour, put over the normal ones. It is made from the theme in force, so it is made again
+## when the theme changes under it (a skin put on while a button is pressed): `_notification`, which waits for the end of the frame, when the button has been told of the new theme too (a parent hears of it first, and a
+## control's lookups of the theme answer from what it was told).
 func _show_pressed(button: Button) -> void:
 	_release_buttons()
+	_pressed_button = button
+	_wear_pressed(button)
+
+
+func _wear_pressed(button: Button) -> void:
 	button.add_theme_stylebox_override(&"normal", button.get_theme_stylebox(&"pressed"))
 	button.add_theme_color_override(&"font_color", button.get_theme_color(&"font_pressed_color"))
 
 
 func _release_buttons() -> void:
+	_pressed_button = null
 	for button: Button in [start_button, new_button, practice_button, exit_button]:
 		button.remove_theme_stylebox_override(&"normal")
 		button.remove_theme_color_override(&"font_color")
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_THEME_CHANGED and _pressed_button != null:
+		_wear_pressed_again.call_deferred()
+
+
+func _wear_pressed_again() -> void:
+	if _pressed_button != null:
+		_wear_pressed(_pressed_button)
 
 
 ## True while `button` wears the pressed look (for tests).

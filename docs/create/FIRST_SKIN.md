@@ -11,7 +11,7 @@ codebase. Two pages come with it, and this one links to them instead of repeatin
   below says "see the reference", that is where the full rule is.
 - [`CONTENT.md`](CONTENT.md), "Skins and packs" and "Where packs are found": what a pack is, how the game finds one, what is committed.
 
-The tutorial uses the example pack `examples/packs/modern/` (water shimmer, Exo 2 lettering, smooth filtering, the console's
+The tutorial uses the example pack `examples/packs/modern/` (water shimmer, Exo 2 lettering and menus, smooth filtering, the console's
 templates). Packs and skins in general, and the skins that are scenes and scripts of the project, are
 [`MAKING_CONTENT.md`](MAKING_CONTENT.md) Part C; a skin that draws with a script is "Writing a skin mod" in `SKIN_API.md`.
 
@@ -19,7 +19,7 @@ You will make a skin called **reef** and, along the way:
 
 - play the example, then your copy of it under your own id;
 - make the **art templates** and draw one picture over its template;
-- swap the **font** of the console's lettering;
+- swap the **font** of the console's lettering, and dress the **menus** in it;
 - write a **shader** that uses the game's time (`phase`), and set its values from the manifest;
 - **check** the pack, **install** it, and write the `.larissa` file you can give away.
 
@@ -78,9 +78,10 @@ in the order of the keys, each with the sentence that says what it does and the 
 
 | Key | What it does | Reference |
 | --- | --- | --- |
-| `"requires_api": 5` | the version of the skin API the manifest is written for. A manifest with `render`, `pictures`, `hud_font` or `layers` and no `entry` says 5 | `SKIN_API.md`, "A skin with no script" |
+| `"requires_api": 12` | the version of the skin API the manifest is written for. A manifest with `render`, `pictures`, `hud_font` or `layers` and no `entry` says at least 5, one with a `theme` (or a font `weight`) says 12 | `SKIN_API.md`, "A skin with no script" |
 | `render` | filtering and pixel snapping while the skin is worn. The example's `"linear"` and `false` make the original's small pictures smooth; leave `render` out and the original's `"nearest"` stays | the first bullet of the list there |
 | `hud_font` | the console's three boxes (game, zone, sector) as text in your font, with a size and a colour (step 5) | `hud_font` bullet |
+| `theme` | the look of the menus (sign-in, the dialogs, the message box): a font, colours, panel and button styles, pictures by key (step 5) | "The menus' theme" |
 | `shaders` | the list of shader files (text) of `skin/` the skin uses | `layers` bullet, "Shaders" |
 | `layers` | a shader on a layer of the picture of a sector: `background`, `walls`, `foes`, and the others the reference lists, with values for the shader's `uniforms` (step 6) | `layers` bullet |
 | `pictures` | a PNG of the pack for each picture of the console the skin redraws, by the picture's key (step 4) | `pictures` bullet |
@@ -88,7 +89,7 @@ in the order of the keys, each with the sentence that says what it does and the 
 The files sit in the pack under `skin/`: `skin/fonts/`, `skin/*.gdshader`, `skin/ui_picture/`. A file the manifest does not name is a
 warning when you check the pack (step 7), and one it names that is not there is an error, so a typo does not go unnoticed.
 
-What a skin never touches: a rule, a duration, a hit rectangle, the sounds, the menus. They are not keys of the manifest, and the
+What a skin never touches: a rule, a duration, a hit rectangle, the sounds, what a menu's controls are and do (only how they look). They are not keys of the manifest, and the
 tests that play every skin against the original fail if one ever changed them ([`SKIN_API.md`](SKIN_API.md), "The rules a skin keeps").
 
 ## 4. The art templates, and a picture of your own
@@ -151,14 +152,34 @@ give away.
 `hud_font` sets the font of the console's boxes:
 
 ```json
-"hud_font": { "file": "skin/fonts/Exo2.ttf", "size": 14, "color": "#dbf7ff" }
+"hud_font": { "file": "skin/fonts/Exo2.ttf", "weight": 600, "size": 14, "color": "#dbf7ff" }
 ```
+
+`weight` (100 to 900) picks the heaviness of a **variable** font such as Exo 2 (600 is its semibold); a font with one weight ignores it.
 
 To use a font of your own: put a `.ttf` under `skin/` (a TrueType file: the game reads `.ttf` only), point `file` at it, and choose the size (6 to 32) and the colour
 (`"#rrggbb"`). Delete the font you no longer use: the old file is a warning when you check the pack, as is any `.ttf` the manifest does not name.
 The words and the boxes' green are the original's: the boxes keep their rectangles, so a font too large for them is cut off at the box. Use a
 font you may share: the example's Exo 2 is under the SIL Open Font License, and its licence text, `OFL.txt`, travels beside it in
 `skin/fonts/` ([`fonts/README.md`](../../examples/packs/modern/skin/fonts/README.md)). Do the same with yours.
+
+**The menus.** The same font can dress the menus too. `theme` says how the sign-in screen, the dialogs and the message box look: a default
+font, named colours, and the styles of panels and buttons, each field optional and laid over the engine's own:
+
+```json
+"theme": {
+  "font":    { "file": "skin/fonts/Exo2.ttf", "weight": 600, "size": 16 },
+  "colors":  { "title": "#7fe0ff", "button": "#bfe9f7" },
+  "console": { "fill": "#07151f", "border": "#5fd0f0", "radius": 10 },
+  "button":  { "normal": { "fill": "#123347", "radius": 6 }, "hover": { "fill": "#1c5675" } }
+}
+```
+
+Put it in (the manifest says `"requires_api": 12`), start the game and open a dialog: the message box, with its title in your colour and its
+frame in your fill, is the quickest look. Leave `hud_font`'s `file` out and the console's boxes use the theme's font, so one font dresses the console and the menus.
+A style may also be a picture of yours: `"pressed": { "picture": "ui_picture/button_pressed", "slice": [4, 4, 4, 4] }` (map the key in `pictures`; `slice` is
+the margins of the picture that stay unstretched). The controls keep their places and what they do: only fonts, colours, borders and pictures change.
+The keys, their bounds and what each name dresses are in [`SKIN_API.md`](SKIN_API.md), "The menus' theme".
 
 ## 6. A shader, and the game's time
 
@@ -228,7 +249,7 @@ tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --check
 ```
 
 (`--no-reach` skips the reachability search of a pack's sectors, which a skin has none of.) It prints `reef: no problems`, or the warnings and errors, and the exit
-code is 1 when there is an error. What it says of a skin: the manifest, the pictures named and where they are, the font, a file
+code is 1 when there is an error. What it says of a skin: the manifest, the pictures named and where they are, the font and the theme, a file
 the manifest never names, the shaders as text, and the uniforms. Examples of what it prints:
 
 ```
@@ -236,7 +257,7 @@ the manifest never names, the shaders as text, and the uniforms. Examples of wha
   error: mod: the layer "background" sets "glimt", which skin/water_shimmer.gdshader does not declare (it declares phase, picture_size, waver, glint, cell)
   error: mod: skin/glow.gdshader uses `for`: a mod's shader has no loops
   warning: mod: the skin's picture ui_picture/ui_9999 names no picture of the game: it is never asked for
-  warning: mod: skin/fonts/Exo2.ttf is never used: a skin names its font in "skin": {"hud_font": {"file": ...}}
+  warning: mod: skin/fonts/Exo2.ttf is never used: a skin names its font in "skin": {"hud_font": {"file": ...}} or {"theme": {"font": {"file": ...}}}
 ```
 
 Errors refuse the skin when the game loads it, with the same reason; warnings do not. Check after every change to the manifest, a shader or a font. The editor's "Check pack..." in Project > Tools runs the same

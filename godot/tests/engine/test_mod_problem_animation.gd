@@ -425,5 +425,5 @@ func test_own_sounds_is_a_manifest_key_of_api_eleven() -> void:
 	errors = []
 	ModSpec.parse({"entry": "a.sgd", "requires_api": 11, "problems": {"types": [40], "own_sounds": "yes"}}, errors)
 	assert_str(errors[0]).contains("own_sounds").contains("true or false")
-	assert_int(ModSpec.PROBLEM_CLOCK_API_VERSION).is_equal(ModSpec.API_VERSION)
+	assert_int(ModSpec.PROBLEM_CLOCK_API_VERSION).is_less_equal(ModSpec.API_VERSION)
 	assert_bool(ModSpec.parse({"entry": "a.sgd", "requires_api": 10, "problems": {"types": [40]}}, [] as Array[String]).problem_clock()).is_false()

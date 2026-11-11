@@ -3,10 +3,10 @@
  "title": "Modern (example skin)",
  "version": "1.0",
  "author": "Operation Larissa",
- "description": "The example skin pack: a water shimmer behind the screen, Exo 2 on the HUD, smooth filtering, and the HUD's pictures as flat templates to draw over. Laid over the legacy pack.",
+ "description": "The example skin pack: a water shimmer behind the screen, Exo 2 on the HUD and in the menus (a theme of cool blues), smooth filtering, and the HUD's pictures as flat templates to draw over. Laid over the legacy pack.",
  "base": "legacy",
  "mod": {
-  "requires_api": 5,
+  "requires_api": 12,
   "skin": {
    "render": {
     "texture_filter": "linear",
@@ -15,8 +15,77 @@
    },
    "hud_font": {
     "file": "skin/fonts/Exo2.ttf",
+    "weight": 600,
     "size": 14,
     "color": "#dbf7ff"
+   },
+   "theme": {
+    "font": {
+     "file": "skin/fonts/Exo2.ttf",
+     "weight": 600,
+     "size": 16
+    },
+    "colors": {
+     "text": "#dbf7ff",
+     "title": "#7fe0ff",
+     "button": "#bfe9f7",
+     "button_hover": "#ffffff",
+     "button_pressed": "#ffe27a",
+     "button_disabled": "#5d7b88",
+     "good": "#6dffb0",
+     "bad": "#ff7a8a",
+     "caret": "#7fe0ff"
+    },
+    "panel": {
+     "fill": "#0d2233",
+     "border": "#2f7f9f",
+     "border_width": 2,
+     "radius": 8
+    },
+    "console": {
+     "fill": "#07151f",
+     "border": "#5fd0f0",
+     "border_width": 2,
+     "radius": 10
+    },
+    "button": {
+     "normal": {
+      "fill": "#123347",
+      "border": "#5fd0f0",
+      "radius": 6
+     },
+     "hover": {
+      "fill": "#1c5675",
+      "border": "#dbf7ff",
+      "radius": 6
+     },
+     "pressed": {
+      "fill": "#05121a",
+      "border": "#ffe27a",
+      "radius": 6
+     },
+     "disabled": {
+      "fill": "#0d2233",
+      "border": "#3b5663",
+      "radius": 6
+     },
+     "focus": {
+      "border": "#ffe27a",
+      "radius": 6
+     }
+    },
+    "input": {
+     "normal": {
+      "fill": "#04101a",
+      "border": "#5fd0f0",
+      "radius": 4
+     },
+     "focus": {
+      "fill": "#04101a",
+      "border": "#ffe27a",
+      "radius": 4
+     }
+    }
    },
    "shaders": [
     "skin/water_shimmer.gdshader",

@@ -9,7 +9,7 @@ extends GameSkin
 ## (for the author) and `ModHost` (before the mod runs) both ask.
 ##
 ## A DATA skin (a manifest with no `entry`) is the same object with no script: `render` and `pictures` of the manifest become the `GameSkin` fields of the same names (the pictures are the pack's `skin/*.png`
-## read through the pack's door, so they are worn only while this skin is: a pack's `pictures/` folder wins under every skin), and its presenter is the original's, so it needs no Sandbox. Its `hud_font` (a `.ttf` of the pack read through the pack's door, `Pack.font`) with its size and colour is the skin's `GameSkin.hud_labels`, the one field the project's own skins set the HUD's lettering with (`HudLabels`: the boxes keep the layout's sizes).
+## read through the pack's door, so they are worn only while this skin is: a pack's `pictures/` folder wins under every skin), and its presenter is the original's, so it needs no Sandbox. Its `hud_font` (a `.ttf` of the pack read through the pack's door, `Pack.font`, at its weight, `FontSpec`) with its size and colour is the skin's `GameSkin.hud_labels`, the one field the project's own skins set the HUD's lettering with (`HudLabels`: the boxes keep the layout's sizes); a `hud_font` with no file has no font of its own, and its boxes take the menus' default font. Its `theme` is the skin's `GameSkin.menu_theme` (`SkinTheme`: its font, made the same way, and the colours and styles of the manifest; `ThemeBuilder` puts it on the menus).
 ##
 ## Its `layers` are the shaders of the original presenter's layers: each becomes a `ShaderMaterial` of `layer_materials` (`OriginalPresenter` puts a copy on its layer and sets `phase`); a layer the script draws has none (the script names a shader in its draw list).
 ##
@@ -62,12 +62,19 @@ static func make(pack: Pack, reasons: Array[String]) -> ModSkin:
 	if pack.id == SkinChoice.ORIGINAL or ResourceLoader.exists(SkinChoice.path_of(pack.id)):
 		reasons.append("the pack's id '%s' is the id of a skin that comes with the game; a skin mod needs an id of its own" % pack.id)
 	if pack.mod.hud_font != null:
-		var problem := pack.font_problem(pack.mod.hud_font_file)
+		var problem := _font_problem(pack, pack.mod.hud_font_spec)
 		if problem.is_empty():
 			skin.hud_labels = pack.mod.hud_font.duplicate() as HudLabels
-			skin.hud_labels.font = pack.font(pack.mod.hud_font_file)
+			skin.hud_labels.font = pack.mod.hud_font_spec.font(pack)
 		else:
 			reasons.append("the skin's hud_font: %s" % problem)
+	if pack.mod.theme != null:
+		var problem := _font_problem(pack, pack.mod.theme_font)
+		if problem.is_empty():
+			skin.menu_theme = pack.mod.theme.duplicate() as SkinTheme
+			skin.menu_theme.font = pack.mod.theme_font.font(pack) if pack.mod.theme_font != null else null
+		else:
+			reasons.append("the skin's theme font: %s" % problem)
 	skin.assets = ModAssets.make(pack, ModSpec.SKIN_FOLDER, pack.mod.shaders, reasons)
 	if skin.assets != null:
 		for layer in pack.mod.layers:
@@ -80,6 +87,11 @@ static func make(pack: Pack, reasons: Array[String]) -> ModSkin:
 			skin.pictures[key] = texture
 	return skin if reasons.is_empty() else null
 
+
+
+## Why the font `spec` names (null: none) is no font the pack can give, "" when it is fine or names no file (`Pack.font_problem`).
+static func _font_problem(pack: Pack, spec: FontSpec) -> String:
+	return pack.font_problem(spec.file) if spec != null and not spec.file.is_empty() else ""
 
 
 ## The material the layer `layer` of a data skin wears (`GameSkin.layer_materials`): its shader, already compiled for the skin (`ModAssets`), with the values of the manifest in the uniforms the shader declares. A uniform the shader has not,

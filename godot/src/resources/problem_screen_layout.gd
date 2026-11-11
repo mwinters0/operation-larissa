@@ -44,16 +44,11 @@ func font_size() -> int:
 	return roundi(font_cell_height / ARIAL_CELL_PER_EM)
 
 
-## The font of every text of the problem screen. It is the project Theme's default font
-## (`themes/neptune_theme.tres`, built by `src/ui/theme_builder.gd` from the numbers above:
-## Liberation Sans Bold narrowed to the original's average character width), so there is ONE
-## font definition in the whole game. `Control`s get it from the theme automatically; this helper
-## is for code that draws strings itself with `draw_string` and may run outside the scene tree.
+## The font of every text the problem screen's diagrams draw. It is the default font of the engine's theme (`themes/neptune_theme.tres`, built by `src/ui/theme_builder.gd` from the numbers above:
+## Liberation Sans Bold narrowed to the original's average character width), so there is ONE font definition in the whole game, and a skin's theme does not change it (`ThemeBuilder.engine_font`). `Control`s get their font
+## from the theme automatically; this helper is for code that draws strings itself with `draw_string` and may run outside the scene tree.
 func make_font() -> Font:
-	var project_theme := ThemeDB.get_project_theme()
-	if project_theme != null and project_theme.has_default_font():
-		return project_theme.default_font
-	return ThemeDB.fallback_font
+	return ThemeBuilder.engine_font()
 
 
 ## `SetColor(n)`: palette entry `index` (0-15).

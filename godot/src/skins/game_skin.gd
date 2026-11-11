@@ -22,7 +22,7 @@ extends Resource
 ##    does by dressing up as a data file (`refused_resources` lists such keys for the author; `test_skins_dont_change_the_game.gd`).
 ##  * `presenter_scene`: the scene that shows a sector (`PresenterChoice.ORIGINAL_SCENE` is the original's); its root extends
 ##    `SectorPresenter`.
-##  * `render`: filter and pixel snapping (`RenderSettings`); `hud_labels`: the HUD's zone / sector / game lettering as text.
+##  * `render`: filter and pixel snapping (`RenderSettings`); `hud_labels`: the HUD's zone / sector / game lettering as text; `menu_theme`: the look of the menus (`SkinTheme`, put on by `ThemeBuilder`).
 ##  * `layer_materials`: a shader (with its uniforms) on a layer of the original presenter, by the layer's name (`SkinLayers.NODES`). Presentation only: the presenter makes its own copy of the material each time it is built (`layer_material`) and
 ##    sets the `phase` uniform itself, so a skin holds no state of a run.
 ## An empty field means "not mine": the lookup goes on to `fallback` (another skin, for a skin that builds on a skin) and ends at the
@@ -59,6 +59,8 @@ const KEY_KINDS: Array[String] = ["ui_picture", "background", "problem_art", "fr
 @export var presenter_scene: PackedScene
 @export var render: RenderSettings
 @export var hud_labels: HudLabels
+## The look of the menus (`SkinTheme`: font, colours, panel and button styles), or null: the engine's own theme. `ThemeBuilder` lays it on that theme when the skin is selected (`SkinChoice.select`); no control, rectangle or rule is named in it.
+@export var menu_theme: SkinTheme
 ## A material for a layer of the original presenter: layer name (`SkinLayers.NODES`) -> a `ShaderMaterial` with the shader and the values of its uniforms. Never put on a node as it is: `layer_material` hands out copies.
 @export var layer_materials: Dictionary[StringName, ShaderMaterial] = {}
 
@@ -158,6 +160,14 @@ func labels() -> HudLabels:
 		return hud_labels
 	var next := next_skin()
 	return next.labels() if next != null else null
+
+
+## The look of the menus this skin asks for, else the skin behind it, or null while every skin leaves the engine's theme (an empty `SkinTheme` says nothing, so it is none too).
+func menu_theme_in_use() -> SkinTheme:
+	if menu_theme != null and not menu_theme.is_empty():
+		return menu_theme
+	var next := next_skin()
+	return next.menu_theme_in_use() if next != null else null
 
 
 ## Does this skin or one behind it map any picture, or does a mounted pack hold some? (If none does, the original's resources are used as

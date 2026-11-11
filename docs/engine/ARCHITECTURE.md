@@ -566,6 +566,12 @@ All UI looks come from one Theme, `themes/neptune_theme.tres` (Project Settings 
 tools/godot.sh --headless --path godot -s res://src/ui/theme_builder.gd
 ```
 
+`ThemeBuilder` is also the one place any other `Theme` is made. A skin that says how the menus look (`GameSkin.menu_theme`, a `SkinTheme`: font, named colours, panel and button styles, pictures by key; a skin mod's `skin.theme`, [`../create/SKIN_API.md`](../create/SKIN_API.md) "The menus' theme") is worn by the PROJECT theme itself, in
+place: `SkinChoice.select` calls `ThemeBuilder.apply`, which lays `derive(data, skin)` (the engine's theme, `ThemeBuilder.engine()`, with only what the skin says changed) over it, or the engine's own over it again for a skin that says none. It is not a theme set on a root node, because a
+`CanvasLayer` (where the dialogs and the message box live) breaks the chain of a theme set on a node, and not a step of each screen: every control with no theme of its own looks the project theme up, so a screen open when the skin changes is told by Godot, and a screen opened later is born in it. The
+merge is never preceded by a `clear` (an empty theme for a moment makes every control size itself by the fallback font, and a control that grew does not shrink back). A control that copies a theme item while it is up, as the sign-in button's pressed look does, copies it again when told of a new theme (`SignIn._notification`).
+The text the problem diagrams draw is in the engine's font (`ThemeBuilder.engine_font`) whatever the skin says.
+
 ## Mechanisms worth knowing
 
 Non-obvious choices that the code embodies; the original's side of each is in [`../port/DESIGN.md`](../port/DESIGN.md).
