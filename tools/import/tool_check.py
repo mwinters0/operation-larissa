@@ -11,6 +11,7 @@ Fedora's (docs/SETUP.md).
 """
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
@@ -18,12 +19,15 @@ import tomllib
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import common
+import godot
 import step_audio
 import transcripts
 
-GODOT_WRAPPER = common.ROOT / "tools" / "godot.sh"
+WINDOWS = os.name == "nt"
+LAUNCHER = "tools/godot.py" if WINDOWS else "tools/godot.sh"      # what runs Godot here (godot.command())
 DNF_MUSIC = "sudo dnf install ffmpeg-free fluidsynth fluid-soundfont-common fluid-soundfont-gm"
 
 
@@ -34,11 +38,13 @@ def godot_pin() -> str:
 
 
 def godot_version() -> tuple[str | None, str | None]:
-    """(the version tools/godot.sh's Godot prints, None) when it answers, else (None, why it did not)."""
+    """(the version the Godot of godot.command() prints, None) when it answers, else (None, why it did not)."""
     try:
-        done = subprocess.run([str(GODOT_WRAPPER), "--version"], capture_output=True, text=True, timeout=120, check=False)
+        done = subprocess.run(godot.command() + ["--version"], capture_output=True, text=True, timeout=120, check=False)
+    except godot.GodotNotFound as error:
+        return None, str(error)
     except (OSError, subprocess.TimeoutExpired) as error:
-        return None, "tools/godot.sh could not run it (%s)" % error
+        return None, "%s could not run it (%s)" % (LAUNCHER, error)
     lines = [line.strip() for line in done.stdout.splitlines() if line.strip()]
     if done.returncode != 0 or not lines:
         return None, (done.stderr.strip().splitlines() or ["exit code %d" % done.returncode])[-1]
@@ -46,7 +52,8 @@ def godot_version() -> tuple[str | None, str | None]:
 
 
 def check_godot() -> list[str]:
-    """Godot answers through tools/godot.sh (GODOT_BIN, mise's `godot`, or the Flatpak)."""
+    """Godot answers through godot.command(): tools/godot.sh (GODOT_BIN, mise's `godot`, or the Flatpak), or on Windows the program
+    tools/godot.py finds (GODOT_BIN, `godot` on the PATH, or mise's install)."""
     have, why = godot_version()
     if have is None:
         return ["Godot (step godot): not found (%s): run `mise install` in the repository (mise.toml pins Godot), or set GODOT_BIN" % why]
@@ -59,8 +66,8 @@ def godot_version_warning() -> list[str]:
     have, _ = godot_version()
     if have is None or have.startswith(want):
         return []
-    return ["Godot (step godot): tools/godot.sh runs Godot %s, the project pins %s: for the pinned one run `mise install` and put "
-            "mise's `godot` first on the PATH (mise activate), or set GODOT_BIN to a %s binary" % (have, want, want)]
+    return ["Godot (step godot): %s runs Godot %s, the project pins %s: for the pinned one run `mise install` and put "
+            "mise's `godot` first on the PATH (mise activate), or set GODOT_BIN to a %s binary" % (LAUNCHER, have, want, want)]
 
 
 def check_audio(soundfont: str) -> list[str]:
@@ -130,6 +137,8 @@ def warn(lines: list[str]) -> None:
 
 
 if __name__ == "__main__":
+    import utf8_mode
+    utf8_mode.ensure()
     every_step = ["transcripts", "audio", "godot"]
     found = missing(every_step)
     for line in found:

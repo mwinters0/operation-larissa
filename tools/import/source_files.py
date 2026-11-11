@@ -109,4 +109,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    import utf8_mode
+    utf8_mode.ensure()
     sys.exit(main())
