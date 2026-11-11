@@ -308,6 +308,12 @@ tools/godot.sh --path godot res://src/debug/sector_viewer.tscn -- --presenter=de
   `tests/engine/test_presenter_binds_late.gd` binds every presenter and every skin in the middle of a flight with ink, a dissolve, a supply
   trip and the creatures' reload, and compares what it shows with one bound from the start (rule 2 above: `OriginalPresenter` builds its
   pellets, the station's trip and the sub's dissolve from the sim in `bind` and on every load, and a new `Foe` decides "glide or hop" from its model).
+- **The console is derived once.** `ConsoleState` (`src/ui/console_state.gd`) makes the console's state as plain data from `GameState` and the
+  layout in use: the gauges' values and slots, the low-air warning, the capsule pieces, each label's picture, word and box, the lights and the
+  rectangles. `Hud` takes each of those from it (its signal handlers call the part they own: `ConsoleState.oxygen`, `labels`, `lights`) and
+  holds no copy of the logic, so what a script is told of the console and what the HUD shows are one fact. `tests/engine/test_console_state.gd`
+  plays a game and finds every field in the HUD's nodes after every step, with the original's pictures and a skin with text, and shows a HUD made
+  in the middle the same.
 
 ## The flow of a mission: `GameFlow`
 
@@ -359,7 +365,7 @@ that pass). A lost tank reaches the flow through the run (`tank_lost`, `game_ove
 ```
 Game (Node, game.gd)                                                the view of a GameFlow; shows what the flow asks
  |- Backdrop (ColorRect)
- |- Hud (Control)           console art, gauges, lights, frame; OBSERVES GameState through signals (before SectorWorld, so the frame
+ |- Hud (Control)           console art, gauges, lights, frame; OBSERVES GameState through signals, shows what ConsoleState says (before SectorWorld, so the frame
  |                          does not cover the playfield's column x = 16)
  |- SectorWorld (Control 608x288 at (16,32), clip_contents)        the playfield; owns the SimWorld, the clock, the hands
  |   |- Presenter (OriginalPresenter, Node2D)                       shows the SimWorld (any SectorPresenter can take its place)

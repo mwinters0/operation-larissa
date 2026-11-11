@@ -1119,7 +1119,7 @@
  },
  "0x00419e4c": {
   "status": "ported",
-  "where": "godot/src/ui/hud.gd:_on_message_light_changed (ship / computer lights, sound 0x2f when one turns on, blink animation) fed by GameState.set_message_light from sim_world.gd / game_flow.gd:on_dock_reached; test_hud_binding.gd, test_flow_fidelity.gd"
+  "where": "godot/src/ui/hud.gd:_on_message_light_changed (ship / computer lights from ui/console_state.gd:lights, sound 0x2f when one turns on, blink animation) fed by GameState.set_message_light from sim_world.gd / game_flow.gd:on_dock_reached; test_hud_binding.gd, test_flow_fidelity.gd"
  },
  "0x00419eec": {
   "status": "ported",
@@ -1127,7 +1127,7 @@
  },
  "0x00419f6e": {
   "status": "ported",
-  "where": "godot/src/ui/hud.gd:_on_ink_changed + ui/icon_gauge.gd (21 icons in 7 columns, pictures 4 full / 5 empty)"
+  "where": "godot/src/ui/hud.gd:_on_ink_changed (the value from ui/console_state.gd:ink) + ui/icon_gauge.gd (21 icons in 7 columns, pictures 4 full / 5 empty)"
  },
  "0x0041a00e": {
   "status": "ported",
@@ -1139,22 +1139,22 @@
  },
  "0x0041a11c": {
   "status": "ported",
-  "where": "godot/src/ui/hud.gd:_on_oxygen_changed + ui/icon_gauge.gd (6 tank icons at x 92 + 24 i, 4 oxygen cells at x 240 + 20 i, warning picture 19 in cell 0 when one cell is left; the port also pulses it) and game_flow.gd:_on_oxygen_changed low-oxygen hint 1 (HintSystem.LOW_OXYGEN)"
+  "where": "godot/src/ui/hud.gd:_on_oxygen_changed (the values and the warning from ui/console_state.gd:oxygen) + ui/icon_gauge.gd (6 tank icons at x 92 + 24 i, 4 oxygen cells at x 240 + 20 i, warning picture 19 in cell 0 when one cell is left; the port also pulses it) and game_flow.gd:_on_oxygen_changed low-oxygen hint 1 (HintSystem.LOW_OXYGEN)"
  },
  "0x0041a2e1": {
   "name": "DisplayBezelGameIcon",
   "status": "ported",
-  "where": "godot/src/ui/hud.gd:_on_sector_changed (game_label picture 2 / 3 at (472, 374), 'Cust' picture 1 at (568, 374) when customised)"
+  "where": "godot/src/ui/hud.gd:_on_sector_changed (from ui/console_state.gd:labels; game_label picture 2 / 3 at (472, 374), 'Cust' picture 1 at (568, 374) when customised)"
  },
  "0x0041a341": {
   "name": "DisplayBezelZoneIcon",
   "status": "ported",
-  "where": "godot/src/ui/hud.gd:_on_sector_changed (zone_label = layout.zone_texture(zone), picture 6 + min(zone, 4) at (472, 352))"
+  "where": "godot/src/ui/hud.gd:_on_sector_changed (from ui/console_state.gd:labels; zone_label = layout.zone_texture(zone), picture 6 + min(zone, 4) at (472, 352))"
  },
  "0x0041a380": {
   "name": "DisplayBezelSectorIcon",
   "status": "ported",
-  "where": "godot/src/ui/hud.gd:_on_sector_changed (sector_label = layout.sector_texture(sector): picture 11 + sector % 3 at (472, 330), 'Final' 14 for sectors > 29)"
+  "where": "godot/src/ui/hud.gd:_on_sector_changed (from ui/console_state.gd:labels; sector_label = layout.sector_texture(sector): picture 11 + sector % 3 at (472, 330), 'Final' 14 for sectors > 29)"
  },
  "0x0041a3e8": {
   "name": "DisplayBezelFrame",

@@ -64,14 +64,24 @@ extends Resource
 @export var frame_colors: PackedColorArray = PackedColorArray()
 
 
-## Which zone picture a sector shows: the finale zones (5, 6) reuse the last picture.
+## The number of the zone picture a sector shows: the finale zones (5, 6) reuse the last picture.
+func zone_picture(zone: int) -> int:
+	return clampi(zone, 0, zone_textures.size() - 1)
+
+
+## Which zone picture a sector shows (`zone_picture`).
 func zone_texture(zone: int) -> Texture2D:
-	return zone_textures[clampi(zone, 0, zone_textures.size() - 1)]
+	return zone_textures[zone_picture(zone)]
 
 
-## "First", "Second" or "Third" for the sectors to play (`place` is the sector's place in its campaign, 0-based: `Campaign.position_of`), "Final"
-## for a finale sector.
-func sector_texture(place: int, is_finale: bool) -> Texture2D:
+## The number of the picture of a sector, 0 to 2 for First, Second and Third (`place` is the sector's place in its campaign, 0-based: `Campaign.position_of`), -1 for a finale sector (`sector_final_texture`).
+func sector_picture(place: int, is_finale: bool) -> int:
 	if is_finale:
-		return sector_final_texture
-	return sector_textures[maxi(place, 0) % sector_textures.size()]
+		return -1
+	return maxi(place, 0) % sector_textures.size()
+
+
+## The picture of a sector (`sector_picture`).
+func sector_texture(place: int, is_finale: bool) -> Texture2D:
+	var picture := sector_picture(place, is_finale)
+	return sector_final_texture if picture < 0 else sector_textures[picture]

@@ -6,7 +6,8 @@ extends Control
 ##
 ## Teaches: a view that OBSERVES a model. `Hud` never asks `GameState` for numbers in
 ## `_process`; it connects to the signals once in `_ready` and each handler touches only the
-## nodes that change. Where things go is not in this file: `HudLayout` (generated from the
+## nodes that change, and what it puts there is what `ConsoleState` says (the same part of it a script would be told: what the
+## gauges hold, the low-air warning, each label's picture and word, the lights). Where things go is not in this file: `HudLayout` (generated from the
 ## decompiled `DisplayBezel`) holds every position and picture. The blinking is done by an
 ## `AnimationPlayer`, not by timers in code.
 ##
@@ -105,6 +106,7 @@ func _apply_layout() -> void:
 	oxygen.full_texture = layout.oxygen_full
 	oxygen.empty_texture = layout.oxygen_empty
 	oxygen.low_texture = layout.oxygen_low
+	oxygen.low_value = ConsoleState.LOW_OXYGEN
 	ink.slot_positions = layout.ink_positions
 	ink.full_texture = layout.ink_full
 	ink.empty_texture = layout.ink_empty
@@ -142,10 +144,10 @@ func _apply_label_style() -> void:
 		text.add_theme_stylebox_override(&"normal", box)
 
 
-## Shows one label: the picture `picture` in its box, or, for a skin with text, the word `word` in the box `box_size`. The box is
+## Shows one label from its part of `ConsoleState.labels`: the picture `picture` in its box, or, for a skin with text, the label's word in the box (its `rect`'s size). The box is
 ## the same rectangle either way (position set by `_apply_layout`, size from the layout's data), and it cuts off what a font
 ## would let stick out.
-func _show_label(label: TextureRect, text: Label, picture: Texture2D, word: String, box_size: Vector2i) -> void:
+func _show_label(label: TextureRect, text: Label, picture: Texture2D, shown: Dictionary) -> void:
 	text.visible = _labels != null
 	label.clip_contents = _labels != null
 	if _labels == null:
@@ -153,57 +155,49 @@ func _show_label(label: TextureRect, text: Label, picture: Texture2D, word: Stri
 		label.size = Vector2.ZERO                  # (a TextureRect cannot be smaller than its picture: this is its picture's size)
 	else:
 		label.texture = null
-		label.size = Vector2(box_size)
-		text.text = word
+		label.size = shown["rect"].size
+		text.text = shown["word"]
 
 
-func _on_oxygen_changed(tank_count: int, oxygen_cells: int) -> void:
-	tanks.value = tank_count
-	oxygen.value = oxygen_cells
+func _on_oxygen_changed(_tank_count: int, _oxygen_cells: int) -> void:
+	tanks.value = ConsoleState.tanks(layout)["value"]
+	var air := ConsoleState.oxygen(layout)
+	oxygen.value = air["value"]
 	# One cell left: the original shows a red warning cell; we also pulse it.
-	if oxygen.is_low():
+	if air["low"]:
 		air_animations.play(&"low_oxygen")
 	else:
 		air_animations.stop()
 		oxygen.modulate = Color.WHITE
 
 
-func _on_ink_changed(pellets: int) -> void:
-	ink.value = pellets
-
-
-## The campaign the sector being played belongs to: the player's own if it lists the sector, else the one that does (a sector viewed on its own).
-func _campaign_of(sector_index: int) -> Campaign:
-	if GameState.profile != null and GameState.profile.campaign().contains(sector_index):
-		return GameState.profile.campaign()
-	return Catalog.campaign_of_sector(sector_index)
+func _on_ink_changed(_pellets: int) -> void:
+	ink.value = ConsoleState.ink(layout)["value"]
 
 
 ## Game (Voyager / Expert), zone and sector words follow the sector being played.
-func _on_sector_changed(sector_index: int) -> void:
-	var campaign := _campaign_of(sector_index) if sector_index >= 0 else null
-	var known := campaign != null
-	game_label.visible = known
-	zone_label.visible = known
-	sector_label.visible = known
-	custom_label.visible = known and GameState.customized
-	var words: HudLabels = _labels if _labels != null else HudLabels.new()     # (the words are only read for a skin with text)
-	_show_label(custom_label, custom_text, layout.custom_texture, words.custom_word, layout.custom_size)
-	if not known:
+func _on_sector_changed(_sector_index: int) -> void:
+	var state := ConsoleState.labels(layout, _labels)
+	var game: Dictionary = state["game"]
+	var zone: Dictionary = state["zone"]
+	var sector: Dictionary = state["sector"]
+	game_label.visible = game["visible"]
+	zone_label.visible = zone["visible"]
+	sector_label.visible = sector["visible"]
+	custom_label.visible = state["custom"]["visible"]
+	_show_label(custom_label, custom_text, layout.custom_texture, state["custom"])
+	if not game["visible"]:
 		return
-	var data := Catalog.sector(sector_index)
-	if campaign.banner_index >= 0:                       # the original's two pictures (a skin redraws them) ...
-		_show_label(game_label, game_text, layout.game_textures[clampi(campaign.banner_index, 0, layout.game_textures.size() - 1)],
-				words.game_word(campaign.banner_index), layout.game_size)
-	else:                                                # ... or the campaign's own picture and name
-		_show_label(game_label, game_text, campaign.banner, campaign.display_title(), layout.game_size)
-	_show_label(zone_label, zone_text, layout.zone_texture(data.zone), words.zone_word(data.zone), layout.zone_size)
-	_show_label(sector_label, sector_text, layout.sector_texture(campaign.position_of(sector_index), campaign.is_finale(sector_index)),
-			words.sector_word(campaign.position_of(sector_index), campaign.is_finale(sector_index)),
-			layout.sector_size)
+	var banner: Texture2D = layout.game_textures[game["picture"]] if game["picture"] >= 0 else ConsoleState.campaign_of(GameState.sector).banner
+	_show_label(game_label, game_text, banner, game)
+	_show_label(zone_label, zone_text, layout.zone_textures[zone["picture"]], zone)
+	_show_label(sector_label, sector_text, layout.sector_final_texture if sector["final"] else layout.sector_textures[sector["picture"]], sector)
 
 
-func _on_message_light_changed(ship: bool, computer: bool) -> void:
+func _on_message_light_changed(_ship: bool, _computer: bool) -> void:
+	var lights := ConsoleState.lights(layout)
+	var ship: bool = lights["ship"]["on"]
+	var computer: bool = lights["computer"]["on"]
 	ship_glow.visible = ship
 	computer_glow.visible = computer
 	if ship or computer:
