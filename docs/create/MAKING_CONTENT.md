@@ -415,7 +415,7 @@ The exit code is 1 for an error or a failed step, 2 for a bad option.
 - **Numbers are shared.** All the packs of a chain share one number space (0 to 255), and a campaign id must be unique too. Two packs that both use sector 32 cannot be told apart: the one nearest the top wins, silently. In a class,
   give each author a range (say 40-49, 50-59, ...) *before* they start; renumbering later means redoing the sector.
 - **A pack that holds a copy of an original sector** carries original level data: keep it among people who own the game (step 2).
-- A **skin mod** (Part C) is a pack with a script, run in a sandbox that lets it do nothing but say what to draw; a pack never runs code outside that sandbox. A mod pack can also draw the screen of a problem type it adds ([`CONTENT.md`](CONTENT.md), "Problem screens").
+- A **skin mod** (Part C) is a pack with a script, run in a sandbox that lets it do nothing but say what to draw; a pack never runs code outside that sandbox. A mod pack can also draw the screen of a problem type it adds, or of an original one ([`CONTENT.md`](CONTENT.md), "Problem screens").
 
 The pack format, in case you want to write or edit one by hand, is the tree in [`CONTENT.md`](CONTENT.md), section 4, "The layout of a pack"
 (`pack.json`, `campaigns/`, `sectors/`, `texts.json`, ...), and the JSON forms in [`PACKS.md`](../engine/PACKS.md).
@@ -588,7 +588,7 @@ What you *can* change without touching a rule: sectors, screens, creatures and t
 play and the values the rules run on, the sub's speed, the oxygen and ink limits and the like (step 9), and presentation.
 
 **Asking for a rule to change.** Mod packs that add gameplay (code in the sandbox that runs inside the tick, declared so the
-original campaigns provably do not use it) are planned ([`ROADMAP.md`](../ROADMAP.md)), **not built**; a mod pack can draw a skin ([`SKIN_API.md`](SKIN_API.md)) and the screen of a problem type it adds ([`CONTENT.md`](CONTENT.md), "Problem screens"). So the way to ask is to tell whoever maintains the project what behaviour you want, in terms of
+original campaigns provably do not use it) are planned ([`ROADMAP.md`](../ROADMAP.md)), **not built**; a mod pack can draw a skin ([`SKIN_API.md`](SKIN_API.md)) and the screen of a problem type, its own or an original one ([`CONTENT.md`](CONTENT.md), "Problem screens"). So the way to ask is to tell whoever maintains the project what behaviour you want, in terms of
 what the player sees and which rule it adds to, not changes. A change to how an *existing* rule works (fractional movement, another tick rate, larger screens, scripts as scenes) is not an extension but a different game, and the
 roadmap says that belongs in a separate project that takes this one as its specification.
 

@@ -174,19 +174,25 @@ static func skin(id: StringName) -> ModSkin:
 	return null if parts == null or _instance._loader.is_quarantined(String(id)) else parts.skin
 
 
-## The mod that draws the screen of problem type `type_id`, or null: the type is held by a pack of the chain whose mod lists it, runs and is not quarantined. A type nobody draws (no mod, a mod that was refused or
-## faulted too often, a type another pack of the chain holds instead) is shown as its data describes it, by `DiagramBase`.
+## The problem screens of the mod that draws problem type `type_id`, or null. A type a pack ADDS (34 up) is drawn by the mod of the pack that holds its data, if that mod lists it; a type of the ORIGINAL (0 to 33) by the
+## first mod of the chain, the chosen pack first, that lists it. The mod must run and not be quarantined. A type nobody draws (no mod, a mod that was refused or faulted too often, a type another pack of the chain holds
+## instead) is shown by the diagram its data names, `DiagramFactory` (the original's for an original type, the plain `items` of a `mod` family).
 static func problem_screen(type_id: int) -> ModProblems:
 	if _instance == null:
 		return null
 	_instance._sync_if_stale()
-	var holder := Packs.holder(Catalog.problem_type_rel(type_id))
-	if holder == null:
-		return null
-	var parts: ModParts = _instance._parts.get(String(holder.id))
-	if parts == null or parts.screens == null or not parts.screens.types.has(type_id) or _instance._loader.is_quarantined(String(holder.id)):
-		return null
-	return parts.screens
+	var candidates: Array[Pack] = []
+	if type_id < Catalog.PROBLEM_TYPE_COUNT:
+		candidates = Packs.chain()
+	else:
+		var holder := Packs.holder(Catalog.problem_type_rel(type_id))
+		if holder != null:
+			candidates.append(holder)
+	for each in candidates:
+		var parts: ModParts = _instance._parts.get(String(each.id))
+		if parts != null and parts.screens != null and parts.screens.types.has(type_id) and not _instance._loader.is_quarantined(String(each.id)):
+			return parts.screens
+	return null
 
 
 ## The node of the running mod `id` whose manifest has `rules`, or null (it is not in the chain, was refused, or has no rule hooks): what a campaign's run resolves its declared mods with (`ModHooks.resolve`).

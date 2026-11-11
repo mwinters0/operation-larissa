@@ -11,6 +11,7 @@ extends RefCounted
 ##     "mod": {"entry": "reef.sgd", "requires_api": 7, "skin": {"script_layers": ["background", "bubbles"]}}
 ##     "mod": {"entry": "reef.sgd", "requires_api": 8, "skin": {"script_layers": ["background", "hud_oxygen", "hud_ship"]}}
 ##     "mod": {"entry": "tides.sgd", "requires_api": 3, "problems": {"types": [40], "shaders": ["problems/wave.gdshader"]}}
+##     "mod": {"entry": "tides.sgd", "requires_api": 9, "problems": {"types": [5, 9, 40]}}
 ##     "mod": {"entry": "rules.sgd", "requires_api": 4, "rules": {"answers": [41], "instructions": [0, 1], "sub": true}}
 ##
 ## `entry` is a plain file name (no folder) ending `.sgd`, in the pack's root; only a skin whose script draws nothing may leave it out (a DATA skin: no script, so no Sandbox is needed to wear it). `requires_api` (default 1) is the lowest API version the script needs; a game that provides less
@@ -20,8 +21,9 @@ extends RefCounted
 ## at most `Pack.MAX_FONT_BYTES`; `size` from `MIN_HUD_FONT_SIZE` to `MAX_HUD_FONT_SIZE`; `color`: `#rrggbb` or `#rrggbbaa`: the lettering of the HUD's boxes, `HudLabels`) and `layers` (a layer of the original presenter by name, `SkinLayers.NODES`, to one of the listed `shaders` and the values of its uniforms: a number, `true` / `false`, a list of 2 to 4 numbers or a colour string, at most `MAX_LAYER_UNIFORMS`, each number within
 ## `MAX_UNIFORM_VALUE`; the game sets `phase`) are API version 5, which a skin without `entry` needs too. `script_layers` (API version 7; needs an `entry`) lists the layers of the original presenter (`SkinLayers.NODES`) and, from API version 8, the parts of the console (`SkinLayers.HUD_NODES`, or the whole console, `SkinLayers.HUD`)
 ## whose picture the script draws, one call of `skin_layer(name, state, fraction, events)` for each; the others stay the original's, and the layers of `layers` are dressed by their shader on those the script does not draw. A skin with an `entry` and no `script_layers` draws the whole
-## screen with `skin_frame(state, fraction, events)`: every layer at once. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from
-## `Catalog.PROBLEM_TYPE_COUNT` to `Catalog.LAST_PROBLEM_TYPE`, at most `MAX_PROBLEM_TYPES`; the pack holds each type as data); it needs API version 3 and lists its shaders like a skin, in the pack's `problems/` folder. `rules` makes the mod
+## screen with `skin_frame(state, fraction, events)`: every layer at once. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from 0 to
+## `Catalog.LAST_PROBLEM_TYPE`, at most `MAX_PROBLEM_TYPES`: a number below `Catalog.PROBLEM_TYPE_COUNT` is an ORIGINAL type, drawn by number in place of the original diagram (API version 9; the lock and the ballast panels are the engine's and cannot be listed), a number from it up
+## is a type the pack adds and holds as data); it needs API version 3 and lists its shaders like a skin, in the pack's `problems/` folder. `rules` makes the mod
 ## add GAMEPLAY inside the rules (`RuleHooks`), for a campaign that declares the mod: `answers` lists problem types it judges instead of their `compare_mode` (numbers as for `problems.types`, the pack holds each as data),
 ## `instructions` the numbers 0 to `RuleHooks.MAX_INSTRUCTIONS - 1` of the creature instruction `Mod_Instruction` it defines, `sub` (true) a sub ability; it needs API version 4, at least one of the three, and a mod with `rules`
 ## runs under an instruction limit of 1 to `MAX_RULE_EXECUTION_TIMEOUT` million per call. The instruction limit of every mod is at least 1: counting is never off. `Pack` reads this entry (`Pack.mod`), `PackCheck` judges what it names,
@@ -30,8 +32,8 @@ extends RefCounted
 ## Teaches: validating an untrusted description by naming each rule in one place, and clamping a request to a ceiling instead of refusing it (a limit is a request; the host decides).
 
 ## The version of the API a mod is given (`ModApi.build`). A mod that requires a higher one is refused. The version goes up when the API gains something a mod can ask for (2: the skin API, 3: the problem
-## screens, 4: the rule hooks, 5: the data skin, 6: a picture of the game by key in the draw list, 7: the skin's script draws chosen layers, 8: the console's parts are layers too), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
-const API_VERSION := 8
+## screens, 4: the rule hooks, 5: the data skin, 6: a picture of the game by key in the draw list, 7: the skin's script draws chosen layers, 8: the console's parts are layers too, 9: a problem-screen mod draws the original's types by number), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
+const API_VERSION := 9
 ## The first version with the skin API: a skin mod requires it.
 const SKIN_API_VERSION := 2
 ## The first version with data skins: `render` and `pictures` in `skin`, and a skin with no `entry`.
@@ -42,6 +44,8 @@ const LAYER_API_VERSION := 7
 const HUD_API_VERSION := 8
 ## The first version with problem screens: a mod that draws problem types requires it.
 const PROBLEM_API_VERSION := 3
+## The first version with the original's problem types drawn by number: a mod whose `problems.types` lists one (below `Catalog.PROBLEM_TYPE_COUNT`) requires it.
+const ORIGINAL_PROBLEM_API_VERSION := 9
 ## The first version with rule hooks: a mod with `rules` requires it.
 const RULE_API_VERSION := 4
 ## The game's ceilings. A manifest can lower these, never raise them (the same numbers as the godot-sandbox example's loader).
@@ -89,7 +93,7 @@ const PROBLEM_KEYS: Array[String] = ["types", "shaders"]
 ## The keys of the `rules` entry.
 const RULE_KEYS: Array[String] = ["answers", "instructions", "sub"]
 ## The most problem types one mod draws.
-const MAX_PROBLEM_TYPES := 16
+const MAX_PROBLEM_TYPES := 64
 ## The most shaders a skin, or the problem screens of a mod, list.
 const MAX_SHADERS := 8
 const SHADER_EXTENSION := "gdshader"
@@ -408,12 +412,14 @@ static func _parse_problems(value: Variant, spec: ModSpec, found: Array[String])
 		found.append("a mod draws at most %d problem types (it lists %d)" % [MAX_PROBLEM_TYPES, (types as Array).size()])
 	else:
 		for number: Variant in types:
-			if not _is_whole(number) or int(number) < Catalog.PROBLEM_TYPE_COUNT or int(number) > Catalog.LAST_PROBLEM_TYPE:
-				found.append("the problem type %s must be a whole number from %d (the first the original does not have) to %d" % [JSON.stringify(number), Catalog.PROBLEM_TYPE_COUNT, Catalog.LAST_PROBLEM_TYPE])
+			if not _is_whole(number) or int(number) < 0 or int(number) > Catalog.LAST_PROBLEM_TYPE:
+				found.append("the problem type %s must be a whole number from 0 to %d (0 to %d are the original's, the rest are types the pack adds)" % [JSON.stringify(number), Catalog.LAST_PROBLEM_TYPE, Catalog.PROBLEM_TYPE_COUNT - 1])
 			elif spec.problem_types.has(int(number)):
 				found.append("the problem type %d is listed twice" % int(number))
 			else:
 				spec.problem_types.append(int(number))
+				if int(number) < Catalog.PROBLEM_TYPE_COUNT and spec.requires_api < ORIGINAL_PROBLEM_API_VERSION:
+					found.append("a mod that draws the original's problem type %d needs \"requires_api\": %d (the original's types came with that version)" % [int(number), ORIGINAL_PROBLEM_API_VERSION])
 	spec.problem_shaders = _parse_shaders(value, PROBLEM_FOLDER, found)
 
 

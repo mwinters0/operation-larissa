@@ -1,15 +1,34 @@
 class_name DiagramFactory
 extends RefCounted
-## Creates the diagram control of a problem type from the "family" its spec names.
+## Creates the diagram control of a problem type from the "family" its spec names: THE one place that decides which diagram draws a type. A mod draws it (`ModDiagram`) when the type's family is `mod` (a type a pack adds) or
+## a mod that runs opted in to draw it by number (`ModHost.problem_screen`) and the type is not one whose answer the engine's own input takes (`takes_input`: the lock and the ballast panels); every other type is drawn by
+## the diagram of its family, and a `ModDiagram` falls back on the same one (`plain`) whenever its mod gives nothing.
 ##
 ## Teaches: the factory pattern with a plain `match` on a string coming from data. Adding a family
 ## means a new subclass of `DiagramBase` and one line here.
 
+## The families whose diagram is also the player's input (the lock's wheels, the ballast panel's buttons): the engine draws them, whatever a mod lists.
+const INPUT_FAMILIES: Array[String] = ["lock", "ballast_panel"]
+
+
 ## A set-up diagram for `problem`, ready to be added to the scene tree.
 static func create(problem: ProblemInstance) -> DiagramBase:
+	var family: String = problem.type.diagram["family"]
+	var diagram: DiagramBase = ModDiagram.new() if family == ModProblems.FAMILY or (not takes_input(family) and ModHost.problem_screen(problem.type.id) != null) else _new_for(family)
+	diagram.setup(problem)
+	return diagram
+
+
+## The set-up diagram the type's data names, whatever a mod does: what a `ModDiagram` shows and plays under (and instead of) its mod's layers.
+static func plain(problem: ProblemInstance) -> DiagramBase:
 	var diagram := _new_for(problem.type.diagram["family"])
 	diagram.setup(problem)
 	return diagram
+
+
+## Is a type of this diagram family answered through its diagram (the lock, the ballast panel), so that no mod draws it?
+static func takes_input(family: String) -> bool:
+	return INPUT_FAMILIES.has(family)
 
 
 static func _new_for(family: String) -> DiagramBase:
@@ -27,6 +46,6 @@ static func _new_for(family: String) -> DiagramBase:
 		"search_grid": return SearchGridDiagram.new()
 		"ballast_panel": return BallastPanelDiagram.new()
 		"lock": return LockDiagram.new()
-		"mod": return ModDiagram.new()           # a mod draws it (`ModProblems`); the plain picture of the data is what shows without the mod
+		"mod": return DiagramBase.new()          # a type a pack adds for a mod to draw (`ModProblems`): its plain picture is the generic `items` of the data
 	push_error("DiagramFactory: unknown diagram family '%s'" % family)
 	return DiagramBase.new()

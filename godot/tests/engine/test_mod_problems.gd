@@ -4,6 +4,7 @@ extends GdUnitTestSuite
 ## picture of that type (`problem_frame(state)` returns a draw list that `ModDraw` checks and `ModLayer` draws); the calculator, `AnswerChecker`, `ProblemSession` and `ProblemFlow` stay the game's, so what a mod returns, hostile or
 ## broken, changes no answer, no oxygen and no duration: the tests play the same problem under a good mod, a hostile one, a faulty one and none, and the plays are the same. They also cover the manifest, the type as data, the
 ## text command of the shared validator, the plain picture a screen falls back to, the one builder every way of opening a problem goes through, and the hostile mod `tests/mods/tides_hostile`.
+## The same holds for an original type a mod opts in to draw by number: the original's diagram is what shows for every other type, for a mod that gives nothing and for the lock and the ballast panels.
 ## These tests need the godot-sandbox extension (`uv run tools/fetch_sandbox.py`, docs/SETUP.md).
 
 const TYPE := ModProblemShelf.TYPE
@@ -21,6 +22,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	SkinChoice.select(SkinChoice.original())
 	GameClock.paused = false
 	ModLoader.pretend_no_sandbox = false
 	ModProblemShelf.release(_shelves)
@@ -105,11 +107,12 @@ func test_every_mistake_in_a_problems_entry_is_a_sentence() -> void:
 		"no types listed": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": []}}, "needs \"types\""],
 		"types not a list": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": 40}}, "needs \"types\""],
 		"an unknown key": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": [40], "fonts": []}}, "no \"fonts\""],
-		"a type of the original": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": [count - 1]}}, "must be a whole number from %d" % count],
+		"an original type under the first API that has them": [{"entry": "a.sgd", "requires_api": 8, "problems": {"types": [count - 1]}}, "\"requires_api\": %d" % ModSpec.ORIGINAL_PROBLEM_API_VERSION],
+		"a type below the first": [{"entry": "a.sgd", "requires_api": 9, "problems": {"types": [-1]}}, "must be a whole number from 0"],
 		"a type past the trigger table's byte": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": [256]}}, "to 255"],
 		"a type that is not a number": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": ["forty"]}}, "must be a whole number"],
 		"a type twice": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": [40, 40]}}, "listed twice"],
-		"too many types": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": range(count, count + ModSpec.MAX_PROBLEM_TYPES + 1)}}, "at most"],
+		"too many types": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": range(0, ModSpec.MAX_PROBLEM_TYPES + 1)}}, "at most"],
 		"a shader of the skin folder": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": [40], "shaders": ["skin/a.gdshader"]}}, "must be a file"],
 		"a shader climbing out": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": [40], "shaders": ["problems/../a.gdshader"]}}, "must be a file"],
 		"a shader twice": [{"entry": "a.sgd", "requires_api": 3, "problems": {"types": [40], "shaders": ["problems/a.gdshader", "problems/a.gdshader"]}}, "twice"],
@@ -125,7 +128,7 @@ func test_a_problem_mod_is_given_the_problem_facts_and_other_mods_are_not() -> v
 	var tides := _mount(["tides"] as Array[String])
 	var api: Dictionary = ModApi.new(Mods.loader()).build("x", tides.pack)
 	assert_int(api["api_version"]).is_equal(ModSpec.API_VERSION)
-	assert_dict(api["problems"]).is_equal({"types": [TYPE], "window": Vector2(640, 400), "max_commands": ModDraw.MAX_COMMANDS, "max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModDraw.MAX_UNIFORMS,
+	assert_dict(api["problems"]).is_equal({"types": [TYPE] + ModProblemShelf.ORIGINALS, "window": Vector2(640, 400), "max_commands": ModDraw.MAX_COMMANDS, "max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModDraw.MAX_UNIFORMS,
 			"max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT, "min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE, "shaders": ["problems/glow.gdshader"]})
 	assert_bool(api.has("skin")).is_false()
 	for value: Variant in api["problems"].values():
@@ -318,7 +321,8 @@ func test_the_state_a_problem_mod_gets_is_plain_data_without_a_verdict() -> void
 	_mount(["tides"] as Array[String])
 	var problem := ProblemFactory.make(TYPE, 0, null, 0)
 	var state := ProblemState.build(problem, "12", ProblemFlow.Step.ANSWERING)
-	assert_array(state.keys()).contains_exactly_in_any_order(["type", "level", "title", "prompt", "fields", "entry", "step", "window"])
+	assert_array(state.keys()).contains_exactly_in_any_order(["type", "level", "title", "prompt", "fields", "family", "diagram", "art", "entry", "step", "window"])
+	assert_str(state["family"]).is_equal(ModProblems.FAMILY)
 	assert_int(state["type"]).is_equal(TYPE)
 	assert_str(state["entry"]).is_equal("12")
 	assert_str(state["step"]).is_equal("answering")
@@ -446,11 +450,11 @@ func _scripts(dir: String) -> Array[String]:
 # --- the mod decides nothing ------------------------------------------------------------------------------------------------
 
 ## What happens when `answers` are given to problem `record` on a fresh screen: the step, the words, the oxygen after each, the sounds and the session.
-func _play(answers: Array, record: int = 0) -> Array[String]:
+func _play(answers: Array, record: int = 0, type_id: int = TYPE) -> Array[String]:
 	GameState.reset()
 	var screen: ProblemScreen = ProblemRunner.SCREEN_SCENE.instantiate()
 	add_child(screen)
-	var problem := ProblemFactory.make(TYPE, 0, null, record)
+	var problem := ProblemFactory.make(type_id, 0, null, record)
 	var sounds: Array[String] = []
 	var done: Array[String] = []
 	screen.sfx_requested.connect(func(sfx: StringName) -> void:
@@ -461,6 +465,9 @@ func _play(answers: Array, record: int = 0) -> Array[String]:
 	var trace: Array[String] = []
 	for answer: String in answers:
 		match answer:
+			"intro":
+				screen.advance_ticks(screen.diagram.intro_length())
+				trace.append("build-up %d ticks" % screen.diagram.intro_length())
 			"right":
 				screen.submit_answer(problem.expected)
 			"wrong":
@@ -701,9 +708,230 @@ func test_a_good_problem_mod_passes_the_pack_check_and_its_shader_is_judged_as_a
 	assert_bool(_report(shelf).errors().any(func(f: PackReport.Finding) -> bool: return f.message.contains("no loops"))).is_true()
 
 
+# --- the original's types, by number -----------------------------------------------------------------------------------------
+
+## A screen of the original type `type_id` (level 0, record 0); the caller frees it.
+func _original_screen(type_id: int = ModProblemShelf.ORIGINAL) -> ProblemScreen:
+	var screen: ProblemScreen = ProblemRunner.SCREEN_SCENE.instantiate()
+	add_child(screen)
+	screen.start(ProblemFactory.make(type_id, 0, null, 0))
+	return screen
+
+
+func test_a_manifest_lists_original_types_by_number_from_the_api_that_has_them() -> void:
+	var got := _parse({"entry": "tides.sgd", "requires_api": 9, "problems": {"types": [5, 33, 40]}})
+	var spec: ModSpec = got[0]
+	assert_array(got[1]).is_empty()
+	assert_array(spec.problem_types).is_equal([5, 33, 40])
+	assert_dict(spec.to_dict()).is_equal({"entry": "tides.sgd", "requires_api": 9, "problems": {"types": [5, 33, 40]}})
+	assert_int(ModSpec.ORIGINAL_PROBLEM_API_VERSION).is_less_equal(ModSpec.API_VERSION)
+	assert_array(_parse({"entry": "a.sgd", "requires_api": 9, "problems": {"types": range(ModSpec.MAX_PROBLEM_TYPES)}})[1]).is_empty()
+	assert_array(_parse({"entry": "a.sgd", "requires_api": 3, "problems": {"types": [34, 40]}})[1]).is_empty()               # (a mod that adds types only keeps its old version)
+
+
+func test_a_mod_draws_the_original_types_it_lists_and_the_original_draws_the_rest() -> void:
+	_mount(["tides"] as Array[String])
+	for type_id in ModProblemShelf.ORIGINALS:
+		var screen := _original_screen(type_id)
+		assert_object(screen.diagram).override_failure_message("type %d is listed and not drawn by the mod" % type_id).is_instanceof(ModDiagram)
+		screen.free()
+	for type_id in [ModProblemShelf.NOT_DRAWN, 1, 33, 0, 28]:
+		var screen := _original_screen(type_id)
+		assert_bool(screen.diagram is ModDiagram).override_failure_message("type %d is not listed and the mod draws it" % type_id).is_false()
+		screen.free()
+	assert_object(ModHost.problem_screen(ModProblemShelf.ORIGINAL)).is_not_null()
+	assert_object(ModHost.problem_screen(ModProblemShelf.NOT_DRAWN)).is_null()
+	var screen := _original_screen()
+	var lines := _lines(screen)
+	var art: Array = ProblemState.art_keys(Catalog.problem_type(ModProblemShelf.ORIGINAL))
+	assert_int(art.size()).is_greater(1)
+	assert_int(_count(lines, "picture ")).override_failure_message("every picture of the type's art by its key: %s" % [lines]).is_equal(art.size())
+	assert_int(_count(lines, "text Type %d items" % ModProblemShelf.ORIGINAL)).is_equal(1)           # (the family the type's data names)
+	assert_int(_count(lines, "text Typed: 0")).is_equal(1)
+	screen.calculator.press("7")
+	assert_int(_count(_lines(screen), "text Typed: 7")).is_equal(1)
+	screen.free()
+
+
+func test_the_topmost_mod_that_lists_an_original_type_draws_it() -> void:
+	_mount(["tides", "tides_hostile"] as Array[String])
+	assert_str(ModHost.problem_screen(ModProblemShelf.ORIGINAL).pack_id).is_equal(_shelves[1].id)
+	assert_str(ModHost.problem_screen(TYPE).pack_id).is_equal(_shelves[1].id)
+	Mods.loader().forgive(String(_shelves[1].id))
+
+
+func test_a_mod_cannot_list_a_type_the_engines_own_input_answers() -> void:
+	for type_id in [0, 28, 29]:
+		var shelf := PackShelf.new()
+		_shelves.append(shelf)
+		shelf.add_mod_fixture("res://tests/mods/tides", {"problems": {"types": [TYPE, type_id]}})
+		ModProblemShelf.add_files(shelf)
+		shelf.mount()
+		Mods.sync()
+		assert_array(Mods.loaded_ids()).override_failure_message("type %d: the mod runs" % type_id).not_contains([String(shelf.id)])
+		assert_str(ModHost.failure(String(shelf.id))).contains("problem type %d" % type_id).contains("engine's own input")
+		assert_bool(_report(shelf).errors().any(func(f: PackReport.Finding) -> bool: return f.message.contains("engine's own input"))).is_true()
+		assert_object(ModHost.problem_screen(type_id)).is_null()
+		ModProblemShelf.release(_shelves)
+	var lock := Catalog.problem_type(0)
+	assert_bool(DiagramFactory.takes_input(String(lock.diagram["family"]))).is_true()
+	assert_bool(DiagramFactory.takes_input("items")).is_false()
+
+
+func test_the_state_of_an_original_type_is_the_types_own_data_and_still_no_verdict() -> void:
+	_mount(["tides"] as Array[String])
+	var problem := ProblemFactory.make(ModProblemShelf.ORIGINAL, 0, null, 0)
+	var state := ProblemState.build(problem, "", ProblemFlow.Step.INTRO)
+	assert_int(state["type"]).is_equal(ModProblemShelf.ORIGINAL)
+	assert_str(state["family"]).is_equal(String(problem.type.diagram["family"]))
+	assert_dict(state["diagram"]).is_equal(problem.type.diagram)
+	assert_int((state["fields"] as Array).size()).is_equal(problem.type.field_kinds.length())
+	assert_array(state["art"]).is_equal(Array(problem.type.art_files).map(func(path: String) -> String: return GameSkin.key_of(path)))
+	for key: String in state["art"]:
+		assert_object(Assets.picture_by_key(key)).override_failure_message("%s is a key nothing holds" % key).is_not_null()
+	var bad: Array[String] = []
+	_plain_only(state, "state", bad)
+	assert_array(bad).is_empty()
+	assert_bool((state["diagram"] as Dictionary).is_read_only()).is_true()
+	assert_dict(problem.type.diagram).is_not_equal({})                                                  # (a copy: the type's own data was not frozen)
+	assert_bool(problem.type.diagram.is_read_only()).is_false()
+
+
+func test_a_mod_that_gives_nothing_leaves_the_original_diagram_of_the_type() -> void:
+	var plain := DiagramFactory.create(ProblemFactory.make(ModProblemShelf.ORIGINAL, 0, null, 0))
+	assert_bool(plain is ModDiagram).is_false()
+	var expected := plain.items.size()
+	plain.free()
+	var shelf := _mount(["tides_faulty"] as Array[String])
+	var screen := _original_screen()
+	var diagram := screen.diagram as ModDiagram
+	assert_object(diagram).is_not_null()
+	assert_array(_lines(screen)).is_equal(["plain %d items" % expected])                          # (the original diagram: its first frame raised, nothing of the mod is shown)
+	assert_int(diagram.plain().items.size()).is_equal(expected)
+	assert_bool(diagram.plain().visible).is_true()
+	for i in ModLoader.MAX_FAULTS + 5:
+		diagram.entry_changed(str(i))
+	Mods.loader().check_health()
+	assert_bool(ModHost.is_quarantined(String(shelf.id))).is_true()
+	assert_object(ModHost.problem_screen(ModProblemShelf.ORIGINAL)).is_null()
+	var again := DiagramFactory.create(ProblemFactory.make(ModProblemShelf.ORIGINAL, 0, null, 0))
+	assert_bool(again is ModDiagram).override_failure_message("a quarantined mod still draws an original type").is_false()
+	assert_int(again.items.size()).is_equal(expected)
+	again.free()
+	screen.free()
+	Mods.loader().forgive(String(shelf.id))
+
+
+func test_a_mod_that_is_gone_in_the_middle_of_an_original_problem_leaves_the_original_diagram() -> void:
+	_mount(["tides"] as Array[String])
+	var screen := _original_screen()
+	var diagram := screen.diagram as ModDiagram
+	assert_int(_count(_lines(screen), "text Type 3")).is_equal(1)
+	assert_bool(diagram.plain().visible).is_false()
+	ModProblemShelf.release(_shelves)
+	diagram.entry_changed("5")
+	assert_array(_lines(screen)).is_equal(["plain %d items" % diagram.plain().items.size()])
+	assert_bool(diagram.plain().visible).is_true()
+	assert_int(diagram.layers().size()).is_equal(0)
+	screen.free()
+
+
+func test_the_plays_of_an_original_type_are_the_same_whichever_mod_draws_it_or_none() -> void:
+	var plays: Array = [
+		["intro", "right", "wait"],
+		["intro", "wrong", "continue", "right", "wait"],
+		["intro", "wrong", "continue", "wrong", "continue", "continue", "continue", "continue"],
+		["intro", "type", "wait"],
+	]
+	var baseline: Array = []
+	for play: Array in plays:
+		baseline.append(_play(play, 0, ModProblemShelf.ORIGINAL))
+	assert_str("\n".join(baseline[0])).contains("solved true misses 0").contains("build-up 60 ticks")
+	assert_str("\n".join(baseline[0])).override_failure_message("the build-up's sounds are the original's").contains("sounds [")
+	assert_str("\n".join(baseline[2])).contains("solved false misses 2")
+	for name in ["tides", "tides_hostile", "tides_faulty", "tides_spinner"]:
+		_mount([name] as Array[String])
+		assert_object(ModHost.mod(String(_shelves.back().id))).override_failure_message("%s did not load: %s" % [name, ModHost.failure(String(_shelves.back().id))]).is_not_null()
+		assert_object(ModHost.problem_screen(ModProblemShelf.ORIGINAL)).override_failure_message("%s does not draw the type" % name).is_not_null()
+		for i in plays.size():
+			assert_array(_play(plays[i], 0, ModProblemShelf.ORIGINAL)).override_failure_message("%s changed the play %s" % [name, plays[i]]).is_equal(baseline[i])
+		Mods.loader().forgive(String(_shelves.back().id))
+		ModProblemShelf.release(_shelves)
+
+
+func test_the_build_up_and_the_replay_of_an_original_type_are_the_originals_whatever_the_mod_draws() -> void:
+	var original := DiagramFactory.create(ProblemFactory.make(ModProblemShelf.ORIGINAL, 0, null, 0))
+	var length := original.intro_length()
+	assert_int(length).is_greater(0)
+	original.free()
+	_mount(["tides"] as Array[String])
+	var screen := _original_screen()
+	var diagram := screen.diagram as ModDiagram
+	assert_int(diagram.intro_length()).is_equal(length)
+	assert_bool(diagram.has_intro()).is_true()
+	assert_bool(diagram.is_playing()).is_true()
+	assert_str(ProblemFlow.Step.keys()[screen.step()]).is_equal("INTRO")
+	assert_int(_count(_lines(screen), "text Type 3")).override_failure_message("the mod draws during the build-up too").is_equal(1)
+	var sounds: Array[StringName] = []
+	screen.sfx_requested.connect(func(sfx: StringName) -> void: sounds.append(sfx))
+	screen.advance_ticks(length - 1)
+	assert_bool(screen.is_answering()).is_false()
+	screen.advance_ticks(1)
+	assert_bool(screen.is_answering()).is_true()
+	assert_bool(diagram.is_playing()).is_false()
+	assert_array(sounds).is_not_empty()
+	screen.free()
+
+
+# --- the skin in use ----------------------------------------------------------------------------------------------------------
+
+## The textures of the picture commands a mod's layers hold now.
+func _textures(diagram: ModDiagram) -> Array[Texture2D]:
+	var found: Array[Texture2D] = []
+	for layer in diagram.layers():
+		for command: Array in layer.commands:
+			if command[0] == "picture":
+				found.append(command[1])
+	return found
+
+
+func test_a_skin_changed_in_the_middle_of_a_problem_is_what_the_pictures_by_key_show() -> void:
+	var tides := _mount(["tides"] as Array[String])
+	var screen := _original_screen()
+	var diagram := screen.diagram as ModDiagram
+	screen.advance_ticks(diagram.intro_length())                                                    # (the build-up is over: the plain picture is made again only while it plays no animation)
+	var key: String = ProblemState.art_keys(Catalog.problem_type(ModProblemShelf.ORIGINAL))[0]
+	var before := _textures(diagram)
+	assert_object(before[0]).is_same(Assets.picture_by_key(key))
+	var asked: int = ModHost.mod(String(tides.id)).call("times_asked")
+	var skin := GameSkin.new()
+	skin.id = &"test_problem_pictures"
+	var worn := ImageTexture.create_from_image(Image.create_empty(9, 9, false, Image.FORMAT_RGBA8))
+	skin.pictures = {key: worn}
+	SkinChoice.select(skin)
+	var after := _textures(diagram)
+	assert_int(after.size()).is_equal(before.size())
+	assert_object(after[0]).override_failure_message("the picture is the one of the skin that was in use when it was drawn").is_same(worn)
+	assert_object(after[0]).is_same(Assets.picture_by_key(key))
+	assert_int(ModHost.mod(String(tides.id)).call("times_asked")).override_failure_message("a skin change asks the script nothing").is_equal(asked)
+	var plain_pictures := diagram.plain().pictures(0)
+	assert_object(plain_pictures[0].texture).override_failure_message("the plain picture is resolved under the new skin too").is_same(worn)
+	SkinChoice.select(SkinChoice.original())
+	assert_object(_textures(diagram)[0]).is_same(before[0])
+	var opened_late := _original_screen()                                                       # (a screen opened under the skin shows what the changed one shows)
+	SkinChoice.select(skin)
+	var late := _textures(opened_late.diagram as ModDiagram)
+	var changed := _textures(diagram)
+	assert_int(late.size()).is_equal(changed.size())
+	for i in late.size():
+		assert_object(late[i]).is_same(changed[i])
+	opened_late.free()
+	screen.free()
+
+
 func test_the_manifest_form_and_the_docs_agree() -> void:
 	var doc := FileAccess.get_file_as_string("res://../docs/create/CONTENT.md")
-	for key in ["type", "level", "title", "prompt", "fields", "entry", "step", "window"]:
+	for key in ["type", "level", "title", "prompt", "fields", "family", "diagram", "art", "entry", "step", "window"]:
 		assert_bool(doc.contains("`%s`" % key)).override_failure_message("CONTENT.md does not mention the key `%s` of the state of a problem screen" % key).is_true()
 	for fact in ["types", "window", "max_commands", "max_texts", "max_text", "min_font_size", "max_font_size", "shaders"]:
 		assert_bool(doc.contains("`%s`" % fact)).override_failure_message("CONTENT.md does not mention api[\"problems\"][\"%s\"]" % fact).is_true()

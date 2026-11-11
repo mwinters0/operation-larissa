@@ -8,8 +8,12 @@ extends RefCounted
 ## Teaches: a test double for a pack that adds content AND carries code, built the way a creator would: the data is a file of the pack, the script a fixture, and nothing of either is known to the game but through the chain.
 
 const FIXTURES := "res://tests/mods"
-## The problem type the fixtures draw.
+## The problem type the fixtures draw, and the original types (of the suite's own pack) they opt in to draw by number: 3 has a build-up, 5 has not, and every other original type keeps its own diagram.
 const TYPE := 40
+const ORIGINALS: Array[int] = [3, 5]
+## The original type the plays use, and one of the original types no fixture draws.
+const ORIGINAL := 3
+const NOT_DRAWN := 4
 ## The pictures every problem-screen fixture gets: file -> [colour, size].
 const PICTURES := {
 	"problems/fish.png": [Color.ORANGE, Vector2i(8, 8)],

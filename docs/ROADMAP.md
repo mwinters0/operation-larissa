@@ -21,7 +21,7 @@ hand in a window.
 - A shader of a skin mod is vetted as text but compiled only by the renderer, so a shader that fails to compile is found when it is drawn, not when the pack is checked.
 - A rule hook that keeps state in variables of its own (rather than the memory the game hands back) is outside the promise that the same inputs are the same play; `RuleHooks.verify_pure` catches it in tests and tools, not while playing.
   The hooks are three (the judging of an answer, a creature instruction, the sub's velocity and invulnerability); another point (a piece, a trigger, a contact, a creature that a mod adds) is a new named hook in `RuleHooks`.
-- A problem-screen mod draws a still picture over the calculator or the answer box: no build-up or success animation, no sound, and a type a pack adds is worded from its texts and fields only and never uses the combination lock or the ballast panel.
+- A problem-screen mod draws a still picture over the calculator or the answer box: no build-up or success animation of its own (an original type keeps the original's, unseen under the mod's picture), no sound of its own, no art templates for the problem screen's pictures, and a type a pack adds is worded from its texts and fields only and never uses the combination lock or the ballast panel; the lock and the ballast panels of the original cannot be drawn by a mod.
 - High-resolution pictures in packs (`pictures/<kind>/<name>@4x.png`, high-res sprite frames and tile sets); today only a skin can
   supply them, and tiles and backgrounds have no 4x path (`ScaledTexture` does not reach `TileSet` atlases).
 - Story timelines other than the news cartoon are preloaded by their scenes, so no pack can replace them.
@@ -75,8 +75,6 @@ not from the original's pixels, so the templates carry no original content and a
 real art from them. The tool is `SkinTemplates` (`docs/create/SKIN_API.md` "Art templates"); the original's exact sizes are those of the legacy pack's layouts (`--pack=legacy` reads sizes only), the dev pack's pictures having sizes of their own; each later phase's last item adds the layouts that hold its keys to `SkinTemplates.SOURCES`.
 
 **K4: problem screens.**
-- **K4a: original types by number.** A mod opts in to drawing original types (0 to 33) by number; the original diagram is the fallback
-  for the others and for a faulty mod.
 - **K4b: presentation events.** Start, step, verdict, damage, success, timeout, told after the rules decided, for every type. May take
   two sessions by family of diagrams (`src/problems/diagrams/`); the event set is fixed in the first.
 - **K4c: animation and sounds.** Animation on the engine's clock, whose lengths stay the original's whatever the mod draws; sounds by

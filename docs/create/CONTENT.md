@@ -469,24 +469,26 @@ The pack check reports every one of these, so you do not have to remember them.
 A **mod pack** is a pack that also carries a script, written in SafeGDScript (a GDScript with a safe subset, `.sgd`), that the game runs inside the [godot-sandbox](https://github.com/libriscv/godot-sandbox) extension with restrictions on. Its manifest names the
 script (`"mod": {"entry": "orchard.sgd"}`, with the API version it needs and, if it wants less than the game allows, its limits). The script can reach only what the game hands it: it can write to the log and load the pictures and sounds of its own pack,
 and it can touch nothing else of the game; it cannot read a file by path, call into the game, or run past its time and memory limits (no limit is ever off, and a manifest that asks for 0 gets the lowest; a script that tries is refused or stopped, and one that keeps failing is switched off while the game goes on). So a mod pack is as safe to install from a stranger as a data pack,
-and it asks no trust question. It is the only code a pack may hold. A mod pack whose manifest says `skin` is a **skin**: it draws the sector, chooses like any skin (`--skin=<its pack id>`, F3 then S) and is written as [`SKIN_API.md`](SKIN_API.md) says, "Writing a skin mod"; one whose manifest says `problems` draws the screen of problem types it adds ("Problem screens", below). The extension is fetched with `mise run setup` (`uv run tools/fetch_sandbox.py`, [`SETUP.md`](../SETUP.md)); a game without it plays every data pack and refuses a mod pack with that reason. A skin that only changes the look of the game's pictures, or puts a shader on a layer of the sector, needs no script: leave `entry` out ([`SKIN_API.md`](SKIN_API.md), "A skin with no script"), and the Sandbox is not needed to wear it. A mod whose manifest says `rules` adds gameplay inside the rules for the campaigns that declare it ("Rule hooks", below). The manifest, the loader and what a
+and it asks no trust question. It is the only code a pack may hold. A mod pack whose manifest says `skin` is a **skin**: it draws the sector, chooses like any skin (`--skin=<its pack id>`, F3 then S) and is written as [`SKIN_API.md`](SKIN_API.md) says, "Writing a skin mod"; one whose manifest says `problems` draws the screen of problem types, those it adds and the original's ("Problem screens", below). The extension is fetched with `mise run setup` (`uv run tools/fetch_sandbox.py`, [`SETUP.md`](../SETUP.md)); a game without it plays every data pack and refuses a mod pack with that reason. A skin that only changes the look of the game's pictures, or puts a shader on a layer of the sector, needs no script: leave `entry` out ([`SKIN_API.md`](SKIN_API.md), "A skin with no script"), and the Sandbox is not needed to wear it. A mod whose manifest says `rules` adds gameplay inside the rules for the campaigns that declare it ("Rule hooks", below). The manifest, the loader and what a
 mod is granted are in [`../engine/PACKS.md`](../engine/PACKS.md), "Mod packs"; `pack_tool --check` checks the script file as it checks the rest of the pack.
 
 ### Problem screens
 
-A **mod pack** can draw the screen of a problem type of its own. The type is data, like any problem type of the previous section; the script draws only the picture on the left monitor, and the game keeps everything else: the typed answer (the calculator or the answer box),
+A **mod pack** can draw the screen of a problem type of its own, or of an original type. A type it adds is data, like any problem type of the previous section; an original type is the game's own, and the mod opts in to draw it by its number. The script draws only the picture on the left monitor, and the game keeps everything else: the typed answer (the calculator or the answer box),
 whether it is right (`AnswerChecker`), the two tries, the hint, the worked solution, the oxygen and every wait. Nothing the script returns can change the result, the score or a timing: a mod that is hostile, faulty or absent leaves the problem exactly as it is without it.
 The worked example is `godot/tests/mods/tides/` (the type is built in `godot/tests/mod_problem_shelf.gd`).
 
 ```
 pack.json     {"id": "tides", "title": "Tides", "version": "1.0", "base": "legacy",
-               "mod": {"entry": "tides.sgd", "requires_api": 3, "problems": {"types": [40], "shaders": ["problems/glow.gdshader"]}}}
+               "mod": {"entry": "tides.sgd", "requires_api": 9, "problems": {"types": [3, 5, 40], "shaders": ["problems/glow.gdshader"]}}}
 data/problems/problem_type_40.json   the type: texts, records, how an answer is judged; its diagram is {"family": "mod", "items": [...]}
 tides.sgd     the script
 problems/*.png, problems/*.gdshader   pictures and shaders (listed in the manifest) the screen may name
 ```
 
-`types` lists the problem types the mod draws (at most 16, each from 34 to 255); each must be a file of the pack with the diagram family `mod`, and `items` of its diagram are the **plain picture** the game falls back to (the vocabulary at the top of `DiagramBase`).
+`types` lists the problem types the mod draws (at most 64, each from 0 to 255). A number from 34 is a type the pack adds: it must be a file of the pack with the diagram family `mod`, and `items` of its diagram are the **plain picture** the game falls back to (the vocabulary at the top of `DiagramBase`).
+A number below 34 is an **original type**, drawn in place of the original's diagram (`requires_api` 9); the pack holds no file for it, and the original's diagram is the plain picture the game falls back to. The other original types stay the original's. The combination lock (type 0) and the ballast panels (28, 29)
+are answered through their own diagram, so no mod can list them. If several mods of the chain list the same original type, the first one (the chosen pack's) that runs draws it.
 `pack_tool --check=<folder>` judges the manifest, the type files, the pictures, the shaders and the presence of `problem_frame`; a mod that fails is refused with the reason when the game loads it, and its type is then shown as its data describes it.
 
 ```
@@ -510,15 +512,18 @@ The script runs under the mod's limits, and a mod that draws is held to at most 
 | `type`, `level`, `title` | the type's number, the educational level (0 to 3) and its title |
 | `prompt` | the problem's statement as the game words it |
 | `fields` | the record's fields in order: a whole number for a byte or a word, `{"text", "value", "fraction"}` for a number (`text` the way the game prints it, `value` a float, `fraction` true for a fraction) |
+| `family` | the diagram family the type's data names (`items`, `sonar`, `pie` ...; `mod` for a type a pack adds) |
+| `diagram` | the type's diagram data as the pack holds it: what the original's diagram draws from (the vocabulary at the top of `DiagramBase`: pictures by number `pic`, positions, the record fields they read, the build-up) |
+| `art` | the skin keys (`problem_art/pa_1843`) of the type's pictures in the order `diagram` numbers them (`pic`): a script names one to draw it; `""` for a file that has none |
 | `entry` | what the calculator or the answer box shows now (`"0"` before anything is typed) |
 | `step` | `intro` while the diagram builds up, `answering` while an answer is awaited, `waiting` while a message, the solution or the success text is up |
 | `window` | the size of the window, 640 x 400 |
 
-The fields are the problem's values, the answer's field included (a ruler is drawn to the length it asks about). The script is **not** told whether an entry is right, the tries, the oxygen, the hint, the solution
+The fields, `family`, `diagram` and `art` are the problem's and the type's data, the answer's field included (a ruler is drawn to the length it asks about). The script is **not** told whether an entry is right, the tries, the oxygen, the hint, the solution
 or the success text. `api["problems"]` has the plain facts: `types`, `window`, `max_commands`, `max_layers`, `max_uniforms`, `max_texts`, `max_text`, `min_font_size`, `max_font_size` and the manifest's `shaders`.
 
 **What the game does with the answer.** The draw list is checked command by command and drawn by the game (`ModDraw`, `ModLayer`); a command that is not exactly one of the list is dropped, so a script cannot draw anything but pictures of its own pack, rectangles, lines and text in the game's font. A frame the script spoils (an error, a result that is
-not a list) leaves the last good one on; before the first good one, and once the mod is quarantined (it faulted too often), unloaded or absent, the screen shows the plain picture of the type's data. The picture never animates, and the problem is as long as the game makes it.
+not a list) leaves the last good one on; before the first good one, and once the mod is quarantined (it faulted too often), unloaded or absent, the screen shows the plain picture of the type's data (for an original type, the original's diagram). The mod's picture does not animate, and the problem is as long as the game makes it: the build-up and the replay after a right answer of an original type run on their own lengths and with their own sounds whatever the mod draws. A picture named by key follows the skin in use, also when the skin changes in the middle of the problem.
 
 ### Rule hooks
 

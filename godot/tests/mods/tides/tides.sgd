@@ -1,5 +1,6 @@
 # A small problem-screen mod: it draws the screen of problem type 40 ("fish in rows") from the problem it is told: a pool, a row of fish pictures of its own pack (problems/fish.png) for each row of the problem, what the player has
-# typed so far, and the prompt, through the game's font. It keeps nothing but a count of the times it was asked (for the tests to ask): every picture is built from `state`, so a screen shown late is the screen shown early.
+# typed so far, and the prompt, through the game's font. It also opts in to draw two ORIGINAL types, 3 and 5, by number: for those it draws the pictures of the type's art bundle by their keys (the game's own pictures, under the skin in
+# use), the family the type's data names and what was typed; the other original types stay the original's. It keeps nothing but a count of the times it was asked (for the tests to ask): every picture is built from `state`, so a screen shown late is the screen shown early.
 var api : Dictionary = {}
 var asked := 0
 var last_step := ""
@@ -13,6 +14,8 @@ func times_asked() -> int:
 func problem_frame(state : Dictionary) -> Array:
 	asked += 1
 	last_step = state["step"]
+	if state["type"] != 40:
+		return original_type(state)
 	var out := []
 	out.append(["rect", Rect2(16, 16, 330, 230), Color(0.02, 0.10, 0.18)])
 	var rows : int = state["fields"][0]
@@ -27,4 +30,13 @@ func problem_frame(state : Dictionary) -> Array:
 		out.append(["layer", ""])
 	out.append(["text", "Typed: " + state["entry"], Vector2(24, 260), 17, Color.WHITE, 300.0, "left"])
 	out.append(["text", state["title"], Vector2(24, 280), 14, Color(0.8, 0.9, 1.0)])
+	return out
+
+func original_type(state : Dictionary) -> Array:
+	var out := []
+	out.append(["rect", Rect2(16, 16, 330, 230), Color(0.20, 0.10, 0.02)])
+	for i in state["art"].size():
+		out.append(["picture", state["art"][i], Vector2(20 + i * 40, 60)])
+	out.append(["text", "Type " + str(state["type"]) + " " + state["family"], Vector2(24, 24), 17, Color.WHITE])
+	out.append(["text", "Typed: " + state["entry"], Vector2(24, 260), 17, Color.WHITE, 300.0, "left"])
 	return out
