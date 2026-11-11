@@ -1,6 +1,6 @@
 class_name ModDraw
 extends RefCounted
-## What a mod draws: a DRAW LIST the script returns (a skin from `skin_frame`, the screen of a problem type from `problem_frame`), which the game checks command by command and draws itself. The script holds no
+## What a mod draws: a DRAW LIST the script returns (a skin from `skin_layer` or `skin_frame`, the screen of a problem type from `problem_frame`), which the game checks command by command and draws itself. The script holds no
 ## node, no texture, no material and no canvas: it returns an Array of Arrays (strings, numbers, places, colours, names of its own files), and `validate` makes of it what the game is willing to draw, dropping
 ## every command that is not exactly one of those below. A dropped command costs nothing and is counted (`Drawn.dropped`); a list is cut at `MAX_COMMANDS`. ONE validator for every kind of mod: what differs
 ## between a skin and a problem screen is only where the pictures and shaders come from (`ModAssets`) and the canvas it is drawn on (`ModLayer`).

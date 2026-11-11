@@ -279,5 +279,5 @@ file beside the font, and nothing in `skin/` that is not yours to share.
 - A shader on the sub, the pellets or the decorations: the layers are listed in `SKIN_API.md`; a new layer is one more line of `layers`.
 - Compare your skin with the original, side by side, and see the rectangles the rules test: `res://src/debug/skin_compare.tscn` and the **O** key
   ([`MAKING_CONTENT.md`](MAKING_CONTENT.md), C3).
-- A skin that draws the sector itself, from a script in a sandbox: "Writing a skin mod" in [`SKIN_API.md`](SKIN_API.md).
+- A skin whose script draws a layer of the sector, or all of them, in a sandbox: "Writing a skin mod" in [`SKIN_API.md`](SKIN_API.md).
 - How the engine builds this skin from the manifest: [`SKINS.md`](../engine/SKINS.md) and [`PACKS.md`](../engine/PACKS.md), "Mod packs".

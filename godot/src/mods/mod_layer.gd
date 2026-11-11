@@ -1,7 +1,7 @@
 class_name ModLayer
 extends Node2D
-## One layer of a mod's picture: a node that draws the commands of a `ModDraw.Layer` (already checked, so nothing here asks whether it may), through the layer's shader when it has one. A skin's presenter
-## (`ModPresenter`) and a mod's problem screen (`ModDiagram`) keep as many as their list has layers and give each its commands whenever the list changes. The node is the game's: the mod's script never holds it.
+## One layer of a mod's picture: a node that draws the commands of a `ModDraw.Layer` (already checked, so nothing here asks whether it may), through the layer's shader when it has one. A `ModLayerStack` keeps as many as a
+## mod's list has layers (a skin's layer, `ModLayerHost`; a problem screen, `ModDiagram`) and gives each its commands whenever the list changes. The node is the game's: the mod's script never holds it.
 ##
 ## Teaches: immediate-mode drawing on a retained canvas: `_draw` replays a list of commands, `queue_redraw` asks for it again, and a `ShaderMaterial` is the only thing a layer needs to look different.
 

@@ -21,7 +21,7 @@ func test_the_example_skin_draws_every_screen_of_every_sector_of_the_original_wi
 	for index in Catalog.sector_ids():
 		GameState.reset()
 		var sim := SimWorld.new(GameState)
-		var presenter := (load("res://src/mods/mod_presenter.tscn") as PackedScene).instantiate() as ModPresenter
+		var presenter := (load("res://src/gameplay/original_presenter.tscn") as PackedScene).instantiate() as OriginalPresenter
 		presenter.skin = skin
 		add_child(presenter)
 		presenter.run_in_skin(presenter.bind.bind(sim))
@@ -31,11 +31,9 @@ func test_the_example_skin_draws_every_screen_of_every_sector_of_the_original_wi
 			presenter.refresh()
 			screens += 1
 			most_decos = maxi(most_decos, presenter.view.decorations().size())
-			var first_layer := presenter.get_child(0) as ModLayer
-			most = maxi(most, first_layer.commands.size())
-			for child in presenter.get_children():
-				if child is ModLayer:
-					most = maxi(most, (child as ModLayer).commands.size())
+			var first_layer := presenter.mod_layers()[0]
+			for layer in presenter.mod_layers():
+				most = maxi(most, layer.commands.size())
 			if Assets.has_background(index, screen):                                  # (the picture behind the screen is the first the skin draws, by its key: the very texture the original look shows)
 				var first_picture: Array = first_layer.commands.filter(func(c: Array) -> bool: return c[0] == "picture")[0]
 				assert_object(first_picture[1]).override_failure_message("sector %d screen %d: the skin's background is not the original look's" % [index, screen]).is_same(Assets.background(index, screen))

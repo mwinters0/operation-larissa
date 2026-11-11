@@ -1,6 +1,6 @@
 class_name ModSkinShelf
 extends RefCounted
-## Skin mods for tests: scratch mod packs made of the fixtures of `tests/mods/` (`skinny`, `skin_faulty`, `skin_hostile`, and the data skin `skin_data`, which has no script) with the pictures a skin draws (`skin/*.png`, flat colours of the
+## Skin mods for tests: scratch mod packs made of the fixtures of `tests/mods/` (`skinny`, `skin_layers`, `skin_faulty`, `skin_layers_faulty`, `skin_hostile`, and the data skin `skin_data`, which has no script) with the pictures a skin draws (`skin/*.png`, flat colours of the
 ## sizes a skin draws them at) and the shader text the manifests list, or of a whole pack folder (`EXAMPLE_MODERN`: the example pack, which holds its own pictures and shaders), laid over the pack the suite runs on and running (`Mods.sync`). `mount` makes them, `release` takes them away and chooses the
 ## suite's own pack again, so the next test starts with the game as it ships. The scripted ones need the godot-sandbox extension (`uv run tools/fetch_sandbox.py`); the data skin does not.
 ##

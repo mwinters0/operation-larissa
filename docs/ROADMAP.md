@@ -74,11 +74,6 @@ colour with the key and the size written on it, made by a committed tool (one li
 not from the original's pixels, so the templates carry no original content and are committed in the example pack). The user draws the
 real art from them. The tool is `SkinTemplates` (`docs/create/SKIN_API.md` "Art templates"); the original's exact sizes are those of the legacy pack's layouts (`--pack=legacy` reads sizes only), the dev pack's pictures having sizes of their own; each later phase's last item adds the layouts that hold its keys to `SkinTemplates.SOURCES`.
 
-**K2: layers drawn by a script.**
-- **K2c: `skin_layer`.** A script replaces chosen layers (`skin_layer(name, state, fraction, events)` returns a draw list for that
-  layer); the others stay the original's. The skin mod that draws everything becomes the case "every layer". An example and templates
-  for any key it replaces.
-
 **K3: the HUD as a layer.**
 - **K3a: the console's state.** Oxygen, ink, tanks, pieces, the labels' words and the lights as plain data, built from the owner like
   `SkinState`.

@@ -41,6 +41,9 @@ extends SectorPresenter
 ##  * By the CLOCK, for the animations that no rule depends on: the sparkle of the pieces (`Collectible`), the swaying decos
 ##    (`AnimDeco`) and the ambient bubbles (`Bubbles`, with its own random numbers) listen to `GameClock.tick`.
 ##
+## A skin mod whose script draws layers (`ModLayerHost`, made by `bind` from the skin worn) is hosted here: for each layer the script draws, a stack of `ModLayer` nodes stands right behind the layer's node (`_arrange` keeps them in place) and the layer's own node is
+## transparent while the script's answer is on, so every other layer stays the original's and a layer whose script faults is the original's too. The nodes below are built and kept in step whatever the script does.
+##
 ## The `Sub` node is hidden until the rules switch the sub on (`sim.sub.active`), so the browsing-only users of this scene (the sector
 ## viewer, the playfield tests) are unaffected.
 ##
@@ -79,6 +82,8 @@ var _show_collisions := false
 var _pellet_nodes := {}
 ## The materials this presenter put on its layers (`_dress_layers`), by layer name: the ones whose `phase` it sets.
 var _layer_materials: Dictionary[StringName, ShaderMaterial] = {}
+## The host of the layers a skin mod's script draws (`ModLayerHost`), or null when the skin worn has none.
+var _mod_layers: ModLayerHost
 
 # `%Name` finds a node by its unique name inside this scene.
 @onready var background: Sprite2D = %Background
@@ -110,6 +115,10 @@ func _ready() -> void:
 ## start shows (`tests/engine/test_presenter_binds_late.gd`).
 func bind(sim_world: SimWorld) -> void:
 	super.bind(sim_world)
+	_mod_layers = ModLayerHost.make(self, skin if skin != null else SkinChoice.current())
+	if _mod_layers != null:
+		for event_name in SimView.EVENTS:
+			_listen(Signal(view, event_name), func(...args: Array) -> void: _mod_layers.heard(event_name, args))
 	sub.bind(sim.sub)
 	_listen(sim.sector_loaded, _on_sector_loaded)
 	_listen(sim.screen_loaded, _on_screen_loaded)
@@ -133,6 +142,16 @@ func bind(sim_world: SimWorld) -> void:
 	_arrange()
 	_show_dissolve()
 	_show_phase(GameClock.tick_fraction())
+	if _mod_layers != null:
+		_mod_layers.refresh()
+
+
+## Stops showing the rules: a mod's layers are the original's again.
+func unbind() -> void:
+	if _mod_layers != null:
+		_mod_layers.end()
+		_mod_layers = null
+	super.unbind()
 
 
 ## Shows the whole state of the rules now: the sub, every creature (picture, mirror, place) and every pellet.
@@ -143,6 +162,8 @@ func refresh() -> void:
 		foe.sync()
 	for pellet: InkPellet in pellets.get_children():
 		pellet.refresh()
+	if _mod_layers != null:
+		_mod_layers.refresh()
 
 
 ## Every moving picture glides from its previous to its current place, `fraction` of the way into the tick.
@@ -154,6 +175,28 @@ func show_between_ticks(fraction: float) -> void:
 		foe.show_between_ticks(fraction)
 	for pellet: InkPellet in pellets.get_children():
 		pellet.show_between_ticks(fraction)
+	if _mod_layers != null:
+		_mod_layers.show(fraction)
+
+
+## Does a skin mod's script draw layers of this presenter (`ModLayerHost`)?
+func hosts_mod_layers() -> bool:
+	return _mod_layers != null
+
+
+## What the skin mod's script draws, as lines (the layers it draws and their commands): for a test that compares what two presenters show. Empty with no such mod.
+func mod_drawn() -> Array[String]:
+	return _mod_layers.lines() if _mod_layers != null else []
+
+
+## The `ModLayer` nodes the skin mod's script is drawing (for a test); none with no such mod.
+func mod_layers() -> Array[ModLayer]:
+	return _mod_layers.layers() if _mod_layers != null else []
+
+
+## The layers the skin mod's script has answered for, which the original does not show (for a test).
+func mod_answered_layers() -> Array[StringName]:
+	return _mod_layers.answered_layers() if _mod_layers != null else []
 
 
 ## The overlays: trigger markers, the arrows of the currents, and the rectangles of the rules (the walls of the tile layer, the sub's
@@ -231,6 +274,8 @@ func _arrange() -> void:
 		if before.get_index() > after.get_index():
 			move_child(after, before.get_index())           # (right behind `before`: moving to its index, as it shifts down by one)
 	bubbles.hold(trip)
+	if _mod_layers != null:
+		_mod_layers.place()
 
 
 ## The dissolve as the rules hold it now, for each of its events, a load and a bind: a dissolve that runs has drawn its 16 passes and the

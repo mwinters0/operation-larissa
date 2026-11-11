@@ -1,7 +1,8 @@
 class_name ModSkin
 extends GameSkin
-## The skin a skin MOD is: an ordinary entry of `SkinChoice` (`--skin=<id>`, F3 then S) whose id is the mod pack's id, that maps only what its manifest says (its `render` and `pictures`; the HUD's layout, the screens and the sounds stay the base game's)
-## and, for a skin with an entry script, whose presenter scene is `ModPresenter`, which asks the sandboxed script what to draw. `ModHost` makes one when it loads a mod whose manifest has `skin` (`make`), keeps it while the mod runs
+## The skin a skin MOD is: an ordinary entry of `SkinChoice` (`--skin=<id>`, F3 then S) whose id is the mod pack's id, that maps only what its manifest says (its `render` and `pictures`; the HUD's layout, the screens and the sounds stay the base game's).
+## Its sector is always shown by the original presenter. For a skin with an entry script the presenter hands chosen layers to the sandboxed script (`ModLayerHost`): the layers of `script_layers`, one call of `skin_layer` each, or, for a script that
+## draws the whole screen (`draws_frame`), every layer at once from one call of `skin_frame`. `ModHost` makes the skin when it loads a mod whose manifest has `skin` (`make`), keeps it while the mod runs
 ## and lets it go with the mod (`alive` false); `SkinChoice` puts the original skin on again when the one in use stops being alive.
 ##
 ## It also holds what the script may name: the shaders the manifest lists, compiled by `ModShader` once, when the mod is loaded. The manifest is judged in one place, `ModParts.make`, which `PackCheck`
@@ -10,14 +11,14 @@ extends GameSkin
 ## A DATA skin (a manifest with no `entry`) is the same object with no script: `render` and `pictures` of the manifest become the `GameSkin` fields of the same names (the pictures are the pack's `skin/*.png`
 ## read through the pack's door, so they are worn only while this skin is: a pack's `pictures/` folder wins under every skin), and its presenter is the original's, so it needs no Sandbox. Its `hud_font` (a `.ttf` of the pack read through the pack's door, `Pack.font`) with its size and colour is the skin's `GameSkin.hud_labels`, the one field the project's own skins set the HUD's lettering with (`HudLabels`: the boxes keep the layout's sizes).
 ##
-## Its `layers` are the shaders of the original presenter's layers: each becomes a `ShaderMaterial` of `layer_materials` (`OriginalPresenter` puts a copy on its layer and sets `phase`), which is why a skin with a script has none: its presenter is its own.
+## Its `layers` are the shaders of the original presenter's layers: each becomes a `ShaderMaterial` of `layer_materials` (`OriginalPresenter` puts a copy on its layer and sets `phase`); a layer the script draws has none (the script names a shader in its draw list).
 ##
 ## Teaches: one choice for every skin: a skin from a stranger is a `GameSkin` like the project's own, built by one function from what the pack holds, so everything that wears a skin (the
 ## presenter, the HUD, the compare tool, the tests) needs no second path, whether it carries code or only data.
 
-const PRESENTER_SCENE := "res://src/mods/mod_presenter.tscn"
-## The function a skin mod defines, called every frame by `ModPresenter` (`ModSpec.functions` lists it).
-const FUNCTION := "skin_frame"
+## The functions a skin mod defines, called every frame by `ModLayerHost` (`ModSpec.functions` lists them): `skin_layer(name, state, fraction, events)` for each layer of `script_layers`, or `skin_frame(state, fraction, events)` for a script that draws the whole screen.
+const LAYER_FUNCTION := "skin_layer"
+const FRAME_FUNCTION := "skin_frame"
 
 ## The mod pack's id: the skin's id too.
 var pack_id: StringName = &""
@@ -25,6 +26,14 @@ var pack_id: StringName = &""
 var assets: ModAssets
 ## False once the mod that made it is unloaded: `SkinChoice` does not offer it and does not keep it.
 var alive := true
+## What the script draws: the layers it draws one by one (`ModSpec.script_layers`), or the whole screen at once (`draws_frame`: `ModSpec.draws_frame`). A data skin has neither.
+var script_layers: Array[StringName] = []
+var draws_frame := false
+
+
+## Does a script draw anything of this skin (a layer, or the whole screen)?
+func is_scripted() -> bool:
+	return draws_frame or not script_layers.is_empty()
 
 
 ## The skin of the mod pack `pack`, or null with every reason in `reasons`: its id is the id of a skin that comes with the game, a shader of the manifest is not what `ModShader` accepts, a
@@ -36,8 +45,8 @@ static func make(pack: Pack, reasons: Array[String]) -> ModSkin:
 	skin.id = pack.id
 	skin.pack_id = pack.id
 	skin.display_name = pack.title
-	if pack.mod.has_entry():
-		skin.presenter_scene = load(PRESENTER_SCENE) as PackedScene
+	skin.script_layers = pack.mod.script_layers.duplicate()
+	skin.draws_frame = pack.mod.draws_frame()
 	if pack.mod.render != null:
 		skin.render = pack.mod.render.duplicate() as RenderSettings
 	if pack.id == SkinChoice.ORIGINAL or ResourceLoader.exists(SkinChoice.path_of(pack.id)):

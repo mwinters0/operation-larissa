@@ -175,7 +175,7 @@ static func _data_files(live: Pack, report: PackReport) -> void:
 
 
 ## A mod pack's script (a data skin has none): the manifest entry (`Pack.mod`, read by `ModSpec`, whose errors are the manifest's) names a `.sgd` file the pack holds, within the size limit, with a
-## `mod_init(api)`, and defines the function of everything the manifest lists (`ModSpec.functions`: `skin_frame`, `problem_frame`, the rule hooks). What the pack must hold for it (acceptable shaders and pictures of a skin or of problem screens, the pictures a skin maps, each problem type it draws or judges as data) is `ModParts.problems`. A `.sgd` file the manifest does not name is never run.
+## `mod_init(api)`, and defines the function of everything the manifest lists (`ModSpec.functions`: `skin_layer` or `skin_frame`, `problem_frame`, the rule hooks). What the pack must hold for it (acceptable shaders and pictures of a skin or of problem screens, the pictures a skin maps, each problem type it draws or judges as data) is `ModParts.problems`. A `.sgd` file the manifest does not name is never run.
 ## (Whether it compiles is known only to the Sandbox, when the mod is loaded: `ModHost.failure`.)
 static func _mod(live: Pack, report: PackReport) -> void:
 	var scripts: Array[String] = []

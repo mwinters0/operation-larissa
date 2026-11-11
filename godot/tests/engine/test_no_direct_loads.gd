@@ -18,7 +18,6 @@ const ALLOWED := {
 	"res://src/gameplay/presenter_choice.gd": "the presenter scene, project code",
 	"res://src/skins/": "skins are scenes and scripts of the project (`res://skins/`), code by design",
 	"res://src/debug/skin_compare.gd": "a skin by path (`res://skins/`)",
-	"res://src/mods/mod_skin.gd": "the presenter scene of a skin mod, project code",
 	"res://addons/screen_editor/": "an editor of the project's authoring files: sectors and screens `.tres`, its own scene",
 	"res://addons/sector_editor/": "an editor of the project's authoring files: sector `.tres`",
 	"res://addons/foe_script_editor/": "an editor of the project's authoring files: sector `.tres` and creature scripts",

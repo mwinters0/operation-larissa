@@ -8,7 +8,7 @@ extends GdUnitTestSuite
 ## These tests need the godot-sandbox extension (`uv run tools/fetch_sandbox.py`, docs/SETUP.md).
 
 const WORLD_SCENE := "res://src/gameplay/sector_world.tscn"
-const PRESENTER_SCENE := "res://src/mods/mod_presenter.tscn"
+const PRESENTER_SCENE := "res://src/gameplay/original_presenter.tscn"
 
 ## The dev pack's sector with decorations of every layer, and the screen that has an animated one.
 const DECORATED_SECTOR := 100
@@ -62,9 +62,9 @@ func _decorated_sim(screen: int, ticks: int = 0) -> SimWorld:
 	return sim
 
 
-## A `ModPresenter` in the tree, bound to `sim`, dressed in `skin` (what `SectorWorld` does with the skin in use).
-func _presenter(sim: SimWorld, skin: GameSkin) -> ModPresenter:
-	var presenter := (load(PRESENTER_SCENE) as PackedScene).instantiate() as ModPresenter
+## The original presenter in the tree, bound to `sim`, dressed in `skin` (what `SectorWorld` does with the skin in use): it hosts the layers the skin's script draws.
+func _presenter(sim: SimWorld, skin: GameSkin) -> OriginalPresenter:
+	var presenter := (load(PRESENTER_SCENE) as PackedScene).instantiate() as OriginalPresenter
 	presenter.skin = skin
 	auto_free(presenter)
 	presenter.run_in_skin(func() -> void:
@@ -73,17 +73,16 @@ func _presenter(sim: SimWorld, skin: GameSkin) -> ModPresenter:
 	return presenter
 
 
-## The commands of every layer node of the presenter, in order: [[layer node, commands]].
-func _layers(presenter: ModPresenter) -> Array:
+## The commands of every layer node the script's answers are shown in, in order: [[layer node, commands]].
+func _layers(presenter: OriginalPresenter) -> Array:
 	var found: Array = []
-	for child in presenter.get_children():
-		if child is ModLayer:
-			found.append([child, (child as ModLayer).commands])
+	for layer in presenter.mod_layers():
+		found.append([layer, layer.commands])
 	return found
 
 
 ## The commands of the presenter's layers whose first element is `op`.
-func _commands(presenter: ModPresenter, op: String) -> Array:
+func _commands(presenter: OriginalPresenter, op: String) -> Array:
 	var found: Array = []
 	for layer: Array in _layers(presenter):
 		for command: Array in layer[1]:
@@ -507,12 +506,12 @@ func test_a_skin_mod_is_chosen_like_any_skin_and_the_world_wears_it() -> void:
 	SkinChoice.select_id(shelf.id)                                                                    # (what `--skin=<id>` and F3 S do)
 	assert_object(SkinChoice.current()).is_same(skin)
 	var world := scene_runner(WORLD_SCENE).scene() as SectorWorld
-	assert_object(world.presenter).is_instanceof(ModPresenter)
+	assert_bool(world.original.hosts_mod_layers()).is_true()
 	assert_str(String(PresenterChoice.kind_of(world.presenter))).is_equal(String(PresenterChoice.ORIGINAL))
 	SkinChoice.select(SkinChoice.original())                                                          # (and the other way)
-	assert_object(world.presenter).is_instanceof(OriginalPresenter)
+	assert_bool(world.original.hosts_mod_layers()).is_false()
 	SkinChoice.select_id(shelf.id)
-	assert_object(world.presenter).is_instanceof(ModPresenter)
+	assert_bool(world.original.hosts_mod_layers()).is_true()
 
 
 func test_a_mod_that_is_not_there_has_no_skin() -> void:
@@ -696,15 +695,15 @@ func test_the_state_of_a_screen_is_the_same_for_a_skin_bound_late() -> void:
 	for i in 7:
 		sim.tick()
 	var late := _presenter(sim, skin)
-	for presenter: ModPresenter in [early, late]:
+	for presenter: OriginalPresenter in [early, late]:
 		presenter.show_between_ticks(0.5)
-	assert_array(late.drawn()).is_not_empty()
-	assert_array(late.drawn()).is_equal(early.drawn())
+	assert_array(late.mod_drawn()).is_not_empty()
+	assert_array(late.mod_drawn()).is_equal(early.mod_drawn())
 	assert_array(_game_pictures(late, shelf)).is_not_empty()                                              # (the decorations were drawn, by key)
 
 
 ## The commands of the presenter's layers that draw a picture of the game (named by key), not one of the mod's own pack: the pictures of the mod are the pack's files, everything else is what the game resolved.
-func _game_pictures(presenter: ModPresenter, shelf: PackShelf) -> Array:
+func _game_pictures(presenter: OriginalPresenter, shelf: PackShelf) -> Array:
 	var own: Array = ModSkinShelf.PICTURES.keys().map(func(file: String) -> Texture2D: return shelf.pack.texture(file))
 	return _commands(presenter, "picture").filter(func(c: Array) -> bool: return not own.has(c[1]))
 
@@ -901,13 +900,13 @@ func test_a_skin_ends_with_its_mod_and_the_skin_in_use_falls_back_to_the_origina
 	var skin := SkinChoice.load_skin(shelf.id) as ModSkin
 	SkinChoice.select(skin)
 	var world := scene_runner(WORLD_SCENE).scene() as SectorWorld
-	assert_object(world.presenter).is_instanceof(ModPresenter)
+	assert_bool(world.original.hosts_mod_layers()).is_true()
 	var gone := shelf.id
 	ModSkinShelf.release(_shelves)                                                                    # (the pack leaves the chain; the mod is unloaded)
 	assert_bool(skin.alive).is_false()
 	assert_array(SkinChoice.available()).not_contains([gone])
 	assert_object(SkinChoice.current()).is_same(SkinChoice.original())
-	assert_object(world.presenter).is_instanceof(OriginalPresenter)
+	assert_bool(world.original.hosts_mod_layers()).is_false()
 	assert_object(ModHost.skin(gone)).is_null()
 
 
@@ -916,7 +915,7 @@ func test_a_presenter_whose_mod_has_gone_draws_nothing_and_asks_nobody() -> void
 	var skin := SkinChoice.load_skin(shelf.id)
 	var presenter := _presenter(_sim(), skin)
 	presenter.show_between_ticks(1.0)
-	assert_array(presenter.drawn()).is_not_empty()
+	assert_array(presenter.mod_drawn()).is_not_empty()
 	ModSkinShelf.release(_shelves)
 	presenter.show_between_ticks(1.0)
 	assert_array(_layers(presenter).filter(func(l: Array) -> bool: return not (l[1] as Array).is_empty())).is_empty()
@@ -946,7 +945,7 @@ func test_a_faulty_skin_draws_nothing_and_is_replaced_by_the_original_once_it_is
 	var skin := SkinChoice.load_skin(shelf.id)
 	SkinChoice.select(skin)
 	var world := scene_runner(WORLD_SCENE).scene() as SectorWorld
-	assert_object(world.presenter).is_instanceof(ModPresenter)
+	assert_bool(world.original.hosts_mod_layers()).is_true()
 	world.sim.load_sector(DevCreatures.ARENA, 0)
 	world.sim.start_flight(200, 150, 6)
 	var mod := ModHost.mod(String(shelf.id))
@@ -954,11 +953,11 @@ func test_a_faulty_skin_draws_nothing_and_is_replaced_by_the_original_once_it_is
 	for i in ModLoader.MAX_FAULTS + 5:
 		world.presenter.show_between_ticks(0.5)
 	assert_int(int(mod.get("monitor_exceptions"))).is_greater(faults)
-	assert_array(_layers(world.presenter as ModPresenter).filter(func(l: Array) -> bool: return not (l[1] as Array).is_empty())).is_empty()
+	assert_array(_layers(world.original).filter(func(l: Array) -> bool: return not (l[1] as Array).is_empty())).is_empty()
 	Mods.loader().check_health()
 	assert_bool(ModHost.is_quarantined(String(shelf.id))).is_true()
 	assert_object(SkinChoice.current()).override_failure_message("the quarantined skin is still worn").is_same(SkinChoice.original())
-	assert_object(world.presenter).is_instanceof(OriginalPresenter)
+	assert_bool(world.original.hosts_mod_layers()).is_false()
 	assert_array(SkinChoice.available()).not_contains([shelf.id])
 	Mods.loader().resume(String(shelf.id))
 	assert_array(SkinChoice.available()).contains([shelf.id])                                          # (it is a skin again when it is let run)
@@ -990,7 +989,7 @@ func test_the_rules_run_the_same_whatever_a_skin_mod_does() -> void:
 	for skin in [null, SkinChoice.load_skin(_shelves[0].id), SkinChoice.load_skin(_shelves[1].id)]:
 		GameState.reset()
 		var sim := SimWorld.new(GameState)
-		var presenter: ModPresenter = null
+		var presenter: OriginalPresenter = null
 		if skin != null:
 			presenter = _presenter(sim, skin)
 		sim.load_sector(DevCreatures.ARENA, 0)

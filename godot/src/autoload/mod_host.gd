@@ -6,7 +6,7 @@ extends Node
 ## sync runs at the next idle moment, so a pack that is borrowed and put back inside one call (`PackCheck`) costs no reload. A reader that needs the mods at once calls `sync()` (it does
 ## nothing when the loaded mods already are the chain's). There is no second list of mods anywhere.
 ##
-## A mod can log, load files of its own pack and, when its manifest says `skin`, draw the sector (`ModApi`, `ModPresenter`), when it says `problems`, draw the screens of the problem types it lists (`ModProblems`,
+## A mod can log, load files of its own pack and, when its manifest says `skin`, draw the sector (`ModApi`, `ModLayerHost`), when it says `problems`, draw the screens of the problem types it lists (`ModProblems`,
 ## `ModDiagram`) or, when it says `rules`, add gameplay at the hook points of the rules (`RuleHooks`) for a campaign that declares it. The rules never ask this node anything: a campaign's run resolves the mods it
 ## declares once, when it begins (`ModHooks.resolve`, which asks `rule_mod`), and the rules hold the table that came out.
 ## Each running mod has ONE record, its `ModParts` (made by `ModParts.make` from what the pack holds, kept while the mod runs). A SKIN mod's `ModSkin` is asked for by `SkinChoice` (`skin_ids`, `skin`), and when the mod goes
@@ -129,7 +129,7 @@ func loaded_ids() -> Array:
 	return _parts.keys()
 
 
-# --- for code that has no node (`SkinChoice`, `ModPresenter`): the autoload's answers, nothing when it is not there (the editor) -------------
+# --- for code that has no node (`SkinChoice`, `ModLayerHost`): the autoload's answers, nothing when it is not there (the editor) -------------
 
 ## The node of the running mod `id` (a Sandbox the game may call into), or null (also for a data skin: it has no script). It first makes the mods the chain's (`sync`) unless `sync_first` is false: a presenter asks in the middle of a frame, where a sync could
 ## swap the presenter itself (`SkinChoice.leave_dead_mod_skins`).

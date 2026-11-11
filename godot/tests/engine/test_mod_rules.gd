@@ -654,7 +654,7 @@ func test_no_presenter_and_no_skin_names_the_rule_hooks() -> void:
 	var files: Array[String] = []
 	for folder in ["res://src/gameplay", "res://src/skins"]:
 		files.append_array(SourceScan.scripts_under(folder))
-	for name in ["mod_presenter", "mod_skin", "skin_state", "mod_layer", "mod_draw"]:
+	for name in ["mod_layer_host", "mod_layer_stack", "mod_skin", "skin_state", "mod_layer", "mod_draw"]:
 		files.append("res://src/mods/%s.gd" % name)
 	assert_int(files.size()).is_greater(10)
 	assert_array(SourceScan.find_in(files, ["RuleHooks", "ModHooks", "HookState"])).is_empty()

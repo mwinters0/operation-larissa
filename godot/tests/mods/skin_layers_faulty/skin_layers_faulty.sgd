@@ -1,0 +1,11 @@
+# A skin that draws two layers and raises when it is asked for the second: the background is drawn, the walls fault on every frame (it asks the API for a function that is not there), so the walls stay the original's, the loader counts the faults
+# and quarantines the skin in the end, and the game goes on.
+var api : Dictionary = {}
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func skin_layer(name : String, state : Dictionary, fraction : float, events : Array) -> Array:
+	if name == "walls":
+		api["no_such_function"].call("frame")
+	return [["rect", Rect2(0, 0, 608, 288), Color(0.02, 0.10, 0.18)]]

@@ -8,15 +8,18 @@ extends RefCounted
 ##     "mod": {"requires_api": 5, "skin": {"render": {"texture_filter": "linear"}, "pictures": {"ui_picture/title_sky": "skin/sky.png"}}}
 ##     "mod": {"requires_api": 5, "skin": {"hud_font": {"file": "skin/hud.ttf", "size": 14, "color": "#dcf7ff"}}}
 ##     "mod": {"requires_api": 5, "skin": {"shaders": ["skin/shimmer.gdshader"], "layers": {"background": {"shader": "skin/shimmer.gdshader", "uniforms": {"glint": 0.25, "tint": "#ff8800"}}}}}
+##     "mod": {"entry": "reef.sgd", "requires_api": 7, "skin": {"script_layers": ["background", "bubbles"]}}
 ##     "mod": {"entry": "tides.sgd", "requires_api": 3, "problems": {"types": [40], "shaders": ["problems/wave.gdshader"]}}
 ##     "mod": {"entry": "rules.sgd", "requires_api": 4, "rules": {"answers": [41], "instructions": [0, 1], "sub": true}}
 ##
-## `entry` is a plain file name (no folder) ending `.sgd`, in the pack's root; only a skin that asks for no `skin_frame` may leave it out (a DATA skin: no script, so no Sandbox is needed to wear it). `requires_api` (default 1) is the lowest API version the script needs; a game that provides less
+## `entry` is a plain file name (no folder) ending `.sgd`, in the pack's root; only a skin whose script draws nothing may leave it out (a DATA skin: no script, so no Sandbox is needed to wear it). `requires_api` (default 1) is the lowest API version the script needs; a game that provides less
 ## refuses the pack. `limits` is optional, and so is every key in it. `skin` makes the mod a SKIN (`ModSkin`: the mod draws the sector, `docs/create/SKIN_API.md`); it needs API version 2,
 ## and lists the shaders the skin may use, text files `skin/<name>.gdshader` of the pack (`ModShader`), at most `MAX_SHADERS`; `render` (`texture_filter`, `snap_transforms`, `snap_vertices`: the `RenderSettings` the skin puts on the window)
 ## and `pictures` (skin key `ui_picture/<name>` to a PNG `skin/<name>.png` of the pack, at most `MAX_PICTURES`, worn only while the skin is) and `hud_font` (`file`: a `.ttf` of the pack's `skin/` folder, read from its bytes,
 ## at most `Pack.MAX_FONT_BYTES`; `size` from `MIN_HUD_FONT_SIZE` to `MAX_HUD_FONT_SIZE`; `color`: `#rrggbb` or `#rrggbbaa`: the lettering of the HUD's boxes, `HudLabels`) and `layers` (a layer of the original presenter by name, `SkinLayers.NODES`, to one of the listed `shaders` and the values of its uniforms: a number, `true` / `false`, a list of 2 to 4 numbers or a colour string, at most `MAX_LAYER_UNIFORMS`, each number within
-## `MAX_UNIFORM_VALUE`; the game sets `phase`; only a skin with no `entry` has layers, a script draws its own) are API version 5, which a skin without `entry` needs too. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from
+## `MAX_UNIFORM_VALUE`; the game sets `phase`) are API version 5, which a skin without `entry` needs too. `script_layers` (API version 7; needs an `entry`) lists the layers of the original presenter (`SkinLayers.NODES`)
+## whose picture the script draws, one call of `skin_layer(name, state, fraction, events)` for each; the others stay the original's, and the layers of `layers` are dressed by their shader on those the script does not draw. A skin with an `entry` and no `script_layers` draws the whole
+## screen with `skin_frame(state, fraction, events)`: every layer at once. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from
 ## `Catalog.PROBLEM_TYPE_COUNT` to `Catalog.LAST_PROBLEM_TYPE`, at most `MAX_PROBLEM_TYPES`; the pack holds each type as data); it needs API version 3 and lists its shaders like a skin, in the pack's `problems/` folder. `rules` makes the mod
 ## add GAMEPLAY inside the rules (`RuleHooks`), for a campaign that declares the mod: `answers` lists problem types it judges instead of their `compare_mode` (numbers as for `problems.types`, the pack holds each as data),
 ## `instructions` the numbers 0 to `RuleHooks.MAX_INSTRUCTIONS - 1` of the creature instruction `Mod_Instruction` it defines, `sub` (true) a sub ability; it needs API version 4, at least one of the three, and a mod with `rules`
@@ -26,12 +29,14 @@ extends RefCounted
 ## Teaches: validating an untrusted description by naming each rule in one place, and clamping a request to a ceiling instead of refusing it (a limit is a request; the host decides).
 
 ## The version of the API a mod is given (`ModApi.build`). A mod that requires a higher one is refused. The version goes up when the API gains something a mod can ask for (2: the skin API, 3: the problem
-## screens, 4: the rule hooks, 5: the data skin, 6: a picture of the game by key in the draw list), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
-const API_VERSION := 6
+## screens, 4: the rule hooks, 5: the data skin, 6: a picture of the game by key in the draw list, 7: the skin's script draws chosen layers), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
+const API_VERSION := 7
 ## The first version with the skin API: a skin mod requires it.
 const SKIN_API_VERSION := 2
 ## The first version with data skins: `render` and `pictures` in `skin`, and a skin with no `entry`.
 const DATA_SKIN_API_VERSION := 5
+## The first version with a script that draws chosen layers: a skin with `script_layers` requires it.
+const LAYER_API_VERSION := 7
 ## The first version with problem screens: a mod that draws problem types requires it.
 const PROBLEM_API_VERSION := 3
 ## The first version with rule hooks: a mod with `rules` requires it.
@@ -57,7 +62,7 @@ const LIMITS: Dictionary[String, int] = {
 }
 const KNOWN_KEYS: Array[String] = ["entry", "requires_api", "limits", "skin", "problems", "rules"]
 ## The keys of the `skin` entry.
-const SKIN_KEYS: Array[String] = ["shaders", "render", "pictures", "hud_font", "layers"]
+const SKIN_KEYS: Array[String] = ["shaders", "render", "pictures", "hud_font", "layers", "script_layers"]
 ## The keys of a layer's entry in `layers`, the uniform the game sets itself (the game's time, `SectorPresenter.game_phase`: a manifest cannot give it a value), and the limits of a layer's uniforms.
 const LAYER_KEYS: Array[String] = ["shader", "uniforms"]
 const PHASE_UNIFORM := "phase"
@@ -110,6 +115,8 @@ var hud_font_file := ""
 var hud_font: HudLabels = null
 ## The shaders on the layers of the original presenter (`skin.layers`): layer name -> {"shader": the path of one of `shaders`, "uniforms": name -> a float, bool, `Vector2` / `Vector3` / `Vector4` or `Color`}. Which uniforms the shader has is judged by `ModSkin.make`.
 var layers: Dictionary[String, Dictionary] = {}
+## The layers of the original presenter the skin's script draws (`skin.script_layers`, names of `SkinLayers.NODES`): empty for a skin with no script and for one whose script draws the whole screen (`draws_frame`).
+var script_layers: Array[StringName] = []
 ## Does the mod draw problem screens (`problems`)? The problem types it draws, and the shaders those screens list (paths in the pack, `problems/....gdshader`).
 var has_problems := false
 var problem_types: Array[int] = []
@@ -192,11 +199,32 @@ static func _parse_skin(value: Variant, spec: ModSpec, scripted: bool, found: Ar
 		_parse_pictures(value["pictures"], spec, found)
 	if value.has("hud_font"):
 		_parse_hud_font(value["hud_font"], spec, found)
+	if value.has("script_layers"):
+		_parse_script_layers(value["script_layers"], spec, scripted, found)
 	if value.has("layers"):
-		if scripted:
-			found.append("\"layers\" belong to a skin with no \"entry\": a skin's script draws its own layers")
+		if scripted and spec.script_layers.is_empty():
+			found.append("\"layers\" cannot dress a skin whose script draws the whole screen (no \"script_layers\"): list the layers the script draws in \"script_layers\", and \"layers\" dresses the others")
 		else:
 			_parse_layers(value["layers"], spec, found)
+
+
+## The `script_layers` of a skin: the layers its script draws, into `spec.script_layers`.
+static func _parse_script_layers(value: Variant, spec: ModSpec, scripted: bool, found: Array[String]) -> void:
+	if not scripted:
+		found.append("\"script_layers\" belong to a skin with an \"entry\": the script that draws them")
+		return
+	if spec.requires_api < LAYER_API_VERSION:
+		found.append("a skin with \"script_layers\" needs \"requires_api\": %d (the layers a script draws came with that version)" % LAYER_API_VERSION)
+	if not value is Array or (value as Array).is_empty():
+		found.append("\"script_layers\" must be a list of the layers the script draws, like [\"background\", \"bubbles\"] (the layers are %s); leave it out for a script that draws the whole screen" % ", ".join(PackedStringArray(SkinLayers.NODES.keys())))
+		return
+	for layer: Variant in value:
+		if not layer is String or not SkinLayers.NODES.has(StringName(layer)):
+			found.append("\"script_layers\" has no layer %s (the layers are %s)" % [JSON.stringify(layer), ", ".join(PackedStringArray(SkinLayers.NODES.keys()))])
+		elif spec.script_layers.has(StringName(layer)):
+			found.append("the layer \"%s\" is listed twice in \"script_layers\"" % layer)
+		else:
+			spec.script_layers.append(StringName(layer))
 
 
 ## The `RenderSettings` the `render` entry of a skin describes (what it does not say stays the project's), or null with every mistake appended to `found`.
@@ -280,6 +308,9 @@ static func _parse_layers(value: Variant, spec: ModSpec, found: Array[String]) -
 		var entry: Variant = value[layer]
 		if not SkinLayers.NODES.has(StringName(layer)):
 			found.append("\"layers\" has no layer \"%s\" (the layers are %s)" % [layer, ", ".join(PackedStringArray(SkinLayers.NODES.keys()))])
+			continue
+		if spec.script_layers.has(StringName(layer)):
+			found.append("the layer \"%s\" is drawn by the script (\"script_layers\"): the script names a shader of its own in a \"layer\" command, and \"layers\" dresses the layers it does not draw" % layer)
 			continue
 		if not entry is Dictionary:
 			found.append("the layer \"%s\" must be an object like {\"shader\": \"%sshimmer.%s\", \"uniforms\": {}}" % [layer, SKIN_FOLDER, SHADER_EXTENSION])
@@ -480,6 +511,11 @@ static func is_entry_name(name: String) -> bool:
 			and not name.begins_with(".") and Pack.is_safe(name)
 
 
+## Does the skin's script draw the whole screen (`skin_frame`)? A skin with an `entry` and no `script_layers` does.
+func draws_frame() -> bool:
+	return is_skin and has_entry() and script_layers.is_empty()
+
+
 ## Does the mod draw anything (a skin, or the screens of problem types)?
 func draws() -> bool:
 	return is_skin or has_problems
@@ -490,7 +526,10 @@ func draws() -> bool:
 func functions() -> Dictionary[String, PackedStringArray]:
 	var found: Dictionary[String, PackedStringArray] = {}
 	if is_skin and has_entry():
-		found[ModSkin.FUNCTION] = PackedStringArray(["state", "fraction", "events"])
+		if script_layers.is_empty():
+			found[ModSkin.FRAME_FUNCTION] = PackedStringArray(["state", "fraction", "events"])
+		else:
+			found[ModSkin.LAYER_FUNCTION] = PackedStringArray(["name", "state", "fraction", "events"])
 	if has_problems:
 		found[ModProblems.FUNCTION] = PackedStringArray(["state"])
 	if not rule_answers.is_empty():
@@ -542,6 +581,8 @@ func to_dict() -> Dictionary:
 			data["skin"]["hud_font"] = _hud_font_dict()
 		if not layers.is_empty():
 			data["skin"]["layers"] = _layers_dict()
+		if not script_layers.is_empty():
+			data["skin"]["script_layers"] = script_layers.map(func(layer: StringName) -> String: return String(layer))
 	if has_problems:
 		data["problems"] = {"types": problem_types.duplicate()}
 		if not problem_shaders.is_empty():

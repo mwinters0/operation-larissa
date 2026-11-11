@@ -190,8 +190,8 @@ func _snapshot(presenter: SectorPresenter) -> Array[String]:
 	if presenter.has_method(&"boxes"):
 		for box: DebugRectPresenter.Box in presenter.call(&"boxes"):
 			lines.append("box %s %s %s %s %s" % [box.kind, box.rect, box.color, box.filled, box.label])
-	if presenter.has_method(&"drawn"):
-		for line: String in presenter.call(&"drawn"):
+	if presenter.has_method(&"mod_drawn"):
+		for line: String in presenter.call(&"mod_drawn"):
 			lines.append("drawn " + line)
 	_walk(presenter, "", lines)
 	return lines
@@ -214,6 +214,7 @@ func _shows(node: Node) -> String:
 	if node is CanvasItem:
 		parts.append(_material((node as CanvasItem).material))
 		parts.append("parent_material=%s" % (node as CanvasItem).use_parent_material)
+		parts.append("modulate=%s" % (node as CanvasItem).modulate)          # (a layer a script has answered for is transparent: the original's own layer is not)
 	if node is Node2D:
 		var node_2d := node as Node2D
 		parts.append("at=%s rot=%s scale=%s" % [node_2d.position, node_2d.rotation, node_2d.scale])

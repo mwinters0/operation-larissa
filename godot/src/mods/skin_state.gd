@@ -1,7 +1,7 @@
 class_name SkinState
 extends RefCounted
 ## What a skin mod is told about the sector: PLAIN DATA made from a `SimView` (the skin API, `docs/create/SKIN_API.md`), never an object of the rules. `build` is the one builder of the state a
-## script gets (`skin_frame(state, fraction, events)`): it reads every field from `view`, the owner's read-only window onto the rules, so a presenter bound in the middle of anything builds
+## script gets (`skin_layer(name, state, fraction, events)`, or `skin_frame(state, fraction, events)`): it reads every field from `view`, the owner's read-only window onto the rules, so a presenter bound in the middle of anything builds
 ## what one bound from the start builds. `event` makes one entry of the `events` list from what the view's signal carried. The Dictionaries, Arrays and values are made fresh per call and made
 ## read-only (`ModLoader.freeze`), so a script cannot change what the next frame is told, and none of them holds an object.
 ##

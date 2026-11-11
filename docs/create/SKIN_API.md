@@ -162,22 +162,22 @@ Swap it in with `SectorWorld.replace_presenter(MySkin.new())` (or a scene), or `
 
 A skin mod is a [mod pack](../engine/PACKS.md) (a pack whose `pack.json` has a `mod` entry) that is also a skin. It is code of a stranger, so the game runs it in the godot-sandbox extension with restrictions on and **grants it nothing**: it is called with the state of the sector as plain data and returns what to draw as plain
 data, and the game checks the answer and draws it. It cannot reach the rules, the tree, another mod, a file by path or another pack, and it cannot change a hit rectangle, a wait or a tick (the same rules as above; `test_plays_identically.gd` and `test_skins_dont_change_the_game.gd` play a skin mod and a faulty one with every other skin). It needs the
-extension (`uv run tools/fetch_sandbox.py`, [`SETUP.md`](../SETUP.md)); a skin with no script ("A skin with no script", below) does not. The worked example is `godot/tests/mods/skinny/` (`skinny.sgd`, `skin/glow.gdshader`).
+extension (`uv run tools/fetch_sandbox.py`, [`SETUP.md`](../SETUP.md)); a skin with no script ("A skin with no script", below) does not. The script draws the layers it names and the original presenter draws the rest ("The script"). The worked examples are `godot/tests/mods/skin_layers/` (three layers by script and a shader on another, `skin_layers.sgd`, `skin/glow.gdshader`) and `godot/tests/mods/skinny/` (the whole screen from one function, `skin_frame`).
 
 ```
 pack.json     {"id": "reef", "title": "Reef", "version": "1.0", "base": "legacy",
-               "mod": {"entry": "reef.sgd", "requires_api": 2, "skin": {"shaders": ["skin/glow.gdshader"]}}}
+               "mod": {"entry": "reef.sgd", "requires_api": 7, "skin": {"shaders": ["skin/glow.gdshader"], "script_layers": ["background", "bubbles"]}}}
 reef.sgd      the script (SafeGDScript, a safe GDScript: no classes of the game, no `load`, no nodes)
 skin/*.png    the skin's pictures (PNG; any folder below skin/)
 skin/*.gdshader   shaders as text, each listed in the manifest
 ```
 
 The skin's id is the pack's id (not the id of a skin that ships); it appears in `SkinChoice.available()` while the pack is in use, so `--pack=reef --skin=reef` and F3 then S wear it. It keeps the game's HUD layout, screens and sounds, and dresses the pictures its manifest maps ("A skin with no script"). `pack_tool --check=<folder>` judges the manifest, the pictures, the shaders and the
-presence of `skin_frame`; a skin that fails the check is refused with the reason when the game loads it.
+presence of `skin_layer` (or `skin_frame`); a skin that fails the check is refused with the reason when the game loads it.
 
 ### A skin with no script
 
-A skin that only changes how the game's own pictures look needs no script, so no Sandbox: leave `entry` out. The worked example is the pack `examples/packs/modern/` ([`CONTENT.md`](CONTENT.md), "Skins and packs": its water shimmer, its Exo 2 lettering, its smooth filter and its templates). It is the same `ModSkin` in `SkinChoice` (the id is the pack's id; `--skin=<id>`, F3 then S), and it shows the sector with the original presenter. Four keys of `skin` say what it does (a manifest that has any of them, or no `entry`, says `"requires_api": 5`; a skin with a script may have the first three too, `layers` only a skin with no script has):
+A skin that only changes how the game's own pictures look needs no script, so no Sandbox: leave `entry` out. The worked example is the pack `examples/packs/modern/` ([`CONTENT.md`](CONTENT.md), "Skins and packs": its water shimmer, its Exo 2 lettering, its smooth filter and its templates). It is the same `ModSkin` in `SkinChoice` (the id is the pack's id; `--skin=<id>`, F3 then S), and it shows the sector with the original presenter. Four keys of `skin` say what it does (a manifest that has any of them, or no `entry`, says `"requires_api": 5`; a skin with a script may have the first three too, and `layers` for the layers its script does not draw, "The script"):
 
 ```
 pack.json     {"id": "reef", "title": "Reef", "version": "1.0", "base": "legacy",
@@ -198,11 +198,13 @@ skin/shimmer.gdshader  a shader of the pack, as text
 
 * `hud_font` letters the console's three boxes (game, zone, sector, and the custom-game box) as text in the pack's font while this skin is worn, instead of the original's pictures of the words. `file` is a `.ttf` of the pack's `skin/` folder (TrueType, at most `Pack.MAX_FONT_BYTES`; it is read from its bytes, no import), `size` the letters' size in pixels (`ModSpec.MIN_HUD_FONT_SIZE` to `MAX_HUD_FONT_SIZE`, default 14) and `color` the letters' colour (`"#rrggbb"` or `"#rrggbbaa"`, default the original's yellow). The words ("Voyager", "Dragon Reef", "First" ...) and the green of the boxes are the original lettering's; each box keeps the rectangle of the layout, so a larger font is cut off at the box and moves nothing. It is the skin's `GameSkin.hud_labels` (`HudLabels`), the field the project's skins set the same way ([`../engine/SKINS.md`](../engine/SKINS.md)). A file that is not a TrueType font, or larger than the limit, refuses the skin with that reason (`pack_tool --check` says it first); a `.ttf` in the pack that no manifest names is a warning.
 
-* `layers` puts a shader on a layer of the original presenter. The layers are, back to front, `background` (the picture behind the screen), `back_decos`, `walls` (the tiles the rules read), `station`, `mid_decos`, `collectibles` (the pieces), `sub`, `foes` (the creatures), `pellets` (the ink), `front_decos`, `anim_decos` (the swaying decorations) and `bubbles` (`SkinLayers.NODES` is the list). Each entry names one of the skin's `shaders` (text files `skin/<name>.gdshader`, at most `ModSpec.MAX_SHADERS`, held to the small language of `ModShader`: `shader_type canvas_item`, no preprocessor, no loops, at most `ModShader.MAX_BYTES`) and may set its `uniforms`: a number (a `float`, or an `int` when it is whole), `true` or `false` (a `bool`), a list of 2, 3 or 4 numbers (a `vec2`, `vec3` or `vec4`) or a colour string `"#rrggbb"` / `"#rrggbbaa"` (a `vec4`, or a `vec3` without its alpha); at most `ModSpec.MAX_LAYER_UNIFORMS` of them, every number from -`ModSpec.MAX_UNIFORM_VALUE` to `MAX_UNIFORM_VALUE`. A uniform the shader does not declare, or one a value of that kind cannot fill (a `sampler2D`, a colour for a `float`), refuses the skin with that reason (`pack_tool --check` says it first), and so does a layer that names a shader the skin does not list. The shader is drawn on every picture of the layer, those the game makes later too (a creature, a pellet), and the sub's dissolve is its own shader while it runs. The game sets `uniform float phase`: the game's time, the ticks so far plus the fraction of the current one (`SectorPresenter.game_phase`), which stands still while the game clock does (a problem or a message is open, the sub dissolves, a pause) and runs at the speed of play otherwise, which a shader's `TIME` cannot do; a manifest cannot set it. A shader changes how a picture looks and nothing else: the rules, the timing and the hit rectangles do not know it. Each presenter has its own copy of a layer's material, built from the skin when the presenter is made, so a skin put on in the middle of a sector shows what one put on at the start shows, and another skin takes the shader away with it. The worked example is `godot/tests/mods/skin_data/`.
+* `layers` puts a shader on a layer of the original presenter. The layers are, back to front, `background` (the picture behind the screen), `back_decos`, `walls` (the tiles the rules read), `station`, `mid_decos`, `collectibles` (the pieces), `sub`, `foes` (the creatures), `pellets` (the ink), `front_decos`, `anim_decos` (the swaying decorations) and `bubbles` (`SkinLayers.NODES` is the list). Each entry names one of the skin's `shaders` (text files `skin/<name>.gdshader`, at most `ModSpec.MAX_SHADERS`, held to the small language of `ModShader`: `shader_type canvas_item`, no preprocessor, no loops, at most `ModShader.MAX_BYTES`) and may set its `uniforms`: a number (a `float`, or an `int` when it is whole), `true` or `false` (a `bool`), a list of 2, 3 or 4 numbers (a `vec2`, `vec3` or `vec4`) or a colour string `"#rrggbb"` / `"#rrggbbaa"` (a `vec4`, or a `vec3` without its alpha); at most `ModSpec.MAX_LAYER_UNIFORMS` of them, every number from -`ModSpec.MAX_UNIFORM_VALUE` to `MAX_UNIFORM_VALUE`. A uniform the shader does not declare, or one a value of that kind cannot fill (a `sampler2D`, a colour for a `float`), refuses the skin with that reason (`pack_tool --check` says it first), and so does a layer that names a shader the skin does not list. The shader is drawn on every picture of the layer, those the game makes later too (a creature, a pellet), and the sub's dissolve is its own shader while it runs. The game sets `uniform float phase`: the game's time, the ticks so far plus the fraction of the current one (`SectorPresenter.game_phase`), which stands still while the game clock does (a problem or a message is open, the sub dissolves, a pause) and runs at the speed of play otherwise, which a shader's `TIME` cannot do; a manifest cannot set it. A shader changes how a picture looks and nothing else: the rules, the timing and the hit rectangles do not know it. Each presenter has its own copy of a layer's material, built from the skin when the presenter is made, so a skin put on in the middle of a sector shows what one put on at the start shows, and another skin takes the shader away with it. A layer the script draws ("The script") has no entry in `layers`: the script names a shader in its own draw list, and a manifest that lists both refuses the skin. The worked example is `godot/tests/mods/skin_data/`.
 
 A picture or font file is read once, when the pack is chosen; a changed manifest or script is a new skin when the pack is chosen again. Nothing here can change a rule or a wait: it is data the game dresses its own pictures with (`test_plays_identically.gd`, `test_skins_dont_change_the_game.gd` and `test_presenter_binds_late.gd` play the worked example, `godot/tests/mods/skin_data/`, with every other skin).
 
 ### The script
+
+A script draws chosen layers of the original presenter (the list under `layers` above, the same names) and the original draws the rest. The manifest names the layers it draws in `script_layers` (`"requires_api": 7`, a script is needed); the game calls the script's `skin_layer` once for each, every frame, and shows the checked answer right behind that layer's own picture, which it then does not show:
 
 ```
 var api : Dictionary = {}
@@ -210,21 +212,33 @@ var api : Dictionary = {}
 func mod_init(granted : Dictionary) -> void:
 	api = granted                  # keep the dictionary; do not keep one of its Callables on its own
 
-func skin_frame(state : Dictionary, fraction : float, events : Array) -> Array:
+func skin_layer(name : String, state : Dictionary, fraction : float, events : Array) -> Array:
 	var out := []
-	out.append(["rect", Rect2(0, 0, 608, 288), Color(0.02, 0.10, 0.18)])
-	var sub : Dictionary = state["sub"]
-	if sub["active"] and sub["visible"]:
-		var centre : Vector2 = sub["previous"].lerp(sub["current"], fraction)
-		out.append(["picture", "skin/sub.png", Rect2(centre - Vector2(48, 27), Vector2(96, 54)), sub["mirrored"]])
+	if name == "background":
+		out.append(["rect", Rect2(0, 0, 608, 288), Color(0.02, 0.10, 0.18)])
+		if state["background"] != "":
+			out.append(["picture", state["background"], Vector2(0, 0)])      # the game's own picture, by its key
+	elif name == "bubbles":
+		var rise := int((state["tick"] + fraction) * 2.0)
+		for i in 8:
+			out.append(["picture", "skin/dot.png", Vector2(40 + i * 70, 288 - ((rise + i * 37) % 288))])
 	return out
 ```
 
-`skin_frame` is called once per drawn frame (`show_between_ticks`) and when the game shows the whole state again (`refresh`). It takes the state, how far into the tick the frame is (`fraction`, 0 to 1: put each moving thing at `previous.lerp(current, fraction)`, as `Motion.at` does) and the events since its last call, and returns the draw list. It runs under the
-mod's limits (`limits` in the manifest's `mod`, never above the game's ceilings: instructions per call, memory, allocations, references; a skin's instruction limit is at most 10 million, because it is called every frame, and no limit can be 0): a call that goes over them is stopped and counts as a fault; a call that raises, or returns something that is not an Array, leaves the last good frame on, and a skin that faults `ModLoader.MAX_FAULTS` times is quarantined and replaced by the original skin.
+`skin_layer(name, state, fraction, events)` takes the name of the layer it is asked for (a String, one of `script_layers`), the state, how far into the tick the frame is (`fraction`, 0 to 1: put each moving thing at `previous.lerp(current, fraction)`, as `Motion.at` does) and the events since the previous frame, and returns the draw list of that layer (the same state, fraction and list of events for every layer of a frame). It is called once per drawn frame (`show_between_ticks`) and when the game shows the whole state again (`refresh`), for each layer in the order of `script_layers`. A layer is drawn where the original's is: behind its picture's place in the order of the layers (the sub over the station while the game plays, under it while a supply trip runs, as the original's routines draw them), so a script never orders its layers. The state has what each layer shows: `background` (the `background` layer), `decos` (`back_decos`, `mid_decos`, `front_decos`), `walls`, `station`, `pieces` (`collectibles`), `sub`, `creatures` (`foes`), `pellets`, `anim_decos`; the `bubbles` the original draws are random and the state has none, so a script that draws `bubbles` makes its own from `tick` and `fraction`. A layer the script does not list is the original's, with its shader if `layers` gives it one.
+
+A script that draws every layer is a manifest that names every layer; the script has no other form for it.
+
+**Faults a layer at a time.** A call that raises, runs past its instruction limit or answers what is not a list leaves that layer's last good picture on; a layer the script has never answered for shows the original's. A skin that faults `ModLoader.MAX_FAULTS` times is quarantined, every layer is the original's again, and `SkinChoice` puts the original skin on. A mod that is unloaded does the same. The game never waits for the script and never hears of it (rule 1 above).
+
+**The whole screen in one function.** A skin with an `entry` and no `script_layers` (every `"requires_api"` from 2) draws the whole screen from `skin_frame(state : Dictionary, fraction : float, events : Array) -> Array`: one call per frame whose draw list stands over every layer, and every layer of the original is hidden while it has answered (the same host: it is the case of a script that draws everything at once, and the one a skin of an older API is). The same faults leave the last frame on, and the original's layers show before the first. The worked example is `godot/tests/mods/skinny/`.
+
+Both run under the mod's limits (`limits` in the manifest's `mod`, never above the game's ceilings: instructions per call, memory, allocations, references; a skin's instruction limit is at most 10 million, because it is called every frame, and no limit can be 0): a call that goes over them is stopped and counts as a fault. A skin that draws layers is called once for each, so it has that many calls a frame to spend its limit on.
 Build the picture from `state`, never from what the script remembers of the events (rule 5 above): a skin started in the middle of a sector draws what one started at the beginning draws. `api["skin"]` has the plain facts a skin needs: `columns`, `rows`, `tile` (16), `playfield` (608 x 288), the caps below (`max_commands`, `max_layers`, `max_uniforms`, `max_texts`, `max_text`, `min_font_size`, `max_font_size`) and the manifest's `shaders`.
 
 A script may hold only so many of the game's objects at a time (`references_max`, at most 100 handles at once): build the draw list with `append`, not one literal that holds every command at once, and walk each array of `state` once.
+
+**No art templates.** The pictures a script draws are its own (`skin/x.png`, at any size it likes) or the game's by key ("Pictures by key"); it replaces no key, so there is nothing for the templates tool to size. The templates are for the keys a skin replaces (`pictures`).
 
 ### The state
 
@@ -254,7 +268,7 @@ seven. Walk one column by index (`for i in positions.size()`) and read the other
 
 ### The draw list
 
-`skin_frame` returns an Array of commands (the same list, checked by the same code, is what a mod returns to draw a problem screen: [`CONTENT.md`](CONTENT.md), "Problem screens"), drawn in order, each an Array whose first element is its name. Everything the script can draw is here:
+`skin_layer` (or `skin_frame`) returns an Array of commands (the same list, checked by the same code, is what a mod returns to draw a problem screen: [`CONTENT.md`](CONTENT.md), "Problem screens"), drawn in order, each an Array whose first element is its name. Everything the script can draw is here:
 
 | Command | Draws |
 | --- | --- |

@@ -11,17 +11,17 @@ const TINY := "res://tests/skins/tiny/skin.tres"
 const VANDAL_SCENE := "res://tests/skins/hostile/vandal_presenter.tscn"
 
 
-## The skin mods that are mounted (`mount_mod_skins`): the example pack `modern`, a data skin (no script), a good scripted one and a faulty one. Held here so that the suites that go through the roster mount them in `before` and release them in `after`.
+## The skin mods that are mounted (`mount_mod_skins`): the example pack `modern`, a data skin (no script), the scripted ones (one that draws the whole screen, one that draws three layers and dresses another) and the faulty ones (a whole-screen script that faults on every frame, a layer script that faults on one layer). Held here so that the suites that go through the roster mount them in `before` and release them in `after`.
 static var _mounted: Array[PackShelf] = []
 
 
-## Mounts the example pack `modern` (`examples/packs/modern/`) and the skin mods of `tests/mods/` (`skin_data`, `skinny`, `skin_faulty`) as packs over the suite's, so `all()` has them. The data skins need no Sandbox, the other two are left out when the godot-sandbox
+## Mounts the example pack `modern` (`examples/packs/modern/`) and the skin mods of `tests/mods/` (`skin_data`, `skinny`, `skin_faulty`, `skin_layers`, `skin_layers_faulty`) as packs over the suite's, so `all()` has them. The data skins need no Sandbox, the others are left out when the godot-sandbox
 ## extension is not loaded. Does nothing when they are mounted.
 static func mount_mod_skins() -> void:
 	if _mounted.is_empty():
 		var names: Array[String] = [ModSkinShelf.EXAMPLE_MODERN, "skin_data"]
 		if ModLoader.sandbox_available():
-			names.append_array(["skinny", "skin_faulty"] as Array[String])
+			names.append_array(["skinny", "skin_faulty", "skin_layers", "skin_layers_faulty"] as Array[String])
 		_mounted = ModSkinShelf.mount(names)
 
 

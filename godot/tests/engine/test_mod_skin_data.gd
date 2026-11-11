@@ -76,7 +76,7 @@ func test_a_scripted_skin_may_have_render_and_pictures_too() -> void:
 	var spec: ModSpec = _parse({"entry": "reef.sgd", "requires_api": 5, "skin": {"render": {}, "pictures": {KEY: FILE}}})[0]
 	assert_object(spec).is_not_null()
 	assert_bool(spec.has_entry()).is_true()
-	assert_array(spec.functions().keys()).is_equal([ModSkin.FUNCTION])
+	assert_array(spec.functions().keys()).is_equal([ModSkin.FRAME_FUNCTION])
 	assert_dict(spec.to_dict()["skin"]).is_equal({"render": {}, "pictures": {KEY: FILE}})            # (a render that says nothing is still a render: the skin sets the project's own)
 	assert_object((_parse({"entry": "reef.sgd", "requires_api": 2, "skin": {}})[0] as ModSpec).render).is_null()
 
@@ -484,7 +484,7 @@ func test_every_mistake_in_a_layer_is_a_sentence() -> void:
 		"a colour name": [_layers({"background": {"shader": SHADER, "uniforms": {"tint": "orange"}}}), "\"tint\""],
 		"a colour that is no colour": [_layers({"background": {"shader": SHADER, "uniforms": {"tint": "#xyz"}}}), "\"tint\""],
 		"an object": [_layers({"background": {"shader": SHADER, "uniforms": {"tint": {"r": 1.0}}}}), "\"tint\""],
-		"a script's skin": [{"entry": "a.sgd", "requires_api": 5, "skin": {"shaders": [SHADER], "layers": {"background": {"shader": SHADER}}}}, "no \"entry\""],
+		"a script that draws the whole screen": [{"entry": "a.sgd", "requires_api": 5, "skin": {"shaders": [SHADER], "layers": {"background": {"shader": SHADER}}}}, "script_layers"],
 	}
 	for what: String in bad:
 		var got := _parse(bad[what][0])

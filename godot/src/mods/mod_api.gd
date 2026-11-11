@@ -4,7 +4,7 @@ extends RefCounted
 ## `property_allowed` / `method_allowed` are the policies for the objects the game hands over. To give mods a new ability, add its key to `build` and its function below;
 ## to let a mod touch an object, grant the object (`_grant`) and allow the property or method in the policy. Nothing else in the game is reachable from a mod.
 ##
-## The API (`ModSpec.API_VERSION` 6; the first four keys are version 1, `skin` is version 2, `problems` is version 3, `rules` is version 4; version 5 adds to the manifest of a skin and version 6 to the draw list (`ModDraw`: a picture of the game by key), not to this table):
+## The API (`ModSpec.API_VERSION` 7; the first four keys are version 1, `skin` is version 2, `problems` is version 3, `rules` is version 4; version 5 adds to the manifest of a skin, version 6 to the draw list (`ModDraw`: a picture of the game by key) and version 7 the layers a skin's script draws (`skin_layer`), not to this table):
 ##
 ##     api_version  int       the version of this API
 ##     id           String    the mod's id (= its pack's id)
@@ -14,7 +14,7 @@ extends RefCounted
 ##                            the game, and touches nothing of it (the policies allow no property and no method).
 ##     skin         Dictionary   only for a mod whose manifest says `skin`: the facts a skin needs, plain values (docs/create/SKIN_API.md): `columns`, `rows`, `tile`, `playfield` (the size
 ##                            in pixels), `max_commands`, `max_layers`, `max_uniforms`, `max_texts`, `max_text`, `min_font_size`, `max_font_size`, `shaders` (the paths its manifest lists). A skin gets nothing else: the state, the tick fraction and the
-##                            events arrive as arguments of its own `skin_frame`, and what it draws is a list it returns (`ModDraw`); no node, texture or material is granted.
+##                            events arrive as arguments of its own `skin_layer` (or `skin_frame`), and what it draws is a list it returns (`ModDraw`); no node, texture or material is granted.
 ##     problems     Dictionary   only for a mod whose manifest says `problems`: the facts a problem screen needs, plain values (docs/create/CONTENT.md, "Problem screens"): `types` (the problem types it draws),
 ##                            `window` (the size in pixels), `max_commands`, `max_layers`, `max_uniforms`, `max_texts`, `max_text`, `min_font_size`, `max_font_size`, `shaders` (the paths its manifest lists).
 ##                            A problem screen gets nothing else: the problem, the entry and the step arrive as the argument of its own `problem_frame`, and what it draws is a list it returns (`ModDraw`).

@@ -2,7 +2,7 @@ class_name ModDiagram
 extends DiagramBase
 ## The diagram of a problem type whose screen a MOD draws (diagram family `mod`, `ModProblems`). The type is plain data like the original's 34 (words, records, how an answer is judged); this node only shows the picture on the
 ## left monitor, by asking the mod's sandboxed script what to draw: `problem_frame(state)` gets the problem's values and the screen's state as plain data (`ProblemState.build`) and returns a draw list that the game checks
-## (`ModDraw.validate`) and draws in `ModLayer` nodes of its own. The script is asked again only when what it was told changes (the entry the player has typed so far, the step), never per frame, and it decides nothing:
+## (`ModDraw.validate`) and draws in the `ModLayer` nodes of a `ModLayerStack` of its own. The script is asked again only when what it was told changes (the entry the player has typed so far, the step), never per frame, and it decides nothing:
 ## the calculator or the answer box, `AnswerChecker`, `ProblemSession` and `ProblemFlow` are the game's, so the answer, the tries, the oxygen and every duration are what they are for any type whatever the script returns.
 ##
 ## THE PLAIN PICTURE. A mod that is absent (the chain has no such mod, it was refused or unloaded), quarantined, or has not yet returned a good list leaves what the type's data describes: the generic `items` of the diagram
@@ -14,14 +14,16 @@ extends DiagramBase
 
 var _entry := ""
 var _step := ProblemFlow.Step.ANSWERING
-## The hash of the state the script was last asked about, and the layers showing its answer.
+## The hash of the state the script was last asked about, and the nodes showing its answer.
 var _asked_hash := 0
-var _layers: Array[ModLayer] = []
+var _stack := ModLayerStack.new()
 var _showing_mod := false
 
 
 func _init() -> void:
 	clip_contents = true
+	_stack.name = "Drawn"
+	add_child(_stack)
 
 
 func setup(new_problem: ProblemInstance) -> void:
@@ -65,15 +67,7 @@ func _refresh() -> void:
 func _show_mod(drawn: ModDraw.Drawn, assets: ModAssets) -> void:
 	_showing_mod = true
 	_shown = []
-	while _layers.size() < drawn.layers.size():
-		var layer := ModLayer.new()
-		layer.name = "Layer%d" % _layers.size()
-		add_child(layer)
-		_layers.append(layer)
-	while _layers.size() > drawn.layers.size():
-		_remove_layer(_layers.pop_back())
-	for i in drawn.layers.size():
-		_layers[i].show_layer(drawn.layers[i], assets.shaders.get(drawn.layers[i].shader))
+	_stack.show_drawn(drawn, assets)
 	queue_redraw()
 
 
@@ -82,8 +76,7 @@ func _show_plain() -> void:
 	if not _showing_mod and _shown == items:
 		return
 	_showing_mod = false
-	while not _layers.is_empty():
-		_remove_layer(_layers.pop_back())
+	_stack.clear()
 	_shown = items
 	_asked_hash = 0
 	queue_redraw()
@@ -95,7 +88,7 @@ func drawn_lines() -> Array[String]:
 	if not _showing_mod:
 		lines.append("plain %d items" % items.size())
 		return lines
-	for layer in _layers:
+	for layer in _stack.layers():
 		lines.append("layer %s" % ("shaded" if layer.material != null else "plain"))
 		for command: Array in layer.commands:
 			lines.append(ModDraw.describe(command))
@@ -104,12 +97,7 @@ func drawn_lines() -> Array[String]:
 
 ## The layers (for a test).
 func layers() -> Array[ModLayer]:
-	return _layers
-
-
-func _remove_layer(layer: ModLayer) -> void:
-	remove_child(layer)
-	layer.queue_free()
+	return _stack.layers()
 
 
 ## The mod never animates the picture: the lengths of a problem's steps are the game's.

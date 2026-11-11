@@ -1,0 +1,51 @@
+# A skin mod that draws THREE layers of the original presenter and leaves the rest as the original draws them: the background (the sea, and the picture behind the screen by its key), the walls (one rectangle for each run of wall tiles in a row)
+# and the bubbles (a few dots of the mod's own pack that rise with the game's time). Its manifest dresses the sub's layer with a shader (`layers`), a layer the script does not draw. It is asked for one layer at a time and builds each
+# from `state` alone, so a skin bound late draws what one bound early does.
+var api : Dictionary = {}
+# (only for the tests to ask: which layers it was asked for and what it was told happened. It draws from `state`, never from these.)
+var asked := []
+var heard := []
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func asked_layers() -> Array:
+	return asked
+
+func heard_events() -> Array:
+	return heard
+
+func skin_layer(name : String, state : Dictionary, fraction : float, events : Array) -> Array:
+	if not asked.has(name):
+		asked.append(name)
+	if events.size() > 0 and events.size() <= 16:
+		for event in events:
+			heard.append(event[0])
+	elif events.size() > 16:
+		heard.append(events[events.size() - 1][0])
+	if heard.size() > 64:
+		heard = heard.slice(32)
+	var out := []
+	if name == "background":
+		out.append(["rect", Rect2(0, 0, 608, 288), Color(0.02, 0.10, 0.18)])
+		if state["background"] != "":
+			out.append(["picture", state["background"], Vector2(0, 0)])
+	elif name == "walls":
+		var walls : String = state["walls"]
+		var columns : int = api["skin"]["columns"]
+		var rows : int = api["skin"]["rows"]
+		var tile : int = api["skin"]["tile"]
+		for row in rows:
+			var start := -1
+			for column in columns + 1:
+				var solid := column < columns and walls[row * columns + column] == "1"
+				if solid and start < 0:
+					start = column
+				elif not solid and start >= 0:
+					out.append(["rect", Rect2(start * tile, row * tile, (column - start) * tile, tile), Color(0.35, 0.30, 0.25)])
+					start = -1
+	elif name == "bubbles":
+		var rise := int((state["tick"] + fraction) * 2.0)
+		for i in 8:
+			out.append(["picture", "skin/dot.png", Vector2(40 + i * 70, 288 - ((rise + i * 37) % 288))])
+	return out
