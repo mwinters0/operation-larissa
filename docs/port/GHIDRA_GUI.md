@@ -212,3 +212,25 @@ turn removes from the project what it applied before and the file no longer has.
 **Changing the tools.** `./run.sh check_annotations.py` makes one annotation of every kind in a throw-away project,
 exports it, applies it to a second fresh project and exports again, which must find nothing (about 90 s). Run it after
 changing `annotations.py` or `program_annotations.py`; `uv run pytest tools` tests the format and the merge.
+
+## 9. The Win16 project
+
+`ONWIN.EXE`, the 16-bit build, has a Ghidra project of its own (`tools/analysis/ghidra/ghidra-project16/`, git-ignored) and the same round
+trip for names, with its own two files:
+
+* `tools/analysis/ghidra/names_onwin16.json`: function map address (`SSSS:OOOO`, the NE segment number and the offset) -> `{name}`, or
+  `{map}` for a name of ONWIN.MAP at another address
+* `tools/analysis/ghidra/labels_onwin16.json`: global map address -> name, or `{name}`, or `{map}`
+
+Only names you gave appear in them. The project derives the rest: a function is named after the ONWIN.MAP public at its address, else after
+its Win32 counterpart (the function this build's `{"map": ...}` entries of `names_onwin32.json` point at, or a match of `matches_win32.json`
+of tier A, B or pin), and carries a comment "Win32 0x... (how it is matched)" that says which. `win16_names.py` is that rule; apply and export
+both use it, so a derived name is never exported as if you had typed it.
+
+* `mise run ghidra16:import`: builds the project (`import_win16.py`: a function at every map public, then auto-analysis), then names it
+  (`apply_names16.py`). It refuses while the project holds names that are not in the two files yet.
+* `mise run ghidra16:gui`: opens it. Rename with **L** as in section 7; in the Script Manager `export_names16.py` shows the diff and asks.
+* `mise run ghidra16:export`: with Ghidra closed, writes the names you gave into the two files.
+
+There is no round trip for comments, types and signatures of this project; the Win32 project has one (section 8).
+

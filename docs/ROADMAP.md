@@ -58,6 +58,12 @@ hand in a window.
 - Walkthroughs for students: one game tick from input to picture, a creature's life (script, VM, contact, ink), a trigger to a solved
   problem.
 
+**Reverse engineering**
+- The Win16 project has a round trip for names only; comments, types and signatures (`annotations_onwin32.json`'s kinds) have none, and a
+  Win32 annotation is not carried over to the Win16 counterpart (offsets and types differ between 16- and 32-bit code).
+- The Win32 <-> Win16 matcher leaves the Win32 functions that have no counterpart unmatched by margin alone; a hand check of the unmatched
+  and of tier B (`pins_win32.json` keeps the result) would raise the confidence of the join with the DOS build.
+
 ## After this: the remake
 
 Whatever needs a change to an existing rule is a separate project. What this one gives it: the named content through an exporter,

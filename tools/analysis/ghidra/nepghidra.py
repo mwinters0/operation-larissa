@@ -3,6 +3,7 @@
 Environment:
   GHIDRA_INSTALL_DIR   Ghidra install dir (default ~/.local/bin/ghidra/ghidra_12.2_PUBLIC)
   NEP_GHIDRA_PROJECT   directory holding the Ghidra project (default ./ghidra-project)
+  NEP_GHIDRA_PROJECT16 directory holding the Win16 project (default ./ghidra-project16; ONWIN.EXE and ONWIN.MAP come from the CD image)
   NEP_ONWIN32          path to ONWIN32.EXE (default: ONWINCD/ONWIN32.EXE from the CD image NEPTUNE.ISO, copied
                        to build/gamefiles/ by tools/gamefiles.py materialize(); NEP_ISO names another image)
 """
@@ -49,20 +50,26 @@ def in_script_manager(g):
     return "__this__" in g
 
 
-def run(g, fn):
-    """Call fn(program). In Ghidra the program is `currentProgram`; headless it is ONWIN32.EXE from the project."""
+def run(g, fn, win16=False):
+    """Call fn(program). In Ghidra the program is `currentProgram`; headless it is ONWIN32.EXE from the project (win16: ONWIN.EXE from
+    its project, ghidra-project16)."""
     if in_script_manager(g):
         prog = g["currentProgram"]
         if prog is None:
-            raise RuntimeError("no program open: open ONWIN32.EXE in the CodeBrowser first")
+            raise RuntimeError("no program open: open %s in the CodeBrowser first" % ("ONWIN.EXE" if win16 else "ONWIN32.EXE"))
         return fn(prog)
-    with open_program() as api:
+    with (open_program16() if win16 else open_program()) as api:
         return fn(api.getCurrentProgram())
 
 
 def check_program(prog):
     if "ONWIN32" not in prog.getName().upper():
         raise RuntimeError("these scripts are for ONWIN32.EXE, but the open program is %r" % prog.getName())
+
+
+def check_program16(prog):
+    if prog.getName().upper() != "ONWIN.EXE" or str(prog.getLanguageID()) != "x86:LE:16:Protected Mode":
+        raise RuntimeError("these scripts are for ONWIN.EXE (the Win16 project), but the open program is %r" % prog.getName())
 
 
 @contextlib.contextmanager
@@ -72,6 +79,29 @@ def open_program(analyze=True):
     PROJECT_DIR.mkdir(parents=True, exist_ok=True)
     with pyghidra.open_program(str(exe_path()), project_location=str(PROJECT_DIR),
                                project_name="neptune", analyze=analyze) as api:
+        yield api
+
+
+PROJECT16_DIR = Path(os.environ.get("NEP_GHIDRA_PROJECT16", Path.cwd() / "ghidra-project16"))
+PROJECT16_NAME = "neptune16"
+
+
+def win16_paths():
+    """(ONWIN.EXE, ONWIN.MAP) as real files for Ghidra and the importer: copies made from the CD image (NEP_ISO names another)."""
+    sys.path.insert(0, str(REPO / "tools"))
+    import gamefiles
+    return gamefiles.materialize("ONWINCD/ONWIN.EXE"), gamefiles.materialize("ONWINCD/ONWIN.MAP")
+
+
+@contextlib.contextmanager
+def open_program16(analyze=False):
+    """Open the Win16 build (ONWIN.EXE, 16-bit NE) in its own project, ghidra-project16 (import_win16.py makes it); yields a FlatProgramAPI.
+
+    Not the Win32 project: a Ghidra project is locked while open, and the two builds are two programs."""
+    import pyghidra
+    PROJECT16_DIR.mkdir(parents=True, exist_ok=True)
+    with pyghidra.open_program(str(win16_paths()[0]), project_location=str(PROJECT16_DIR),
+                               project_name=PROJECT16_NAME, analyze=analyze) as api:
         yield api
 
 

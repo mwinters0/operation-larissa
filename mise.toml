@@ -227,3 +227,38 @@ run = [
   "./run.sh export_annotations.py",
 ]
 run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
+
+[tasks."ghidra:fingerprints"]
+description = "Export a fingerprint of every function of the Win32 and the Win16 Ghidra projects (extracted/matching/, git-ignored; ghidra:import and ghidra16:import build the projects)"
+dir = "tools/analysis/ghidra"
+run = [
+  "./run.sh export_fingerprints.py win32",
+  "./run.sh export_fingerprints.py win16",
+]
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
+
+[tasks."ghidra:match"]
+description = "Match the Win32 functions to the Win16 ones from the fingerprints into tools/analysis/ghidra/matches_win32.json (ghidra:fingerprints first; `... evaluate` measures the matcher)"
+run = "uv run tools/analysis/ghidra/match_win32_win16.py match"
+
+[tasks."ghidra16:gui"]
+description = "Open the Win16 Ghidra project (ONWIN.EXE) in the GUI as it is (ghidra16:import builds it)"
+dir = "tools/analysis/ghidra"
+run = "./run.sh open_gui.py --win16"
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
+
+[tasks."ghidra16:import"]
+description = "Build or update the Win16 Ghidra project: ONWIN.EXE from the ISO, a function at every ONWIN.MAP code public, then the names (refuses while the project has GUI names not yet exported: run ghidra16:export first)"
+dir = "tools/analysis/ghidra"
+run = [
+  "./run.sh import_win16.py",
+  "./run.sh export_names16.py --check",
+  "./run.sh apply_names16.py",
+]
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
+
+[tasks."ghidra16:export"]
+description = "Write the names made in the Win16 Ghidra GUI into names_onwin16.json and labels_onwin16.json (save and close Ghidra first)"
+dir = "tools/analysis/ghidra"
+run = "./run.sh export_names16.py"
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
