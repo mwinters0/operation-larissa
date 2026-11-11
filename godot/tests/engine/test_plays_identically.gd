@@ -14,7 +14,7 @@ extends GdUnitTestSuite
 ##
 ## (The whole mission through the real `Game` scene, on the original's two games, is in `legacy/test_plays_identically_legacy.gd`.)
 ##
-## The same, with every SKIN (`SkinRoster.all()`: whatever is in `res://skins/`, the tiny test skin, a hostile one, a skin mod that draws and one that faults on every frame), the visits and the
+## The same, with every SKIN (`SkinRoster.all()`: whatever is in `res://skins/`, the tiny test skin, a hostile one, a data skin with no script, a skin mod that draws and one that faults on every frame), the visits and the
 ## whole mission, with the debug rectangles laid over the picture too. Switching skins in the middle of a visit and what a skin cannot
 ## reach (the rules' data) are in `test_skins_dont_change_the_game.gd`.
 
@@ -175,6 +175,10 @@ func test_a_scripted_visit_with_a_mod_gives_the_same_trace_with_every_presenter_
 func test_the_skin_mods_of_the_roster_really_run_in_the_visit() -> void:
 	for skin in SkinRoster.mod_skins():
 		var mod := ModHost.mod(String(skin.id))
+		if mod == null:                                          # (the data skin: no script to ask; it is worn with the original's presenter)
+			assert_object(skin.presenter_scene_or_null()).is_null()
+			assert_bool((skin as ModSkin).pictures.is_empty()).is_false()
+			continue
 		var faults := int(mod.get("monitor_exceptions"))
 		var trace := _play(DevCreatures.ARENA, PresenterChoice.ORIGINAL, skin).trace
 		assert_array(trace.lines).is_not_empty()

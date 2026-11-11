@@ -6,6 +6,8 @@ extends RefCounted
 ##
 ## Teaches: one record per running thing, built by one function that is also the validator, so the tool that tells the author and the host that refuses the pack cannot disagree.
 
+## What identifies the mod as the disk has it (`ModHost.key_of`); set by `ModHost` when the mod runs, so that a changed pack makes a new record.
+var key := ""
 ## The skin a skin mod is, or null.
 var skin: ModSkin
 ## The problem screens a mod draws, or null.

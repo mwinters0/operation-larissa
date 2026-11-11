@@ -174,8 +174,8 @@ static func _data_files(live: Pack, report: PackReport) -> void:
 			report.error("data", "%s cannot be read" % rel)
 
 
-## A mod pack's script: the manifest entry (`Pack.mod`, read by `ModSpec`, whose errors are the manifest's) names a `.sgd` file the pack holds, within the size limit, with a
-## `mod_init(api)`, and defines the function of everything the manifest lists (`ModSpec.functions`: `skin_frame`, `problem_frame`, the rule hooks). What the pack must hold for it (acceptable shaders and pictures of a skin or of problem screens, each problem type it draws or judges as data) is `ModParts.problems`. A `.sgd` file the manifest does not name is never run.
+## A mod pack's script (a data skin has none): the manifest entry (`Pack.mod`, read by `ModSpec`, whose errors are the manifest's) names a `.sgd` file the pack holds, within the size limit, with a
+## `mod_init(api)`, and defines the function of everything the manifest lists (`ModSpec.functions`: `skin_frame`, `problem_frame`, the rule hooks). What the pack must hold for it (acceptable shaders and pictures of a skin or of problem screens, the pictures a skin maps, each problem type it draws or judges as data) is `ModParts.problems`. A `.sgd` file the manifest does not name is never run.
 ## (Whether it compiles is known only to the Sandbox, when the mod is loaded: `ModHost.failure`.)
 static func _mod(live: Pack, report: PackReport) -> void:
 	var scripts: Array[String] = []
@@ -183,28 +183,37 @@ static func _mod(live: Pack, report: PackReport) -> void:
 		if rel.get_extension() == ModSpec.SCRIPT_EXTENSION:
 			scripts.append(rel)
 	if live.mod != null:
-		var entry := live.mod.entry
-		if not live.has(entry):
-			report.error("mod", "the entry script %s is not in the pack" % entry)
-		else:
-			var bytes := live.read_bytes(entry)
-			var source := bytes.get_string_from_utf8()
-			if bytes.size() > ModSpec.MAX_SOURCE_BYTES:
-				report.error("mod", "%s is larger than %d bytes" % [entry, ModSpec.MAX_SOURCE_BYTES])
-			elif source.strip_edges().is_empty():
-				report.error("mod", "%s is empty or not UTF-8 text" % entry)
-			elif RegEx.create_from_string("(?m)^func\\s+mod_init\\s*\\(").search(source) == null:
-				report.error("mod", "%s defines no mod_init(api): it is where a mod starts" % entry)
-			else:
-				var needed := live.mod.functions()
-				for function in needed:
-					if RegEx.create_from_string("(?m)^func\\s+%s\\s*\\(" % function).search(source) == null:
-						report.error("mod", "%s defines no %s: the manifest lists what is asked of it" % [entry, ModSpec.signature(function, needed[function])])
+		if live.mod.has_entry():
+			_entry_script(live, report)
 		for message in ModParts.problems(live):
 			report.error("mod", message)
-		scripts.erase(entry)
+		for key in live.mod.pictures:
+			if NameRegistry.original().index_of(&"ui_picture", key.get_slice("/", 1)) < 0:
+				report.warn("mod", "the skin's picture %s names no picture of the game: it is never asked for" % key)
+		scripts.erase(live.mod.entry)
 	for rel in scripts:
 		report.warn("mod", "%s is never run: %s" % [rel, "a mod pack's manifest names one entry script (\"mod\": {\"entry\": ...})" if live.mod != null else "the manifest has no \"mod\" entry"])
+
+
+## The entry script of the mod `live`: in the pack, within the size limit, with `mod_init(api)` and the functions the manifest lists.
+static func _entry_script(live: Pack, report: PackReport) -> void:
+	var entry := live.mod.entry
+	if not live.has(entry):
+		report.error("mod", "the entry script %s is not in the pack" % entry)
+		return
+	var bytes := live.read_bytes(entry)
+	var source := bytes.get_string_from_utf8()
+	if bytes.size() > ModSpec.MAX_SOURCE_BYTES:
+		report.error("mod", "%s is larger than %d bytes" % [entry, ModSpec.MAX_SOURCE_BYTES])
+	elif source.strip_edges().is_empty():
+		report.error("mod", "%s is empty or not UTF-8 text" % entry)
+	elif RegEx.create_from_string("(?m)^func\\s+mod_init\\s*\\(").search(source) == null:
+		report.error("mod", "%s defines no mod_init(api): it is where a mod starts" % entry)
+	else:
+		var needed := live.mod.functions()
+		for function in needed:
+			if RegEx.create_from_string("(?m)^func\\s+%s\\s*\\(" % function).search(source) == null:
+				report.error("mod", "%s defines no %s: the manifest lists what is asked of it" % [entry, ModSpec.signature(function, needed[function])])
 
 
 static func _texts(live: Pack, report: PackReport) -> void:

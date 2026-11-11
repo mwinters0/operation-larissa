@@ -96,6 +96,6 @@ Other skin tests: `test_skin.gd` (fallback, mapping, the original unchanged), `t
 
 ## Skin mods
 
-A skin from a stranger is not a folder of `res://skins/` but a mod pack ([`PACKS.md`](PACKS.md), "Mod packs"): a sandboxed script that returns what to draw. `ModSkin` (`src/mods/mod_skin.gd`) is its `GameSkin`: the pack's id, no pictures or resources of its own
-(the HUD, the screens and the sounds stay the base game's), and `presenter_scene` = `ModPresenter` (`src/mods/mod_presenter.tscn`). `ModHost` makes it when the mod loads and `SkinChoice` offers it with the others, so every path that wears a skin (the command line, F3 then S, `SectorWorld`,
+A skin from a stranger is not a folder of `res://skins/` but a mod pack ([`PACKS.md`](PACKS.md), "Mod packs"): a sandboxed script that returns what to draw. `ModSkin` (`src/mods/mod_skin.gd`) is its `GameSkin`: the pack's id, no resources of its own and only the `render` and `pictures` its manifest maps
+(the HUD's layout, the screens and the sounds stay the base game's), and `presenter_scene` = `ModPresenter` (`src/mods/mod_presenter.tscn`). A skin with no script (a manifest with no `entry`) has the same object with no `presenter_scene`, so the original presenter shows the sector, and needs no Sandbox. `ModHost` makes it when the mod loads and `SkinChoice` offers it with the others, so every path that wears a skin (the command line, F3 then S, `SectorWorld`,
 `skin_compare`) wears it the same way, and `leave_dead_mod_skins` puts the original on when the mod stops. How to write one is [`../create/SKIN_API.md`](../create/SKIN_API.md), "Writing a skin mod".

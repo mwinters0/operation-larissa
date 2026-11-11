@@ -155,7 +155,7 @@ func _read_manifest(data: Dictionary) -> void:
 		errors.append("format %d: this game reads packs of format 1 to %d" % [format, FORMAT])
 	if data.has("mod"):
 		mod = ModSpec.parse(data["mod"], errors)
-		if mod != null and not ModLoader.sandbox_available():
+		if mod != null and mod.has_entry() and not ModLoader.sandbox_available():
 			errors.append(ModLoader.missing_extension_text())
 
 

@@ -1,8 +1,8 @@
 class_name ModSkinShelf
 extends RefCounted
-## Skin mods for tests: scratch mod packs made of the fixtures of `tests/mods/` (`skinny`, `skin_faulty`, `skin_hostile`) with the pictures a skin draws (`skin/*.png`, flat colours of the
+## Skin mods for tests: scratch mod packs made of the fixtures of `tests/mods/` (`skinny`, `skin_faulty`, `skin_hostile`, and the data skin `skin_data`, which has no script) with the pictures a skin draws (`skin/*.png`, flat colours of the
 ## sizes a skin draws them at) and the shader text the manifests list, laid over the pack the suite runs on and running (`Mods.sync`). `mount` makes them, `release` takes them away and chooses the
-## suite's own pack again, so the next test starts with the game as it ships. They need the godot-sandbox extension (`uv run tools/fetch_sandbox.py`).
+## suite's own pack again, so the next test starts with the game as it ships. The scripted ones need the godot-sandbox extension (`uv run tools/fetch_sandbox.py`); the data skin does not.
 ##
 ## Teaches: a test double for a pack that carries code: a real folder in `user://`, written from a fixture and deleted afterwards, so the code under test reads the disk as it does in the game.
 
@@ -14,6 +14,7 @@ const PICTURES := {
 	"skin/ink.png": [Color.BLACK, Vector2i(16, 16)],
 	"skin/piece.png": [Color.YELLOW, Vector2i(24, 20)],
 	"skin/dot.png": [Color.RED, Vector2i(4, 4)],
+	"skin/sky.png": [Color.CYAN, Vector2i(32, 18)],
 }
 const GLOW := "skin/glow.gdshader"
 

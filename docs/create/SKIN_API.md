@@ -161,7 +161,7 @@ Swap it in with `SectorWorld.replace_presenter(MySkin.new())` (or a scene), or `
 
 A skin mod is a [mod pack](../engine/PACKS.md) (a pack whose `pack.json` has a `mod` entry) that is also a skin. It is code of a stranger, so the game runs it in the godot-sandbox extension with restrictions on and **grants it nothing**: it is called with the state of the sector as plain data and returns what to draw as plain
 data, and the game checks the answer and draws it. It cannot reach the rules, the tree, another mod, a file by path or another pack, and it cannot change a hit rectangle, a wait or a tick (the same rules as above; `test_plays_identically.gd` and `test_skins_dont_change_the_game.gd` play a skin mod and a faulty one with every other skin). It needs the
-extension (`uv run tools/fetch_sandbox.py`, [`SETUP.md`](../SETUP.md)). The worked example is `godot/tests/mods/skinny/` (`skinny.sgd`, `skin/glow.gdshader`).
+extension (`uv run tools/fetch_sandbox.py`, [`SETUP.md`](../SETUP.md)); a skin with no script ("A skin with no script", below) does not. The worked example is `godot/tests/mods/skinny/` (`skinny.sgd`, `skin/glow.gdshader`).
 
 ```
 pack.json     {"id": "reef", "title": "Reef", "version": "1.0", "base": "legacy",
@@ -171,8 +171,24 @@ skin/*.png    the skin's pictures (PNG; any folder below skin/)
 skin/*.gdshader   shaders as text, each listed in the manifest
 ```
 
-The skin's id is the pack's id (not the id of a skin that ships); it appears in `SkinChoice.available()` while the pack is in use, so `--pack=reef --skin=reef` and F3 then S wear it. It keeps the game's HUD, screens and sounds. `pack_tool --check=<folder>` judges the manifest, the pictures, the shaders and the
+The skin's id is the pack's id (not the id of a skin that ships); it appears in `SkinChoice.available()` while the pack is in use, so `--pack=reef --skin=reef` and F3 then S wear it. It keeps the game's HUD layout, screens and sounds, and dresses the pictures its manifest maps ("A skin with no script"). `pack_tool --check=<folder>` judges the manifest, the pictures, the shaders and the
 presence of `skin_frame`; a skin that fails the check is refused with the reason when the game loads it.
+
+### A skin with no script
+
+A skin that only changes how the game's own pictures look needs no script, so no Sandbox: leave `entry` out. It is the same `ModSkin` in `SkinChoice` (the id is the pack's id; `--skin=<id>`, F3 then S), and it shows the sector with the original presenter. Two keys of `skin` say what it does (a manifest that has either, or no `entry`, says `"requires_api": 5`; a skin with a script may have them too):
+
+```
+pack.json     {"id": "reef", "title": "Reef", "version": "1.0", "base": "legacy",
+               "mod": {"requires_api": 5, "skin": {"render": {"texture_filter": "linear", "snap_transforms": false, "snap_vertices": false},
+                                                   "pictures": {"ui_picture/title_sky": "skin/sky.png"}}}}
+skin/sky.png  a PNG of the pack
+```
+
+* `render` is the `RenderSettings` the skin puts on the window while it is worn (`SkinChoice.select`): `texture_filter` is `"nearest"` (the original's), `"linear"`, `"nearest_mipmaps"` or `"linear_mipmaps"`; `snap_transforms` and `snap_vertices` are true (the original's) or false. A key it leaves out stays the project's.
+* `pictures` maps a skin key `ui_picture/<name>` (the console's, the screens' and the story's pictures; `<name>` is the registry's name of the picture, or the made-up name of its number, `ui_1195`; `pack_tool --check` warns about a name the game never asks for) to a PNG of the pack's `skin/` folder, at most `ModSpec.MAX_PICTURES`. The skin's pictures are worn only while this skin is: another skin, and the original, show the base game's (a pack's own `pictures/` folder is different: it is the content's picture for a key and wins under every skin, [`CONTENT.md`](CONTENT.md) section 4).
+
+A picture file is read once, when the pack is chosen; a changed manifest or script is a new skin when the pack is chosen again. Nothing here can change a rule or a wait: it is data the game dresses its own pictures with (`test_plays_identically.gd`, `test_skins_dont_change_the_game.gd` and `test_presenter_binds_late.gd` play the worked example, `godot/tests/mods/skin_data/`, with every other skin).
 
 ### The script
 

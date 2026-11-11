@@ -12,6 +12,14 @@ extends Resource
 ## starts with the project's values; changing its properties at run time changes what is drawn from the next frame on, and every
 ## `CanvasItem` inherits `texture_filter` from its parent unless it says otherwise (`TEXTURE_FILTER_PARENT_NODE`).
 
+## The names a mod pack's manifest gives the filters (`ModSpec`: `"render": {"texture_filter": "linear"}`).
+const FILTER_NAMES: Dictionary[String, int] = {
+	"nearest": Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST,
+	"linear": Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR,
+	"nearest_mipmaps": Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS,
+	"linear_mipmaps": Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS,
+}
+
 ## The filter for every picture that does not choose its own (Viewport.canvas_item_default_texture_filter). Nearest keeps pixels sharp.
 @export var texture_filter: Viewport.DefaultCanvasItemTextureFilter = Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST
 
@@ -25,6 +33,14 @@ extends Resource
 ## The filter of the playfield (the presenter's node and everything below it), for a skin whose HUD and playfield want different
 ## ones. The default says "like the parent": the playfield inherits `texture_filter`, as it does today.
 @export var playfield_filter: CanvasItem.TextureFilter = CanvasItem.TEXTURE_FILTER_PARENT_NODE
+
+
+## The manifest's name of `filter` (`FILTER_NAMES`), "" for one it has no name for.
+static func filter_name(filter: int) -> String:
+	for filter_key in FILTER_NAMES:
+		if FILTER_NAMES[filter_key] == filter:
+			return filter_key
+	return ""
 
 
 ## Puts these settings on `viewport` (the root window, or a `SubViewport` of a skin that draws into one). A `SubViewport` does not

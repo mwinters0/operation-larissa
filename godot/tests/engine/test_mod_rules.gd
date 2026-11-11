@@ -72,7 +72,7 @@ func test_a_rules_entry_makes_the_mod_add_hooks_under_the_lowest_instruction_lim
 	assert_array(spec.rule_instructions).is_equal([0, 3])
 	assert_bool(spec.rule_sub).is_true()
 	assert_int(spec.limits["execution_timeout"]).is_equal(ModSpec.MAX_RULE_EXECUTION_TIMEOUT)         # (it asked for none: it got the lowest)
-	assert_int(ModSpec.API_VERSION).is_equal(ModSpec.RULE_API_VERSION)
+	assert_int(ModSpec.API_VERSION).is_greater_equal(ModSpec.RULE_API_VERSION)
 	assert_dict(spec.to_dict()).is_equal({"entry": "r.sgd", "requires_api": 4, "rules": {"answers": [41, 50], "instructions": [0, 3], "sub": true}})
 	# a limit asked for is cut to the ceiling of a mod with rule hooks, and 0 is raised to the lowest: counting cannot be turned off
 	for asked in [0, 1, 5, 200, 100000]:
@@ -111,7 +111,7 @@ func test_every_mistake_in_a_rules_entry_is_a_sentence() -> void:
 	# the older entries are as they were: a mod that asks for an older API runs, and a skin or problem screen needs no rules
 	for old in [1, 2, 3]:
 		assert_array(_parse({"entry": "old.sgd", "requires_api": old})[1]).is_empty()
-	assert_array(_parse({"entry": "old.sgd", "requires_api": 5})[1]).is_not_empty()
+	assert_array(_parse({"entry": "old.sgd", "requires_api": ModSpec.API_VERSION + 1})[1]).is_not_empty()
 
 
 func test_the_api_a_mod_with_hooks_is_given_holds_plain_facts_and_nothing_else() -> void:

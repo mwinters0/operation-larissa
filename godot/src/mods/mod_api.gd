@@ -4,7 +4,7 @@ extends RefCounted
 ## `property_allowed` / `method_allowed` are the policies for the objects the game hands over. To give mods a new ability, add its key to `build` and its function below;
 ## to let a mod touch an object, grant the object (`_grant`) and allow the property or method in the policy. Nothing else in the game is reachable from a mod.
 ##
-## The API (`ModSpec.API_VERSION` 4; the first four keys are version 1, `skin` is version 2, `problems` is version 3, `rules` is version 4):
+## The API (`ModSpec.API_VERSION` 5; the first four keys are version 1, `skin` is version 2, `problems` is version 3, `rules` is version 4; version 5 adds to the manifest of a skin, not to this table):
 ##
 ##     api_version  int       the version of this API
 ##     id           String    the mod's id (= its pack's id)

@@ -5,12 +5,14 @@ extends RefCounted
 ##
 ##     "mod": {"entry": "orchard.sgd", "requires_api": 1, "limits": {"execution_timeout": 100, "memory_max": 16}}
 ##     "mod": {"entry": "reef.sgd", "requires_api": 2, "skin": {"shaders": ["skin/glow.gdshader"]}}
+##     "mod": {"requires_api": 5, "skin": {"render": {"texture_filter": "linear"}, "pictures": {"ui_picture/title_sky": "skin/sky.png"}}}
 ##     "mod": {"entry": "tides.sgd", "requires_api": 3, "problems": {"types": [40], "shaders": ["problems/wave.gdshader"]}}
 ##     "mod": {"entry": "rules.sgd", "requires_api": 4, "rules": {"answers": [41], "instructions": [0, 1], "sub": true}}
 ##
-## `entry` is a plain file name (no folder) ending `.sgd`, in the pack's root. `requires_api` (default 1) is the lowest API version the script needs; a game that provides less
+## `entry` is a plain file name (no folder) ending `.sgd`, in the pack's root; only a skin that asks for no `skin_frame` may leave it out (a DATA skin: no script, so no Sandbox is needed to wear it). `requires_api` (default 1) is the lowest API version the script needs; a game that provides less
 ## refuses the pack. `limits` is optional, and so is every key in it. `skin` makes the mod a SKIN (`ModSkin`: the mod draws the sector, `docs/create/SKIN_API.md`); it needs API version 2,
-## and lists the shaders the skin may use, text files `skin/<name>.gdshader` of the pack (`ModShader`), at most `MAX_SHADERS`. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from
+## and lists the shaders the skin may use, text files `skin/<name>.gdshader` of the pack (`ModShader`), at most `MAX_SHADERS`; `render` (`texture_filter`, `snap_transforms`, `snap_vertices`: the `RenderSettings` the skin puts on the window)
+## and `pictures` (skin key `ui_picture/<name>` to a PNG `skin/<name>.png` of the pack, at most `MAX_PICTURES`, worn only while the skin is) are API version 5, which a skin without `entry` needs too. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from
 ## `Catalog.PROBLEM_TYPE_COUNT` to `Catalog.LAST_PROBLEM_TYPE`, at most `MAX_PROBLEM_TYPES`; the pack holds each type as data); it needs API version 3 and lists its shaders like a skin, in the pack's `problems/` folder. `rules` makes the mod
 ## add GAMEPLAY inside the rules (`RuleHooks`), for a campaign that declares the mod: `answers` lists problem types it judges instead of their `compare_mode` (numbers as for `problems.types`, the pack holds each as data),
 ## `instructions` the numbers 0 to `RuleHooks.MAX_INSTRUCTIONS - 1` of the creature instruction `Mod_Instruction` it defines, `sub` (true) a sub ability; it needs API version 4, at least one of the three, and a mod with `rules`
@@ -20,10 +22,12 @@ extends RefCounted
 ## Teaches: validating an untrusted description by naming each rule in one place, and clamping a request to a ceiling instead of refusing it (a limit is a request; the host decides).
 
 ## The version of the API a mod is given (`ModApi.build`). A mod that requires a higher one is refused. The version goes up when the API gains something a mod can ask for (2: the skin API, 3: the problem
-## screens), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
-const API_VERSION := 4
+## screens, 4: the rule hooks, 5: the data skin), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
+const API_VERSION := 5
 ## The first version with the skin API: a skin mod requires it.
 const SKIN_API_VERSION := 2
+## The first version with data skins: `render` and `pictures` in `skin`, and a skin with no `entry`.
+const DATA_SKIN_API_VERSION := 5
 ## The first version with problem screens: a mod that draws problem types requires it.
 const PROBLEM_API_VERSION := 3
 ## The first version with rule hooks: a mod with `rules` requires it.
@@ -49,7 +53,13 @@ const LIMITS: Dictionary[String, int] = {
 }
 const KNOWN_KEYS: Array[String] = ["entry", "requires_api", "limits", "skin", "problems", "rules"]
 ## The keys of the `skin` entry.
-const SKIN_KEYS: Array[String] = ["shaders"]
+const SKIN_KEYS: Array[String] = ["shaders", "render", "pictures"]
+## The keys of the `render` entry of a skin (`RenderSettings`).
+const RENDER_KEYS: Array[String] = ["texture_filter", "snap_transforms", "snap_vertices"]
+## The kinds of picture key (`<kind>/<name>`, as `GameSkin.pictures` has them) a skin's `pictures` may name.
+const PICTURE_KINDS: Array[String] = ["ui_picture"]
+## The most pictures a skin lists.
+const MAX_PICTURES := 128
 ## The keys of the `problems` entry.
 const PROBLEM_KEYS: Array[String] = ["types", "shaders"]
 ## The keys of the `rules` entry.
@@ -66,6 +76,7 @@ const PROBLEM_FOLDER := "problems/"
 const MAX_SOURCE_BYTES := 256 << 10
 const SCRIPT_EXTENSION := "sgd"
 
+## The entry script's file name, "" for a data skin (a skin with no script).
 var entry := ""
 var requires_api := 1
 ## key -> the value the mod will run with (a ceiling for a key the manifest does not mention).
@@ -73,6 +84,9 @@ var limits: Dictionary[String, int] = {}
 ## Is the mod a skin? And the shaders it lists (paths in the pack, `skin/....gdshader`).
 var is_skin := false
 var shaders: Array[String] = []
+## What the skin asks of the renderer (`skin.render`), or null when it does not say. And its pictures: skin key -> path in the pack (`skin/....png`).
+var render: RenderSettings = null
+var pictures: Dictionary[String, String] = {}
 ## Does the mod draw problem screens (`problems`)? The problem types it draws, and the shaders those screens list (paths in the pack, `problems/....gdshader`).
 var has_problems := false
 var problem_types: Array[int] = []
@@ -94,13 +108,14 @@ static func parse(data: Variant, errors: Array[String]) -> ModSpec:
 	for key: String in data:
 		if not KNOWN_KEYS.has(key):
 			found.append("\"mod\" has no \"%s\" (it has %s)" % [key, ", ".join(KNOWN_KEYS)])
-	var entry_value: Variant = data.get("entry")
-	if not entry_value is String or (entry_value as String).is_empty():
-		found.append("\"mod\" needs an \"entry\": the name of a .%s file in the pack's root" % SCRIPT_EXTENSION)
-	elif not is_entry_name(entry_value):
-		found.append("the mod's entry \"%s\" must be a plain file name ending .%s (no folder, no \"..\")" % [entry_value, SCRIPT_EXTENSION])
-	else:
-		spec.entry = entry_value
+	if data.has("entry"):
+		var entry_value: Variant = data["entry"]
+		if not entry_value is String or (entry_value as String).is_empty():
+			found.append("\"mod\" needs an \"entry\": the name of a .%s file in the pack's root" % SCRIPT_EXTENSION)
+		elif not is_entry_name(entry_value):
+			found.append("the mod's entry \"%s\" must be a plain file name ending .%s (no folder, no \"..\")" % [entry_value, SCRIPT_EXTENSION])
+		else:
+			spec.entry = entry_value
 	if data.has("requires_api"):
 		var api: Variant = data["requires_api"]
 		if not _is_whole(api) or int(api) < 1:
@@ -110,11 +125,13 @@ static func parse(data: Variant, errors: Array[String]) -> ModSpec:
 		else:
 			spec.requires_api = int(api)
 	if data.has("skin"):
-		_parse_skin(data["skin"], spec, found)
+		_parse_skin(data["skin"], spec, data.has("entry"), found)
 	if data.has("problems"):
 		_parse_problems(data["problems"], spec, found)
 	if data.has("rules"):
 		_parse_rules(data["rules"], spec, found)
+	if not data.has("entry") and (not spec.is_skin or spec.has_problems or spec.has_rules):
+		found.append("\"mod\" needs an \"entry\": the name of a .%s file in the pack's root (only a skin may leave it out)" % SCRIPT_EXTENSION)
 	for key in LIMITS:
 		spec.limits[key] = spec.ceiling(key)
 	if data.has("limits"):
@@ -133,17 +150,65 @@ static func parse(data: Variant, errors: Array[String]) -> ModSpec:
 	return null if not found.is_empty() else spec
 
 
-static func _parse_skin(value: Variant, spec: ModSpec, found: Array[String]) -> void:
+static func _parse_skin(value: Variant, spec: ModSpec, scripted: bool, found: Array[String]) -> void:
 	if not value is Dictionary:
 		found.append("\"skin\" must be an object ({} for a skin that uses no shader)")
 		return
 	spec.is_skin = true
 	if spec.requires_api < SKIN_API_VERSION:
 		found.append("a skin needs \"requires_api\": %d (the skin API came with that version)" % SKIN_API_VERSION)
+	elif spec.requires_api < DATA_SKIN_API_VERSION and (not scripted or value.has("render") or value.has("pictures")):
+		found.append("a skin with \"render\" or \"pictures\", or with no \"entry\", needs \"requires_api\": %d (data skins came with that version)" % DATA_SKIN_API_VERSION)
 	for key: String in value:
 		if not SKIN_KEYS.has(key):
 			found.append("\"skin\" has no \"%s\" (it has %s)" % [key, ", ".join(SKIN_KEYS)])
 	spec.shaders = _parse_shaders(value, SKIN_FOLDER, found)
+	if value.has("render"):
+		spec.render = _parse_render(value["render"], found)
+	if value.has("pictures"):
+		_parse_pictures(value["pictures"], spec, found)
+
+
+## The `RenderSettings` the `render` entry of a skin describes (what it does not say stays the project's), or null with every mistake appended to `found`.
+static func _parse_render(value: Variant, found: Array[String]) -> RenderSettings:
+	if not value is Dictionary:
+		found.append("\"render\" must be an object like {\"texture_filter\": \"linear\"}")
+		return null
+	var settings := RenderSettings.new()
+	var before := found.size()
+	for key: String in value:
+		if not RENDER_KEYS.has(key):
+			found.append("\"render\" has no \"%s\" (it has %s)" % [key, ", ".join(RENDER_KEYS)])
+	if value.has("texture_filter"):
+		if not value["texture_filter"] is String or not RenderSettings.FILTER_NAMES.has(value["texture_filter"]):
+			found.append("\"texture_filter\" must be one of %s" % ", ".join(RenderSettings.FILTER_NAMES.keys()))
+		else:
+			settings.texture_filter = RenderSettings.FILTER_NAMES[value["texture_filter"]] as Viewport.DefaultCanvasItemTextureFilter
+	for key in ["snap_transforms", "snap_vertices"]:
+		if value.has(key):
+			if not value[key] is bool:
+				found.append("\"%s\" must be true or false" % key)
+			else:
+				settings.set(key, value[key])
+	return settings if found.size() == before else null
+
+
+## The `pictures` of a skin: skin key -> path of a PNG of the pack's `skin/` folder, into `spec.pictures`.
+static func _parse_pictures(value: Variant, spec: ModSpec, found: Array[String]) -> void:
+	if not value is Dictionary:
+		found.append("\"pictures\" must be an object like {\"ui_picture/title_sky\": \"skin/sky.png\"}")
+		return
+	if (value as Dictionary).size() > MAX_PICTURES:
+		found.append("a skin lists at most %d pictures (it lists %d)" % [MAX_PICTURES, (value as Dictionary).size()])
+		return
+	for key: String in value:
+		var path: Variant = value[key]
+		if not is_picture_key(key):
+			found.append("the picture key \"%s\" must be <kind>/<name> with a kind of %s and a name of lowercase letters, digits and underscores" % [key, ", ".join(PICTURE_KINDS)])
+		elif not path is String or not is_picture_path(path):
+			found.append("the picture of \"%s\", %s, must be a file of the pack's %s folder ending .png" % [key, JSON.stringify(path), SKIN_FOLDER])
+		else:
+			spec.pictures[key] = path
 
 
 static func _parse_problems(value: Variant, spec: ModSpec, found: Array[String]) -> void:
@@ -243,6 +308,22 @@ static func is_shader_path(path: String, folder: String = SKIN_FOLDER) -> bool:
 	return path.begins_with(folder) and path.get_extension() == SHADER_EXTENSION and path.length() <= 96 and not path.get_basename().get_file().is_empty() and Pack.is_safe(path)
 
 
+## Is `key` a picture key a skin may map (`PICTURE_KINDS`, then a name)?
+static func is_picture_key(key: String) -> bool:
+	var parts := key.split("/")
+	return parts.size() == 2 and PICTURE_KINDS.has(parts[0]) and NameRegistry.is_valid_name(parts[1])
+
+
+## Is `path` a place a skin's picture may be: `skin/` and then a plain relative path ending `.png`?
+static func is_picture_path(path: String) -> bool:
+	return path.begins_with(SKIN_FOLDER) and path.get_extension() == "png" and path.length() <= 96 and not path.get_basename().get_file().is_empty() and Pack.is_safe(path)
+
+
+## Does the mod have a script (`entry`)? A data skin has none: it is worn with no Sandbox.
+func has_entry() -> bool:
+	return not entry.is_empty()
+
+
 ## Is `name` a file name an entry may have: no folder, no `..`, no drive, the extension `.sgd`, and something before it?
 static func is_entry_name(name: String) -> bool:
 	return name.get_extension() == SCRIPT_EXTENSION and not name.get_basename().is_empty() and name.get_file() == name \
@@ -258,7 +339,7 @@ func draws() -> bool:
 ## when the mod loads and `PackCheck` when the author asks. A mod that lists nothing needs only `mod_init(api)`.
 func functions() -> Dictionary[String, PackedStringArray]:
 	var found: Dictionary[String, PackedStringArray] = {}
-	if is_skin:
+	if is_skin and has_entry():
 		found[ModSkin.FUNCTION] = PackedStringArray(["state", "fraction", "events"])
 	if has_problems:
 		found[ModProblems.FUNCTION] = PackedStringArray(["state"])
@@ -288,7 +369,9 @@ func ceiling(key: String) -> int:
 
 ## The manifest form of the spec: only what differs from the defaults is written.
 func to_dict() -> Dictionary:
-	var data := {"entry": entry}
+	var data := {}
+	if has_entry():
+		data["entry"] = entry
 	if requires_api != 1:
 		data["requires_api"] = requires_api
 	var asked := {}
@@ -298,7 +381,13 @@ func to_dict() -> Dictionary:
 	if not asked.is_empty():
 		data["limits"] = asked
 	if is_skin:
-		data["skin"] = {"shaders": shaders.duplicate()} if not shaders.is_empty() else {}
+		data["skin"] = {}
+		if not shaders.is_empty():
+			data["skin"]["shaders"] = shaders.duplicate()
+		if render != null:
+			data["skin"]["render"] = _render_dict()
+		if not pictures.is_empty():
+			data["skin"]["pictures"] = pictures.duplicate()
 	if has_problems:
 		data["problems"] = {"types": problem_types.duplicate()}
 		if not problem_shaders.is_empty():
@@ -312,6 +401,18 @@ func to_dict() -> Dictionary:
 		if rule_sub:
 			data["rules"]["sub"] = true
 	return data
+
+
+## The `render` entry as the manifest writes it: the keys that differ from the project's settings.
+func _render_dict() -> Dictionary:
+	var plain := RenderSettings.new()
+	var written := {}
+	if render.texture_filter != plain.texture_filter:
+		written["texture_filter"] = RenderSettings.filter_name(render.texture_filter)
+	for key in ["snap_transforms", "snap_vertices"]:
+		if render.get(key) != plain.get(key):
+			written[key] = render.get(key)
+	return written
 
 
 static func _is_whole(value: Variant) -> bool:

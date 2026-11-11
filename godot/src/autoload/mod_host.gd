@@ -13,12 +13,12 @@ extends Node
 ## (unloaded: the skin is not `alive` any more; or quarantined: it is not offered) the skin in use falls back to the original (`SkinChoice.leave_dead_mod_skins`). The `ModProblems` of a mod that draws problem screens is asked
 ## for with `problem_screen` (the mod that draws a type, only while it runs and is not quarantined, so a screen without one shows the plain diagram its data describes). A mod whose pack `ModParts.make` refuses, or whose script
 ## lacks a function its manifest lists (`ModSpec.functions`), is refused with the reason, like a script that does not compile.
-## A build without the godot-sandbox extension never gets a mod pack into its chain (`Pack` refuses its manifest), so `sync` has nothing to do there.
+## A build without the godot-sandbox extension never gets a mod pack with a script into its chain (`Pack` refuses its manifest); a DATA skin (no `entry`) needs no script, so it runs there too and `mod` has no node for it.
 ##
 ## Teaches: deriving a copy of state from its single owner (the chain) with one builder instead of patching it at each place the owner changes, coalescing a burst of changes into one
 ## update with `call_deferred`, and keeping the loaded set honest with a key per item (here the pack, its script file and the file's time).
 
-## The mods are derived from the chain. The loaded ones are the loader's own (each node carries its key in the meta `KEY_META`); these are what was refused and why, what was reported, whether the chain changed since, and the `ModParts` of each running mod.
+## The mods are derived from the chain. The loaded scripts are the loader's own; these are what was refused and why, what was reported, whether the chain changed since, and the `ModParts` of each running mod (the key it was made under inside).
 const CHAIN_FIELDS: Array[StringName] = [&"_failed", &"_reported", &"_stale", &"_parts"]
 ## Member variables that no scope clears, and why (docs/engine/ARCHITECTURE.md, "Lifetimes of state").
 const KEPT_FIELDS: Dictionary[StringName, String] = {
@@ -26,15 +26,12 @@ const KEPT_FIELDS: Dictionary[StringName, String] = {
 	&"_api": "wiring: made once in `_ready` with the loader",
 }
 
-## The meta of a mod's node that holds the key it was loaded under (`key_of`).
-const KEY_META := &"pack_key"
-
 ## A mod of the chain logged a message (`ModApi`'s `log`).
 signal mod_logged(id: String, text: String)
 ## The loaded mods changed (a sync loaded or unloaded one).
 signal mods_changed
 
-## id -> the `ModParts` of a running mod.
+## id -> the `ModParts` of a running mod (a data skin has one and no script in the loader).
 var _parts: Dictionary = {}
 ## id -> {"key": ..., "reason": ...} for a mod that was refused; the key keeps a sync from trying the same script again.
 var _failed: Dictionary = {}
@@ -75,9 +72,10 @@ static func wanted() -> Array[Pack]:
 	return found
 
 
-## What identifies a mod as the disk has it: the pack's folder or file, the script's name and the script's time (`Pack.modified_time`).
+## What identifies a mod as the disk has it: the pack's folder or file, and the file that makes it the mod it is with its time (`Pack.modified_time`): the script, or the manifest of a data skin.
 static func key_of(pack: Pack) -> String:
-	return "%s|%s|%d" % [pack.root, pack.mod.entry, pack.modified_time(pack.mod.entry)]
+	var file := pack.mod.entry if pack.mod.has_entry() else Pack.MANIFEST
+	return "%s|%s|%d" % [pack.root, file, pack.modified_time(file)]
 
 
 ## Makes the loaded mods the chain's. Cheap when nothing changed.
@@ -88,8 +86,8 @@ func sync() -> void:
 	var wanted_keys := {}
 	for pack in packs:
 		wanted_keys[String(pack.id)] = key_of(pack)
-	for id: String in _loader.get_mod_ids():
-		if wanted_keys.get(id) != _loader.get_mod(id).get_meta(KEY_META):
+	for id: String in _parts.keys():
+		if wanted_keys.get(id) != _parts[id].key:
 			_loader.unload(id)
 			_end(id)
 			changed = true
@@ -101,22 +99,23 @@ func sync() -> void:
 			_reported.erase(id)
 	for pack in packs:
 		var id := String(pack.id)
-		if _loader.get_mod(id) != null or _failed.has(id):
+		if _parts.has(id) or _failed.has(id):
 			continue
 		var reasons: Array[String] = []
 		var parts := ModParts.make(pack, reasons)
 		if parts == null:
 			_on_mod_failed(id, "; ".join(reasons))
 			continue
-		var node := _loader.load_mod(pack)
-		if node == null:
-			continue
-		var missing := ModLoader.missing_functions(node, pack.mod)
-		if not missing.is_empty():
-			_loader.unload(id)
-			_on_mod_failed(id, "; ".join(missing))
-			continue
-		node.set_meta(KEY_META, wanted_keys[id])
+		if pack.mod.has_entry():                         # (a data skin has no script: nothing to load, no Sandbox needed)
+			var node := _loader.load_mod(pack)
+			if node == null:
+				continue
+			var missing := ModLoader.missing_functions(node, pack.mod)
+			if not missing.is_empty():
+				_loader.unload(id)
+				_on_mod_failed(id, "; ".join(missing))
+				continue
+		parts.key = wanted_keys[id]
 		_parts[id] = parts
 		changed = true
 	if changed:
@@ -124,15 +123,15 @@ func sync() -> void:
 		mods_changed.emit()
 
 
-## The ids of the mods that run, in the order they were loaded.
+## The ids of the mods that run (scripts loaded, and data skins worn), in the order they were loaded.
 func loaded_ids() -> Array:
 	_sync_if_stale()
-	return _loader.get_mod_ids()
+	return _parts.keys()
 
 
 # --- for code that has no node (`SkinChoice`, `ModPresenter`): the autoload's answers, nothing when it is not there (the editor) -------------
 
-## The node of the running mod `id` (a Sandbox the game may call into), or null. It first makes the mods the chain's (`sync`) unless `sync_first` is false: a presenter asks in the middle of a frame, where a sync could
+## The node of the running mod `id` (a Sandbox the game may call into), or null (also for a data skin: it has no script). It first makes the mods the chain's (`sync`) unless `sync_first` is false: a presenter asks in the middle of a frame, where a sync could
 ## swap the presenter itself (`SkinChoice.leave_dead_mod_skins`).
 static func mod(id: StringName, sync_first := true) -> Node:
 	if _instance == null:
