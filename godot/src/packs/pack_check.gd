@@ -191,6 +191,9 @@ static func _mod(live: Pack, report: PackReport) -> void:
 			if NameRegistry.original().index_of(&"ui_picture", key.get_slice("/", 1)) < 0:
 				report.warn("mod", "the skin's picture %s names no picture of the game: it is never asked for" % key)
 		scripts.erase(live.mod.entry)
+	for rel in live.all_files():
+		if rel.get_extension() == Pack.FONT_EXTENSION and (live.mod == null or live.mod.hud_font_file != rel):
+			report.warn("mod", "%s is never used: %s" % [rel, "a skin names its font in \"skin\": {\"hud_font\": {\"file\": ...}}" if live.mod != null and live.mod.is_skin else "a font is read for the HUD of a skin mod only"])
 	for rel in scripts:
 		report.warn("mod", "%s is never run: %s" % [rel, "a mod pack's manifest names one entry script (\"mod\": {\"entry\": ...})" if live.mod != null else "the manifest has no \"mod\" entry"])
 

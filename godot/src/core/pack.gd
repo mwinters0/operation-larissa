@@ -18,6 +18,7 @@ extends RefCounted
 ##     audio/sound|music|voice/<name>.ogg   a sound, song or speech clip by its registry name, or a new name
 ##     audio/lengths.json               {"voice": {"name": ticks}}: lengths the pack states for its clips (else they are measured, `ClipLengths`)
 ##     data/problems/problem_type_NN.json   a problem type (ResourceJson)
+##     skin/<name>.ttf                  a font of a skin mod (`ModSpec` `hud_font`): TrueType, read from its bytes (`font`)
 ##     <entry>.sgd                      the script of a MOD PACK (the manifest's `mod`, `ModSpec`): SafeGDScript, run in a Sandbox with restrictions by `ModLoader`
 ## A pack that holds no zones, trigger table or tile set names the pack that has them as its `base`; a complete pack in the data form (`PackExport.complete`
 ## writes one) holds `data/zones.json` for `data/zones.tres` and so on for every kind (`ResourceJson`), the sectors and campaigns in the layout above, `assets/`,
@@ -29,7 +30,7 @@ extends RefCounted
 ##
 ## TRUSTED OR NOT. A pack whose folder is inside the project (`res://packs/<id>`, `trusted`; a pack file never is) is as much the project's as its code: its `.tres` files are
 ## loaded with `ResourceLoader` (the authoring form: editors, the Inspector and uids work on them). Every other pack (`user://packs/<id>`, anything
-## installed) is read in the DATA FORM only: JSON, `.foe` text, PNG, OGG, WAV, MIDI, with `FileAccess` and the `load_from_buffer` of `Image` and the
+## installed) is read in the DATA FORM only: JSON, `.foe` text, PNG, OGG, WAV, MIDI, TTF, with `FileAccess` and the `load_from_buffer` of `Image` and the
 ## audio streams, and NEVER with `ResourceLoader` (a `.tres` can carry a script), so installing one from anyone runs nothing but the creature VM and, in a mod pack, a sandboxed script (`ModLoader`) that bounds what it can reach. The
 ## data form of `X.tres` is `X.json` at the same relative path (`ResourceJson`, `EngineJson`). `resource`, `texture` and `stream` are THE door: the one
 ## place a file of a pack becomes an object, and `trusted` decides how. There is no other kind of pack: trust is the folder.
@@ -52,6 +53,11 @@ const SOURCE_META := &"pack_file"
 const FORMAT := 1
 const ID_PATTERN := "^[a-z][a-z0-9_]{0,31}$"
 ## What a pack that is not trusted may never hold: these are the formats the engine runs.
+## A font of a pack is a TrueType file (`font`), at most this many bytes: the one place a pack's font kind and size are named (`ModSpec` and `PackCheck` ask here).
+const FONT_EXTENSION := "ttf"
+const MAX_FONT_BYTES := 2 << 20
+## The first four bytes of a TrueType file (`00 01 00 00`, or `true`) or of an OpenType one with outlines of PostScript (`OTTO`): a file that starts otherwise is no font, and is not handed to the font engine, which would only complain.
+const FONT_MAGICS: Array[String] = ["00010000", "74727565", "4f54544f"]
 const RESOURCE_EXTENSIONS: Array[String] = ["tres", "res", "tscn", "scn", "gd", "gdc", "cs", "gdextension", "dll", "so", "dylib", "elf", "pck", "wasm"]
 
 var id: StringName = &""
@@ -74,6 +80,7 @@ var errors: Array[String] = []
 ## rel -> Texture2D / AudioStream (a missing file is kept as null: the folder is asked once).
 var _textures: Dictionary = {}
 var _streams: Dictionary = {}
+var _fonts: Dictionary = {}
 ## rel -> the resource a data-form file made (a trusted pack's are cached by `ResourceLoader`).
 var _resources: Dictionary = {}
 ## kind -> {clip name -> ticks}: the clips' lengths, measured from the files / stated by `audio/lengths.json`. Filled by `measure_clips`.
@@ -326,6 +333,41 @@ func stream(rel: String) -> AudioStream:
 	return _streams[rel]
 
 
+## The font file `rel` (`.ttf`) as a `FontFile` made from its bytes (`FontFile.data`: no import, no `ResourceLoader`), or null when there is none or it is no font (`font_problem` says why); read once and kept.
+## Either way a pack's font is read like this, trusted or not.
+func font(rel: String) -> FontFile:
+	if not _fonts.has(rel):
+		var problem := font_problem(rel)
+		if problem.is_empty():
+			var loaded := FontFile.new()
+			loaded.data = read_bytes(rel)
+			loaded.set_meta(SOURCE_META, path_of(rel))
+			_fonts[rel] = loaded
+		else:
+			push_warning("Pack %s: %s" % [id, problem])
+			_fonts[rel] = null
+	return _fonts[rel]
+
+
+## Why the file `rel` is no font the game can use, as a sentence, or "" when it is one: not in the pack, not `.ttf`, larger than `MAX_FONT_BYTES`, not starting like a TrueType file, or a file the font engine finds no face in.
+## (Nothing is kept: `font` is the door.)
+func font_problem(rel: String) -> String:
+	if rel.get_extension() != FONT_EXTENSION or not is_safe(rel):
+		return "%s is not a .%s font file" % [rel, FONT_EXTENSION]
+	if not has(rel):
+		return "%s is not in the pack" % rel
+	if size_of(rel) > MAX_FONT_BYTES:
+		return "%s is larger than %d bytes" % [rel, MAX_FONT_BYTES]
+	var bytes := read_bytes(rel)
+	if bytes.size() < 12 or not FONT_MAGICS.has(bytes.slice(0, 4).hex_encode()):
+		return "%s is not a TrueType font (a .%s file)" % [rel, FONT_EXTENSION]
+	var probe := FontFile.new()
+	probe.data = bytes
+	if probe.get_face_count() < 1:
+		return "%s is a font file the engine cannot read" % rel
+	return ""
+
+
 ## THE DOOR for a resource. `rel` is the AUTHORING path (`data/zones.tres`). A trusted pack that has the file loads it; else the data form of it
 ## (`data_rel`, ResourceJson) is read. Either is made once and kept until `forget`. Null for a file the pack lacks in a form it may read; an untrusted pack's `.tres` is never opened.
 func resource(rel: String) -> Resource:
@@ -345,13 +387,15 @@ func resource(rel: String) -> Resource:
 	return _resources[rel]
 
 
-## The file `rel` as the object its extension says: a picture, a sound, or a resource (`resource`). Null for any other file.
+## The file `rel` as the object its extension says: a picture, a sound, a font, or a resource (`resource`). Null for any other file.
 func file(rel: String) -> Resource:
 	match rel.get_extension():
 		"png":
 			return texture(rel)
 		"ogg", "wav":
 			return stream(rel)
+		FONT_EXTENSION:
+			return font(rel)
 		"tres":
 			return resource(rel)
 	return null
@@ -362,6 +406,7 @@ func forget() -> void:
 	close()
 	_textures.clear()
 	_streams.clear()
+	_fonts.clear()
 	_resources.clear()
 	_measured = {}
 	_stated = {}

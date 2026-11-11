@@ -176,19 +176,23 @@ presence of `skin_frame`; a skin that fails the check is refused with the reason
 
 ### A skin with no script
 
-A skin that only changes how the game's own pictures look needs no script, so no Sandbox: leave `entry` out. It is the same `ModSkin` in `SkinChoice` (the id is the pack's id; `--skin=<id>`, F3 then S), and it shows the sector with the original presenter. Two keys of `skin` say what it does (a manifest that has either, or no `entry`, says `"requires_api": 5`; a skin with a script may have them too):
+A skin that only changes how the game's own pictures look needs no script, so no Sandbox: leave `entry` out. It is the same `ModSkin` in `SkinChoice` (the id is the pack's id; `--skin=<id>`, F3 then S), and it shows the sector with the original presenter. Three keys of `skin` say what it does (a manifest that has any of them, or no `entry`, says `"requires_api": 5`; a skin with a script may have them too):
 
 ```
 pack.json     {"id": "reef", "title": "Reef", "version": "1.0", "base": "legacy",
                "mod": {"requires_api": 5, "skin": {"render": {"texture_filter": "linear", "snap_transforms": false, "snap_vertices": false},
-                                                   "pictures": {"ui_picture/title_sky": "skin/sky.png"}}}}
+                                                   "pictures": {"ui_picture/title_sky": "skin/sky.png"},
+                                                   "hud_font": {"file": "skin/hud.ttf", "size": 14, "color": "#dcf7ff"}}}}
 skin/sky.png  a PNG of the pack
+skin/hud.ttf  a TrueType font of the pack
 ```
 
 * `render` is the `RenderSettings` the skin puts on the window while it is worn (`SkinChoice.select`): `texture_filter` is `"nearest"` (the original's), `"linear"`, `"nearest_mipmaps"` or `"linear_mipmaps"`; `snap_transforms` and `snap_vertices` are true (the original's) or false. A key it leaves out stays the project's.
 * `pictures` maps a skin key `ui_picture/<name>` (the console's, the screens' and the story's pictures; `<name>` is the registry's name of the picture, or the made-up name of its number, `ui_1195`; `pack_tool --check` warns about a name the game never asks for) to a PNG of the pack's `skin/` folder, at most `ModSpec.MAX_PICTURES`. The skin's pictures are worn only while this skin is: another skin, and the original, show the base game's (a pack's own `pictures/` folder is different: it is the content's picture for a key and wins under every skin, [`CONTENT.md`](CONTENT.md) section 4).
 
-A picture file is read once, when the pack is chosen; a changed manifest or script is a new skin when the pack is chosen again. Nothing here can change a rule or a wait: it is data the game dresses its own pictures with (`test_plays_identically.gd`, `test_skins_dont_change_the_game.gd` and `test_presenter_binds_late.gd` play the worked example, `godot/tests/mods/skin_data/`, with every other skin).
+* `hud_font` letters the console's three boxes (game, zone, sector, and the custom-game box) as text in the pack's font while this skin is worn, instead of the original's pictures of the words. `file` is a `.ttf` of the pack's `skin/` folder (TrueType, at most `Pack.MAX_FONT_BYTES`; it is read from its bytes, no import), `size` the letters' size in pixels (`ModSpec.MIN_HUD_FONT_SIZE` to `MAX_HUD_FONT_SIZE`, default 14) and `color` the letters' colour (`"#rrggbb"` or `"#rrggbbaa"`, default the original's yellow). The words ("Voyager", "Dragon Reef", "First" ...) and the green of the boxes are the original lettering's; each box keeps the rectangle of the layout, so a larger font is cut off at the box and moves nothing. It is the skin's `GameSkin.hud_labels` (`HudLabels`), the field the project's skins set the same way ([`../engine/SKINS.md`](../engine/SKINS.md)). A file that is not a TrueType font, or larger than the limit, refuses the skin with that reason (`pack_tool --check` says it first); a `.ttf` in the pack that no manifest names is a warning.
+
+A picture or font file is read once, when the pack is chosen; a changed manifest or script is a new skin when the pack is chosen again. Nothing here can change a rule or a wait: it is data the game dresses its own pictures with (`test_plays_identically.gd`, `test_skins_dont_change_the_game.gd` and `test_presenter_binds_late.gd` play the worked example, `godot/tests/mods/skin_data/`, with every other skin).
 
 ### The script
 

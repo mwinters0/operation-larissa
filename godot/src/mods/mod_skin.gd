@@ -8,7 +8,7 @@ extends GameSkin
 ## (for the author) and `ModHost` (before the mod runs) both ask.
 ##
 ## A DATA skin (a manifest with no `entry`) is the same object with no script: `render` and `pictures` of the manifest become the `GameSkin` fields of the same names (the pictures are the pack's `skin/*.png`
-## read through the pack's door, so they are worn only while this skin is: a pack's `pictures/` folder wins under every skin), and its presenter is the original's, so it needs no Sandbox.
+## read through the pack's door, so they are worn only while this skin is: a pack's `pictures/` folder wins under every skin), and its presenter is the original's, so it needs no Sandbox. Its `hud_font` (a `.ttf` of the pack read through the pack's door, `Pack.font`) with its size and colour is the skin's `GameSkin.hud_labels`, the one field the project's own skins set the HUD's lettering with (`HudLabels`: the boxes keep the layout's sizes).
 ##
 ## Teaches: one choice for every skin: a skin from a stranger is a `GameSkin` like the project's own, built by one function from what the pack holds, so everything that wears a skin (the
 ## presenter, the HUD, the compare tool, the tests) needs no second path, whether it carries code or only data.
@@ -26,7 +26,7 @@ var alive := true
 
 
 ## The skin of the mod pack `pack`, or null with every reason in `reasons`: its id is the id of a skin that comes with the game, a shader of the manifest is not what `ModShader` accepts, a
-## picture of `skin/` is not a PNG the engine can decode, a picture the manifest maps is not in the pack. (Null with no reason for a pack that is not a skin.)
+## picture of `skin/` is not a PNG the engine can decode, a picture the manifest maps is not in the pack, the font of `hud_font` is no font the engine can use (`Pack.font_problem`). (Null with no reason for a pack that is not a skin.)
 static func make(pack: Pack, reasons: Array[String]) -> ModSkin:
 	if pack.mod == null or not pack.mod.is_skin:
 		return null
@@ -40,6 +40,13 @@ static func make(pack: Pack, reasons: Array[String]) -> ModSkin:
 		skin.render = pack.mod.render.duplicate() as RenderSettings
 	if pack.id == SkinChoice.ORIGINAL or ResourceLoader.exists(SkinChoice.path_of(pack.id)):
 		reasons.append("the pack's id '%s' is the id of a skin that comes with the game; a skin mod needs an id of its own" % pack.id)
+	if pack.mod.hud_font != null:
+		var problem := pack.font_problem(pack.mod.hud_font_file)
+		if problem.is_empty():
+			skin.hud_labels = pack.mod.hud_font.duplicate() as HudLabels
+			skin.hud_labels.font = pack.font(pack.mod.hud_font_file)
+		else:
+			reasons.append("the skin's hud_font: %s" % problem)
 	skin.assets = ModAssets.make(pack, ModSpec.SKIN_FOLDER, pack.mod.shaders, reasons)
 	for key in pack.mod.pictures:
 		var texture := pack.texture(pack.mod.pictures[key])

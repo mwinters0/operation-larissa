@@ -76,8 +76,6 @@ not from the original's pixels, so the templates carry no original content and a
 real art from them. K1d builds the tool; each later phase's last item adds its keys to it.
 
 **K1: skins as data.** A skin pack needs no script.
-- **K1b: the HUD font.** `hud_font` (and size, colour): a `.ttf` of the pack, loaded from bytes; packs accept `.ttf` (`Pack`, the data
-  form, `PackCheck`, the pack file).
 - **K1c: shaders on layers.** `layers`: a layer of the original presenter by name (`background`, `back_decos`, `walls`, `station`,
   `mid_decos`, `collectibles`, `sub`, `foes`, `pellets`, `front_decos`, `anim_decos`, `bubbles`) to a checked shader (`ModShader`) and
   uniforms; the engine sets `phase` (ticks plus the tick fraction, still while the clock is held) as `modern_presenter.gd` does.

@@ -90,10 +90,10 @@ func add_mod_fixture(fixture_dir: String, mod: Dictionary = {}) -> void:
 	_copy_fixture(fixture_dir, "")
 
 
-## Copies the files of the fixture folder `from` (and its folders) to `rel` of the pack, but the manifest and the editor's `.uid` files.
+## Copies the files of the fixture folder `from` (and its folders) to `rel` of the pack, but the manifest and the editor's `.uid` and `.import` files.
 func _copy_fixture(from: String, rel: String) -> void:
 	for file in DirAccess.get_files_at(from):
-		if (rel.is_empty() and file == "pack.json") or file.get_extension() == "uid":
+		if (rel.is_empty() and file == "pack.json") or ["uid", "import"].has(file.get_extension()):
 			continue
 		write_bytes(rel + file, FileAccess.get_file_as_bytes("%s/%s" % [from, file]))
 	for folder in DirAccess.get_directories_at(from):

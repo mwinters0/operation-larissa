@@ -6,13 +6,15 @@ extends RefCounted
 ##     "mod": {"entry": "orchard.sgd", "requires_api": 1, "limits": {"execution_timeout": 100, "memory_max": 16}}
 ##     "mod": {"entry": "reef.sgd", "requires_api": 2, "skin": {"shaders": ["skin/glow.gdshader"]}}
 ##     "mod": {"requires_api": 5, "skin": {"render": {"texture_filter": "linear"}, "pictures": {"ui_picture/title_sky": "skin/sky.png"}}}
+##     "mod": {"requires_api": 5, "skin": {"hud_font": {"file": "skin/hud.ttf", "size": 14, "color": "#dcf7ff"}}}
 ##     "mod": {"entry": "tides.sgd", "requires_api": 3, "problems": {"types": [40], "shaders": ["problems/wave.gdshader"]}}
 ##     "mod": {"entry": "rules.sgd", "requires_api": 4, "rules": {"answers": [41], "instructions": [0, 1], "sub": true}}
 ##
 ## `entry` is a plain file name (no folder) ending `.sgd`, in the pack's root; only a skin that asks for no `skin_frame` may leave it out (a DATA skin: no script, so no Sandbox is needed to wear it). `requires_api` (default 1) is the lowest API version the script needs; a game that provides less
 ## refuses the pack. `limits` is optional, and so is every key in it. `skin` makes the mod a SKIN (`ModSkin`: the mod draws the sector, `docs/create/SKIN_API.md`); it needs API version 2,
 ## and lists the shaders the skin may use, text files `skin/<name>.gdshader` of the pack (`ModShader`), at most `MAX_SHADERS`; `render` (`texture_filter`, `snap_transforms`, `snap_vertices`: the `RenderSettings` the skin puts on the window)
-## and `pictures` (skin key `ui_picture/<name>` to a PNG `skin/<name>.png` of the pack, at most `MAX_PICTURES`, worn only while the skin is) are API version 5, which a skin without `entry` needs too. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from
+## and `pictures` (skin key `ui_picture/<name>` to a PNG `skin/<name>.png` of the pack, at most `MAX_PICTURES`, worn only while the skin is) and `hud_font` (`file`: a `.ttf` of the pack's `skin/` folder, read from its bytes,
+## at most `Pack.MAX_FONT_BYTES`; `size` from `MIN_HUD_FONT_SIZE` to `MAX_HUD_FONT_SIZE`; `color`: `#rrggbb` or `#rrggbbaa`: the lettering of the HUD's boxes, `HudLabels`) are API version 5, which a skin without `entry` needs too. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from
 ## `Catalog.PROBLEM_TYPE_COUNT` to `Catalog.LAST_PROBLEM_TYPE`, at most `MAX_PROBLEM_TYPES`; the pack holds each type as data); it needs API version 3 and lists its shaders like a skin, in the pack's `problems/` folder. `rules` makes the mod
 ## add GAMEPLAY inside the rules (`RuleHooks`), for a campaign that declares the mod: `answers` lists problem types it judges instead of their `compare_mode` (numbers as for `problems.types`, the pack holds each as data),
 ## `instructions` the numbers 0 to `RuleHooks.MAX_INSTRUCTIONS - 1` of the creature instruction `Mod_Instruction` it defines, `sub` (true) a sub ability; it needs API version 4, at least one of the three, and a mod with `rules`
@@ -53,7 +55,11 @@ const LIMITS: Dictionary[String, int] = {
 }
 const KNOWN_KEYS: Array[String] = ["entry", "requires_api", "limits", "skin", "problems", "rules"]
 ## The keys of the `skin` entry.
-const SKIN_KEYS: Array[String] = ["shaders", "render", "pictures"]
+const SKIN_KEYS: Array[String] = ["shaders", "render", "pictures", "hud_font"]
+## The keys of the `hud_font` entry of a skin, and the sizes (in pixels) its `size` may be: the boxes of the HUD keep their size, so what a larger font does not fit in a box is cut off.
+const HUD_FONT_KEYS: Array[String] = ["file", "size", "color"]
+const MIN_HUD_FONT_SIZE := 6
+const MAX_HUD_FONT_SIZE := 32
 ## The keys of the `render` entry of a skin (`RenderSettings`).
 const RENDER_KEYS: Array[String] = ["texture_filter", "snap_transforms", "snap_vertices"]
 ## The kinds of picture key (`<kind>/<name>`, as `GameSkin.pictures` has them) a skin's `pictures` may name.
@@ -87,6 +93,9 @@ var shaders: Array[String] = []
 ## What the skin asks of the renderer (`skin.render`), or null when it does not say. And its pictures: skin key -> path in the pack (`skin/....png`).
 var render: RenderSettings = null
 var pictures: Dictionary[String, String] = {}
+## The lettering the skin asks for (`skin.hud_font`): the file in the pack (`skin/....ttf`, "" when the skin says none) and the `HudLabels` with the size and colour it set (null when it says none; its `font` is not set: `ModSkin.make` reads the file).
+var hud_font_file := ""
+var hud_font: HudLabels = null
 ## Does the mod draw problem screens (`problems`)? The problem types it draws, and the shaders those screens list (paths in the pack, `problems/....gdshader`).
 var has_problems := false
 var problem_types: Array[int] = []
@@ -157,8 +166,8 @@ static func _parse_skin(value: Variant, spec: ModSpec, scripted: bool, found: Ar
 	spec.is_skin = true
 	if spec.requires_api < SKIN_API_VERSION:
 		found.append("a skin needs \"requires_api\": %d (the skin API came with that version)" % SKIN_API_VERSION)
-	elif spec.requires_api < DATA_SKIN_API_VERSION and (not scripted or value.has("render") or value.has("pictures")):
-		found.append("a skin with \"render\" or \"pictures\", or with no \"entry\", needs \"requires_api\": %d (data skins came with that version)" % DATA_SKIN_API_VERSION)
+	elif spec.requires_api < DATA_SKIN_API_VERSION and (not scripted or value.has("render") or value.has("pictures") or value.has("hud_font")):
+		found.append("a skin with \"render\", \"pictures\" or \"hud_font\", or with no \"entry\", needs \"requires_api\": %d (data skins came with that version)" % DATA_SKIN_API_VERSION)
 	for key: String in value:
 		if not SKIN_KEYS.has(key):
 			found.append("\"skin\" has no \"%s\" (it has %s)" % [key, ", ".join(SKIN_KEYS)])
@@ -167,6 +176,8 @@ static func _parse_skin(value: Variant, spec: ModSpec, scripted: bool, found: Ar
 		spec.render = _parse_render(value["render"], found)
 	if value.has("pictures"):
 		_parse_pictures(value["pictures"], spec, found)
+	if value.has("hud_font"):
+		_parse_hud_font(value["hud_font"], spec, found)
 
 
 ## The `RenderSettings` the `render` entry of a skin describes (what it does not say stays the project's), or null with every mistake appended to `found`.
@@ -209,6 +220,36 @@ static func _parse_pictures(value: Variant, spec: ModSpec, found: Array[String])
 			found.append("the picture of \"%s\", %s, must be a file of the pack's %s folder ending .png" % [key, JSON.stringify(path), SKIN_FOLDER])
 		else:
 			spec.pictures[key] = path
+
+
+## The `hud_font` of a skin: the file of its `skin/` folder, and the size and colour of the letters, into `spec.hud_font_file` and `spec.hud_font`.
+static func _parse_hud_font(value: Variant, spec: ModSpec, found: Array[String]) -> void:
+	if not value is Dictionary:
+		found.append("\"hud_font\" must be an object like {\"file\": \"%shud.%s\", \"size\": 14, \"color\": \"#dcf7ff\"}" % [SKIN_FOLDER, Pack.FONT_EXTENSION])
+		return
+	var before := found.size()
+	var labels := HudLabels.new()
+	for key: String in value:
+		if not HUD_FONT_KEYS.has(key):
+			found.append("\"hud_font\" has no \"%s\" (it has %s)" % [key, ", ".join(HUD_FONT_KEYS)])
+	if not value.has("file"):
+		found.append("\"hud_font\" needs a \"file\": a .%s file of the pack's %s folder" % [Pack.FONT_EXTENSION, SKIN_FOLDER])
+	elif not value["file"] is String or not is_font_path(value["file"]):
+		found.append("the font %s must be a file of the pack's %s folder ending .%s" % [JSON.stringify(value["file"]), SKIN_FOLDER, Pack.FONT_EXTENSION])
+	else:
+		spec.hud_font_file = value["file"]
+	if value.has("size"):
+		if not _is_whole(value["size"]) or int(value["size"]) < MIN_HUD_FONT_SIZE or int(value["size"]) > MAX_HUD_FONT_SIZE:
+			found.append("the font's \"size\" must be a whole number from %d to %d" % [MIN_HUD_FONT_SIZE, MAX_HUD_FONT_SIZE])
+		else:
+			labels.font_size = int(value["size"])
+	if value.has("color"):
+		if not value["color"] is String or not (value["color"] as String).begins_with("#") or not Color.html_is_valid(value["color"]):
+			found.append("the font's \"color\" must be a string like \"#dcf7ff\" (#rrggbb, or #rrggbbaa)")
+		else:
+			labels.font_color = Color.html(value["color"])
+	if found.size() == before:
+		spec.hud_font = labels
 
 
 static func _parse_problems(value: Variant, spec: ModSpec, found: Array[String]) -> void:
@@ -319,6 +360,11 @@ static func is_picture_path(path: String) -> bool:
 	return path.begins_with(SKIN_FOLDER) and path.get_extension() == "png" and path.length() <= 96 and not path.get_basename().get_file().is_empty() and Pack.is_safe(path)
 
 
+## Is `path` a place a skin's font may be: `skin/` and then a plain relative path ending `.ttf`?
+static func is_font_path(path: String) -> bool:
+	return path.begins_with(SKIN_FOLDER) and path.get_extension() == Pack.FONT_EXTENSION and path.length() <= 96 and not path.get_basename().get_file().is_empty() and Pack.is_safe(path)
+
+
 ## Does the mod have a script (`entry`)? A data skin has none: it is worn with no Sandbox.
 func has_entry() -> bool:
 	return not entry.is_empty()
@@ -388,6 +434,8 @@ func to_dict() -> Dictionary:
 			data["skin"]["render"] = _render_dict()
 		if not pictures.is_empty():
 			data["skin"]["pictures"] = pictures.duplicate()
+		if hud_font != null:
+			data["skin"]["hud_font"] = _hud_font_dict()
 	if has_problems:
 		data["problems"] = {"types": problem_types.duplicate()}
 		if not problem_shaders.is_empty():
@@ -412,6 +460,17 @@ func _render_dict() -> Dictionary:
 	for key in ["snap_transforms", "snap_vertices"]:
 		if render.get(key) != plain.get(key):
 			written[key] = render.get(key)
+	return written
+
+
+## The `hud_font` entry as the manifest writes it: the file, and the size and colour when they differ from `HudLabels`'.
+func _hud_font_dict() -> Dictionary:
+	var plain := HudLabels.new()
+	var written := {"file": hud_font_file}
+	if hud_font.font_size != plain.font_size:
+		written["size"] = hud_font.font_size
+	if hud_font.font_color != plain.font_color:
+		written["color"] = "#" + hud_font.font_color.to_html(not is_equal_approx(hud_font.font_color.a, 1.0))
 	return written
 
 
