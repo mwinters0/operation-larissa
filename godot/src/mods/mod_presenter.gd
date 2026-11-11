@@ -2,7 +2,7 @@ class_name ModPresenter
 extends SectorPresenter
 ## The presenter of a skin MOD (`ModSkin`): it shows the sector by asking the mod's sandboxed script what to draw, and draws that. This is the skin API handed to a stranger's code, so everything
 ## that crosses is plain data and nothing is granted: each frame the script gets the state (`SkinState.build` of `view`: Dictionaries and numbers, built from the same `SimView` as every
-## presenter reads), the tick fraction and the events since its last frame, and returns a draw list (`ModDraw`) that the game checks and draws in `ModLayer` nodes of its own. The script holds
+## presenter reads), the tick fraction and the events since its last frame, and returns a draw list (`ModDraw`) that the game checks and draws in `ModLayer` nodes of its own (a picture it names by skin key is found by the game, under this presenter's skin). The script holds
 ## no node of the game, no texture and no material; it cannot reach the rules, the tree or another mod, and a frame it spoils (an error, a list that is not a list) leaves the last one on.
 ##
 ## Timing and rules: the script is called from `show_between_ticks` and `refresh`, which are instant for the rules; it runs under the sandbox's instruction and memory limits, a script that keeps
@@ -94,7 +94,9 @@ func _show(fraction: float) -> void:
 	var answer := ModLoader.call_mod(node, ModSkin.FUNCTION, [_state, fraction, events])
 	if not answer["ok"]:                       # (a fault: the frame went wrong, the last one stays on)
 		return
-	var drawn_now := ModDraw.validate(answer["value"], Packs.pack(_mod_skin.pack_id), _mod_skin.assets)
+	var checked: Variant = answer["value"]
+	var pack := Packs.pack(_mod_skin.pack_id)
+	var drawn_now := run_in_skin(func() -> ModDraw.Drawn: return ModDraw.validate(checked, pack, _mod_skin.assets)) as ModDraw.Drawn      # (a picture named by key is the one this presenter's skin shows)
 	if drawn_now != null:                      # (not a list: likewise)
 		_apply(drawn_now)
 

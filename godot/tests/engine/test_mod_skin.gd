@@ -224,6 +224,10 @@ func test_the_document_names_every_key_of_the_state_every_command_and_every_cap(
 	assert_bool(doc.contains("%d to %d" % [ModDraw.MIN_FONT_SIZE, ModDraw.MAX_FONT_SIZE])).is_true()
 	assert_bool(doc.contains("%d bytes" % ModShader.MAX_BYTES)).is_true()
 	assert_bool(doc.contains("`SkinState.MAX_EVENTS`")).is_true()
+	for kind in GameSkin.KEY_KINDS:                                                                        # (pictures by key: every kind, the longest key, the API version a mod that names one says)
+		assert_bool(doc.contains("`%s`" % kind)).override_failure_message("SKIN_API.md does not name the kind of picture key `%s`" % kind).is_true()
+	assert_bool(doc.contains("`ModSpec.MAX_KEY` (%d)" % ModSpec.MAX_KEY)).is_true()
+	assert_bool(doc.contains("\"requires_api\": %d" % ModSpec.API_VERSION)).is_true()
 
 
 # --- the shader text -----------------------------------------------------------------------------------------------------
@@ -409,6 +413,80 @@ func test_a_picture_of_another_pack_is_never_drawn() -> void:
 	var drawn := ModDraw.validate([["picture", "skin/only_below.png", Vector2(0, 0)], ["picture", "skin/dot.png", Vector2(0, 0)]], above.pack, skin.assets)
 	assert_int(drawn.layers[0].commands.size()).override_failure_message("the pack above drew a picture of the pack below").is_equal(1)
 	assert_int(drawn.dropped).is_equal(1)
+
+
+func test_a_draw_list_names_a_picture_of_the_game_by_its_skin_key() -> void:
+	var skinny := _mount(["skinny"] as Array[String])
+	var skin := SkinChoice.load_skin(skinny.id) as ModSkin
+	var sky := Assets.background(0, 3)
+	var sub := Assets.picture_by_key("frame/sub_00")
+	var tiles := Assets.picture_by_key("tile/zone0_tiles")
+	for picture in [sky, sub, tiles]:
+		assert_object(picture).is_not_null()
+	var drawn := ModDraw.validate([
+		["picture", "background/bg_s00_03", Vector2(1, 2)],
+		["picture", "frame/sub_00", Rect2(0, 0, 8, 8), true, Color(1, 1, 1, 0.5)],
+		["region", "tile/zone0_tiles", Rect2(0, 0, 16, 16), Rect2(16, 0, 16, 16)],
+		["picture", "skin/dot.png", Vector2(0, 0)],
+	], skinny.pack, skin.assets)
+	assert_int(drawn.dropped).is_equal(0)
+	assert_array(drawn.layers[0].commands[0]).is_equal(["picture", sky, Vector2(1, 2), false, Color.WHITE])
+	assert_array(drawn.layers[0].commands[1]).is_equal(["picture", sub, Rect2(0, 0, 8, 8), true, Color(1, 1, 1, 0.5)])
+	assert_array(drawn.layers[0].commands[2]).is_equal(["region", tiles, Rect2(0, 0, 16, 16), Rect2(16, 0, 16, 16), false, Color.WHITE])
+	assert_object(sky).override_failure_message("the key's picture is the one the original look asks for").is_same(Assets.background(0, 3))
+	assert_array(drawn.layers[0].commands[3]).is_equal(["picture", skinny.pack.texture("skin/dot.png"), Vector2(0, 0), false, Color.WHITE])
+
+
+func test_a_key_the_game_cannot_resolve_or_that_has_a_wrong_shape_draws_nothing() -> void:
+	var skinny := _mount(["skinny"] as Array[String])
+	var skin := SkinChoice.load_skin(skinny.id) as ModSkin
+	var bad: Array = [
+		"frame/no_such_picture_99", "background/bg_s99_99", "deco/", "/frame/sub_00", "frame/sub_00/", "frame//sub_00", "frame/Sub_00", "frame/sub-00", "frame/sub_00.png", "frame/0sub", "frame/sub 00",
+		"sound/whoosh", "pictures/ui_picture/x", "problems/x.png", "skin/missing.png", "../frame/sub_00", "frame", "", "x".repeat(ModSpec.MAX_KEY + 1), "frame/" + "x".repeat(ModSpec.MAX_KEY),
+	]
+	var list: Array = []
+	for key: String in bad:
+		list.append(["picture", key, Vector2(0, 0)])
+		list.append(["region", key, Rect2(0, 0, 4, 4), Rect2(0, 0, 4, 4)])
+	list.append(["picture", 7, Vector2(0, 0)])
+	list.append(["picture", ["frame/sub_00"], Vector2(0, 0)])
+	list.append(["picture", &"frame/sub_00x", Vector2(0, 0)])
+	list.append(["rect", Rect2(0, 0, 1, 1), Color.RED])
+	var drawn := ModDraw.validate(list, skinny.pack, skin.assets)
+	assert_int(drawn.layers[0].commands.size()).override_failure_message("only the rectangle is drawn").is_equal(1)
+	assert_int(drawn.dropped).is_equal(list.size() - 1)
+	assert_bool(ModSpec.is_drawable_key("frame/sub_00") and ModSpec.is_drawable_key("deco/coral_fan_cyan") and ModSpec.is_drawable_key("ui_picture/ui_1189")).is_true()
+	assert_bool(ModSpec.is_drawable_key("tile/zone0_tiles") and ModSpec.is_drawable_key("problem_art/log_scan_0") and ModSpec.is_drawable_key("background/bg_s00_00")).is_true()
+	assert_array(GameSkin.KEY_KINDS).is_equal(["ui_picture", "background", "problem_art", "frame", "deco", "tile"])
+	for kind: String in ModSpec.PICTURE_KINDS:                                                           # (what a skin may replace is among what a list may name)
+		assert_bool(GameSkin.KEY_KINDS.has(kind)).is_true()
+
+
+func test_a_picture_by_key_asks_the_chain_once_for_a_whole_list() -> void:
+	var skinny := _mount(["skinny"] as Array[String])
+	var skin := SkinChoice.load_skin(skinny.id) as ModSkin
+	var list: Array = []
+	for i in 400:
+		list.append(["picture", "deco/coral_fan_cyan" if i % 2 == 0 else "frame/sub_00", Vector2(i, 0)])
+	var drawn := ModDraw.validate(list, skinny.pack, skin.assets)
+	assert_int(drawn.layers[0].commands.size()).is_equal(400)
+	assert_object(drawn.layers[0].commands[0][1]).is_same(drawn.layers[0].commands[2][1])
+	assert_object(drawn.layers[0].commands[0][1]).is_same(Assets.picture_by_key("deco/coral_fan_cyan"))
+
+
+func test_a_picture_key_is_found_in_the_chain_nearest_the_top_and_forgotten_with_the_chain() -> void:
+	var below := _mount(["skinny"] as Array[String])
+	assert_object(Assets.picture_by_key("frame/only_in_the_top_pack")).is_null()
+	var above := PackShelf.new(&"", below.id)
+	_shelves.append(above)
+	above.add_picture("assets/sprites/fx/only_in_the_top_pack.png", Color.GREEN, Vector2i(6, 6))
+	above.mount()
+	var found := Assets.picture_by_key("frame/only_in_the_top_pack")
+	assert_object(found).override_failure_message("a pack laid over the chain has its pictures by key").is_not_null()
+	assert_that(found.get_size()).is_equal(Vector2(6, 6))
+	above.remove()
+	_shelves.erase(above)
+	assert_object(Assets.picture_by_key("frame/only_in_the_top_pack")).override_failure_message("a pack taken away takes its pictures").is_null()
 
 
 # --- a skin that draws ---------------------------------------------------------------------------------------------------
@@ -622,37 +700,89 @@ func test_the_state_of_a_screen_is_the_same_for_a_skin_bound_late() -> void:
 		presenter.show_between_ticks(0.5)
 	assert_array(late.drawn()).is_not_empty()
 	assert_array(late.drawn()).is_equal(early.drawn())
-	assert_array(_commands(late, "rect").filter(func(c: Array) -> bool: return (c[2] as Color).is_equal_approx(Color(0.30, 0.60, 0.30, 0.6)))).is_not_empty()   # (the front decorations were drawn)
+	assert_array(_game_pictures(late, shelf)).is_not_empty()                                              # (the decorations were drawn, by key)
 
 
-func test_the_skin_draws_the_screen_from_what_the_state_tells() -> void:
+## The commands of the presenter's layers that draw a picture of the game (named by key), not one of the mod's own pack: the pictures of the mod are the pack's files, everything else is what the game resolved.
+func _game_pictures(presenter: ModPresenter, shelf: PackShelf) -> Array:
+	var own: Array = ModSkinShelf.PICTURES.keys().map(func(file: String) -> Texture2D: return shelf.pack.texture(file))
+	return _commands(presenter, "picture").filter(func(c: Array) -> bool: return not own.has(c[1]))
+
+
+## What `OriginalPresenter` shows of the screen's still decorations, in the order a skin mod draws them (back, middle, front): [texture, position, mirrored] of each. (The animated ones step with the game clock, which a test of the state alone does not run: they are compared below.)
+func _originals_decorations(original: OriginalPresenter) -> Array:
+	var shown: Array = []
+	for layer: Node2D in [original.back_decos, original.mid_decos, original.front_decos]:
+		for deco: AnimatedSprite2D in layer.get_children():
+			shown.append([deco.sprite_frames.get_frame_texture(&"all", deco.frame), deco.position, deco.flip_h])
+	return shown
+
+
+func _the_original_look(sim: SimWorld, skin: GameSkin) -> OriginalPresenter:
+	var original := auto_free((load("res://src/gameplay/original_presenter.tscn") as PackedScene).instantiate()) as OriginalPresenter
+	original.skin = skin
+	original.run_in_skin(func() -> void:
+		add_child(original)
+		original.bind(sim))
+	return original
+
+
+func test_the_skin_draws_the_screen_by_the_keys_the_state_tells_and_shows_what_the_original_look_shows() -> void:
 	var shelf := _mount(["skinny"] as Array[String])
 	var skin := SkinChoice.load_skin(shelf.id)
 	var sim := _decorated_sim(DECORATED_SCREEN, 3)
 	var presenter := _presenter(sim, skin)
 	presenter.show_between_ticks(1.0)
+	var original := _the_original_look(sim, skin)
 	var state := SkinState.build(presenter.view)
-	var rects := _commands(presenter, "rect")
-	for layer: Array in [["back_decos", Color(0.10, 0.40, 0.25, 0.6)], ["mid_decos", Color(0.20, 0.50, 0.20, 0.6)], ["front_decos", Color(0.30, 0.60, 0.30, 0.6)]]:
-		var columns: Dictionary = state["decos"][layer[0]]
-		assert_array(columns["position"]).override_failure_message("a %s to draw" % layer[0]).is_not_empty()
-		var wanted: Array[Rect2] = []
-		for i in (columns["position"] as Array).size():
-			wanted.append(Rect2(columns["position"][i], columns["size"][i]))
-		var drawn := rects.filter(func(c: Array) -> bool: return (c[2] as Color).is_equal_approx(layer[1]))
-		assert_array(drawn.map(func(c: Array) -> Rect2: return c[1])).is_equal(wanted)
-	var swaying: Dictionary = state["anim_decos"]
-	for i in (swaying["cursor"] as Array).size():
-		var colour := Color.from_hsv((swaying["cursor"][i] % 12) / 12.0, 0.5, 1.0, 0.6)
-		var area := Rect2(swaying["position"][i], swaying["size"][i])
-		assert_array(rects.filter(func(c: Array) -> bool: return (c[2] as Color).is_equal_approx(colour) and c[1] == area)).is_not_empty()
-	var arena := SimWorld.new(GameState)                                                                    # (a screen with a station: its parts, the door in its colour)
+	var drawn := _game_pictures(presenter, shelf)
+	var expected := _originals_decorations(original)
+	assert_array(expected).override_failure_message("a screen with decorations to compare").is_not_empty()
+	var swaying: Dictionary = state["anim_decos"]                                                           # (the swaying ones are drawn last, the picture of the entry they are at)
+	assert_int(drawn.size() - (swaying["key"] as Array).size()).override_failure_message("a picture for each decoration the original look shows").is_equal(expected.size())
+	for i in expected.size():
+		assert_object(drawn[i][1]).override_failure_message("decoration %d is the texture the original look shows (%s)" % [i, ModDraw.describe(drawn[i])]).is_same(expected[i][0])
+		assert_that(drawn[i][2]).is_equal(expected[i][1])
+		assert_bool(drawn[i][3]).is_equal(expected[i][2])
+	assert_array(swaying["key"]).is_not_empty()
+	for i in (swaying["key"] as Array).size():
+		var command: Array = drawn[drawn.size() - (swaying["key"] as Array).size() + i]
+		assert_object(command[1]).is_same(Assets.picture_by_key(swaying["key"][i]))
+		assert_that(command[2]).is_equal(swaying["position"][i])
+	var arena := SimWorld.new(GameState)                                                                    # (a screen with a background and a station: the original look's background picture, and the station's parts)
 	arena.load_sector(0, 0)
 	arena.start_flight(200, 150, 6)
 	var with_station := _presenter(arena, skin)
 	with_station.show_between_ticks(1.0)
-	var door := (SkinState.build(with_station.view)["station"]["parts"] as Array)[2] as Dictionary
-	assert_array(_commands(with_station, "rect").filter(func(c: Array) -> bool: return c[1] == Rect2(door["position"], door["size"]) and c[2] == Color(0.9, 0.8, 0.2))).has_size(1)
+	var station_original := _the_original_look(arena, skin)
+	var station_drawn := _game_pictures(with_station, shelf)
+	assert_object(station_original.background.texture).is_not_null()
+	assert_object(station_drawn[0][1]).override_failure_message("the first picture is the background").is_same(station_original.background.texture)
+	assert_that(station_drawn[0][2]).is_equal(Vector2.ZERO)
+	var parts := (SkinState.build(with_station.view)["station"]["parts"] as Array).filter(func(part: Dictionary) -> bool: return part["shown"])
+	var door := parts.filter(func(part: Dictionary) -> bool: return part["name"] == "door")[0] as Dictionary
+	assert_object(station_original.station.door.texture).is_not_null()
+	assert_array(station_drawn.filter(func(c: Array) -> bool: return c[1] == station_original.station.door.texture and c[2] == door["position"])).has_size(1)
+
+
+func test_a_picture_named_by_key_is_the_skin_in_uses_picture_and_the_original_look_shows_the_same() -> void:
+	var shelf := _mount(["skinny"] as Array[String])
+	var skin := SkinChoice.load_skin(shelf.id)
+	var other := ImageTexture.create_from_image(Image.create(608, 288, false, Image.FORMAT_RGBA8))
+	skin.pictures["background/bg_s00_03"] = other
+	skin.forget()
+	var sim := SimWorld.new(GameState)
+	sim.load_sector(0, 3)
+	sim.start_flight(200, 150, 6)
+	var presenter := _presenter(sim, skin)
+	presenter.show_between_ticks(1.0)
+	var original := _the_original_look(sim, skin)
+	assert_object(original.background.texture).is_same(other)
+	assert_object(_game_pictures(presenter, shelf)[0][1]).override_failure_message("the mod's list names the key and the game draws the skin's picture for it").is_same(other)
+	skin.pictures.erase("background/bg_s00_03")
+	skin.forget()
+	presenter.refresh()
+	assert_object(_game_pictures(presenter, shelf)[0][1]).override_failure_message("without it, the chain's own").is_same(Assets.background(0, 3))
 
 
 func test_what_moves_is_drawn_between_where_it_was_and_where_it_is() -> void:

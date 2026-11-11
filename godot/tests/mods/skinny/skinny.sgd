@@ -1,6 +1,6 @@
 # A small skin mod: it redraws the whole sector from the state it is given, with rectangles for the walls and pictures of its own pack (skin/*.png) for the sub, the creatures, the ink and
-# the pieces, and the sub through its own shader (skin/glow.gdshader). The screen's own content it draws as shaded rectangles (the background's shade, the decorations by layer, the swaying ones by the entry they are at, the station's parts), because the draw
-# list names no picture of the game's: the state tells it what is where, by key. It keeps nothing between frames: every frame is built from `state`, so a skin bound late draws what one bound early does.
+# the pieces, and the sub through its own shader (skin/glow.gdshader). The screen's own content (the background, the decorations by layer, the swaying ones, the station's parts) it draws by NAME: the state tells it what is where and under what skin key, and the draw
+# list names that key, so the game draws the picture it would draw itself (a skin's or the chain's) and the script holds none. It keeps nothing between frames: every frame is built from `state`, so a skin bound late draws what one bound early does.
 var api : Dictionary = {}
 # (only for the tests to ask: what the skin was told happened. It draws from `state`, never from this. Each event costs the script instructions, so a long list is only looked at in its last element.)
 var heard := []
@@ -12,11 +12,13 @@ func heard_events() -> Array:
 	return heard
 
 # a layer of still decorations, as the state tells it: columns (Arrays of values), so that a screen of a hundred and fifty costs the script no more host objects than one of five
-func _decos(out : Array, columns : Dictionary, colour : Color) -> void:
+func _decos(out : Array, columns : Dictionary) -> void:
 	var positions : Array = columns["position"]
-	var sizes : Array = columns["size"]
+	var keys : Array = columns["key"]
+	var mirrored : Array = columns["mirrored"]
 	for i in positions.size():
-		out.append(["rect", Rect2(positions[i], sizes[i]), colour])
+		if keys[i] != "":
+			out.append(["picture", keys[i], positions[i], mirrored[i]])
 
 func skin_frame(state : Dictionary, fraction : float, events : Array) -> Array:
 	if events.size() > 0 and events.size() <= 16:
@@ -27,9 +29,11 @@ func skin_frame(state : Dictionary, fraction : float, events : Array) -> Array:
 	if heard.size() > 64:
 		heard = heard.slice(32)
 	var out := []
-	# the sea: a screen with a background picture (named by `state["background"]`, a key the game could resolve) is a shade lighter than one with none
-	out.append(["rect", Rect2(0, 0, 608, 288), Color(0.02, 0.10, 0.18) if state["background"] == "" else Color(0.03, 0.13, 0.24)])
-	_decos(out, state["decos"]["back_decos"], Color(0.10, 0.40, 0.25, 0.6))
+	# the sea, and over it the picture behind the screen, by its key (a screen with none has `""` and shows the sea)
+	out.append(["rect", Rect2(0, 0, 608, 288), Color(0.02, 0.10, 0.18)])
+	if state["background"] != "":
+		out.append(["picture", state["background"], Vector2(0, 0)])
+	_decos(out, state["decos"]["back_decos"])
 	# the walls: one rectangle for each run of wall tiles in a row
 	var walls : String = state["walls"]
 	var columns : int = api["skin"]["columns"]
@@ -48,9 +52,9 @@ func skin_frame(state : Dictionary, fraction : float, events : Array) -> Array:
 	var station = state["station"]
 	if station != null:
 		for part in station["parts"]:
-			if part["shown"]:
-				out.append(["rect", Rect2(part["position"], part["size"]), Color(0.55, 0.55, 0.60) if part["name"] != "door" else Color(0.9, 0.8, 0.2)])
-	_decos(out, state["decos"]["mid_decos"], Color(0.20, 0.50, 0.20, 0.6))
+			if part["shown"] and part["key"] != "":
+				out.append(["picture", part["key"], part["position"], part["mirrored"]])
+	_decos(out, state["decos"]["mid_decos"])
 	for piece in state["pieces"]:
 		out.append(["picture", "skin/piece.png", Rect2(piece["position"], Vector2(24, 20))])
 	for creature in state["creatures"]:
@@ -70,12 +74,13 @@ func skin_frame(state : Dictionary, fraction : float, events : Array) -> Array:
 		out.append(["layer", "skin/glow.gdshader", {"strength": glow, "tint": Color(1.0, 0.9, 0.3)}])
 		out.append(["picture", "skin/sub.png", Rect2(centre - Vector2(48, 27), Vector2(96, 54)), sub["mirrored"], Color(1, 1, 1, alpha)])
 		out.append(["layer", ""])
-	# the front decorations, and the swaying ones over everything: a shade for the entry of the frame list they are at
-	_decos(out, state["decos"]["front_decos"], Color(0.30, 0.60, 0.30, 0.6))
+	# the front decorations, and the swaying ones over everything: the picture of the entry of the frame list they are at, which the state names
+	_decos(out, state["decos"]["front_decos"])
 	var swaying : Dictionary = state["anim_decos"]
-	var cursors : Array = swaying["cursor"]
-	for i in cursors.size():
-		out.append(["rect", Rect2(swaying["position"][i], swaying["size"][i]), Color.from_hsv((cursors[i] % 12) / 12.0, 0.5, 1.0, 0.6)])
+	var swaying_keys : Array = swaying["key"]
+	for i in swaying_keys.size():
+		if swaying_keys[i] != "":
+			out.append(["picture", swaying_keys[i], swaying["position"][i]])
 	# the beacon, and a line to the data canister, as the events and the pieces allow
 	if sub["beacon"]:
 		out.append(["rect", Rect2(4, 4, 8, 8), Color(1, 0.2, 0.2)])

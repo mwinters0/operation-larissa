@@ -189,6 +189,18 @@ func test_a_picture_is_a_file_of_the_folder_of_the_assets_and_of_the_mods_own_pa
 	assert_bool(ModDraw.is_empty(ModDraw.validate([["picture", "problems/fish.png", Vector2(0, 0)]], tides.pack, null))).is_true()
 
 
+func test_a_problem_screen_names_a_picture_of_the_game_by_its_skin_key_too() -> void:
+	var tides := _mount(["tides"] as Array[String])
+	var screens := ModHost.problem_screen(TYPE)
+	var art := Assets.key_files().keys().filter(func(key: String) -> bool: return key.begins_with("problem_art/"))
+	assert_array(art).override_failure_message("the pack holds a problem picture to name").is_not_empty()
+	var drawn := ModDraw.validate([["picture", art[0], Vector2(2, 3)], ["picture", "problem_art/no_such_picture", Vector2(0, 0)], ["picture", "problems/fish.png", Vector2(0, 0)]], tides.pack, screens.assets)
+	assert_int(drawn.layers[0].commands.size()).is_equal(2)
+	assert_int(drawn.dropped).is_equal(1)
+	assert_object(drawn.layers[0].commands[0][1]).is_same(Assets.picture_by_key(art[0]))
+	assert_object(drawn.layers[0].commands[0][1]).is_not_null()
+
+
 # --- a problem type of a pack, as data ------------------------------------------------------------------------------------
 
 func test_the_chain_without_the_pack_has_the_originals_types_and_no_mod_draws_one() -> void:

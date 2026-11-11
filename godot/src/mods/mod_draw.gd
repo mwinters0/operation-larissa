@@ -7,19 +7,24 @@ extends RefCounted
 ##
 ##     ["rect", Rect2 area, Color]                                       a filled rectangle
 ##     ["line", Vector2 from, Vector2 to, Color, float width]
-##     ["picture", "skin/x.png", Vector2 or Rect2 where, mirrored?, Color?]  a picture of the mod's own pack; a Vector2 puts its top-left corner there at its own size, a Rect2 stretches it
-##     ["region", "skin/x.png", Rect2 where, Rect2 source, mirrored?, Color?]   part of a picture (a tile of a sheet), source in pixels of the picture
+##     ["picture", "skin/x.png" or "frame/sub_00", Vector2 or Rect2 where, mirrored?, Color?]  a picture of the mod's own pack, or of the game by its skin key; a Vector2 puts its top-left corner there at its own size, a Rect2 stretches it
+##     ["region", "skin/x.png" or "deco/coral_fan_cyan", Rect2 where, Rect2 source, mirrored?, Color?]   part of a picture (a tile of a sheet), source in pixels of the picture
 ##     ["text", "words", Vector2 where, int size, Color, float width?, "left" or "center" or "right"?]   one line in the game's font, its top-left corner at `where`
 ##     ["layer", "skin/x.gdshader" or "", {"uniform": number, bool, Vector2 or Color, ...}?]   starts a layer drawn through that shader (one the manifest lists); "" is no shader
 ##
 ## `mirrored` is a bool, the Color after it a modulate. The list starts in an unshaded layer. At most `MAX_LAYERS` layers, `MAX_UNIFORMS` uniforms each, numbers finite and within `LIMIT`. A picture is a PNG under the
-## folder of `ModAssets` (`skin/` or `problems/`) of THE MOD'S OWN PACK (`Pack.texture`, never the chain's lookup), so a path that names another pack, a folder above, or a file the pack lacks draws nothing. A layer
+## folder of `ModAssets` (`skin/` or `problems/`) of THE MOD'S OWN PACK (`Pack.texture`, never the chain's lookup), so a path that names another pack, a folder above, or a file the pack lacks draws nothing. A name that is not under that folder but
+## is a SKIN KEY (`<kind>/<name>`, a kind of `GameSkin.KEY_KINDS`: `ModSpec.is_drawable_key`) names a picture of the game: the game resolves it (`Assets.picture_by_key`, the lookup `OriginalPresenter` makes: a pack's picture for the key, else the
+## skin in use's, else the chain's file), the mod never holds it, and a key nothing holds draws nothing. A layer
 ## whose shader the manifest does not list draws nothing (it is never drawn unshaded). A text is cut to `MAX_TEXT` characters (a control character becomes a space), its size held to `MIN_FONT_SIZE`..`MAX_FONT_SIZE`, at
 ## most `MAX_TEXTS` of them in a list; there is one font, the game's, so a mod names none. With a `width` the line is aligned in that width and clipped to it. Nothing here asks the script anything or runs its code.
 ##
 ## Teaches: validating what an untrusted program hands back as a whole language of its own: a table of commands with exact shapes, copied element by element (so what the game keeps shares nothing
 ## with the script and cannot be changed after the check), and caps on every dimension of the input.
 
+## A picture by key is the game's own, drawn as the original look would draw it, so what it shows follows the skin and the pack in use (the state tells a script which keys the screen has: `SkinState`). ONE lookup for a key in a list (`keys`
+## of `validate`), so a list that names a key a hundred times asks the chain once.
+##
 ## The commands there are (the table above; `docs/create/SKIN_API.md` lists the same, a test keeps them one list).
 const OPS: Array[String] = ["rect", "line", "picture", "region", "text", "layer"]
 const MAX_COMMANDS := 4000
@@ -59,6 +64,7 @@ static func validate(raw: Variant, pack: Pack, assets: ModAssets) -> Drawn:
 	if not raw is Array:
 		return null
 	var drawn := Drawn.new()
+	var keys := {}                                      # (key -> the picture it names, asked of the chain once for the whole list)
 	var layer := Layer.new()
 	drawn.layers.append(layer)
 	var list: Array = raw
@@ -79,7 +85,7 @@ static func validate(raw: Variant, pack: Pack, assets: ModAssets) -> Drawn:
 				layer = next
 				drawn.layers.append(layer)
 			continue
-		var made: Variant = null if layer.blocked else _command(command, pack, assets)
+		var made: Variant = null if layer.blocked else _command(command, pack, assets, keys)
 		if made != null and made[0] == "text":
 			if drawn.texts >= MAX_TEXTS:
 				made = null
@@ -110,7 +116,7 @@ static func describe(command: Array) -> String:
 
 # --- the commands ----------------------------------------------------------------------------------------------------------
 
-static func _command(command: Array, pack: Pack, assets: ModAssets) -> Variant:
+static func _command(command: Array, pack: Pack, assets: ModAssets, keys: Dictionary) -> Variant:
 	var size := command.size()
 	match String(command[0]):
 		"rect":
@@ -121,7 +127,7 @@ static func _command(command: Array, pack: Pack, assets: ModAssets) -> Variant:
 				return ["line", Vector2(command[1]), Vector2(command[2]), Color(command[3]), clampf(float(command[4]), 0.0, 64.0)]
 		"picture":
 			if size >= 3 and size <= 5:
-				var picture := _picture(command, pack, assets, 1)
+				var picture := _picture(command, pack, assets, keys, 1)
 				var where: Variant = command[2]
 				if picture != null and (_point(where) or _rect(where)):
 					var rest: Variant = _flags(command, 3)
@@ -129,7 +135,7 @@ static func _command(command: Array, pack: Pack, assets: ModAssets) -> Variant:
 						return ["picture", picture, Vector2(where) if where is Vector2 else Rect2(where), rest[0], rest[1]]
 		"region":
 			if size >= 4 and size <= 6:
-				var picture := _picture(command, pack, assets, 1)
+				var picture := _picture(command, pack, assets, keys, 1)
 				if picture != null and _rect(command[2]) and _rect(command[3]):
 					var rest: Variant = _flags(command, 4)
 					if rest != null:
@@ -174,14 +180,20 @@ static func _clean_text(text: String) -> String:
 	return out
 
 
-## The texture named by `command[at]`: a plain path under the assets' folder ending `.png` that the mod's pack holds, or null.
-static func _picture(command: Array, pack: Pack, assets: ModAssets, at: int) -> Texture2D:
+## The texture named by `command[at]`: a plain path under the assets' folder ending `.png` that the mod's pack holds, or a skin key the chain holds a picture for (`keys` keeps the answers), or null.
+static func _picture(command: Array, pack: Pack, assets: ModAssets, keys: Dictionary, at: int) -> Texture2D:
 	var path: Variant = command[at]
-	if assets == null or not path is String or (path as String).length() > MAX_PATH or not (path as String).begins_with(assets.folder) or (path as String).get_extension() != "png":
+	if not path is String or (path as String).length() > MAX_PATH:
 		return null
-	if pack == null or not Pack.is_safe(path):
+	if assets != null and (path as String).begins_with(assets.folder):
+		if (path as String).get_extension() != "png" or pack == null or not Pack.is_safe(path):
+			return null
+		return pack.texture(path)
+	if not ModSpec.is_drawable_key(path):
 		return null
-	return pack.texture(path)
+	if not keys.has(path):
+		keys[path] = Assets.picture_by_key(path)
+	return keys[path]
 
 
 ## `[mirrored, modulate]` from the optional tail of a command from index `at`, or null when the tail is not (bool?, Color?) in that order.

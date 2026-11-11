@@ -39,6 +39,10 @@ extends Resource
 ## map through `pictures`).
 const REPLACEABLE: Array[String] = ["ui/", "sprite_frames/", "neptune_tileset", "problems/screen_layout"]
 
+## The kinds of picture key there are (the part of a key before the `/`, `key_of`). A pack's `pictures/` folder holds these kinds (`PackCheck`), and a mod's draw list may name a picture of any of them (`ModSpec.is_drawable_key`);
+## a skin mod's `pictures` may replace only `ModSpec.PICTURE_KINDS` of them.
+const KEY_KINDS: Array[String] = ["ui_picture", "background", "problem_art", "frame", "deco", "tile"]
+
 ## The skin's id: the folder name under `res://skins/` and the word of `--skin=<id>`.
 @export var id: StringName = &""
 ## What a menu would show.
@@ -201,7 +205,11 @@ static func key_of(path: String) -> String:
 
 
 static func _make_key(path: String) -> String:
-	var assets := Packs.relative(path)                       # ("assets/ui/title/title_sky_1039.png" for a file of any pack of the project)
+	return key_of_rel(Packs.relative(path))
+
+
+## The key of the picture file `assets` as a pack keeps it (`assets/ui/title/title_sky_1039.png`, what `Packs.relative` makes of a path), "" for a file that is not a picture of the game.
+static func key_of_rel(assets: String) -> String:
 	if not assets.begins_with("assets/"):
 		return ""
 	var parts := assets.trim_prefix("assets/").split("/")

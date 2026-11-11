@@ -18,8 +18,7 @@ hand in a window.
 - A mod can exhaust the game's memory with data it builds in the host (a string doubled forty times, a `PackedByteArray` resized to gigabytes, arrays nested a hundred thousand deep): godot-sandbox 0.60 limits the guest's instructions and memory, not
   what the guest asks the host to build, so such a mod crashes the game. A limit upstream, or running mods in a process of their own, is needed before "as safe as a data pack" holds for memory. It is the one hostile act that is not contained: instructions, guest memory,
   the objects a mod may reach and everything a mod hands back to the game (a draw list, a rule hook's answer) are bounded and tested.
-- A skin mod draws from the state alone, and a draw list names only pictures of its own pack: it is told what the screen's background, decorations and station are (`background`, `decos`, `anim_decos`, `station`), but cannot draw the game's own picture
-  for a key until the draw list can name one. A shader of a skin mod is vetted as text but compiled only by the renderer, so a shader that fails to compile is found when it is drawn, not when the pack is checked.
+- A shader of a skin mod is vetted as text but compiled only by the renderer, so a shader that fails to compile is found when it is drawn, not when the pack is checked.
 - A rule hook that keeps state in variables of its own (rather than the memory the game hands back) is outside the promise that the same inputs are the same play; `RuleHooks.verify_pure` catches it in tests and tools, not while playing.
   The hooks are three (the judging of an answer, a creature instruction, the sub's velocity and invulnerability); another point (a piece, a trigger, a contact, a creature that a mod adds) is a new named hook in `RuleHooks`.
 - A problem-screen mod draws a still picture over the calculator or the answer box: no build-up or success animation, no sound, and a type a pack adds is worded from its texts and fields only and never uses the combination lock or the ballast panel.
@@ -76,8 +75,6 @@ not from the original's pixels, so the templates carry no original content and a
 real art from them. The tool is `SkinTemplates` (`docs/create/SKIN_API.md` "Art templates"); the original's exact sizes are those of the legacy pack's layouts (`--pack=legacy` reads sizes only), the dev pack's pictures having sizes of their own; each later phase's last item adds the layouts that hold its keys to `SkinTemplates.SOURCES`.
 
 **K2: layers drawn by a script.**
-- **K2b: pictures by key.** The draw list may name a picture of the chain by skin key (`frame/sub_00`, `background/<current>`): the
-  game resolves it, the mod never holds it; `ModDraw` checks the key.
 - **K2c: `skin_layer`.** A script replaces chosen layers (`skin_layer(name, state, fraction, events)` returns a draw list for that
   layer); the others stay the original's. The skin mod that draws everything becomes the case "every layer". An example and templates
   for any key it replaces.

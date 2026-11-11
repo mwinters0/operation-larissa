@@ -500,7 +500,7 @@ func problem_frame(state : Dictionary) -> Array:
 ```
 
 `problem_frame` is called when the screen is shown and again only when what it is told changes (the player types a key, the step changes); it returns a draw list in window pixels (`window`, 640 x 400, clipped to it), the **same list** a skin returns, checked by the same code:
-[`SKIN_API.md`](SKIN_API.md), "The draw list" has the commands (`rect`, `line`, `picture`, `region`, `text`, `layer`), their caps and the shaders. A picture is a PNG of the folder `problems/` of the mod's own pack. The calculator, the prompt and the message box are drawn by the game over the picture.
+[`SKIN_API.md`](SKIN_API.md), "The draw list" has the commands (`rect`, `line`, `picture`, `region`, `text`, `layer`), their caps and the shaders. A picture is a PNG of the folder `problems/` of the mod's own pack, or a picture of the game named by its skin key (`problem_art/log_scan_0`, `ui_picture/...`; `SKIN_API.md`, "Pictures by key"), which the game resolves under the skin in use (a mod that does needs `requires_api` 6). The calculator, the prompt and the message box are drawn by the game over the picture.
 The script runs under the mod's limits, and a mod that draws is held to at most 10 million instructions per call. Every mod runs under at least 1 million: a limit of 0 in a manifest is 1, so no mod runs uncounted.
 
 **The state.** A read-only Dictionary of plain values (`ProblemState.build`):

@@ -19,7 +19,7 @@ extends RefCounted
 ## Teaches: validation as the same code path as use (check by loading, not by a parallel description), and a result that is data.
 
 ## The kinds of picture a pack may hold under `pictures/<kind>/<name>.png` (the first part of a skin key, `GameSkin.key_of`).
-const PICTURE_KINDS: Array[String] = ["ui_picture", "background", "problem_art", "frame", "deco", "tile"]
+const PICTURE_KINDS: Array[String] = GameSkin.KEY_KINDS
 ## The songs a campaign names when it names none (`Campaign.DEFAULT_SONG`) and the closing scenes the game has of its own.
 const OWN_CLOSINGS: Array[StringName] = [&"voyager", &"expert"]
 ## How many names of what is missing one finding shows.

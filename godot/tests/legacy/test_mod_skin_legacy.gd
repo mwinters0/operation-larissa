@@ -17,6 +17,7 @@ func test_the_example_skin_draws_every_screen_of_every_sector_of_the_original_wi
 	var screens := 0
 	var most := 0
 	var most_decos := 0
+	var backgrounds := 0
 	for index in Catalog.sector_ids():
 		GameState.reset()
 		var sim := SimWorld.new(GameState)
@@ -30,9 +31,15 @@ func test_the_example_skin_draws_every_screen_of_every_sector_of_the_original_wi
 			presenter.refresh()
 			screens += 1
 			most_decos = maxi(most_decos, presenter.view.decorations().size())
+			var first_layer := presenter.get_child(0) as ModLayer
+			most = maxi(most, first_layer.commands.size())
 			for child in presenter.get_children():
 				if child is ModLayer:
 					most = maxi(most, (child as ModLayer).commands.size())
+			if Assets.has_background(index, screen):                                  # (the picture behind the screen is the first the skin draws, by its key: the very texture the original look shows)
+				var first_picture: Array = first_layer.commands.filter(func(c: Array) -> bool: return c[0] == "picture")[0]
+				assert_object(first_picture[1]).override_failure_message("sector %d screen %d: the skin's background is not the original look's" % [index, screen]).is_same(Assets.background(index, screen))
+				backgrounds += 1
 		presenter.unbind()
 		presenter.free()
 		sim.abandon_damage()
@@ -40,5 +47,6 @@ func test_the_example_skin_draws_every_screen_of_every_sector_of_the_original_wi
 	ModSkinShelf.release(shelves)
 	assert_int(screens).is_greater(100)
 	assert_int(faulted).override_failure_message("the example skin faulted on a screen of the original").is_equal(0)
+	assert_int(backgrounds).override_failure_message("screens with a background to compare").is_greater(100)
 	assert_int(most).is_greater(20)
 	assert_int(most_decos).override_failure_message("a screen with a hundred decorations to walk").is_greater(100)

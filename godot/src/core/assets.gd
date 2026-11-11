@@ -46,6 +46,9 @@ const PROBLEM_ART_INDEX_REL := "data/problems/problem_art_index.json"
 
 ## picture number -> folder of the problem art; read from `PROBLEM_ART_INDEX_REL` the first time it is needed.
 static var _problem_art_folders: Dictionary = {}
+## key -> file of the chain's pictures, built by `key_files`.
+static var _key_files: Dictionary = {}
+static var _key_files_made := false
 
 
 # --- the interface, story and console pictures (`ui_picture`) ------------------------------------------------
@@ -137,6 +140,33 @@ static func background_path(sector: int, screen: int) -> String:
 ## Forget what was read from the chain's files (`Catalog.packs_changed`: another pack is in use).
 static func forget_folders() -> void:
 	_problem_art_folders = {}
+	_key_files = {}
+	_key_files_made = false
+
+
+# --- a picture by its skin key ------------------------------------------------------------------------------------
+
+## The picture of the skin key `key` (`frame/sub_00`, `background/bg_s03_07`, `deco/coral_fan_cyan`) as the original look shows it: the one lookup `texture_at` makes for a file, found from the key. The pack's own picture
+## for it (`Packs.picture`), else the skin's, else the file of the first pack of the chain that has one (`key_files`); null for a key nothing holds. What a mod's draw list names is resolved here (`ModDraw`), so a mod sees
+## what `OriginalPresenter` would show under the skin in use, and holds no picture itself.
+static func picture_by_key(key: String) -> Texture2D:
+	var rel: String = key_files().get(key, "")
+	return texture_at(Packs.path(rel)) if not rel.is_empty() else SkinChoice.current().picture(key)
+
+
+## The picture files of the chain by their skin key: key -> the file as a pack keeps it (`assets/sprites/sub/sub_00.png`), the first pack of the chain having the last word. Made once for the chain in use (`forget_folders`).
+static func key_files() -> Dictionary:
+	if not _key_files_made:
+		var made := {}
+		for each in Packs.chain():                        # (the top of the chain first: the file of a key the first pack has is the one `Packs.path` finds)
+			for rel in each.all_files():
+				if rel.get_extension() == "png" and rel.begins_with("assets/"):
+					var key := GameSkin.key_of_rel(rel)
+					if not key.is_empty() and not made.has(key):
+						made[key] = rel
+		_key_files = made
+		_key_files_made = true
+	return _key_files
 
 
 # --- shared -------------------------------------------------------------------------------------------------------

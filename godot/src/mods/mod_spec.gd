@@ -26,8 +26,8 @@ extends RefCounted
 ## Teaches: validating an untrusted description by naming each rule in one place, and clamping a request to a ceiling instead of refusing it (a limit is a request; the host decides).
 
 ## The version of the API a mod is given (`ModApi.build`). A mod that requires a higher one is refused. The version goes up when the API gains something a mod can ask for (2: the skin API, 3: the problem
-## screens, 4: the rule hooks, 5: the data skin), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
-const API_VERSION := 5
+## screens, 4: the rule hooks, 5: the data skin, 6: a picture of the game by key in the draw list), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
+const API_VERSION := 6
 ## The first version with the skin API: a skin mod requires it.
 const SKIN_API_VERSION := 2
 ## The first version with data skins: `render` and `pictures` in `skin`, and a skin with no `entry`.
@@ -69,8 +69,11 @@ const MIN_HUD_FONT_SIZE := 6
 const MAX_HUD_FONT_SIZE := 32
 ## The keys of the `render` entry of a skin (`RenderSettings`).
 const RENDER_KEYS: Array[String] = ["texture_filter", "snap_transforms", "snap_vertices"]
-## The kinds of picture key (`<kind>/<name>`, as `GameSkin.pictures` has them) a skin's `pictures` may name.
+## The kinds of picture key (`<kind>/<name>`, as `GameSkin.pictures` has them) a skin's `pictures` may REPLACE. A draw list may NAME a picture of more kinds (`GameSkin.KEY_KINDS`, `is_drawable_key`): it only shows
+## what the game would show, where a replaced picture changes what the game shows everywhere.
 const PICTURE_KINDS: Array[String] = ["ui_picture"]
+## The longest a picture key a draw list names may be (a file's name under a kind: the registry's names are shorter, `NameRegistry.MAX_NAME_LENGTH`, but a stem the importer keeps is not).
+const MAX_KEY := 96
 ## The most pictures a skin lists.
 const MAX_PICTURES := 128
 ## The keys of the `problems` entry.
@@ -83,6 +86,7 @@ const MAX_PROBLEM_TYPES := 16
 const MAX_SHADERS := 8
 const SHADER_EXTENSION := "gdshader"
 static var _uniform_name := RegEx.create_from_string("^[A-Za-z_][A-Za-z0-9_]{0,31}$")
+static var _key_name := RegEx.create_from_string("^[a-z][a-z0-9_]*$")
 ## Where a skin keeps its pictures and shaders in its pack: `skin/`; the problem screens of a mod keep theirs in `problems/`.
 const SKIN_FOLDER := "skin/"
 const PROBLEM_FOLDER := "problems/"
@@ -445,6 +449,14 @@ static func is_shader_path(path: String, folder: String = SKIN_FOLDER) -> bool:
 static func is_picture_key(key: String) -> bool:
 	var parts := key.split("/")
 	return parts.size() == 2 and PICTURE_KINDS.has(parts[0]) and NameRegistry.is_valid_name(parts[1])
+
+
+## Is `key` a picture key a draw list may name (`GameSkin.KEY_KINDS`, then a name of lowercase letters, digits and underscores starting with a letter)? A shape only: whether the chain holds a picture for it is `Assets.picture_by_key`'s answer.
+static func is_drawable_key(key: String) -> bool:
+	if key.length() > MAX_KEY:
+		return false
+	var parts := key.split("/")
+	return parts.size() == 2 and GameSkin.KEY_KINDS.has(parts[0]) and _key_name.search(parts[1]) != null
 
 
 ## Is `path` a place a skin's picture may be: `skin/` and then a plain relative path ending `.png`?
