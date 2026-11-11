@@ -62,14 +62,16 @@ def test_names_are_listed_by_number() -> None:
             assert list(table.values()) == sorted(table.values()), kind
 
 
+@pytest.mark.legacy
 def test_the_sounds_are_the_effects_the_decompilation_found() -> None:
     """Every effect in audio_map.json has a name (and the registry may name more: the creature-only sounds)."""
-    audio = common.load_json(common.DOCS_DATA / "audio_map.json")["sfx"]
+    audio = common.load_json(common.TABLES / "audio_map.json")["sfx"]
     assert {int(k) for k in audio} <= set(_names("sound").values())
 
 
+@pytest.mark.legacy
 def test_every_speech_clip_that_the_game_plays_has_a_name() -> None:
-    voice = common.load_json(common.DOCS_DATA / "audio_map.json")["voice"]
+    voice = common.load_json(common.TABLES / "audio_map.json")["voice"]
     played: set[int] = {voice["jingle"], *voice["sign_in_first_visit"], *voice["sign_in_begin"], *voice["sign_in_resume"],
                         *voice["opening_cartoon"]}
     for key in ("story_pages", "supply", "logs", "closing_pages"):
@@ -77,8 +79,9 @@ def test_every_speech_clip_that_the_game_plays_has_a_name() -> None:
     assert played <= set(_names("voice").values())
 
 
+@pytest.mark.legacy
 def test_the_songs_are_the_ones_of_the_music_map() -> None:
-    ids = {e["id"] for e in common.load_json(common.DOCS_DATA / "music_map.json")["music"]}
+    ids = {e["id"] for e in common.load_json(common.TABLES / "music_map.json")["music"]}
     assert set(_names("music").values()) <= ids
 
 

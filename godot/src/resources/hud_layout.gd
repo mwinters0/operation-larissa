@@ -2,7 +2,7 @@ class_name HudLayout
 extends Resource
 ## Where everything of the sub console (the "bezel") goes on the 640 x 400 screen, and which
 ## pictures it uses. Filled by the importer from the decompiled `DisplayBezel` family of
-## functions (`docs/data/hud_gauges.json` + `console_layout.json`), so no number is typed in a script.
+## functions (`extracted/tables/hud_gauges.json` + `console_layout.json`), so no number is typed in a script.
 ##
 ## Teaches: a settings Resource as the ONE place for positions ("data, not code"). `Hud` and its
 ## tests read this file and nothing else; to move a gauge you change the generator, not the HUD.
@@ -17,7 +17,7 @@ extends Resource
 @export var bezel_position: Vector2i = Vector2i.ZERO
 @export var bezel_size: Vector2i = Vector2i.ZERO
 
-## The area of each gauge, the rectangle the original redraws when the gauge changes (`DisplayBezel` and the functions after it: the `dirty_rect` of `docs/data/hud_gauges.json`); every slot of the gauge lies inside it.
+## The area of each gauge, the rectangle the original redraws when the gauge changes (`DisplayBezel` and the functions after it: the `dirty_rect` of `extracted/tables/hud_gauges.json`); every slot of the gauge lies inside it.
 ## Spare oxygen tanks: one icon per slot, full or empty.
 @export var tank_positions: PackedVector2Array = PackedVector2Array()
 @export var tank_rect: Rect2i = Rect2i()

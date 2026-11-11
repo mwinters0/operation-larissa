@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="StoryScript" format=3]
+
+[ext_resource type="Script" path="res://src/resources/story_script.gd" id="1_story_script"]
+[ext_resource type="Script" path="res://src/resources/story_page.gd" id="2_story_page"]
+
+[sub_resource type="Resource" id="Page_1"]
+script = ExtResource("2_story_page")
+heading = &"story_heading_capsule"
+frame = &"story_frame_stars"
+caption = &"story_caption_0"
+extra_pictures = Array[StringName]([&"story_galaxy_capsule"])
+extra_positions = PackedVector2Array(100, 80)
+
+[sub_resource type="Resource" id="Page_2"]
+script = ExtResource("2_story_page")
+heading = &"story_heading_toxins"
+frame = &"story_frame_pacific"
+caption = &"story_caption_1"
+ring = true
+
+[sub_resource type="Resource" id="Page_3"]
+script = ExtResource("2_story_page")
+heading = &"story_heading_submarine"
+frame = &"story_frame_submarine"
+caption = &"story_caption_2"
+
+[sub_resource type="Resource" id="Page_4"]
+script = ExtResource("2_story_page")
+heading = &"story_heading_oceans"
+frame = &"story_frame_stars"
+caption = &"story_caption_3"
+extra_pictures = Array[StringName]([&"story_earth_globe"])
+extra_positions = PackedVector2Array(200, 70)
+last = true
+
+[resource]
+script = ExtResource("1_story_script")
+pages = Array[ExtResource("2_story_page")]([SubResource("Page_1"), SubResource("Page_2"), SubResource("Page_3"), SubResource("Page_4")])
+background = &"story_background"
+heading_position = Vector2(120, 10)
+frame_position = Vector2(0, 50)
+caption_position = Vector2(40, 300)
+ring_pictures = Array[StringName]([&"story_ring_0", &"story_ring_1", &"story_ring_2", &"story_ring_3"])
+ring_position = Vector2(240, 220)
+ring_picture_ticks = 10
+minimum_page_ticks = 120
+last_page_ticks = 300
+caption_delay_ticks = 10
+provenance = "Dev pack: four story pages of our own, each held at least 120 ticks, the last 300 (tools/dev_pack/dev_story.py)."

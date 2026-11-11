@@ -1,8 +1,8 @@
-"""Step 'sectors': sector_NN.tres, zones.tres, trigger_table.tres (from docs/data JSON)."""
+"""Step 'sectors': sector_NN.tres, zones.tres, trigger_table.tres (from the tables of extracted/tables/)."""
 # WARNING: re-running this step OVERWRITES edits to the creature scripts. The text in
 # the legacy pack's data/sectors/sector_NN/sector_NN.foe (the script) and the foe start/hit/ink labels in sector_NN.tres are the STORED
 # version that designers edit; this step is only for the first creation or a full reset, and it rewrites whole
-# files from extracted/ and docs/data/. To reset just the scripts, use tools/import/reset_foe_scripts.py
+# files from extracted/ (its tables/ too). To reset just the scripts, use tools/import/reset_foe_scripts.py
 # (docs/create/FOE_SCRIPTING.md). The designers' label names and comments (godot/data/sectors/foe_annotations.json,
 # foe_annotations.py) are NOT lost by this step: the text is written with them and the labels follow the renames.
 # The same holds for the screens (the legacy pack's data/sectors/sector_NN/screen_MM.tres): they are the stored version designers
@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from common import (PACK_DATA, DOCS_DATA, ORIGINAL_SECTOR_COUNT, ZONE_BANNER_IDS,
+from common import (PACK_DATA, TABLES, ORIGINAL_SECTOR_COUNT, ZONE_BANNER_IDS,
                     SCREENS, ZONE_DECO_COUNTS, ZONE_FOE_COUNTS, ZONE_TITLES, load_json, out_text, res_path, sector_file)
 from pictures import ui_file
 import foe_annotations
@@ -164,7 +164,7 @@ def owned_files() -> list[Path]:
 
 
 def run() -> None:
-    sectors = load_json(DOCS_DATA / "sectors.json")
+    sectors = load_json(TABLES / "sectors.json")
     assert len(sectors) == ORIGINAL_SECTOR_COUNT
     store = foe_annotations.load()
     for sec in sectors:

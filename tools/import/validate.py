@@ -6,7 +6,7 @@ import re
 from PIL import Image
 
 from asset_names import foe_file, problem_art_folder_file, ui_file
-from common import (ASSETS, COMMON_CREATURES, COMMON_DECOS, DOCS_DATA, FOE_ZONE_BASE, INK_FRAMES,
+from common import (ASSETS, COMMON_CREATURES, COMMON_DECOS, ANALYSIS_DATA, TABLES, FOE_ZONE_BASE, INK_FRAMES,
                     ORIGINAL_SECTOR_COUNT, PACK_DATA, PROJECT_DATA, ZONE_DECO_COUNTS, ZONE_FOE_COUNTS, file_of_res, load_json, raw_table, sector_file)
 from step_sectors import sector_zone
 from sprite_meta import ZONE_META_IDS
@@ -20,7 +20,7 @@ def run() -> list[str]:
     if n != 376:
         bad.append("expected 376 backgrounds, found %d" % n)
 
-    sectors = load_json(DOCS_DATA / "sectors.json")
+    sectors = load_json(TABLES / "sectors.json")
     for sec in sectors:
         i = sec["index"]
         z = sector_zone(i)
@@ -109,7 +109,7 @@ def run() -> list[str]:
         if found != count:
             bad.append("expected %d %s files, found %d" % (count, label, found))
     # sub console and calculator layouts (step 'console'): every key and icon lies inside its picture
-    console = load_json(DOCS_DATA / "console_layout.json")
+    console = load_json(ANALYSIS_DATA / "console_layout.json")
     calc = console["calculator"]
     cx, cy = calc["picture"]["xy"]
     cw, ch = Image.open(problem_art_folder_file("b041", 1781)).size
@@ -117,7 +117,7 @@ def run() -> list[str]:
         x, y, w, h = k["rect"]
         if not (cx <= x and cy <= y and x + w <= cx + cw and y + h <= cy + ch):
             bad.append("calculator key %s lies outside the calculator picture" % k["key"])
-    gauges = load_json(DOCS_DATA / "hud_gauges.json")
+    gauges = load_json(TABLES / "hud_gauges.json")
     bx, by = gauges["bezel_background"]["xy"]
     bw, bh = Image.open(ui_file("hud", 1189)).size
     points = [(x, gauges["tanks"]["y"]) for x in gauges["tanks"]["x"]] + [tuple(p) for p in gauges["ink_pellets"]["xy"]]

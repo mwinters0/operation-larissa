@@ -442,24 +442,29 @@ is wrong with one. The field reference for authors is [`../create/CONTENT.md`](.
 ## Cutscenes: timelines as data
 
 ```
-tools/import/step_story.py  (the importer's "story" step; docs/data/opening.json and the decompiled loops of CLOSING.C)
+tools/import/step_story.py  (the importer's "story" step: extracted/tables/opening.json, extracted/tables/expert_closing.json and the decompiled loops of CLOSING.C)
+tools/dev_pack/dev_story.py (the dev pack's own, short and made up)
   v
-data/story/*.tres   CutsceneTimeline: a length, tracks (actor name, property word, moments in ticks of the 73 Hz timer, values with
+a pack's data/story/*.tres   CutsceneTimeline: a length, tracks (actor name, property word, moments in ticks of the 73 Hz timer, values with
   |                 picture / sound / text NAMES of the registry) and cues (sounds, events). No node, no path, no Animation in it.
-  |   news_cartoon (in the pack), news_ambient, title_ship, title_reveal, expert_hoist, expert_deck, expert_wait
-  |   (+ story_script: the nine story pages; voyager_closing_script: the Voyager flight's loop counts)
+  |   news_cartoon, news_ambient, title_ship, title_reveal, expert_hoist, expert_deck, expert_wait
+  |   (+ story_script: the story pages; voyager_closing_script: the Voyager flight's loop counts; closing_crew: the Expert closing's six sailors' programs)
+  v
+Catalog.story_timeline / story_script / voyager_closing_script / closing_crew     the first pack of the chain that holds the file (`Packs.resource`)
   v
 src/story/cutscene.gd        Cutscene.animation(timeline, cast) builds an Animation; the scene's AnimationPlayer plays it
 src/story/cutscene_cast.gd   CutsceneCast: "the actor crew_4 is the Crew4 sprite", and how a name becomes a texture (a skin changes this)
 ```
 
 A timeline is the same on every skin: a skin redraws a cutscene by binding its own nodes and resolvers and takes exactly as long,
-because the time is in the data. Two small timelines are made in code because nothing in the original is behind them (the fade of a
-story page, the flicker of the console lights); `CutsceneTimeline.provenance` says which numbers are the original's. The news
-cartoon's timeline is read from the pack chain; the others are preloaded by their scenes. `SurfaceShipScreen` has no timeline: it
-counts `surface_ship.wait_ticks` from `Durations`. Tests: `tests/legacy/test_cutscene_timing.gd` (every moment of each cutscene against
-`tests/fixtures/cutscene_timing.json`), `tests/legacy/test_story_timelines_legacy.gd` (re-derives the timelines from the analysis),
-`tests/engine/test_story_timelines.gd` (well formed, every name exists), `tests/engine/test_cutscene_timeline.gd` (the machinery).
+because the time is in the data. The choreography is the pack's: the original's is in the legacy pack, never committed; the dev pack has its own,
+and `PackNeeds.FILES` requires every one of these files of a complete pack, so a chain always answers (the dev pack at its bottom) and a pack that
+lacks one is reported by the start-up check and `PackCheck`, as it is for the news cartoon. Two small timelines are made in code because nothing in
+the original is behind them (the fade of a story page, the flicker of the console lights); `CutsceneTimeline.provenance` says which numbers are the
+original's. `SurfaceShipScreen` has no timeline: it counts `surface_ship.wait_ticks` from `Durations`. Tests: `tests/legacy/test_cutscene_timing.gd`
+(the hash of each cutscene's timing record, from the timeline and from the animation a scene builds, against `tests/fixtures/cutscene_timing.json`), `tests/legacy/test_story_timelines_legacy.gd` (re-derives the timelines
+from the analysis), `tests/engine/test_story_timelines.gd` (well formed, every name exists, the scripts run), `tests/engine/test_opening.gd` (the
+scenes play the dev pack's timelines: the nodes show what the tracks say), `tests/engine/test_cutscene_timeline.gd` (the machinery).
 
 ## Autoloads
 
@@ -484,23 +489,23 @@ NEPTUNE.ISO  (your copy; read by tools/gamefiles.py, never by Godot)
   |  tools/import/import_all.py  steps extract, tables              (docs/play/LEGACY.md)
   v
 extracted/   PNG / WAV / MIDI / text / binary tables                (git-ignored)
-docs/data/   facts read from the decompiled program                (committed: layouts, tick tables, audio and music maps ...)
-             + the game's own tables dumped from the ISO            (sectors.json, problem_records.json ...: git-ignored)
+extracted/tables/  the game's own tables read from the ISO          (sectors.json, audio_map.json, music_map.json ...: git-ignored)
+tools/analysis/data/  our analysis of the program                  (committed: layouts, field meanings, console and slot tables)
   |  the other importer steps
   v
 godot/packs/legacy/   THE LEGACY PACK (git-ignored, never edited by hand but for the creature scripts and screens, docs/port/FIDELITY.md)
   assets/   PNG, WAV, OGG          data/   .tres: SectorData, ProblemType, HudLayout, SpriteFrames, TileSet, catalogs ...     midi/
 godot/packs/dev/      the dev pack: the same layout, placeholder content, committed (tools/dev_pack/)
-godot/data/           project-level and committed: rules/durations.json, rules/tuning.json, sectors/foe_annotations.json, closing_crew.tres,
-                      story/ (all timelines but the news cartoon), ui/menu_layout.tres; sectors and campaigns you make
+godot/data/           project-level and committed: rules/durations.json, rules/tuning.json, sectors/foe_annotations.json,
+                      ui/menu_layout.tres; sectors and campaigns you make
   |  Catalog, Assets, the sound catalogs, Durations, Tuning - through the pack chain (Packs)
   v
 src/   the Resource classes in src/resources/ describe the data; the scenes and scripts use it
 ```
 
 The numbers that make the game feel right (the sub's speed, where each gauge sits, how long a lock wheel turns) are never typed into
-a script: they were read from the original's code and live in the pack's `data/` (or `godot/data/` for the few the program's code alone
-makes). To change one for the original, change the importer and run it again; a pack of your own changes its own data.
+a script: they were read from the original's code and live in the pack's `data/` (or `godot/data/` for the rule values and the menu layout, which no
+tool reads from the original). To change one for the original, change the importer and run it again; a pack of your own changes its own data.
 
 **Layout is data too**: where a hit area is and how big a panel is never comes from the picture or the font that is loaded. The
 importer puts the original's picture sizes next to the positions (`size` in the ballast and lock diagram specs of

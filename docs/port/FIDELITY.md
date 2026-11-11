@@ -28,7 +28,7 @@ the legacy pack as a player, see [`../play/LEGACY.md`](../play/LEGACY.md); for t
 - **The release check comes first.** `tools/import/source_files.json` holds the size and SHA-256 of the 31 CD files the tools read;
   `source_files.py` checks the ISO against it and a different release or a patched copy is refused before anything is read.
 - **Input is the ISO, through `tools/gamefiles.py`.** The `extract` and `tables` steps make `extracted/` and the game's tables in
-  `docs/data/`; every later step reads only those and the committed analysis in `docs/data/` (facts read from the program's code with
+  `extracted/tables/`; every later step reads only those and the committed analysis in `tools/analysis/data/` (our layouts and field meanings, made with
   Ghidra, [`../../tools/analysis/ghidra/README.md`](../../tools/analysis/ghidra/README.md)).
 - **Deterministic and idempotent.** Sorted keys, fixed float formatting, no timestamps; a file is written only when its content
   changes, so a second run on the same ISO changes nothing.
@@ -40,13 +40,13 @@ the legacy pack as a player, see [`../play/LEGACY.md`](../play/LEGACY.md); for t
   for every file under the pack's `assets/` its source file, resource id, offset and conversion.
 - **Names, not numbers.** An asset with a registry name is written as `<name>_<number>`; a renamed one is moved and stale outputs are
   pruned ([`../create/NAMES.md`](../create/NAMES.md)).
-- **Committed outputs.** A few files the importer writes hold nothing of the game and come from the committed analysis alone; they
-  live in the project's `godot/data/` and are committed: `closing_crew.tres`, `ui/menu_layout.tres` and the
-  cutscene timelines in `story/` but the news cartoon's. So are the asset manifest and the hash fixtures. A clean import rewrites them
+- **Committed outputs.** The one file the importer writes into the project's `godot/data/` is `ui/menu_layout.tres`, which holds nothing of the game (the
+  menu titles' x positions, measured with the theme font). The cutscenes' choreography (`data/story/`) is the original's presentation: it is the
+  legacy pack's and never committed. The asset manifest and the hash fixtures are committed too. A clean import rewrites them
   with the same bytes and leaves `git status` clean.
 - **Hand-made rule values.** `godot/data/rules/tuning.json` (the sub, the air and ink limits, the waits) is committed and the importer does not
-  write it; `tools/import/test_import.py` pins its ink-pellet and sub-overlay tables against `docs/data/ink_tables.json` and
-  `docs/data/bubbles.json`, and the engine tests pin every value (`tests/engine/test_tuning.gd`). The original's values are the defaults:
+  write it; `tools/import/test_import.py` pins its ink-pellet and sub-overlay tables against `extracted/tables/ink_tables.json` and
+  `extracted/tables/bubbles.json`, and the engine tests pin every value (`tests/engine/test_tuning.gd`). The original's values are the defaults:
   the importer names the file nowhere and the legacy pack holds no `rules/tuning.json` (`test_the_importer_states_no_rule_values`), so
   the legacy chain resolves to exactly the project's file (`tests/legacy/test_tuning_legacy.gd`, every field and table), and the
   fidelity tests and the reachability search run on the values the chain gives.
@@ -84,8 +84,14 @@ user's copy, so a different release or a patched copy is caught instead of being
 - `src/checks/SectorChanges` (Check sector, [`../engine/EDITORS.md`](../engine/EDITORS.md)) reports per record what a sector differs in
   from the original, and shows the `DELIBERATE_*` entries as deliberate.
 - Other original-data tests in `godot/tests/legacy/`: whole Voyager and Expert runs, the flow (`test_flow_fidelity_legacy.gd`), the
-  cutscene timings (`test_cutscene_timing.gd` against `fixtures/cutscene_timing.json`), the reachability sweep of every original sector,
+  cutscene timings (`test_cutscene_timing.gd`, below), the reachability sweep of every original sector,
   the snapshot comparison with reference pictures (`test_snapshots.gd`, windowed).
+- Cutscene timings are pinned the same way (`godot/tests/fixtures/cutscene_timing.json`): one SHA-256 per cutscene of its **timing record**, a text of
+  its length, whether it loops, every moment at which anything changes and every sound and event, in whole thousandths of a tick of the 73 Hz timer
+  (`CutsceneTimingRecord`, `tests/legacy/cutscene_timing_record.gd`; `step_story.timing_record` writes the same text in Python). The legacy pack's
+  timelines, the animations the scenes build from them (`test_cutscene_timing.gd`) and the importer's own timelines (`tools/import/test_story.py`) must
+  all hash to the fixture, so the fixture holds no tick and a change that moves one moment fails. The one writer is
+  `tools/godot.sh --headless --path godot -s ../tools/import/godot/write_cutscene_timing.gd` (from the legacy pack; run it only to move the reference).
 - Voice transcripts are pinned the same way: `godot/tests/fixtures/voice_transcripts.json` holds one hash per clip transcript and the
   engine settings ([`../play/LEGACY.md`](../play/LEGACY.md), "Voice transcripts").
 

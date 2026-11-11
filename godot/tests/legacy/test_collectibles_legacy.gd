@@ -40,7 +40,7 @@ func test_the_original_sectors_have_seven_to_eleven_pieces_and_the_finales_at_mo
 
 
 func test_the_animation_tables_are_the_decompiled_ones() -> void:
-	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../docs/data/piece_animation.json"))
+	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../extracted/tables/piece_animation.json"))
 	assert_int(int(data["period"])).is_equal(16)
 	for tick in 40:
 		assert_int(Collectible.picture_for(true, tick)).is_equal(int(data["canister_pictures"][tick % 2]))

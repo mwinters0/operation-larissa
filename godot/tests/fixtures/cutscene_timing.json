@@ -1,0 +1,67 @@
+{
+ "_doc": "One SHA-256 per cutscene of its timing record (CutsceneTimingRecord in tests/legacy/cutscene_timing_record.gd, tools/import/step_story.py timing_record): the length, whether it loops, every moment at which anything changes and every sound and event, in thousandths of a tick of the original's 73 Hz timer. It holds no tick: the original's cutscenes are its presentation and are not committed. Written by tools/import/godot/write_cutscene_timing.gd from the legacy pack, never by hand. The timelines of the legacy pack, the animations the scenes build from them (tests/legacy/test_cutscene_timing.gd) and the importer's own timelines (tools/import/test_story.py) must give these hashes. voyager_closing_* are the flight for the sub starting at window position (x, y) in cell c ('start').",
+ "cutscenes": {
+  "expert_deck": {
+   "sha256": "99259cf9f549c9eede54386a624436d2d2ae350e283ffd888794ae87e13fec5b"
+  },
+  "expert_hoist": {
+   "sha256": "16a036391865c3bf149d67136b5c635333de8b1314b243d60be9394f90395599"
+  },
+  "expert_wait": {
+   "sha256": "8dc6e6237461df9ce06f72160d7335e401b081e3bb769a72142bdabeb1b8809a"
+  },
+  "news_ambient": {
+   "sha256": "263d9994407a3a335ac5f71c1d6054b5cbd59bc3ad36a35079badb88012f8b15"
+  },
+  "news_cartoon": {
+   "sha256": "0c64b9859b97092e1898038d85f2b493ece9223b887651831dbd64960ac0bfc3"
+  },
+  "title_reveal": {
+   "sha256": "66d0736bc04e63eb2b09e3b07bb40a1202837c35c5928548077f2846d6110338"
+  },
+  "title_ship": {
+   "sha256": "6e52b0e5d023d96f462c4103dd74003d8008966f1425da17862231f3342ac8d8"
+  },
+  "voyager_closing_a": {
+   "sha256": "5c031827952239f29005e431a57e219c57ac02fb9dba43bc37df01928d307e2d",
+   "start": [
+    184,
+    212,
+    6
+   ]
+  },
+  "voyager_closing_b": {
+   "sha256": "3363fe61bb7236ac8d77e98a61755240931b1a03c573ecfc0278d6a85c779c91",
+   "start": [
+    500,
+    180,
+    0
+   ]
+  },
+  "voyager_closing_c": {
+   "sha256": "e5472d3e0e18f64242e86db40f34f871ffb7ed3017157d7dee44e32c73a25a07",
+   "start": [
+    40,
+    300,
+    8
+   ]
+  },
+  "voyager_closing_d": {
+   "sha256": "055dcc13b2f1796266133e7142b97e726905760315de92140e6aa7e09763dccc",
+   "start": [
+    300,
+    200,
+    2
+   ]
+  },
+  "voyager_closing_e": {
+   "sha256": "1aa1020cbdb07d6b98286d3720281a0756f1ca52163337e32289314d35d763a1",
+   "start": [
+    250,
+    100,
+    3
+   ]
+  }
+ },
+ "ticks_per_second": 73
+}

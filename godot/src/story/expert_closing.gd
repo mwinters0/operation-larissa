@@ -7,10 +7,10 @@ extends StorySegment
 ## closing song 9501.
 ##
 ## Teaches: one `AnimationPlayer` with THREE animations played one after the other (`hoist`, `deck`, `wait`), chained
-## with `animation_finished`; each of them built from a `CutsceneTimeline` the importer wrote (`data/story/expert_hoist.tres`,
-## `expert_deck.tres`, `expert_wait.tres`): the original's loops, one picture update every 18 ticks, played out step by step
-## into keys, the six sailors' programs (`ClosingCrewActor` runs them; the importer ran their twin) included; and a looping
-## animation as the "wait for a key" state. This script only says which node plays which actor.
+## with `animation_finished`; each of them built from a `CutsceneTimeline` of the pack (`data/story/expert_hoist.tres`,
+## `expert_deck.tres`, `expert_wait.tres`); in the legacy pack they are the original's loops, one picture update every 18 ticks, played out step by step
+## into keys, the six sailors' programs (`ClosingCrewActor` runs them; the importer ran their twin) included. A looping
+## animation is the "wait for a key" state. This script only says which node plays which actor.
 ##
 ## The original, step by step (a step is 18 ticks = 0.2466 s; every step draws the sub and the Alien Artifact):
 ##   1. `HOIST`: the sub turns to face right (`ExpertClosingTurnTable`), idles 20 steps, the hook comes down 16 steps of
@@ -22,12 +22,9 @@ extends StorySegment
 ## Every key pressed before the last stage is read and thrown away (`PeekInput` / `WaitForInput` in each step), and
 ## the click area (`AddHotspot` 0xd) exists only in the last stage.
 
-## The three stages as data (`tools/import/step_story.py`, from CLOSING.C: the turn, the idle, the hook's 16 steps down and the
-## 17 steps up, the deck shot's 6 + 140 steps, the box's blinking).
-const HOIST := preload("res://data/story/expert_hoist.tres")
-const DECK := preload("res://data/story/expert_deck.tres")
-const WAIT := preload("res://data/story/expert_wait.tres")
-
+# The three stages are the pack's data (`Catalog.story_timeline`: `expert_hoist`, `expert_deck`, `expert_wait`; the legacy pack's are written by
+# `tools/import/step_story.py` from CLOSING.C: the turn, the idle, the hook's 16 steps down and the 17 steps up, the deck shot's 6 + 140 steps,
+# the box's blinking).
 const PLAYFIELD_ORIGIN := ExpertClosingCable.PLAYFIELD_ORIGIN
 ## `ExpertClosingDrawArtifact` (0x41cd84) draws item 0 / 1 of `ZoneFoeBundle`, toggled on every call. In sector 31 that is
 ## the Expert finale's zone foe bundle (zone 6: logical resource 461 = bundle 112), pictures 2002 / 2003 (84 x 72, a spiked
@@ -90,9 +87,8 @@ func _ready() -> void:
 	_build_crew()
 	deck.visible = false
 	var cast := _make_cast()
-	Cutscene.install_timeline(animations, &"hoist", HOIST, cast)
-	Cutscene.install_timeline(animations, &"deck", DECK, cast)
-	Cutscene.install_timeline(animations, &"wait", WAIT, cast)
+	for stage_name: StringName in [&"hoist", &"deck", &"wait"]:
+		Cutscene.install_timeline(animations, stage_name, Catalog.story_timeline(StringName("expert_" + stage_name)), cast)
 	animations.animation_finished.connect(_on_animation_finished)
 	Audio.play_music(AudioService.SONG_CLOSING)
 	animations.play(&"hoist")

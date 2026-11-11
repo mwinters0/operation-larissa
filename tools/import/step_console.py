@@ -1,6 +1,6 @@
 """Step 'console': the HUD layout and the calculator layout (godot/data/ui/*.tres).
 
-Reads docs/data/hud_gauges.json (gauges, from export_constants.py) and console_layout.json (labels, lights, frame,
+Reads extracted/tables/hud_gauges.json (gauges, from export_constants.py) and console_layout.json (labels, lights, frame,
 calculator keys, from tools/analysis/ghidra/export_console.py) and writes two settings Resources, so that no
 position is typed into a GDScript file. The pictures are the ones step 'images' already copied.
 """
@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from common import PACK_DATA, PROJECT_DATA, DOCS_DATA, load_json, out_text, png_size, raw_table, res_path
+from common import PACK_DATA, PROJECT_DATA, ANALYSIS_DATA, TABLES, load_json, out_text, png_size, raw_table, res_path
 from pictures import problem_art_file, ui_file
 import tres
 
@@ -174,9 +174,9 @@ def owned_files() -> list[Path]:
 
 
 def run() -> None:
-    gauges = load_json(DOCS_DATA / "hud_gauges.json")
-    console = load_json(DOCS_DATA / "console_layout.json")
-    colors = load_json(DOCS_DATA / "problem_diagrams.json")["colors"]
+    gauges = load_json(TABLES / "hud_gauges.json")
+    console = load_json(ANALYSIS_DATA / "console_layout.json")
+    colors = load_json(TABLES / "problem_diagrams.json")["colors"]
     out_text(PACK_DATA / "ui" / "hud_layout.tres", build_hud_layout(gauges, console, colors))
     out_text(PACK_DATA / "ui" / "calculator_layout.tres", build_calculator_layout(console))
     out_text(PROJECT_DATA / "ui" / "menu_layout.tres", build_menu_layout())

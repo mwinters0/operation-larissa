@@ -85,9 +85,9 @@ func test_voyager_closing_turns_to_the_original_cell() -> void:
 			steps += 1
 			assert_int(steps).is_less(10)
 	# and the data the closing runs on is the same table
-	assert_array(Array(VoyagerClosing.SCRIPT.turn_table)).is_equal(VOYAGER_TURN_TABLE)
-	assert_int(VoyagerClosing.SCRIPT.turn_done_cell).is_equal(VOYAGER_TURN_DONE_CELL)
-	assert_int(VoyagerClosing.SCRIPT.fly_until_x).is_equal(VOYAGER_FLY_UNTIL_X)
+	assert_array(Array(Catalog.voyager_closing_script().turn_table)).is_equal(VOYAGER_TURN_TABLE)
+	assert_int(Catalog.voyager_closing_script().turn_done_cell).is_equal(VOYAGER_TURN_DONE_CELL)
+	assert_int(Catalog.voyager_closing_script().fly_until_x).is_equal(VOYAGER_FLY_UNTIL_X)
 
 
 func test_voyager_pages_are_the_surface_ships_message() -> void:

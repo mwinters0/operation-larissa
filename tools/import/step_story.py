@@ -1,4 +1,4 @@
-"""Step 'story': the cutscenes' choreography as data (godot/data/story/*.tres).
+"""Step 'story': the cutscenes' choreography as data (the legacy pack's data/story/*.tres).
 
 The choreography of every cutscene of the opening and the closings is data, not `Animation` tracks built in code with
 node paths and textures. Each timeline becomes a `CutsceneTimeline` Resource: a length, tracks (an ACTOR NAME, a property word,
@@ -6,7 +6,7 @@ moments in ticks of the original's 73 Hz timer, values with picture and sound NA
 events). A view plays it by building an `AnimationPlayer` animation at run time (`src/story/cutscene.gd`), so the numbers
 belong to the original and the nodes belong to the view.
 
-    news_cartoon        the capsule's trail, the bulletins typed, the crew, the alarm lights, the end   (docs/data/opening.json)
+    news_cartoon        the capsule's trail, the bulletins typed, the crew, the alarm lights, the end   (extracted/tables/opening.json)
     news_ambient        the alarm lights' four states and the pulsing ring, a loop of 64 redraws          (the same)
     title_ship          the ship scene, 163 frames of 12 ticks                                           (title_scene.frames)
     title_reveal        "Presents" / "OPERATION" / "NEPTUNE" with their sounds and the prompt            (reveal_and_prompt)
@@ -15,8 +15,9 @@ belong to the original and the nodes belong to the view.
     expert_wait         the box blinks until a key
     story_script        the nine pages of the opening story and how long each one holds                  (OPENING.C, constants below)
     voyager_closing_script  the Voyager closing's loop counts; the timeline is run for the sub's place at the finale
+    closing_crew        the six sailors' programs of the deck shot                                       (expert_closing.json)
 
-Provenance (ground rule "Provenance is never lost"): every number is the original's, from docs/data/*.json or from the
+Provenance (ground rule "Provenance is never lost"): every number is the original's, from extracted/tables/*.json or from the
 constants below, which were read from the decompiled loops and carry their function and address. The few numbers that are
 OURS (a margin after the last step, one millisecond that keeps a ramp from sliding back) are named `*_TICKS` constants
 with a comment saying so, and each file's `provenance` text lists them. Hand-made timelines (the fade of a story page, the
@@ -32,17 +33,14 @@ import json
 import math
 from collections.abc import Sequence
 from functools import cache
-from pathlib import Path
 
 import foe_names
 import step_problems
 import tres
-from common import PACK_DATA, PROJECT_DATA, DOCS_DATA, EXTRACTED, load_json, out_text
+from common import PACK_DATA, TABLES, EXTRACTED, load_json, out_text, sha256_hex
 
 SCRIPTS = "res://src/resources/"
-STORY = PROJECT_DATA / "story"                  # the cutscenes' timelines: committed, no picture or text of the game in them
-LEGACY_STORY = PACK_DATA / "story"               # the news cartoon's: it holds the game's own bulletin texts, so it is the legacy pack's
-LEGACY_TIMELINES = {"news_cartoon"}
+STORY = PACK_DATA / "story"                     # the cutscenes' choreography is the original's presentation: the legacy pack's, never committed
 TIMELINE_NAMES = {"news_cartoon", "news_ambient", "title_ship", "title_reveal", "expert_hoist", "expert_deck", "expert_wait"}      # `timelines()`
 TICKS_PER_SECOND = 73
 
@@ -163,8 +161,29 @@ class Timeline:
         return t.render()
 
 
+def timing_record(length: float, loop: bool, moments, cues) -> str:
+    """The text that godot/tests/fixtures/cutscene_timing.json hashes for one cutscene: its length, whether it loops, every moment at
+    which anything changes (each once, in order) and the cues [tick, kind, name] (a sound before an event at the same moment), in whole
+    thousandths of a tick. `CutsceneTimingRecord` (godot/tests/legacy/cutscene_timing_record.gd) writes the same text; the two must agree."""
+    def milli(ticks: float) -> int:
+        return round(ticks * 1000)
+
+    moment_text = ",".join(str(m) for m in sorted({milli(t) for t in moments}))
+    ordered = sorted(((milli(t), kind, name) for t, kind, name in cues), key=lambda c: (c[0], c[1] != "sound"))
+    return "length=%d;loop=%d;moments=%s;cues=%s" % (milli(length), int(loop), moment_text, ",".join("%d:%s:%s" % c for c in ordered))
+
+
+def timing_digest(length: float, loop: bool, moments, cues) -> str:
+    return sha256_hex(timing_record(length, loop, moments, cues).encode("utf-8"))
+
+
+def timeline_digest(timeline: Timeline) -> str:
+    """The fixture's hash of a timeline the importer builds."""
+    return timing_digest(timeline.length, timeline.loop, timeline.key_times(), timeline.cues)
+
+
 def points() -> list[tuple[int, int]]:
-    return [tuple(p) for p in load_json(DOCS_DATA / "opening.json")["points"]]
+    return [tuple(p) for p in load_json(TABLES / "opening.json")["points"]]
 
 
 # --- the news cartoon -------------------------------------------------------------------------------------------------------
@@ -197,7 +216,7 @@ def crew_frame(member: dict, call: int) -> tuple[int, int, int] | None:
 
 def build_news(texts: dict[int, str]) -> Timeline:
     """The one-time part of the cartoon: the capsule's trail, the ring, the six bulletins, the crew, the alarm gates, the end."""
-    data = load_json(DOCS_DATA / "opening.json")
+    data = load_json(TABLES / "opening.json")
     news = data["news_cartoon"]
     step = news["redraw_ticks"]
     pts = data["points"]
@@ -258,7 +277,7 @@ def build_news(texts: dict[int, str]) -> Timeline:
 def build_news_ambient() -> Timeline:
     """What repeats: the alarm lights run through four states, each light one redraw ahead of the last, and the ring at the
     crash site shows one picture per redraw. (The flicker of the other lights is random in the original; it is made in code.)"""
-    data = load_json(DOCS_DATA / "opening.json")
+    data = load_json(TABLES / "opening.json")
     news = data["news_cartoon"]
     step = news["redraw_ticks"]
     steps = 64                                           # a multiple of 4, the alarm lights' cycle: long enough not to look like a loop
@@ -277,12 +296,12 @@ def build_news_ambient() -> Timeline:
 
 
 PROVENANCE_NEWS = (
-    "Original: OpeningSequence 0x42b16b, the news cartoon (docs/data/opening.json, news_cartoon): redraw every 10 ticks; "
+    "Original: OpeningSequence 0x42b16b, the news cartoon (extracted/tables/opening.json, news_cartoon): redraw every 10 ticks; "
     "the trail's dots and the ring at their calls; the bulletins typed at 3 ticks a character, each read for 25 redraws; "
     "the crew's five scripts; the alarm lights' gates. The typing length counts the characters the teletype shows (the "
     "text stripped at its edges). Ours: the 0.073 tick hold that keeps the typing ramp at 1 while the bulletin is read.")
 PROVENANCE_AMBIENT = (
-    "Original: the alarm lights' four states and the pulsing ring, one step per 10 tick redraw (docs/data/opening.json). "
+    "Original: the alarm lights' four states and the pulsing ring, one step per 10 tick redraw (extracted/tables/opening.json). "
     "Ours: the loop length of 64 redraws.")
 
 
@@ -293,7 +312,7 @@ SPLASH_IDLE_PICTURE = 1034             # the same for the splash halves: `spray_
 
 
 def build_title_ship() -> Timeline:
-    data = load_json(DOCS_DATA / "opening.json")
+    data = load_json(TABLES / "opening.json")
     title = data["title_scene"]
     pts = data["points"]
     names = data["point_names"]
@@ -342,13 +361,13 @@ def build_title_ship() -> Timeline:
 
 
 PROVENANCE_TITLE_SHIP = (
-    "Original: the ship scene of OpeningSequence 0x42b16b (docs/data/opening.json, title_scene.frames): frame r is drawn at "
+    "Original: the ship scene of OpeningSequence 0x42b16b (extracted/tables/opening.json, title_scene.frames): frame r is drawn at "
     "r x 12 ticks and every part is where the original drew it in that frame; the splash sound plays in frame 73. "
     "Hidden parts keep a picture and a place (the spray and splash show their first picture, the spray follows the hull).")
 
 
 def build_title_reveal() -> Timeline:
-    data = load_json(DOCS_DATA / "opening.json")["reveal_and_prompt"]
+    data = load_json(TABLES / "opening.json")["reveal_and_prompt"]
     hold = data["hold_ticks"]
     steps = data["steps"]
     assert [s["t_ticks"] for s in steps] == [0, hold, hold, 2 * hold] and [s.get("sfx") for s in steps] == [51, None, 51, 51]
@@ -366,7 +385,7 @@ def build_title_reveal() -> Timeline:
 
 
 PROVENANCE_REVEAL = (
-    "Original: the three title pictures of OpeningSequence (docs/data/opening.json, reveal_and_prompt): each appears at once "
+    "Original: the three title pictures of OpeningSequence (extracted/tables/opening.json, reveal_and_prompt): each appears at once "
     "with a sound and stays 292 ticks; at the third one the prompt (Start / Intro) begins. Ours: the 7.3 tick tail.")
 
 
@@ -527,7 +546,7 @@ def pod(steps: Steps, t: float, step: int) -> None:
 def build_expert_deck() -> Timeline:
     """The ship, the sea and the sub on the cable rising into the picture while the sailors act (6 + 140 steps). The sub's and
     the artifact's pictures go on toggling where the hoist left them (it drew `hoist_steps()` times)."""
-    crew_data = load_json(DOCS_DATA / "expert_closing.json")
+    crew_data = load_json(TABLES / "expert_closing.json")
     actors = [CrewActor(crew_data, i) for i in range(CREW_COUNT)]
     steps = Steps()
     sub_y, artifact_y, bottom = DECK_SUB_Y, DECK_ARTIFACT_Y, DECK_CABLE_BOTTOM
@@ -572,7 +591,7 @@ PROVENANCE_HOIST = (
     "tools/import/step_story.py with the function they were read from.")
 PROVENANCE_DECK = (
     "Original: the deck shot of ExpertClosingSequence: the sub rises into the ship for 6 steps, then six sailors walk and wave for "
-    "140 steps (ExpertClosingCrewStep 0x41ceb7 run on docs/data/expert_closing.json) while the control box at the right edge "
+    "140 steps (ExpertClosingCrewStep 0x41ceb7 run on extracted/tables/expert_closing.json) while the control box at the right edge "
     "blinks (ExpertClosingDrawPod 0x41cdba). Nothing of it is ours.")
 PROVENANCE_WAIT = (
     "Original: the last stage of ExpertClosingSequence: only the control box blinks, one phase per 18 tick step, until a key or "
@@ -688,6 +707,21 @@ def build_voyager_script() -> str:
     return t.render()
 
 
+# --- the Expert closing's crew -------------------------------------------------------------------------------------------------------
+
+def build_closing_crew() -> str:
+    """The six sailors of the Expert closing's deck shot (CLOSING.C), from extracted/tables/expert_closing.json. Each script is stored flat: 4 numbers
+    [op, item, mirror, delay] per record. `ClosingCrewActor` (src/story/closing_crew_actor.gd) runs them."""
+    data = load_json(TABLES / "expert_closing.json")
+    t = tres.Tres("Resource", "ClosingCrewScripts", SCRIPTS + "closing_crew_scripts.gd")
+    t.set("first_picture", str(data["first_picture"]))
+    t.set("start_x", tres.packed_ints([p[0] for p in data["start_positions"]]))
+    t.set("start_y", tres.packed_ints([p[1] for p in data["start_positions"]]))
+    t.set("scripts", tres.array("PackedInt32Array",
+                                [tres.packed_ints([v for record in script for v in record]) for script in data["scripts"]]))
+    return t.render()
+
+
 # --- run --------------------------------------------------------------------------------------------------------------------------------
 
 def timelines() -> dict[str, Timeline]:
@@ -702,17 +736,12 @@ def timelines() -> dict[str, Timeline]:
     }
 
 
-def owned_files() -> list[Path]:
-    """The files this step writes into the project (the committed timelines and scripts; the news cartoon is the legacy pack's). `import_all.py --clean`
-    deletes them."""
-    return [STORY / (name + ".tres") for name in sorted(TIMELINE_NAMES - LEGACY_TIMELINES)] + [STORY / "story_script.tres", STORY / "voyager_closing_script.tres"]
-
-
 def run() -> None:
     written = []
     for name, timeline in timelines().items():
-        out_text((LEGACY_STORY if name in LEGACY_TIMELINES else STORY) / (name + ".tres"), timeline.render())
+        out_text(STORY / (name + ".tres"), timeline.render())
         written.append(name)
     out_text(STORY / "story_script.tres", build_story_script())
     out_text(STORY / "voyager_closing_script.tres", build_voyager_script())
-    print("  story: %s, story_script, voyager_closing_script" % ", ".join(written))
+    out_text(STORY / "closing_crew.tres", build_closing_crew())
+    print("  story: %s, story_script, voyager_closing_script, closing_crew" % ", ".join(written))

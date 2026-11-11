@@ -10,13 +10,9 @@ const TITLE := "res://src/story/title_scene.tscn"
 const PAGES := "res://src/story/story_pages.tscn"
 const OPENING := "res://src/story/opening.tscn"
 
-## The three clocks of the opening, in seconds: the cartoon redraws every 10 ticks of the original's 73 Hz timer, the ship scene
-## every 12, and each title picture holds for 292. (The numbers themselves are in data/story/; tests/legacy/test_cutscene_timing.gd pins
-## them. These are the test's own reading of the original, so that a wrong timeline cannot make its own test agree.)
-const NEWS_STEP := 10.0 / 73.0
-const TITLE_STEP := 12.0 / 73.0
-const HOLD_SECONDS := 292.0 / 73.0
-const TITLE_FRAMES := 163
+## (The cutscenes here are played on the pack's own choreography, the dev pack's, `data/story/` of `tools/dev_pack/dev_story.py`: the moments are read from
+## the timelines. The original's numbers (163 frames of 12 ticks, holds of 292, nine pages) are pinned by tests/legacy/test_opening_legacy.gd and
+## test_cutscene_timing.gd.)
 
 
 func before_test() -> void:
@@ -55,7 +51,7 @@ func test_news_cartoon_builds_and_every_track_finds_its_node() -> void:
 	assert_array(_unresolved_tracks(news.script_player)).is_empty()
 	assert_array(_unresolved_tracks(news.ambient)).is_empty()
 	# the capsule's trail has a dot for each point of the story layout it is drawn on; the animation lasts as long as the pack's timeline says
-	var timeline := load(Packs.path(NewsCartoon.TIMELINE_REL)) as CutsceneTimeline
+	var timeline := Catalog.story_timeline(&"news_cartoon")
 	assert_int(news._dots.size()).is_equal(timeline.tracks.filter(func(track: CutsceneTrack) -> bool: return String(track.actor).begins_with("dot_")).size())
 	assert_float(news.script_player.get_animation(&"news").length).is_equal_approx(timeline.length_seconds(), 0.001)
 	assert_int(Catalog.voice_cues().clips("opening_cartoon").size()).is_equal(NewsCartoon.SPEECH_GROUP_CLIPS.reduce(func(sum: int, each: int) -> int: return sum + each, 0))
@@ -86,14 +82,15 @@ func test_title_scene_phases_and_choice() -> void:
 	add_child(title)
 	assert_array(_unresolved_tracks(title.animations)).is_empty()
 	assert_int(title.phase).is_equal(TitleScene.Phase.SHIP)
-	assert_float(title.animations.get_animation(&"ship").length).is_equal_approx(163.0 * 12.0 / 73.0, 0.01)
-	# the ship sails right across the screen and stands still (x = 56) while the sub is dropped
-	title.animations.seek(57.0 * TITLE_STEP, true)
-	assert_float(title.ship.position.x).is_equal(56.0)
-	title.animations.seek(80.0 * TITLE_STEP, true)
-	assert_float(title.ship.position.x).is_equal(56.0)
+	var ship_timeline := Catalog.story_timeline(&"title_ship")
+	assert_float(title.animations.get_animation(&"ship").length).is_equal_approx(ship_timeline.length_seconds(), 0.01)
+	# the ship sails across the screen, stands still while the sub is dropped and sails on: the node is where the timeline says
+	var ship_track := ship_timeline.find_track(&"ship", CutsceneTrack.PROP_POSITION)
+	for key in [1, ship_track.times.size() / 2, ship_track.times.size() - 1]:
+		title.animations.seek(CutsceneTimeline.seconds(ship_track.times[key]), true)
+		assert_vector(title.ship.position).is_equal(ship_track.values[key])
 	# Enter leaves the ship scene for the reveal, each further Enter ends one hold; at the prompt it means Intro
-	# (G30: `TitleRevealText` 0x42a211 / `WaitEnterSpaceEscOrTicks` 0x428fbe wait twice up to 292 ticks)
+	# (G30: `TitleRevealText` 0x42a211 / `WaitEnterSpaceEscOrTicks` 0x428fbe wait twice for a hold)
 	title.advance()
 	assert_int(title.phase).is_equal(TitleScene.Phase.REVEAL)
 	assert_bool(title.prompt.visible).is_false()
@@ -141,8 +138,8 @@ func test_enter_in_the_reveal_ends_one_hold_at_a_time() -> void:
 	title.advance()                                       # 1st hold over: "OPERATION" alone
 	assert_array(_title_visible(title)).is_equal([false, true, false, false])
 	assert_int(title.phase).is_equal(TitleScene.Phase.REVEAL)
-	assert_float(title.animations.current_animation_position).is_greater(HOLD_SECONDS)
-	assert_float(title.animations.current_animation_position).is_less(HOLD_SECONDS + 0.1)
+	assert_float(title.animations.current_animation_position).is_greater(_hold_seconds())
+	assert_float(title.animations.current_animation_position).is_less(_hold_seconds() + 0.1)
 	title.advance()                                       # 2nd hold over: "NEPTUNE", the copyright and the prompt
 	assert_array(_title_visible(title)).is_equal([false, true, true, true])
 	assert_int(title.phase).is_equal(TitleScene.Phase.PROMPT)
@@ -154,7 +151,7 @@ func test_enter_in_the_middle_of_the_second_hold_goes_straight_to_the_prompt() -
 	var title: TitleScene = auto_free(load(TITLE).instantiate())
 	add_child(title)
 	title.advance()
-	title.animations.seek(HOLD_SECONDS + 1.5, true)
+	title.animations.seek(1.5 * _hold_seconds(), true)      # (in the middle of the second hold)
 	title.advance()
 	assert_int(title.phase).is_equal(TitleScene.Phase.PROMPT)
 	assert_array(_title_visible(title)).is_equal([false, true, true, true])
@@ -200,11 +197,12 @@ func test_story_pages_show_nine_pages_in_order() -> void:
 	var story: StoryPages = auto_free(load(PAGES).instantiate())
 	add_child(story)
 	assert_array(_unresolved_tracks(story.animations)).is_empty()
-	assert_int(StoryPages.SCRIPT.pages.size()).is_equal(9)
+	var pages := Catalog.story_script().pages.size()
+	assert_int(pages).is_greater(1)
 	await await_idle_frame()
 	assert_int(story.page_index).is_equal(0)
 	assert_object(story.caption.texture).is_not_null()
-	for expected in range(1, 9):
+	for expected in range(1, pages):
 		story.advance()
 		await await_idle_frame()
 		assert_int(story.page_index).is_equal(expected)
@@ -261,7 +259,7 @@ func test_a_click_goes_on_in_every_story_page() -> void:
 	assert_int(story.page_index).is_equal(0)
 	_mouse(opening, Vector2(320, 200), true)              # a press does nothing
 	assert_int(story.page_index).is_equal(0)
-	for expected in range(1, 9):
+	for expected in range(1, Catalog.story_script().pages.size()):
 		_mouse(opening, Vector2(500, 300), false)         # a release anywhere: Enter
 		await await_idle_frame()
 		assert_int(story.page_index).is_equal(expected)
@@ -402,7 +400,7 @@ func test_no_effect_starts_while_the_window_is_inactive() -> void:
 
 
 func test_every_story_picture_exists() -> void:
-	var script: StoryScript = StoryPages.SCRIPT
+	var script := Catalog.story_script()
 	assert_object(Assets.ui_picture(script.background)).is_not_null()
 	for picture in script.ring_pictures:
 		assert_object(Assets.ui_picture(picture)).is_not_null()
@@ -469,17 +467,18 @@ func _to_the_last_story_page(opening: Opening) -> StoryPages:
 	await await_idle_frame()
 	var story := opening.current as StoryPages
 	await await_idle_frame()
-	for page in 8:
+	var last := Catalog.story_script().pages.size() - 1
+	for page in last:
 		story.advance()
 	await await_idle_frame()
-	assert_int(story.page_index).is_equal(8)
+	assert_int(story.page_index).is_equal(last)
 	return story
 
 
-## `OpeningSequence` (0x42b16b) is a loop: when the last story page runs out its 3285 ticks with no key (`OpeningStoryPages` returns 0 and
+## `OpeningSequence` (0x42b16b) is a loop: when the last story page runs out its time with no key (`OpeningStoryPages` returns 0 and
 ## `OpeningEnded` stays 0) it starts over from the news cartoon, without limit, and the song of the cartoon (9502) starts again after being stopped.
 func test_the_last_story_page_timing_out_starts_the_opening_over_from_the_cartoon() -> void:
-	var script: StoryScript = StoryPages.SCRIPT
+	var script := Catalog.story_script()
 	var last_page_ticks := script.last_page_ticks
 	script.last_page_ticks = 0.0               # (the page's clock runs out as soon as its speech has)
 	var opening: Opening = auto_free(load(OPENING).instantiate())
@@ -533,49 +532,71 @@ func test_enter_or_a_click_on_the_last_story_page_ends_the_opening_and_so_does_s
 		await await_idle_frame()
 
 
-# --- the drop of the mini-sub (user report: "the submarine follows the ship impossibly") -----------------
+# --- the ship scene: the drop of the mini-sub (user report: "the submarine follows the ship impossibly") ---------------
 
-func _title_at(title: TitleScene, frame: int) -> void:
-	title.animations.seek(frame * TITLE_STEP, true)
+## The value `actor`'s `property` has at `tick` in `timeline`: the last key at or before it.
+func _value_at(timeline: CutsceneTimeline, actor: StringName, property: StringName, tick: float) -> Variant:
+	var track := timeline.find_track(actor, property)
+	var key := 0
+	for i in track.times.size():
+		if track.times[i] <= tick + 1e-6:
+			key = i
+	return track.values[key]
 
 
-func test_the_sub_hangs_then_falls_and_sinks_out_of_sight() -> void:
+func _title_at(title: TitleScene, tick: float) -> void:
+	title.animations.seek(CutsceneTimeline.seconds(tick), true)
+
+
+## The seconds of one hold of the title: where the reveal's second picture comes.
+func _hold_seconds() -> float:
+	return CutsceneTimeline.seconds(Catalog.story_timeline(&"title_reveal").marks[&"operation"])
+
+
+func test_every_part_of_the_ship_scene_shows_what_its_track_says_at_every_moment_of_the_timeline() -> void:
+	var timeline := Catalog.story_timeline(&"title_ship")
+	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	add_child(title)
+	var parts := {&"ship": "Ship", &"mini_sub": "MiniSub", &"spray": "Spray", &"splash_left": "SplashLeft", &"splash_right": "SplashRight"}
+	for tick in timeline.key_times():
+		_title_at(title, tick)
+		for actor: StringName in parts:
+			var node: Node2D = title.ship if actor == &"ship" else title.stage.get_node(parts[actor])
+			if timeline.find_track(actor, CutsceneTrack.PROP_POSITION) != null:
+				var want: Vector2 = _value_at(timeline, actor, CutsceneTrack.PROP_POSITION, tick)
+				assert_vector(node.global_position).override_failure_message("%s at %s" % [actor, tick]).is_equal(want)
+			if timeline.find_track(actor, CutsceneTrack.PROP_VISIBLE) != null:
+				var shown: bool = _value_at(timeline, actor, CutsceneTrack.PROP_VISIBLE, tick)
+				assert_bool(node.visible).override_failure_message("%s at %s" % [actor, tick]).is_equal(shown)
+		var clip: Rect2 = _value_at(timeline, &"mini_sub", CutsceneTrack.PROP_CLIP, tick)
+		assert_vector(title.stage.get_node("MiniSub").region_rect.size).is_equal(clip.size)
+
+
+func test_the_sub_does_not_move_with_the_ship_once_dropped_and_sinks_out_of_sight_for_good() -> void:
+	var timeline := Catalog.story_timeline(&"title_ship")
 	var title: TitleScene = auto_free(load(TITLE).instantiate())
 	add_child(title)
 	var sub: Sprite2D = title.stage.get_node("MiniSub")
-	_title_at(title, 60)                                  # hanging from the crane, fully drawn
-	assert_bool(sub.visible).is_true()
-	assert_float(sub.region_rect.size.y).is_equal(44.0)
-	var hanging_y := sub.global_position.y
-	_title_at(title, 70)                                  # falling: 6 px per frame from frame 69
-	assert_float(sub.global_position.y).is_equal(hanging_y + 12.0)
-	_title_at(title, 74)                                  # the water line (row 312) cuts it off from below
-	assert_float(sub.region_rect.size.y).is_equal(39.0)
-	assert_float(sub.global_position.y + sub.region_rect.size.y).is_equal(313.0)
-	_title_at(title, 80)
-	assert_float(sub.region_rect.size.y).is_equal(3.0)
-	for frame in range(81, TITLE_FRAMES):            # gone for good, however far the ship sails on
-		_title_at(title, frame)
-		assert_bool(sub.visible).is_false()
-
-
-func test_the_sub_does_not_move_with_the_ship_once_dropped() -> void:
-	var title: TitleScene = auto_free(load(TITLE).instantiate())
-	add_child(title)
-	var sub: Sprite2D = title.stage.get_node("MiniSub")
-	_title_at(title, 76)                                  # sinking while the ship stands still
-	var dropped_y := sub.global_position.y
-	var ship_y := title.ship.position.y
-	_title_at(title, 78)
-	assert_float(title.ship.position.y).is_equal(ship_y)
-	assert_float(sub.global_position.y).is_equal(dropped_y + 12.0)   # its own y, not the ship's
-	_title_at(title, 120)                                 # ship moving on, 8 px per frame, wobbling 2 px
-	assert_float(title.ship.position.x).is_greater(56.0)
-	assert_float(sub.global_position.y).is_greater_equal(318.0)      # still below the waterline: it never rose again
-	assert_bool(sub.visible).is_false()
+	var clip_track := timeline.find_track(&"mini_sub", CutsceneTrack.PROP_CLIP)
+	var sinking := -1                                                  # the first key at which the water line cuts the sub off
+	for key in clip_track.values.size():
+		if (clip_track.values[key] as Rect2).size.y < (clip_track.values[0] as Rect2).size.y:
+			sinking = key
+			break
+	assert_int(sinking).is_greater(0)
+	var sub_x: float = (timeline.find_track(&"mini_sub", CutsceneTrack.PROP_POSITION).values[sinking] as Vector2).x
+	var ship_x := title.ship.position.x
+	var last_tick: float = clip_track.times[clip_track.times.size() - 1]
+	_title_at(title, clip_track.times[sinking])
+	assert_float(sub.region_rect.size.y).is_less(clip_track.values[0].size.y)
+	_title_at(title, last_tick)
+	assert_float(title.ship.position.x).is_not_equal(ship_x)           # the ship has sailed on ...
+	assert_float(sub.global_position.x).is_equal(sub_x)                # ... and the sub has not followed it
+	assert_bool(sub.visible).is_false()                                # gone for good
 
 
 func test_the_splash_follows_the_sub_and_has_its_sound() -> void:
+	var timeline := Catalog.story_timeline(&"title_ship")
 	var title: TitleScene = auto_free(load(TITLE).instantiate())
 	add_child(title)
 	var left: Sprite2D = title.stage.get_node("SplashLeft")
@@ -585,21 +606,29 @@ func test_the_splash_follows_the_sub_and_has_its_sound() -> void:
 		if animation.track_get_type(track) == Animation.TYPE_METHOD:
 			for key in animation.track_get_key_count(track):
 				sound_times.append(animation.track_get_key_time(track, key))
-	assert_array(sound_times).is_equal(PackedFloat32Array([73.0 * TITLE_STEP]))
-	_title_at(title, 74)
-	assert_bool(left.visible).is_false()                  # the sound comes two frames before the first picture
-	for index in 5:
-		_title_at(title, 75 + index)
-		assert_bool(left.visible).is_true()
-		assert_object(left.texture).is_equal(Assets.ui_picture(StringName("spray_%d" % index)))
-	_title_at(title, 80)
+	assert_array(sound_times).is_equal(PackedFloat32Array([CutsceneTimeline.seconds(timeline.cues[0].tick)]))
+	_title_at(title, timeline.cues[0].tick)
+	assert_bool(left.visible).is_false()                  # the sound comes before the first picture
+	var splash := timeline.find_track(&"splash_left", CutsceneTrack.PROP_VISIBLE)
+	var shown := 0
+	for key in splash.times.size():
+		if splash.values[key]:
+			_title_at(title, splash.times[key])
+			assert_bool(left.visible).is_true()
+			assert_object(left.texture).is_equal(Assets.ui_picture(_value_at(timeline, &"splash_left", CutsceneTrack.PROP_PICTURE, splash.times[key])))
+			shown += 1
+	assert_int(shown).is_greater(0)
+	_title_at(title, timeline.length)
 	assert_bool(left.visible).is_false()
 
 
 func test_enter_during_the_ship_scene_leaves_no_ship_part_behind() -> void:
+	var timeline := Catalog.story_timeline(&"title_ship")
 	var title: TitleScene = auto_free(load(TITLE).instantiate())
 	add_child(title)
-	_title_at(title, 76)                                  # the splash is showing and the spray is visible
+	var splash := timeline.find_track(&"splash_left", CutsceneTrack.PROP_VISIBLE)
+	_title_at(title, splash.times[splash.values.find(true)])         # the splash is showing and the spray is visible
+	assert_bool((title.stage.get_node("SplashLeft") as Sprite2D).visible).is_true()
 	title.advance()
 	assert_bool(title.ship.visible).is_false()
 	assert_bool((title.stage.get_node("Spray") as Sprite2D).visible).is_false()
@@ -611,17 +640,17 @@ func test_the_title_pictures_appear_at_once_without_a_wipe() -> void:
 	var title: TitleScene = auto_free(load(TITLE).instantiate())
 	add_child(title)
 	var reveal := title.animations.get_animation(&"reveal")
-	assert_float(reveal.length).is_greater(2.0 * HOLD_SECONDS)
+	assert_float(reveal.length).is_greater(2.0 * _hold_seconds())
 	for track in reveal.get_track_count():
 		assert_str(String(reveal.track_get_path(track)).get_slice(":", 1)).is_not_equal("region_rect")
 	title.animations.play(&"reveal")
 	title.animations.seek(0.1, true)
 	assert_bool((title.stage.get_node("Presents") as Sprite2D).visible).is_true()
 	assert_bool((title.stage.get_node("Operation") as Sprite2D).visible).is_false()
-	title.animations.seek(HOLD_SECONDS + 0.1, true)
+	title.animations.seek(_hold_seconds() + 0.1, true)
 	assert_bool((title.stage.get_node("Presents") as Sprite2D).visible).is_false()
 	assert_bool((title.stage.get_node("Operation") as Sprite2D).visible).is_true()
-	title.animations.seek(2.0 * HOLD_SECONDS + 0.05, true)
+	title.animations.seek(2.0 * _hold_seconds() + 0.05, true)
 	assert_bool((title.stage.get_node("Neptune") as Sprite2D).visible).is_true()
 	assert_bool((title.stage.get_node("Copyright") as Sprite2D).visible).is_true()
 
@@ -635,7 +664,7 @@ func _news_at(news: NewsCartoon, seconds: float) -> void:
 func test_each_dot_of_the_capsule_trail_appears_at_the_moment_its_track_says() -> void:
 	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
 	add_child(news)
-	var timeline := load(Packs.path(NewsCartoon.TIMELINE_REL)) as CutsceneTimeline
+	var timeline := Catalog.story_timeline(&"news_cartoon")
 	var checked := 0
 	for track in timeline.tracks:
 		if not String(track.actor).begins_with("dot_") or track.property != &"visible":

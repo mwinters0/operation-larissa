@@ -9,7 +9,7 @@ a different version or patched" if not, and that the programs the chosen steps n
 libvorbis, fluidsynth, the General MIDI soundfont, the speech engine); it refuses with the list of what is missing and how to get it.
 A program that is there but not the version the project pins (Godot: mise.toml; the speech engine: uv.lock) gets a loud warning, and
 the run goes on. Then, from that ISO alone: "extract" unpacks it into extracted/ (tools/extract/), "tables"
-dumps the game's data tables to docs/data/ (step_extract.py), and the other steps write the legacy pack: loose files in the folder
+dumps the game's data tables to extracted/tables/ (step_extract.py), and the other steps write the legacy pack: loose files in the folder
 godot/packs/legacy (common.legacy_root; res://packs/legacy/), holding pack.json, assets/, data/ and midi/. The importer makes that
 folder and its pack.json first, then writes the asset manifest (tools/import/asset_manifest.json: where each file under assets/ comes from), the fixtures of the original
 (godot/tests/fixtures/*.json: provenance and SHA-256 hashes, committed; godot/tests/fixtures/original/: the original bytes, not
@@ -80,7 +80,7 @@ STEPS = {
     "godot": godot_import,
 }
 OWNED_DIRS = {
-    "extract": [],                      # extracted/ and docs/data/'s tables are rewritten in place, never cleaned
+    "extract": [],                      # extracted/ (its tables/ too) is rewritten in place, never cleaned
     "tables": [],
     "images": [common.ASSETS / "backgrounds", common.ASSETS / "ui", common.ASSETS / "problem_art",
                common.ASSETS / "authoring_tool"],
@@ -89,14 +89,14 @@ OWNED_DIRS = {
     "sectors": [],                      # not the folder: see OWNED_FILES
     "problems": [common.PACK_DATA / "problems"],
     "console": [common.PACK_DATA / "ui"],            # (menu_layout.tres is the project's own: see OWNED_FILES)
-    "story": [common.PACK_DATA / "story"],          # (the other timelines are the project's own: see OWNED_FILES)
+    "story": [common.PACK_DATA / "story"],
     "campaigns": [],                    # not the folder: see OWNED_FILES
     "transcripts": [],                  # extracted/sounds/voice_transcripts*.json: input of the audio step, not cleaned
     "audio": [common.ASSETS / "audio"],
     "godot": [],                        # Godot completes the .import files and fills its own cache (godot/.godot/): nothing to clean
 }
-# Files a step owns inside a folder it shares with hand-made content (or that is the project's, not the legacy pack's: the committed story timelines
-# and the menu layout). `--clean` deletes exactly these. The sectors
+# Files a step owns inside a folder it shares with hand-made content (or that is the project's, not the legacy pack's: the menu layout). `--clean`
+# deletes exactly these. The sectors
 # folder also holds the annotation store (foe_annotations.json), the .uid files and any NEW sector the designers
 # made, none of which the importer generates, so none is touched. The campaigns folder is shared the same
 # way: the original's two files are the importer's, any other campaign there is not.
@@ -104,7 +104,6 @@ OWNED_FILES = {
     "sectors": step_sectors.owned_files,
     "campaigns": step_campaigns.owned_files,
     "console": step_console.owned_files,
-    "story": step_story.owned_files,
 }
 
 

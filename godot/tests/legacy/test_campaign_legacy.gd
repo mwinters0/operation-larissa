@@ -12,15 +12,24 @@ func before(do_skip := not LegacyPack.present(), skip_reason := "run the importe
 	pass
 
 
+## The tables the old code read are the EXE's (LogUnlockOrderVoyager 0x4419d5, LogUnlockOrderExpert 0x4419e4, the zones' default levels) and are the importer's
+## `extracted/tables/databank.json` and `zone_defaults.json`.
+static func _table(name: String) -> Dictionary:
+	return JSON.parse_string(FileAccess.get_file_as_string("res://../extracted/tables/%s.json" % name))
+
+
+## The unlock order of the log entries of `game` (0 Voyager, 1 Expert).
+static func _old_unlock_order(game: int) -> Array:
+	return _table("databank")["unlock_order_voyager" if game == 0 else "unlock_order_expert"].map(func(number: float) -> int: return int(number))
+
+
+## The default educational level of `zone` (0-4) of `game`: the table holds Voyager's five zones and then Expert's.
+static func _old_edu_level(game: int, zone: int) -> int:
+	return int(_table("zone_defaults").default_edu_level[game * 5 + zone])
+
+
 ## The old code, verbatim in meaning (the sources are in the git history of progression.gd, canister_log.gd, audio.gd and
-## surface_ship_screen.gd). The unlock tables are the EXE's: LogUnlockOrderVoyager 0x4419d5, LogUnlockOrderExpert 0x4419e4.
-const OLD_UNLOCK_ORDER: Array = [
-	[4, 3, 7, 1, 11, 2, 5, 12, 6, 9, 10, 8, 15, 14, 13],
-	[2, 7, 4, 1, 13, 3, 5, 9, 14, 6, 15, 8, 11, 10, 12],
-]
-const OLD_EDU_LEVELS: Array = [[0, 0, 1, 1, 1], [2, 2, 2, 3, 3]]
-
-
+## surface_ship_screen.gd).
 static func _old_game_of(sector: int) -> int:
 	return sector - 30 if sector >= 30 else floori(sector / 15.0)
 
@@ -117,14 +126,14 @@ func test_default_levels_match_the_old_table_for_every_zone() -> void:
 	for game in 2:
 		for zone in 7:
 			assert_int(Progression.default_edu_level(game, zone)).override_failure_message("game %d zone %d" % [game, zone]) \
-					.is_equal(OLD_EDU_LEVELS[game][mini(zone, 4)])
+					.is_equal(_old_edu_level(game, mini(zone, 4)))
 
 
 func test_the_canister_log_matches_the_old_tables_for_every_sector() -> void:
 	for sector in 32:
 		var game := _old_game_of(sector)
 		var count := sector % 15 + 1
-		var order: Array = OLD_UNLOCK_ORDER[game]
+		var order: Array = _old_unlock_order(game)
 		assert_int(CanisterLog.count(sector)).override_failure_message("sector %d" % sector).is_equal(count)
 		assert_int(CanisterLog.newest(sector)).override_failure_message("sector %d" % sector).is_equal(order[count - 1])
 		var sorted: Array = order.slice(0, count)

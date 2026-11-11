@@ -7,7 +7,7 @@ extends RefCounted
 ## exact tick counts. `CombinationLock` (the Control) only converts real time into ticks. The structure
 ## (8 labels, 32 positions) is the wheel's; the waits are the run's `Tuning` (`lock_wheel` section: the original's
 ## numbers are below), which the wheel is given when it is made. The numbers are verified from `DoCombinationLock`
-## (docs/data/lock_wheel.json, DESIGN 3.7):
+## (extracted/tables/lock_wheel.json, DESIGN 3.7):
 ##
 ##   * a wheel has 8 labels and 32 positions (4 per label); position 0 puts label 0 under the arrow
 ##   * the ANSWER wheel moves one label (4 positions of 9 ticks = 36 ticks), then waits 73 ticks

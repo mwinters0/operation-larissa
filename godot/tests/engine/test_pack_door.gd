@@ -49,7 +49,8 @@ func test_the_pack_is_exported_without_a_problem_and_is_not_trusted() -> void:
 
 func test_the_data_files_answer_from_the_scratch_pack() -> void:
 	for rel in ["data/zones.tres", "data/trigger_table.tres", "data/bubble_rules.tres", "data/sprite_meta/sprite_meta_ink.tres", "data/neptune_tileset.tres",
-			"data/sprite_frames/sub_frames.tres", "data/ui/hud_layout.tres", "data/voice_index.tres", "data/story/news_cartoon.tres"]:
+			"data/sprite_frames/sub_frames.tres", "data/ui/hud_layout.tres", "data/voice_index.tres", "data/story/news_cartoon.tres",
+			"data/story/title_reveal.tres", "data/story/story_script.tres", "data/story/voyager_closing_script.tres", "data/story/closing_crew.tres"]:
 		assert_object(Packs.holder(rel)).override_failure_message(rel).is_same(_shelf.pack)
 		assert_bool(_from_the_scratch_pack(Packs.resource(rel))).override_failure_message(rel).is_true()
 	assert_str(Catalog.zone(0).title).is_equal("Scratch zone")

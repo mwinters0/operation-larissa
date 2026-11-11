@@ -1,0 +1,116 @@
+[gd_resource type="Resource" script_class="CutsceneTimeline" format=3]
+
+[ext_resource type="Script" path="res://src/resources/cutscene_timeline.gd" id="1_cutscene_timeline"]
+[ext_resource type="Script" path="res://src/resources/cutscene_track.gd" id="2_cutscene_track"]
+[ext_resource type="Script" path="res://src/resources/cutscene_cue.gd" id="3_cutscene_cue"]
+
+[sub_resource type="Resource" id="Track_1"]
+script = ExtResource("2_cutscene_track")
+actor = &"ship"
+property = &"position"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420)
+values = [Vector2(-200, 120), Vector2(-184, 120), Vector2(-168, 120), Vector2(-152, 120), Vector2(-136, 120), Vector2(-120, 120), Vector2(-104, 120), Vector2(-88, 120), Vector2(-72, 120), Vector2(-56, 120), Vector2(-40, 120), Vector2(-24, 120), Vector2(-8, 120), Vector2(8, 120), Vector2(24, 120), Vector2(40, 120), Vector2(40, 120), Vector2(40, 120), Vector2(40, 120), Vector2(40, 120), Vector2(40, 120), Vector2(40, 120), Vector2(48, 120), Vector2(56, 120), Vector2(64, 120), Vector2(72, 120), Vector2(80, 120), Vector2(88, 120), Vector2(96, 120), Vector2(104, 120), Vector2(112, 120), Vector2(120, 120), Vector2(128, 120), Vector2(136, 120), Vector2(144, 120), Vector2(152, 120)]
+
+[sub_resource type="Resource" id="Track_2"]
+script = ExtResource("2_cutscene_track")
+actor = &"radar"
+property = &"picture"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420)
+values = [&"ship_radar_0", &"ship_radar_1", &"ship_radar_2", &"ship_radar_1", &"ship_radar_0", &"ship_radar_1", &"ship_radar_2", &"ship_radar_1", &"ship_radar_0", &"ship_radar_1", &"ship_radar_2", &"ship_radar_1", &"ship_radar_0", &"ship_radar_1", &"ship_radar_2", &"ship_radar_1", &"ship_radar_0", &"ship_radar_1", &"ship_radar_2", &"ship_radar_1", &"ship_radar_0", &"ship_radar_1", &"ship_radar_2", &"ship_radar_1", &"ship_radar_0", &"ship_radar_1", &"ship_radar_2", &"ship_radar_1", &"ship_radar_0", &"ship_radar_1", &"ship_radar_2", &"ship_radar_1", &"ship_radar_0", &"ship_radar_1", &"ship_radar_2", &"ship_radar_1"]
+
+[sub_resource type="Resource" id="Track_3"]
+script = ExtResource("2_cutscene_track")
+actor = &"radar"
+property = &"mirror"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420)
+values = [false, false, false, false, true, true, true, true, false, false, false, false, true, true, true, true, false, false, false, false, true, true, true, true, false, false, false, false, true, true, true, true, false, false, false, false]
+
+[sub_resource type="Resource" id="Track_4"]
+script = ExtResource("2_cutscene_track")
+actor = &"hook"
+property = &"picture"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420)
+values = [&"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0", &"ship_hook_0"]
+
+[sub_resource type="Resource" id="Track_5"]
+script = ExtResource("2_cutscene_track")
+actor = &"mini_sub"
+property = &"position"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420)
+values = [Vector2(-120, 236), Vector2(-104, 236), Vector2(-88, 236), Vector2(-72, 236), Vector2(-56, 236), Vector2(-40, 236), Vector2(-24, 236), Vector2(-8, 236), Vector2(8, 236), Vector2(24, 236), Vector2(40, 236), Vector2(56, 236), Vector2(72, 236), Vector2(88, 236), Vector2(104, 236), Vector2(120, 236), Vector2(120, 236), Vector2(120, 242), Vector2(120, 248), Vector2(120, 254), Vector2(120, 260), Vector2(120, 266), Vector2(120, 272), Vector2(120, 278), Vector2(120, 284), Vector2(120, 290), Vector2(120, 296), Vector2(120, 302), Vector2(120, 308), Vector2(120, 314), Vector2(120, 320), Vector2(120, 326), Vector2(120, 332), Vector2(120, 338), Vector2(120, 344), Vector2(120, 350)]
+
+[sub_resource type="Resource" id="Track_6"]
+script = ExtResource("2_cutscene_track")
+actor = &"mini_sub"
+property = &"clip"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420)
+values = [Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 44), Rect2(0, 0, 72, 40), Rect2(0, 0, 72, 34), Rect2(0, 0, 72, 28), Rect2(0, 0, 72, 22), Rect2(0, 0, 72, 16), Rect2(0, 0, 72, 10), Rect2(0, 0, 72, 4), Rect2(0, 0, 72, 0), Rect2(0, 0, 72, 0), Rect2(0, 0, 72, 0), Rect2(0, 0, 72, 0), Rect2(0, 0, 72, 0), Rect2(0, 0, 72, 0), Rect2(0, 0, 72, 0)]
+
+[sub_resource type="Resource" id="Track_7"]
+script = ExtResource("2_cutscene_track")
+actor = &"mini_sub"
+property = &"visible"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420)
+values = [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, false, false, false, false, false]
+
+[sub_resource type="Resource" id="Track_8"]
+script = ExtResource("2_cutscene_track")
+actor = &"spray"
+property = &"position"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420)
+values = [Vector2(-176, 252), Vector2(-160, 252), Vector2(-144, 252), Vector2(-128, 252), Vector2(-112, 252), Vector2(-96, 252), Vector2(-80, 252), Vector2(-64, 252), Vector2(-48, 252), Vector2(-32, 252), Vector2(-16, 252), Vector2(0, 252), Vector2(16, 252), Vector2(32, 252), Vector2(48, 252), Vector2(64, 252), Vector2(64, 252), Vector2(64, 252), Vector2(64, 252), Vector2(64, 252), Vector2(64, 252), Vector2(64, 252), Vector2(72, 252), Vector2(80, 252), Vector2(88, 252), Vector2(96, 252), Vector2(104, 252), Vector2(112, 252), Vector2(120, 252), Vector2(128, 252), Vector2(136, 252), Vector2(144, 252), Vector2(152, 252), Vector2(160, 252), Vector2(168, 252), Vector2(176, 252)]
+
+[sub_resource type="Resource" id="Track_9"]
+script = ExtResource("2_cutscene_track")
+actor = &"spray"
+property = &"visible"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420)
+values = [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, false]
+
+[sub_resource type="Resource" id="Track_10"]
+script = ExtResource("2_cutscene_track")
+actor = &"spray"
+property = &"picture"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420)
+values = [&"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2", &"spray_1", &"spray_2"]
+
+[sub_resource type="Resource" id="Track_11"]
+script = ExtResource("2_cutscene_track")
+actor = &"splash_left"
+property = &"picture"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420)
+values = [&"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_1", &"spray_2", &"spray_3", &"spray_4", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0"]
+
+[sub_resource type="Resource" id="Track_12"]
+script = ExtResource("2_cutscene_track")
+actor = &"splash_left"
+property = &"visible"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420)
+values = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, false, false, false, false, false, false, false]
+
+[sub_resource type="Resource" id="Track_13"]
+script = ExtResource("2_cutscene_track")
+actor = &"splash_right"
+property = &"picture"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420)
+values = [&"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_1", &"spray_2", &"spray_3", &"spray_4", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0", &"spray_0"]
+
+[sub_resource type="Resource" id="Track_14"]
+script = ExtResource("2_cutscene_track")
+actor = &"splash_right"
+property = &"visible"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420)
+values = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, false, false, false, false, false, false, false]
+
+[sub_resource type="Resource" id="Cue_15"]
+script = ExtResource("3_cutscene_cue")
+tick = 264
+kind = &"sound"
+cue_name = &"opening_scene"
+
+[resource]
+script = ExtResource("1_cutscene_timeline")
+length = 432
+tracks = Array[ExtResource("2_cutscene_track")]([SubResource("Track_1"), SubResource("Track_2"), SubResource("Track_3"), SubResource("Track_4"), SubResource("Track_5"), SubResource("Track_6"), SubResource("Track_7"), SubResource("Track_8"), SubResource("Track_9"), SubResource("Track_10"), SubResource("Track_11"), SubResource("Track_12"), SubResource("Track_13"), SubResource("Track_14")])
+cues = Array[ExtResource("3_cutscene_cue")]([SubResource("Cue_15")])
+provenance = "Dev pack: the ship scene: 36 frames of 12 ticks (tools/dev_pack/dev_story.py)."

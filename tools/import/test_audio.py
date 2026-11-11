@@ -4,6 +4,7 @@ Run with:  uv run --with pytest pytest tools/import/test_audio.py
 The OGG checks decode the files with ffmpeg and are skipped when it is not installed.
 """
 import array
+import functools
 import json
 import math
 import shutil
@@ -20,7 +21,14 @@ import asset_names
 import common
 
 MUSIC = common.ASSETS / "audio" / "music"
-SONGS = [e for e in common.load_json(common.DOCS_DATA / "music_map.json")["music"]]
+
+
+@functools.cache
+def songs() -> list[dict]:
+    """The ten songs of extracted/tables/music_map.json (written by the importer's tables step: read lazily, so collecting this file needs no table)."""
+    return common.load_json(common.TABLES / "music_map.json")["music"]
+
+
 OGG_FILES = sorted(MUSIC.glob("*.ogg")) + sorted((MUSIC / "adlib").glob("*.ogg"))
 
 needs_ffmpeg = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed")
@@ -44,17 +52,18 @@ def rms_db(samples: array.array) -> float:
 
 @pytest.mark.legacy
 def test_both_sets_cover_the_ten_songs():
-    assert len(SONGS) == 10
+    assert len(songs()) == 10
     assert len(OGG_FILES) == 20
-    for entry in SONGS:
+    for entry in songs():
         stem = entry["file"].rsplit(".", 1)[0][1:].lower()
         assert asset_names.music_file(entry["id"], "e" + stem).exists()
         assert asset_names.music_file(entry["id"], "b" + stem, adlib=True).exists()
 
 
+@pytest.mark.legacy
 def test_the_music_table_is_the_verified_map():
-    audio_map = common.load_json(common.DOCS_DATA / "audio_map.json")
-    assert [(m["id"], m["file"]) for m in audio_map["music"]] == [(s["id"], s["file"]) for s in SONGS]
+    audio_map = common.load_json(common.TABLES / "audio_map.json")
+    assert [(m["id"], m["file"]) for m in audio_map["music"]] == [(s["id"], s["file"]) for s in songs()]
     assert all(m["loop_start"] == 0 for m in audio_map["music"])        # every song restarts from its beginning
 
 
@@ -80,7 +89,7 @@ def test_song_is_long_loud_enough_unclipped_and_loops_cleanly(path):
 
 @pytest.mark.legacy
 def test_every_cue_group_names_existing_clips():
-    cues = common.load_json(common.DOCS_DATA / "audio_map.json")["voice"]
+    cues = common.load_json(common.TABLES / "audio_map.json")["voice"]
     clips = [c for key, value in cues.items() for c in _flatten(value)]
     assert clips and all(4000 <= c <= 4370 for c in clips)
     for c in set(clips):
@@ -90,7 +99,7 @@ def test_every_cue_group_names_existing_clips():
 
 @pytest.mark.legacy
 def test_log_clips_say_the_entry_number_of_the_log_text():
-    cues = common.load_json(common.DOCS_DATA / "audio_map.json")["voice"]
+    cues = common.load_json(common.TABLES / "audio_map.json")["voice"]
     transcripts_file = common.EXTRACTED / "sounds" / "voice_transcripts.json"
     if not transcripts_file.exists():
         pytest.skip("no voice transcripts: the importer ran with --no-transcripts")
@@ -102,9 +111,10 @@ def test_log_clips_say_the_entry_number_of_the_log_text():
         assert header.endswith(spoken), (n, header, spoken)
 
 
+@pytest.mark.legacy
 def test_effects_exist_and_every_documented_one_has_a_name():
     """audio_map.json lists the effects the decompilation found (number, when, where); their names are in the registry."""
-    audio_map = common.load_json(common.DOCS_DATA / "audio_map.json")
+    audio_map = common.load_json(common.TABLES / "audio_map.json")
     registry = json.loads((common.GODOT / "names" / "original.json").read_text())["names"]["sound"]
     assert {int(k) for k in audio_map["sfx"]} <= set(registry.values())
     assert all("name" not in v for v in audio_map["sfx"].values())          # one place for names
@@ -198,7 +208,7 @@ def test_the_committed_music_records_what_it_was_rendered_from():
     import step_audio
     for folder, letter in ((MUSIC, "E"), (MUSIC / "adlib", "B")):
         stamp = common.load_json(folder / step_audio.STAMP)
-        assert set(stamp["songs"]) == {step_audio.music_stems(e, letter) for e in SONGS}
+        assert set(stamp["songs"]) == {step_audio.music_stems(e, letter) for e in songs()}
         assert len(stamp["soundfont_sha256"]) == 64
 
 
@@ -215,9 +225,10 @@ def midi_hashes() -> dict[str, str]:
     return {path.rsplit("/", 1)[1]: entry["sha256"] for path, entry in files.items() if path.upper().endswith(".MID")}
 
 
+@pytest.mark.legacy
 def test_the_reference_release_holds_the_twenty_midi_files_of_the_two_sets():
     hashes = midi_hashes()
-    assert sorted(hashes) == sorted(e["file"].replace("B", letter, 1) for e in SONGS for letter in "BE")
+    assert sorted(hashes) == sorted(e["file"].replace("B", letter, 1) for e in songs() for letter in "BE")
 
 
 @pytest.mark.parametrize("folder, letter", [(MUSIC, "E"), (MUSIC / "adlib", "B")], ids=["general midi", "adlib"])
@@ -225,9 +236,9 @@ def test_the_reference_release_holds_the_twenty_midi_files_of_the_two_sets():
 def test_rendered_with_names_the_midi_files_of_the_reference_release(folder, letter):
     stamp = json.loads((folder / "rendered_with.json").read_text())
     hashes = midi_hashes()
-    expected = {(letter + e["file"][1:]).rsplit(".", 1)[0].lower(): hashes[letter + e["file"][1:]] for e in SONGS}
+    expected = {(letter + e["file"][1:]).rsplit(".", 1)[0].lower(): hashes[letter + e["file"][1:]] for e in songs()}
     assert stamp["songs"] == expected
-    for e in SONGS:
+    for e in songs():
         assert asset_names.music_file(e["id"], (letter + e["file"][1:]).rsplit(".", 1)[0].lower(), adlib=folder != MUSIC).exists()
 
 
@@ -238,7 +249,7 @@ def test_the_catalog_names_the_midi_files_the_stamps_hash():
     names_match = re.search(r"midi_names = PackedStringArray\((.*)\)", text)
     assert names_match is not None
     names = names_match.group(1)
-    assert re.findall(r'"([^"]+)"', names) == [e["file"] for e in SONGS]
+    assert re.findall(r'"([^"]+)"', names) == [e["file"] for e in songs()]
 
 
 def test_the_extracted_midi_files_are_the_reference_ones():

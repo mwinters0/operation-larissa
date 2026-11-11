@@ -1,9 +1,9 @@
-"""Step 'sprites': sprite PNG copies, SpriteFrames, sprite metadata, bubble rules, closing crew."""
+"""Step 'sprites': sprite PNG copies, SpriteFrames, sprite metadata, bubble rules."""
 from __future__ import annotations
 
 import animation_map as amap
 from asset_manifest import copy_picture
-from common import (ASSETS, PACK_DATA, PROJECT_DATA, DOCS_DATA, TICK_HZ, bundle_ids, deco_slots, foe_slots,
+from common import (ASSETS, PACK_DATA, TABLES, TICK_HZ, bundle_ids, deco_slots, foe_slots,
                     load_json, out_text, res_path)
 import sprite_meta
 import tres
@@ -66,12 +66,12 @@ def sprite_in(folder: str, pattern: str):
 
 
 def deco_paths(zone: int) -> list[str]:
-    """The files of deco slots 0-69 (common) and the zone's own, from the slot table docs/data/sprite_slots.json."""
+    """The files of deco slots 0-69 (common) and the zone's own, from the slot table tools/analysis/data/sprite_slots.json."""
     return copy_ids(deco_slots(zone), lambda slot, pid: deco_file(zone, slot))
 
 
 def foe_paths(zone: int) -> list[str]:
-    """The files of creature slots 0-27 (common), 28-34 (ink) and 35+ (the zone's own), from docs/data/sprite_slots.json."""
+    """The files of creature slots 0-27 (common), 28-34 (ink) and 35+ (the zone's own), from tools/analysis/data/sprite_slots.json."""
     return copy_ids(foe_slots(zone), lambda slot, pid: foe_file(zone, slot))
 
 
@@ -95,10 +95,10 @@ def write_meta() -> None:
 
 
 def write_bubble_rules() -> None:
-    """The ambient bubbles' spawn rule, motion and picture order (BUBBLES.C), from docs/data/bubbles.json. The sizes of the eight
+    """The ambient bubbles' spawn rule, motion and picture order (BUBBLES.C), from extracted/tables/bubbles.json. The sizes of the eight
     pictures (the original's own table) go into the rules too: its spawn range (x) and its despawn test (picture height) read them,
     and a rule must not depend on which picture is on disk."""
-    amb = load_json(DOCS_DATA / "bubbles.json")["ambient"]
+    amb = load_json(TABLES / "bubbles.json")["ambient"]
     t = tres.Tres("Resource", "BubbleRules", SCRIPTS + "bubble_rules.gd")
     t.set("spawn_chance", str(amb["spawn_chance"]))
     t.set("spawn_y", str(amb["spawn_y"]))
@@ -116,19 +116,6 @@ def write_bubble_rules() -> None:
     out_text(PACK_DATA / "bubble_rules.tres", t.render())
 
 
-def write_closing_crew() -> None:
-    """The six sailors of the Expert closing's deck shot (CLOSING.C), from docs/data/expert_closing.json.
-    Each script is stored flat: 4 numbers [op, item, mirror, delay] per record."""
-    data = load_json(DOCS_DATA / "expert_closing.json")
-    t = tres.Tres("Resource", "ClosingCrewScripts", SCRIPTS + "closing_crew_scripts.gd")
-    t.set("first_picture", str(data["first_picture"]))
-    t.set("start_x", tres.packed_ints([p[0] for p in data["start_positions"]]))
-    t.set("start_y", tres.packed_ints([p[1] for p in data["start_positions"]]))
-    t.set("scripts", tres.array("PackedInt32Array",
-                                [tres.packed_ints([v for record in script for v in record]) for script in data["scripts"]]))
-    out_text(PROJECT_DATA / "closing_crew.tres", t.render())
-
-
 # ---- run ------------------------------------------------------------------------
 
 def run() -> None:
@@ -144,9 +131,9 @@ def run() -> None:
              sprite_frames_tres(sub, [(n, pick(sub, idx), loop) for n, idx, loop in amap.SUB]))
 
     pieces = copy_ids(bundle_ids(17), sprite_in("pieces", "piece_%(i)02d"))
-    # The pieces animate (DrawProbePieces 0x42dc3b, docs/data/piece_animation.json): the canister flashes between pictures
+    # The pieces animate (DrawProbePieces 0x42dc3b, extracted/tables/piece_animation.json): the canister flashes between pictures
     # 3 and 4, every other piece is a rock that sparkles on 3 of 16 game frames. One entry per game tick.
-    anim = load_json(DOCS_DATA / "piece_animation.json")
+    anim = load_json(TABLES / "piece_animation.json")
     out_text(SPRITE_FRAMES_DIR / "pieces_frames.tres",
              sprite_frames_tres(pieces, [("canister", pick(pieces, anim["canister_pictures"]), True),
                                          ("rock", pick(pieces, anim["rock_pictures"]), True)]))
@@ -164,5 +151,4 @@ def run() -> None:
 
     write_meta()
     write_bubble_rules()
-    write_closing_crew()
-    print("  sprites: decos x5, foes x7, sub, pieces, station, fx, metadata, bubble rules, closing crew")
+    print("  sprites: decos x5, foes x7, sub, pieces, station, fx, metadata, bubble rules")

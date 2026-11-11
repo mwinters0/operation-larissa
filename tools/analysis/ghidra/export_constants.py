@@ -1,13 +1,20 @@
 """Export constant tables found with Ghidra straight from ONWIN32.EXE (no Ghidra needed to run this).
 Each address was identified in the decompilation; see docs/port/DESIGN.md for the functions that read them.
-Writes docs/data/{music_map,ink_tables,hud_gauges,lock_wheel,ballast,piece_animation,dissolve_tables}.json
+Writes extracted/tables/{music_map,ink_tables,hud_gauges,lock_wheel,ballast,piece_animation,dissolve_tables,expert_closing}.json: the importer's "tables" step
+(tools/import/step_extract.py) runs it, and the files are git-ignored (the game's own tables).
+Run:  uv run tools/analysis/ghidra/export_constants.py
 """
 import json, struct
 import sys
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))   # gamefiles.py reads the CD image (NEPTUNE.ISO)
+sys.path.append(str(ROOT / "tools" / "import"))   # common.py: where extracted/ and its tables/ are
+import utf8_mode
+utf8_mode.ensure()   # Windows: UTF-8 mode, like every entry point of the importer
 import gamefiles
+from common import TABLES
+OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else TABLES   # the importer passes common.TABLES
 D = gamefiles.read("ONWINCD/ONWIN32.EXE")
 pe = struct.unpack_from('<I', D, 0x3c)[0]
 nsec = struct.unpack_from('<H', D, pe + 6)[0]; opt = pe + 24; szopt = struct.unpack_from('<H', D, pe + 20)[0]
@@ -27,9 +34,10 @@ def u32(a): return struct.unpack('<I', rd(a, 4))[0]
 def cstr(a):
     o = off(a); return D[o:D.index(b'\0', o)].decode('latin1')
 def arr(a, n, fmt='B'): return list(struct.unpack('<%d%s' % (n, fmt), rd(a, n * struct.calcsize(fmt))))
-out = ROOT / "docs/data"
+out = OUT
+out.mkdir(parents=True, exist_ok=True)
 def dump_json(obj, path):
-    with open(path, "w") as f: json.dump(obj, f, indent=1)
+    with open(path, "w", newline="\n") as f: json.dump(obj, f, indent=1)
 
 ids = arr(0x440dd8, 10, 'I'); names = [cstr(u32(0x440e28 + 4 * i)) for i in range(10)]
 dump_json({"_doc": "Music id -> MIDI file. LoadMidiFile (0x413e8c) looks the id up in the table @0x440dd8, then opens SOUNDS\\<X><rest> where X='B' "
@@ -57,7 +65,7 @@ dump_json({"_doc": "HUD gauges on the 640x400 screen (DisplayBezel 0x419eec, Dis
            "ink_pellets": {"max": 21, "pic_full": 4, "pic_empty": 5, "xy": [list(p) for p in zip(xy[0::2], xy[1::2])], "dirty_rect": [0x80, 0x16c, 0xc4, 0x1e]},
            "bezel_background": {"pic": 0, "xy": [0xc, 0x144]}}, out / "hud_gauges.json")
 
-lock = {"_doc": "Combination lock (type 0). Label tables: variant = record field f0 (0, 5, 8, 11 occur); 12 sets of 8 labels each. "
+lock = {"_doc": "Combination lock (type 0). Label tables: variant = record field f0 (0, 5, 8, 11 occur); 12 sets of 8 labels each, the EXE's static bytes: DoCombinationLock loads strings 11219-11245 over the decimal ones at run time (step_problems.lock_labels). "
         "Timing in 73 Hz ticks: DoCombinationLock 0x421780; each operand is brought up by spinning wheel A one quarter-slot per 9 ticks (sound 0x26) "
         "until slot (8-n)*4, then sound 0x27; the answer wheel B then advances one slot = 4 sub-steps x 9 ticks = 36 ticks (sound 0x26 each), "
         "followed by a 73-tick window in which Space / Enter / click stops it. Correct iff wheel position == (8-answer_slot)*4 (0 if slot 0). "
@@ -120,4 +128,4 @@ dump_json({"_doc": "Expert closing, deck shot (ExpertClosingSequence 0x41c650 ..
            "every actor, so an actor that draws nothing in a step is invisible in it.",
            "first_picture": 2012, "ops": {"-8": "wait", "-7": "down 10", "-6": "up 10", "-5": "left 4", "-4": "right 4", "-3": "end", "-2": "draw"},
            "start_positions": crew_pos, "scripts": crew_scripts}, out / "expert_closing.json")
-print("wrote 7 files to", out)
+print("wrote 8 files to", out)

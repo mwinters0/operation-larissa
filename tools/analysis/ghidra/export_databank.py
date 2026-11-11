@@ -1,5 +1,5 @@
 """Export the data canister's log screen tables (DATABANK.C: `DoDataBank` (0x41e18f), `PrepareCanisterLog` (0x41e787)) to
-docs/data/databank.json.
+extracted/tables/databank.json.
 
 Pure Python (no Ghidra needed): every table is read straight from the EXE's data segment, the addresses come from the
 Ghidra decompilation (see `names_onwin32.json` / `labels_onwin32.json`).
@@ -23,7 +23,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))   # gamefiles.py reads the CD image (NEPTUNE.ISO)
+sys.path.append(str(ROOT / "tools" / "import"))   # common.py: where extracted/ and its tables/ are
+import utf8_mode
+utf8_mode.ensure()   # Windows: UTF-8 mode, like every entry point of the importer
 import gamefiles
+from common import TABLES
+OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else TABLES   # the importer passes common.TABLES
 D = gamefiles.read("ONWINCD/ONWIN32.EXE")
 pe = struct.unpack_from("<I", D, 0x3C)[0]
 nsec = struct.unpack_from("<H", D, pe + 6)[0]
@@ -80,6 +85,7 @@ out = {
 }
 for k in ("unlock_order_voyager", "unlock_order_expert"):
     assert sorted(out[k]) == list(range(1, 16)), k
-path = ROOT / "docs/data/databank.json"
-path.write_text(json.dumps(out, indent=1) + "\n")
+OUT.mkdir(parents=True, exist_ok=True)
+path = OUT / "databank.json"
+path.write_text(json.dumps(out, indent=1) + "\n", newline="\n")
 print("wrote", path)

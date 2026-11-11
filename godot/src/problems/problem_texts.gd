@@ -5,7 +5,7 @@ extends RefCounted
 ## Teaches: a rule table written as plain code. In the original, one small function per type
 ## ("PromptSubst", "HintSubst", "SolutionSubst") picks the text index from the record and the
 ## educational level and fills the variable slots with numbers or strings. DESIGN 5.4 and
-## docs/data/problem_fields.json describe all 34; here they are 34 short `_type_NN` functions
+## tools/analysis/data/problem_fields.json describe all 34; here they are 34 short `_type_NN` functions
 ## that fill a `Wording`. `ProblemInstance` then renders the wording with `TextTemplate`.
 ##
 ## Vocabulary: `L` is the educational level (0-3), `r` the stored record, `f(i)` its i-th field.

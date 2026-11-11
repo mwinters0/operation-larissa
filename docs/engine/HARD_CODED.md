@@ -20,10 +20,9 @@ running). Paths are under `godot/`. A pack on the chain inherits whatever is pro
   overrides only launch, dock, sign_in, news and fade; dissolve (21), log scan (5 x 6), problem message and silent speech (146), key flash (12),
   surface-ship wait (1460) and the balloon come from the base, and some engine tests (of creatures, problems and the log, and audio) assert those numbers. Fix: a neutral
   base (or every pack gives every key) and the original's numbers in legacy's own file.
-- `data/story/*.tres` (`title_ship`, `title_reveal`, `news_ambient`, `story_script`, `expert_deck`, `expert_hoist`, `expert_wait`,
-  `voyager_closing_script`) and `data/closing_crew.tres`: the original's cutscene timelines and crew, project-level, not pack data.
-  `Progression.VOYAGER_*` / `EXPERT_*` constants exist (unused by the dev flow).
-- `data/ui/menu_layout.tres`: the original's popup x positions.
+- `data/ui/menu_layout.tres`: the popup x positions of the menu bar, measured with the theme font (`MENU_TITLE_X` in `tools/import/step_console.py`), not read
+  from the original.
+- `Progression.VOYAGER_*` / `EXPERT_*` constants exist (unused by the dev flow).
 - `data/rules/tuning.json` (read by `Tuning`): the original's rule values, the sub's wall box, frame rectangles, light and hit-bubble tables among them, the oxygen, ink
   and midpoint limits, the trigger countdown and the lock wheel's waits. A pack's `rules/tuning.json` goes over it key by key; a pack that states none plays as the original.
 - `data/sectors`, `data/campaigns` (`Catalog.SECTORS_DIR`, `CAMPAIGNS_DIR`) are the lowest layer under the chain; the editors make new sectors there.

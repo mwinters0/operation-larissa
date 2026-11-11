@@ -1,6 +1,7 @@
 """pytest checks of the label tables step_problems.py builds for the combination lock and the ballast panel: the strings
 `DoCombinationLock` (0x421780) and `LoadBallastLabels` (0x419d96) load replace the EXE's static decimal labels. The strings here are
-made up by the test (a label's number with the padding the loaded text does not have); no legacy pack is needed."""
+made up by the test (a label's number with the padding the loaded text does not have); the static labels come from the tables the importer's
+"tables" step wrote (extracted/tables/lock_wheel.json, ballast.json), so the tests are legacy ones."""
 import sys
 from pathlib import Path
 
@@ -11,10 +12,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common
 import step_problems as sp
 
+pytestmark = pytest.mark.legacy
+
 
 def strings_like_the_game() -> dict:
     """string id -> text for the ids the loaders use: the number of the static label at that place, written "0.5" for " .5"."""
-    lock = common.load_json(common.DOCS_DATA / "lock_wheel.json")
+    lock = common.load_json(common.TABLES / "lock_wheel.json")
     out = {}
 
     def write(ids, static):
@@ -30,7 +33,7 @@ def strings_like_the_game() -> dict:
 
 
 def test_the_lock_shows_the_loaded_decimal_labels_and_keeps_the_others():
-    lock = common.load_json(common.DOCS_DATA / "lock_wheel.json")
+    lock = common.load_json(common.TABLES / "lock_wheel.json")
     operand, answer = sp.lock_labels(lock, strings_like_the_game())
     assert operand[7] == operand[8] == ["0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8"]
     assert operand[11] == ["0.10", "0.20", "0.30", "0.40", "0.50", "0.60", "0.70", "0.80"]
@@ -43,7 +46,7 @@ def test_the_lock_shows_the_loaded_decimal_labels_and_keeps_the_others():
 
 
 def test_the_ballast_panel_shows_the_loaded_labels_in_mode_1_only():
-    modes = common.load_json(common.DOCS_DATA / "ballast.json")["modes"]
+    modes = common.load_json(common.TABLES / "ballast.json")["modes"]
     labels = sp.ballast_labels(modes, strings_like_the_game())
     assert labels["1"] == ["0.01"] * 4 + ["0.05"] * 2 + ["0.10"] + ["0.25"] * 3
     assert labels["0"] == modes["0"]["labels"]
@@ -53,6 +56,6 @@ def test_the_ballast_panel_shows_the_loaded_labels_in_mode_1_only():
 def test_a_loaded_string_that_says_another_number_is_refused():
     strings = strings_like_the_game()
     strings["11223"] = "0.9"                      # the fifth tenth: " .5" in the table
-    lock = common.load_json(common.DOCS_DATA / "lock_wheel.json")
+    lock = common.load_json(common.TABLES / "lock_wheel.json")
     with pytest.raises(AssertionError):
         sp.lock_labels(lock, strings)

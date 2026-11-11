@@ -10,7 +10,7 @@ committed, bytes not" fixture form as sector_header.py (docs/port/FIDELITY.md).
     default levels  DS 0x25A8, 10 bytes                 the educational level (0-3) when the player did not customise the
                     game, indexed game * 5 + zone (game 0 = Voyager, 1 = Expert; zone 0-4)
 
-The bytes come from docs/data/trigger_table.json and docs/data/zone_defaults.json (tools/analysis/export_json.py reads them
+The bytes come from extracted/tables/trigger_table.json and extracted/tables/zone_defaults.json (tools/analysis/export_json.py reads them
 from the program); test_ds_tables.py checks both against ONWIN.EXE on the CD image when there is one. What the neighbours
 of the tables are is not known: the two bytes 0x20 0x21 follow the trigger table directly (DS 0x24B6), which is slot 63 if the table
 were one entry longer; the game's code reads 63 slots, so they are left out. The Godot side is TriggerTable.encode() and
@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import json
 
-from common import DOCS_DATA, GODOT, ORIGINAL_FIXTURES, load_json, sha256_hex
+from common import TABLES, GODOT, ORIGINAL_FIXTURES, load_json, sha256_hex
 
 DS_FILE_OFFSET = 0x3C200               # where the data segment starts in ONWIN.EXE
 SLOTS, LEVELS, PICKS = 63, 4, 2
@@ -40,7 +40,7 @@ def source_of(table: dict) -> dict:
 
 def trigger_table() -> bytes:
     """The 504 bytes, laid out [slot][level][pick]."""
-    rows = load_json(DOCS_DATA / "trigger_table.json")["trigger_to_type"]
+    rows = load_json(TABLES / "trigger_table.json")["trigger_to_type"]
     flat = bytes(v for slot in rows for level in slot for v in level)
     assert len(rows) == SLOTS and all(len(slot) == LEVELS for slot in rows) and len(flat) == TRIGGER_TABLE["size"]
     return flat
@@ -48,7 +48,7 @@ def trigger_table() -> bytes:
 
 def default_edu_levels() -> bytes:
     """The 10 bytes, indexed game * 5 + zone."""
-    data = load_json(DOCS_DATA / "zone_defaults.json")
+    data = load_json(TABLES / "zone_defaults.json")
     assert data["source"] == source_of(DEFAULT_EDU), "zone_defaults.json is not the table at DS 0x25A8"
     raw = bytes(data["default_edu_level"])
     assert len(raw) == DEFAULT_EDU["size"] and max(raw) <= 3, "an educational level is 0 to 3"
@@ -72,7 +72,7 @@ def encode_default_edu_levels(voyager: list[int], expert: list[int]) -> bytes:
 
 def _hash_fixture(what: str, table: dict, raw: bytes, test: str, encoder: str, raw_name: str) -> str:
     comment = ("Provenance and the SHA-256 hash of the ORIGINAL %s, written by tools/import/step_sectors.py "
-               "(import_all.py) from the program's data segment (docs/data/, from tools/analysis/export_json.py), never hand-edited. "
+               "(import_all.py) from the program's data segment (extracted/tables/, from tools/analysis/export_json.py), never hand-edited. "
                "It holds no original bytes: \"sha256\" is the hash of the whole table, the \"size\" bytes at \"file_offset\" of ONWIN.EXE "
                "(DS offset \"ds_offset\"). godot/tests/%s checks that %s hashes to it. The table bytes themselves are written "
                "to the git-ignored tests/fixtures/original/%s by the same importer run, for first-difference messages. "

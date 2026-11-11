@@ -1,5 +1,5 @@
 """Export the ambient bubbles (BUBBLES.C) and the bubble-like overlays that `DrawSub` puts on the sub to
-docs/data/bubbles.json.
+extracted/tables/bubbles.json.
 
 Pure Python (no Ghidra needed to run it): the constants below were read in the Ghidra decompilation of ONWIN32.EXE
 (see `names_onwin32.json`), the tables are read straight from the EXE's data segment, and the frame order of each
@@ -49,7 +49,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))   # gamefiles.py reads the CD image (NEPTUNE.ISO)
+sys.path.append(str(ROOT / "tools" / "import"))   # common.py: where extracted/ and its tables/ are
+import utf8_mode
+utf8_mode.ensure()   # Windows: UTF-8 mode, like every entry point of the importer
 import gamefiles
+from common import EXTRACTED, TABLES
+OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else TABLES   # the importer passes common.TABLES
 D = gamefiles.read("ONWINCD/ONWIN32.EXE")
 pe = struct.unpack_from('<I', D, 0x3c)[0]
 nsec = struct.unpack_from('<H', D, pe + 6)[0]
@@ -78,11 +83,11 @@ def signed_bytes(addr: int, n: int) -> list[int]:
 
 # --- the bubble picture bundle -------------------------------------------------------------------------------------
 # Logical bundle 0x27 -> real bundle 22 through the id table (OTHR 15001, 16-bit entries indexed by logical id).
-ID_TABLE = struct.unpack('<%dh' % 875, (ROOT / "extracted/data/ONWIN32_resources/OTHR_15001.bin").read_bytes())
+ID_TABLE = struct.unpack('<%dh' % 875, (EXTRACTED / "data/ONWIN32_resources/OTHR_15001.bin").read_bytes())
 LOGICAL_BUNDLE = 0x27
 REAL_BUNDLE = ID_TABLE[LOGICAL_BUNDLE]
 assert REAL_BUNDLE == 22, REAL_BUNDLE
-bundles = json.loads((ROOT / "extracted/images/sprite_bundles.json").read_text())
+bundles = json.loads((EXTRACTED / "images/sprite_bundles.json").read_text())
 frames = bundles[str(REAL_BUNDLE)]["frames"]
 sizes = [(f["w"], f["h"]) for f in frames]
 assert len(sizes) == 8
@@ -167,5 +172,6 @@ out = {
         },
     },
 }
-(ROOT / "docs/data/bubbles.json").write_text(json.dumps(out, indent=1) + "\n")
-print("wrote docs/data/bubbles.json")
+OUT.mkdir(parents=True, exist_ok=True)
+(OUT / "bubbles.json").write_text(json.dumps(out, indent=1) + "\n", newline="\n")
+print("wrote", OUT / "bubbles.json")

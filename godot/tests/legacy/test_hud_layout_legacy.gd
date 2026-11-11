@@ -1,6 +1,6 @@
 class_name TestHudLayoutLegacy
 extends GdUnitTestSuite
-## Teaches: checking generated data against its source. The original's `HudLayout` is produced from numbers decompiled with Ghidra (`docs/data/*.json`); these
+## Teaches: checking generated data against its source. The original's `HudLayout` is produced from numbers decompiled with Ghidra (`extracted/tables/hud_gauges.json`); these
 ## tests re-read the JSON and compare, so a wrong generator or a hand edit shows up here. (The rules every layout keeps: tests/engine/test_hud_layout.gd.)
 
 ## Without the legacy pack (the original game, made by the importer from your own copy) this suite skips.
@@ -14,7 +14,7 @@ var _layout: HudLayout = load(LegacyPack.ROOT + "data/ui/hud_layout.tres")
 
 
 func _json(name: String) -> Dictionary:
-	return JSON.parse_string(FileAccess.get_file_as_string("res://../docs/data/%s.json" % name))
+	return JSON.parse_string(FileAccess.get_file_as_string("res://../extracted/tables/%s.json" % name))
 
 
 func test_gauge_positions_are_the_decompiled_ones() -> void:

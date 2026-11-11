@@ -17,7 +17,7 @@ extends RefCounted
 ##     replaces whatever the blocks missed (the last column of the box).
 ##
 ## The tables are the 16 bytes at 0x441188 (columns) and 0x441198 (rows) of ONWIN32.EXE
-## (`docs/data/dissolve_tables.json`, checked by `tests/engine/test_tank_loss_dissolve.gd`).
+## (`extracted/tables/dissolve_tables.json`, checked by `tests/engine/test_tank_loss_dissolve.gd`).
 
 const COLUMN_ORDER: Array[int] = [11, 13, 5, 14, 7, 1, 15, 2, 0, 3, 8, 4, 9, 12, 6, 10]
 const ROW_ORDER: Array[int] = [13, 11, 6, 10, 3, 1, 15, 0, 12, 5, 7, 2, 4, 14, 9, 8]

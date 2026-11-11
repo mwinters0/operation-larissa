@@ -5,7 +5,7 @@ extends StorySegment
 ## `OpeningSequence` (OPENING.C) and its Start / Intro prompt.
 ##
 ## Teaches: a long, timed animation that is DATA (`data/story/title_ship.tres` and `title_reveal.tres`, `CutsceneTimeline`s
-## the importer wrote) played by one `AnimationPlayer` this script builds: stepped movement (`position` keys that JUMP,
+## of the pack; the legacy pack's are written by the importer) played by one `AnimationPlayer` this script builds: stepped movement (`position` keys that JUMP,
 ## because the original redraws every 12 ticks and moves 8 px per redraw), picture swaps (discrete `texture` keys), a CLIPPED
 ## picture (the `region_rect` of the sinking sub shrinks until nothing is left), sounds and events (method tracks) -- plus how
 ## to hand the player a choice at the end (`TextureButton`s and keys). The script only says which node plays which actor of the
@@ -18,16 +18,14 @@ extends StorySegment
 ##            story begins by itself.
 ##
 ## All the numbers of the ship scene come from the original's own per-redraw routines, decoded into one table
-## (docs/data/opening.json, written into the timeline by the importer): where the hull, the radar, the hook, the sub and the
+## (extracted/tables/opening.json, written into the timeline by the importer): where the hull, the radar, the hook, the sub and the
 ## spray are in each of the 163 frames. The sub is NOT fixed to the ship: the hook lets go, it falls 6 px per frame into the water,
 ## splashes, and the original draws it with a clip rectangle ending at the waterline (screen row 312), so it sinks
 ## out of sight while the ship sails on without it.
 
 enum Phase { SHIP, REVEAL, PROMPT }
 
-## The ship scene (163 frames of 12 ticks) and the reveal of the title (three holds of 292 ticks), as data.
-const SHIP_TIMELINE := preload("res://data/story/title_ship.tres")
-const REVEAL_TIMELINE := preload("res://data/story/title_reveal.tres")
+# The ship scene (`title_ship`) and the reveal of the title (`title_reveal`) are the pack's data (`Catalog.story_timeline`).
 
 const SUB_SIZE := Vector2(72, 44)
 const SPLASH_FIRST_PICTURE := &"spray_0"    # five 76 x 50 pictures (`spray_0` .. `spray_4`)
@@ -55,14 +53,16 @@ var _waves_front: Sprite2D
 var _splashes: Array[Sprite2D] = []
 var _titles: Dictionary = {}          # name -> Sprite2D, shown one after the other during REVEAL
 var _cast: CutsceneCast
+var _reveal: CutsceneTimeline
 
 
 func _ready() -> void:
 	_cast = CutsceneCast.new(self)
 	_build_stage()
 	_build_prompt()
-	Cutscene.install_timeline(animations, &"ship", SHIP_TIMELINE, _cast)
-	Cutscene.install_timeline(animations, &"reveal", REVEAL_TIMELINE, _cast)
+	_reveal = Catalog.story_timeline(&"title_reveal")
+	Cutscene.install_timeline(animations, &"ship", Catalog.story_timeline(&"title_ship"), _cast)
+	Cutscene.install_timeline(animations, &"reveal", _reveal, _cast)
 	animations.animation_finished.connect(_on_animation_finished)
 	prompt_timer.wait_time = PROMPT_TIMEOUT
 	prompt_timer.one_shot = true
@@ -222,11 +222,11 @@ func advance() -> void:
 func _end_hold() -> void:
 	if done:
 		return
-	var marks := REVEAL_TIMELINE.marks
+	var marks := _reveal.marks
 	var position := animations.current_animation_position
 	var target: StringName = &"operation" if position < CutsceneTimeline.seconds(marks[&"operation"]) else &"neptune"
 	animations.seek(CutsceneTimeline.seconds(marks[target]) + 0.001, true)       # (a hair past the key, so that playing on does not fire it again)
-	for cue_entry in REVEAL_TIMELINE.cues:
+	for cue_entry in _reveal.cues:
 		if is_equal_approx(cue_entry.tick, marks[target]):
 			if cue_entry.kind == CutsceneCue.SOUND:
 				play_sfx(cue_entry.cue_name)

@@ -61,7 +61,7 @@ var invulnerability_ticks: int = 0
 var blink_ticks: int = 0
 var bubble_ticks: int = 0
 
-# --- ink pellets (StartStunGun / UpdateStunGun, docs/data/ink_tables.json) -------
+# --- ink pellets (StartStunGun / UpdateStunGun, extracted/tables/ink_tables.json) -------
 ## Where a pellet appears, relative to the sub picture's top-left corner, per sprite cell.
 var ink_spawn_dx := PackedInt32Array()
 var ink_spawn_dy := PackedInt32Array()
@@ -76,7 +76,7 @@ var ink_steps_per_tick: int = 0
 var ink_splash_dx := PackedInt32Array()
 var ink_splash_dy := PackedInt32Array()
 
-# --- what DrawSub puts on the sub (docs/data/bubbles.json, DESIGN 3.3) -------------
+# --- what DrawSub puts on the sub (extracted/tables/bubbles.json, DESIGN 3.3) -------------
 ## The hit bubbles (sub pictures 9-12): left edge relative to the sub picture's left edge, per sprite cell.
 var hit_bubble_x_by_cell := PackedInt32Array()
 ## The blinking message light (sub picture 8) is drawn only in these cells (the sub is seen from the side).

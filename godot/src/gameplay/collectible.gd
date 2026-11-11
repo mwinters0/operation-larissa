@@ -4,9 +4,9 @@ extends Node2D
 ##
 ## Teaches (animation): an `AnimatedSprite2D` whose frame is set by the GAME CLOCK instead of by `play()`. The original draws
 ## every piece once per game frame from one counter that runs 0..15 and is shared by all pieces (`DrawProbePieces` 0x42dc3b,
-## docs/data/piece_animation.json): the data canister flashes red / green on every tick, every other piece is a rock that sparkles
-## on 3 of the 16 ticks. The `SpriteFrames` animations "canister" (2 frames) and "rock" (16 frames, one per tick) are generated
-## from that data, so `frame` is simply `GameClock.tick_count % frame_count` and every piece stays in step, even after a screen
+## extracted/tables/piece_animation.json): the data canister flashes red / green on every tick, every other piece is a rock that sparkles
+## on 3 of the 16 ticks. The `SpriteFrames` animations "canister" (2 frames) and "rock" (16 frames, one per tick) of the legacy pack are generated
+## from that data; a pack may give them any number of frames. `frame` is simply `GameClock.tick_count % frame_count`, so every piece stays in step, even after a screen
 ## change. When the clock stops (a problem is up) the pieces freeze, like everything else.
 ##
 ## Whether the sub takes the piece (the rectangle arithmetic of `CheckProbeCollision`) is `PieceModel`'s rule; this node is a plain

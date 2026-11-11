@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import copy
 
-from common import ASSETS, PACK_DATA, DOCS_DATA, EXTRACTED, bundle_ids, load_json, out_text, png_size, raw_table, res_path
+from common import ASSETS, PACK_DATA, ANALYSIS_DATA, TABLES, EXTRACTED, bundle_ids, load_json, out_text, png_size, raw_table, res_path
 from pictures import problem_art_file
 import problem_tables
 import tres
@@ -40,7 +40,7 @@ def extra_art(t_id: int) -> list[str]:
     return [res_path(problem_art_file("single", 1803))] + [res_path(problem_art_file("b078", i)) for i in bundle_ids(78)]
 
 
-# How a typed answer is compared, per type (DESIGN 5.2 item 7 / docs/data/problem_fields.json):
+# How a typed answer is compared, per type (DESIGN 5.2 item 7 / tools/analysis/data/problem_fields.json):
 #   (mode, tolerance per educational level 0-3, levels whose answer KIND (fraction vs decimal) must match)
 #   exact: |a-b| < 1e-10        near: |a-b| <= |expected| * tol        close: |a-b| <= tol
 #   range: strictly between two stored bounds   sum: ballast, a set of denominations   wheel: lock
@@ -168,7 +168,7 @@ def ballast_labels(modes: dict, strings: dict) -> dict:
 def extras_for(t_id: int) -> str:
     """Small side tables some types need, as a Dictionary literal (or {})."""
     if t_id == 0:
-        lock = load_json(DOCS_DATA / "lock_wheel.json")
+        lock = load_json(TABLES / "lock_wheel.json")
         operand, answer = lock_labels(lock, load_json(EXTRACTED / "data" / "ONWIN16_strings.json"))
         by_set = lambda labels: tres.dictionary((tres.s(str(k)), tres.packed_strings(v)) for k, v in sorted(labels.items()))
         return tres.dictionary([
@@ -177,7 +177,7 @@ def extras_for(t_id: int) -> str:
             (tres.s("operators"), tres.packed_strings(lock["operator_strings"])),
         ])
     if t_id in (28, 29):
-        ballast = load_json(DOCS_DATA / "ballast.json")["modes"]
+        ballast = load_json(TABLES / "ballast.json")["modes"]
         labels = ballast_labels(ballast, load_json(EXTRACTED / "data" / "ONWIN16_strings.json"))
         by_level = [0, 2, 1, 2]       # BallastMode (0x448694): level 0 -> mode 0 (cents), 1 -> 2 (powers of two), 2 -> 1 (dollars), 3 -> 2
         return tres.dictionary([
@@ -257,9 +257,9 @@ def run() -> None:
         "texts_by_bundle": load_json(EXTRACTED / "data" / "NEP_text_by_bundle.json"),
         "bundles": load_json(EXTRACTED / "data" / "NEP_bundles.json"),
         "titles": load_json(EXTRACTED / "data" / "ONWIN16_strings.json"),
-        "gfx_real": load_json(DOCS_DATA / "problem_gfx_bundles.json")["gfx_real"],
-        "fields": load_json(DOCS_DATA / "problem_fields.json"),      # meaning of every field (DESIGN 5.4)
-        "diagrams": load_json(DOCS_DATA / "problem_diagrams.json"),  # how the original draws each type (DESIGN 5.5)
+        "gfx_real": load_json(TABLES / "problem_gfx_bundles.json")["gfx_real"],
+        "fields": load_json(ANALYSIS_DATA / "problem_fields.json"),      # meaning of every field (DESIGN 5.4)
+        "diagrams": load_json(TABLES / "problem_diagrams.json"),  # how the original draws each type (DESIGN 5.5)
     }
     for i in range(34):
         out_text(PACK_DATA / "problems" / ("problem_type_%02d.tres" % i), build_problem_type(i, ctx))

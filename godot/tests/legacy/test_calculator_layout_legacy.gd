@@ -1,6 +1,6 @@
 class_name TestCalculatorLayoutLegacy
 extends GdUnitTestSuite
-## The original's calculator layout (docs/data/console_layout.json from the decompiled hotspot table): where the picture sits, the 22 key
+## The original's calculator layout (tools/analysis/data/console_layout.json from the decompiled hotspot table): where the picture sits, the 22 key
 ## rectangles, the LCD cell, the answer box. These check the legacy pack's data; the widget's behaviour on any layout is tests/engine/test_calculator_layout.gd.
 
 var _layout: CalculatorLayout = load(LegacyPack.ROOT + "data/ui/calculator_layout.tres") if LegacyPack.present() else null
@@ -27,7 +27,7 @@ func test_digit_keys_form_the_grid_of_the_picture() -> void:
 
 
 func test_hotspots_match_the_original_json() -> void:
-	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../docs/data/console_layout.json"))
+	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../tools/analysis/data/console_layout.json"))
 	for entry in data.calculator.keys:
 		var r: Array = entry.rect
 		assert_object(_layout.key_rect(entry.key)).is_equal(Rect2i(r[0], r[1], r[2], r[3]))

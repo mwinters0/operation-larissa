@@ -8,7 +8,7 @@ extends GdUnitTestSuite
 ## the same bytes. `tools/run_tests.sh legacy` with `NEPTUNE_LEGACY_AS_DATA=1` plays this export (docs/engine/DEVELOPING.md); this file proves that it is the same game.
 
 ## The classes every pack of the original holds (each must have been met by the round trip).
-const KINDS := ["ZoneTable", "TriggerTable", "SpriteMetaTable", "CutsceneTimeline", "HudLayout", "CalculatorLayout", "StoryLayout", "ProblemScreenLayout",
+const KINDS := ["ZoneTable", "TriggerTable", "SpriteMetaTable", "CutsceneTimeline", "StoryScript", "VoyagerClosingScript", "ClosingCrewScripts", "HudLayout", "CalculatorLayout", "StoryLayout", "ProblemScreenLayout",
 		"TextTable", "SfxCatalog", "MusicCatalog", "VoiceIndex", "VoiceCues", "BubbleRules", "ProblemType", "SpriteFrames", "TileSet"]
 
 var _dir := ""
@@ -74,7 +74,7 @@ func test_every_resource_of_the_data_folder_round_trips() -> void:
 		assert_array(differences).override_failure_message("%s\n%s" % [rel, "\n".join(differences.slice(0, 8))]).is_empty()
 		seen[EngineJson.class_of(original) if EngineJson.class_of(original) != "" else original.get_script().get_global_name()] = true
 		count += 1
-	assert_int(count).is_equal(80)
+	assert_int(count).is_equal(89)
 	for kind in KINDS:
 		assert_bool(seen.has(kind)).override_failure_message("legacy holds no %s to round trip" % kind).is_true()
 

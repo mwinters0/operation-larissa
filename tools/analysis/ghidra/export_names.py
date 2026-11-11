@@ -88,7 +88,7 @@ def dump(d):
 def export(prog, directory, dry_run, log=print):
     """Compare the program with the JSON files in `directory`; write them unless dry_run. Returns #changes."""
     ng.check_program(prog)
-    layout = ng.REPO / "docs/data/problem_layouts32.json"
+    layout = ng.REPO / "tools/analysis/data/problem_layouts32.json"
     managed = set()      # (address key, name) pairs owned by apply_problem_types.py
     if layout.exists():
         for t, s in json.loads(layout.read_text())["types"].items():

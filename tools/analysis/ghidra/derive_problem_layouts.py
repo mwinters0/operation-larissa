@@ -1,4 +1,4 @@
-"""Rebuild docs/data/problem_layouts32.json from the decompiled problem-record reader.
+"""Rebuild tools/analysis/data/problem_layouts32.json from the decompiled problem-record reader.
 
   ./run.sh dump_c.py /tmp/pick.c ReadProblemRecord      # (before apply_problem_types.py is fine; names optional)
   uv run derive_problem_layouts.py /tmp/pick.c           # plain python, no Ghidra needed
@@ -53,5 +53,5 @@ for i in range(1, len(parts), 2):
     pending = []
 out = {"note": "Record layouts of the 34 problem types. mem_off = byte offset in ONWIN32.EXE's in-memory struct "
                "(CompactNumber = 9 bytes), file_off = offset inside one stored record in NEP.DLL.", "types": types}
-dst = Path(__file__).resolve().parents[3] / "docs/data/problem_layouts32.json"
+dst = Path(__file__).resolve().parents[3] / "tools/analysis/data/problem_layouts32.json"
 dst.write_text(json.dumps(out, indent=1)); print("wrote", dst, len(types), "types")

@@ -1,4 +1,4 @@
-"""Export how the original DRAWS each math problem (type 0-33) to docs/data/problem_diagrams.json.
+"""Export how the original DRAWS each math problem (type 0-33) to extracted/tables/problem_diagrams.json.
 
 No Ghidra needed to run this: the geometry below was transcribed from the decompiled
 `DrawProblemDiagram` (0x424f3d) and the `ProbNN_Diagram` functions of ONWIN32.EXE
@@ -23,7 +23,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))   # gamefiles.py reads the CD image (NEPTUNE.ISO)
+sys.path.append(str(ROOT / "tools" / "import"))   # common.py: where extracted/ and its tables/ are
+import utf8_mode
+utf8_mode.ensure()   # Windows: UTF-8 mode, like every entry point of the importer
 import gamefiles
+from common import TABLES
+OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else TABLES   # the importer passes common.TABLES
 D = gamefiles.read("ONWINCD/ONWIN32.EXE")
 _pe = struct.unpack_from('<I', D, 0x3c)[0]
 _nsec = struct.unpack_from('<H', D, _pe + 6)[0]
@@ -502,6 +507,7 @@ out = {
                [85, 85, 85], [85, 85, 255], [85, 255, 85], [85, 255, 255], [255, 85, 85], [255, 85, 255], [255, 255, 85], [255, 255, 255]],
     "types": {str(k): v for k, v in sorted(types.items())},
 }
-dest = ROOT / "docs/data/problem_diagrams.json"
-dest.write_text(json.dumps(out, indent=1) + "\n")
+OUT.mkdir(parents=True, exist_ok=True)
+dest = OUT / "problem_diagrams.json"
+dest.write_text(json.dumps(out, indent=1) + "\n", newline="\n")
 print("wrote", dest, len(types), "types")

@@ -4,7 +4,7 @@ extends RefCounted
 ## headers of the resources, no `SectorChecks`, no reachability search, no texture decoded), used by the start-up check and by `PackCheck`.
 ##
 ## THE CLOSURE has four layers, each derived from what the code asks for:
-##   * WHOLE FILES of a complete pack that `Catalog`, `Assets`, `SpriteMeta`, `NewsCartoon` and the theme load through `Packs.path`: `FILES` (declared here, one list), the
+##   * WHOLE FILES of a complete pack that `Catalog` (the cutscenes' choreography among it), `Assets`, `SpriteMeta`, `NewsCartoon` and the theme load through `Packs.path`: `FILES` (declared here, one list), the
 ##     sets of each zone (`PER_ZONE`, `PER_TILE_ZONE`) and the problem types (`Catalog.PROBLEM_TYPE_COUNT`; a type is a trusted pack's `.tres` or its `.json` in the data form).
 ##     `tests/engine/test_pack_needs.gd` keeps the list equal to what the dev pack holds under `data/`.
 ##   * PICTURES that code asks for by name: every `ui_picture` and `problem_art` name of the registry (`Assets` turns it into a file).
@@ -43,6 +43,15 @@ const FILES: Dictionary = {
 	"data/voice_cues.tres": "VoiceCues",
 	"data/music_catalog.tres": "MusicCatalog",
 	"data/story/news_cartoon.tres": "CutsceneTimeline",
+	"data/story/news_ambient.tres": "CutsceneTimeline",
+	"data/story/title_ship.tres": "CutsceneTimeline",
+	"data/story/title_reveal.tres": "CutsceneTimeline",
+	"data/story/expert_hoist.tres": "CutsceneTimeline",
+	"data/story/expert_deck.tres": "CutsceneTimeline",
+	"data/story/expert_wait.tres": "CutsceneTimeline",
+	"data/story/story_script.tres": "StoryScript",
+	"data/story/voyager_closing_script.tres": "VoyagerClosingScript",
+	"data/story/closing_crew.tres": "ClosingCrewScripts",
 	"data/ui/hud_layout.tres": "HudLayout",
 	"data/ui/calculator_layout.tres": "CalculatorLayout",
 	"data/ui/story_layout.tres": "StoryLayout",

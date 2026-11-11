@@ -34,7 +34,7 @@ def test_every_table_decodes_and_encodes_to_the_original_bytes():
 def test_the_layouts_have_no_gaps_and_every_kind_is_known():
     for t in range(pt.TYPES):
         kinds = pt.field_kinds(t)                           # asserts the gaps itself
-        assert set(kinds) <= set("cbwn") and pt.record_size(kinds) == common.load_json(common.DOCS_DATA / "problem_layouts32.json")["types"][str(t)]["record_size"]
+        assert set(kinds) <= set("cbwn") and pt.record_size(kinds) == common.load_json(common.ANALYSIS_DATA / "problem_layouts32.json")["types"][str(t)]["record_size"]
     assert "b" in pt.field_kinds(12) and "b" not in pt.field_kinds(11)
 
 

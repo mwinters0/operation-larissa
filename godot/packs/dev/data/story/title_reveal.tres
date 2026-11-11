@@ -1,0 +1,65 @@
+[gd_resource type="Resource" script_class="CutsceneTimeline" format=3]
+
+[ext_resource type="Script" path="res://src/resources/cutscene_timeline.gd" id="1_cutscene_timeline"]
+[ext_resource type="Script" path="res://src/resources/cutscene_track.gd" id="2_cutscene_track"]
+[ext_resource type="Script" path="res://src/resources/cutscene_cue.gd" id="3_cutscene_cue"]
+
+[sub_resource type="Resource" id="Track_1"]
+script = ExtResource("2_cutscene_track")
+actor = &"presents"
+property = &"visible"
+times = PackedFloat64Array(0, 100)
+values = [true, false]
+
+[sub_resource type="Resource" id="Track_2"]
+script = ExtResource("2_cutscene_track")
+actor = &"operation"
+property = &"visible"
+times = PackedFloat64Array(0, 100)
+values = [false, true]
+
+[sub_resource type="Resource" id="Track_3"]
+script = ExtResource("2_cutscene_track")
+actor = &"neptune"
+property = &"visible"
+times = PackedFloat64Array(0, 200)
+values = [false, true]
+
+[sub_resource type="Resource" id="Track_4"]
+script = ExtResource("2_cutscene_track")
+actor = &"copyright"
+property = &"visible"
+times = PackedFloat64Array(0, 200)
+values = [false, true]
+
+[sub_resource type="Resource" id="Cue_5"]
+script = ExtResource("3_cutscene_cue")
+tick = 0
+kind = &"sound"
+cue_name = &"opening_end"
+
+[sub_resource type="Resource" id="Cue_6"]
+script = ExtResource("3_cutscene_cue")
+tick = 100
+kind = &"sound"
+cue_name = &"opening_end"
+
+[sub_resource type="Resource" id="Cue_7"]
+script = ExtResource("3_cutscene_cue")
+tick = 200
+kind = &"sound"
+cue_name = &"opening_end"
+
+[sub_resource type="Resource" id="Cue_8"]
+script = ExtResource("3_cutscene_cue")
+tick = 200
+kind = &"event"
+cue_name = &"prompt"
+
+[resource]
+script = ExtResource("1_cutscene_timeline")
+length = 207.3
+tracks = Array[ExtResource("2_cutscene_track")]([SubResource("Track_1"), SubResource("Track_2"), SubResource("Track_3"), SubResource("Track_4")])
+cues = Array[ExtResource("3_cutscene_cue")]([SubResource("Cue_5"), SubResource("Cue_6"), SubResource("Cue_7"), SubResource("Cue_8")])
+marks = {&"presents": 0.0, &"operation": 100.0, &"neptune": 200.0}
+provenance = "Dev pack: the title in three holds of 100 ticks (tools/dev_pack/dev_story.py)."

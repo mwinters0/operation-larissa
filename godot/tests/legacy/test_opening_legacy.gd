@@ -174,7 +174,7 @@ func test_story_pages_show_nine_pages_in_order() -> void:
 	var story: StoryPages = auto_free(load(PAGES).instantiate())
 	add_child(story)
 	assert_array(_unresolved_tracks(story.animations)).is_empty()
-	assert_int(StoryPages.SCRIPT.pages.size()).is_equal(9)
+	assert_int(Catalog.story_script().pages.size()).is_equal(9)
 	await await_idle_frame()
 	assert_int(story.page_index).is_equal(0)
 	assert_object(story.caption.texture).is_not_null()
@@ -376,7 +376,7 @@ func test_no_effect_starts_while_the_window_is_inactive() -> void:
 
 
 func test_every_story_picture_exists() -> void:
-	var script: StoryScript = StoryPages.SCRIPT
+	var script: StoryScript = Catalog.story_script()
 	assert_object(Assets.ui_picture(script.background)).is_not_null()
 	for picture in script.ring_pictures:
 		assert_object(Assets.ui_picture(picture)).is_not_null()

@@ -2,7 +2,7 @@ class_name MusicCatalog
 extends Resource
 ## The ten songs of the original and where their rendered OGG files are.
 ##
-## The original numbers its songs 9500-9509 (docs/data/music_map.json: `LoadMidiFile` looks the id up in a
+## The original numbers its songs 9500-9509 (extracted/tables/music_map.json: `LoadMidiFile` looks the id up in a
 ## table) and plays the `E*.MID` files on a General MIDI card, the `B*.MID` files on an AdLib card. Godot cannot
 ## play MIDI, so the import pipeline renders both sets to OGG with FluidSynth (see tools/import/step_audio.py).
 ##

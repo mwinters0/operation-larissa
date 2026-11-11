@@ -95,7 +95,7 @@ legacy; dev has the same paths under `res://packs/dev/`.
 | Text | every string the game shows (menus, hints, story, log, messages) | `res://packs/legacy/data/problems/*.tres` text tables | a pack's `texts.json`; a campaign's own words |
 | Picture | sprites, tiles, backgrounds, interface and problem art | `res://packs/legacy/assets/` (PNG) | a pack's `pictures/`; a skin |
 | Sound, music, speech | effects, 20 MIDI songs rendered to OGG, 371 speech clips | `res://packs/legacy/assets/audio/` | a pack's `audio/` |
-| Story timeline | the opening, the title and the two closings as timed tracks | `res://packs/legacy/data/story/news_cartoon.tres`, the rest in `res://data/story/` | a complete pack replaces `news_cartoon.tres`; the rest is the project's, not a pack's |
+| Story timeline | the opening, the title and the two closings as timed tracks, the story pages, the Voyager flight, the Expert closing's sailors | `res://packs/legacy/data/story/*.tres` | a pack's `data/story/<name>.json` (the data form; a complete pack holds all of them) |
 | Duration | how long a station trip, a fade, a message takes | `res://data/rules/durations.json` | a pack's `rules/durations.json` |
 | Rule value | the sub's speeds, the air and ink limits, the respawn screen, the trigger countdown, the lock's waits | `res://data/rules/tuning.json` | a pack's `rules/tuning.json` |
 | Name | the friendly name of each sound, picture, song, sector ... | `res://names/original.json` | edit the registry; `tools/import/rename_name.py` |
@@ -161,9 +161,12 @@ measured once by the importer. For a pack's own clips the game measures each cli
 
 ### Story timelines
 
-The opening, the title and the two closings are timed tracks of data in `res://data/story/` and, for the news cartoon, `res://packs/legacy/data/story/` (a `CutsceneTimeline`: when each
-picture, text or sound happens, in ticks). The scenes only play them. The news cartoon is read from the chain (a complete pack has its own);
-the others are preloaded by the scenes, so no pack can replace them. A campaign without a closing of its own gets the **generic finale** (section 3).
+The opening, the title and the two closings are timed tracks of data in a pack's `data/story/` (a `CutsceneTimeline`: when each picture, text or sound
+happens, in ticks): `news_cartoon`, `news_ambient`, `title_ship`, `title_reveal`, `expert_hoist`, `expert_deck`, `expert_wait`; with them `story_script` (the
+pages of the opening story and how long each one holds), `voyager_closing_script` (the loop counts of the Voyager flight, run for the place the sub is in) and
+`closing_crew` (the Expert closing's six sailors' programs). The scenes only play them, and take each from the first pack of the chain that holds it. A
+complete pack holds all ten (`PackNeeds`; the dev pack's are short ones of its own, `tools/dev_pack/dev_story.py`). A campaign without a closing of its own gets the
+**generic finale** (section 3).
 
 ### Durations
 
@@ -450,7 +453,7 @@ The rules are code and no pack changes them. What is left is decided by where th
 | A pack outside the project **can** | A pack outside the project **cannot** |
 | --- | --- |
 | add or remake sectors (any number) and campaigns (any id) | hold scenes, GDScript, resources (`.tres`) or skins |
-| add or re-word texts (`texts.json`) | change the project's own data (the menu layout, the cutscene timelines) |
+| add or re-word texts (`texts.json`) | change the project's own data (the menu layout) |
 | carry a sandboxed mod script (`.sgd`, "Mod packs" below) | hold any other code: a `.gd`, a native library |
 | add or replace pictures of the six kinds above | |
 | add or replace sounds, songs, speech (OGG, WAV) | |
@@ -709,8 +712,7 @@ content pack's is what you see.
 | `godot/data/sectors/sector_32` and up | **your** sectors (a sector of yours goes here, whichever number is free from 32) | yes, if you commit them |
 | `godot/data/sectors/foe_annotations.json` | label names and comments of the creature scripts, also those of the legacy pack's sectors | yes |
 | `godot/data/campaigns/<your id>.tres` | your campaigns (and an optional `<id>/` folder: the pack source of what it uses) | yes |
-| `godot/data/ui/menu_layout.tres`, `godot/data/closing_crew.tres` | made from the program's code alone, no game content | yes |
-| `godot/data/story/` | cutscene timelines (all but `news_cartoon.tres`, which is a complete pack's) | yes |
+| `godot/data/ui/menu_layout.tres` | where the menu bar's popups open, measured with the theme font: no game content | yes |
 | `godot/data/rules/durations.json` | the durations (the base layer; the packs' `rules/durations.json` go over it) | yes |
 | `godot/data/rules/tuning.json` | the rule values (the base layer; the packs' `rules/tuning.json` go over it) | yes |
 | `godot/names/original.json` | the name registry | yes |
@@ -736,7 +738,7 @@ content.
 | `data/problems/`, `sprite_frames/`, `sprite_meta/` | problem types, text tables, the problem screen's layout (`screen_layout.tres`) and art index (`problem_art_index.json`), creature and deco frames, hit rectangles |
 | `data/zones.tres`, `trigger_table.tres`, `neptune_tileset.tres`, `bubble_rules.tres` | the rules' tables and the tile set |
 | `data/{sfx,music}_catalog.tres`, `voice_index.tres`, `voice_cues.tres` | what the sounds and speech groups are |
-| `data/ui/{hud,calculator,story}_layout.tres`, `data/story/news_cartoon.tres` | interface layout and the news cartoon |
+| `data/ui/{hud,calculator,story}_layout.tres`, `data/story/*.tres` | interface layout and the cutscenes' choreography (the news cartoon, the title, the closings, the story pages) |
 | `midi/` | the original MIDI files, for music from MIDI |
 
 The game lists sectors and campaigns from the whole chain and from the project (`Catalog`): a pack's are in the pack, the ones you make with the editors in `godot/data/`.
@@ -773,7 +775,7 @@ Delete `roster.json` to wipe the players. Delete `packs/` to remove every instal
 | --- | --- | --- |
 | `NEPTUNE.ISO` | your CD image | **never** |
 | `extracted/` | what the first import step pulls from the ISO | **never** |
-| `docs/data/` | facts read from the program's code (committed), and seven tables dumped from the ISO (`sectors.json`, `problem_records.json`, `problem_tables_raw.json`, `problem_gfx_bundles.json`, `trigger_table.json`, `zone_defaults.json`, `onwin_map.json`; not committed) | mostly |
+| `tools/analysis/data/` | our own analysis of the program (layouts, field meanings, console and sprite-slot tables) | yes |
 | `soundfonts/` | optional `.sf2` files for rendering or playing music | no |
 | `godot/tests/fixtures/original/` | the original bytes, written by the importer, for the fidelity tests | no |
 | `godot/data/legacy/` | your hand corrections of the speech transcripts | no |
@@ -785,14 +787,14 @@ The rule is one sentence: **the repository holds code, tools, hand-made data and
 of the game.**
 
 - **Never committed:** anything that is a picture, sound, text, level, creature script or problem of the original game
-  (the legacy pack, `godot/packs/legacy`, and a `legacy.larissa` made from it; `extracted/`, the seven `docs/data` tables, the original bytes). All of it is regenerated by
+  (the legacy pack, `godot/packs/legacy`, and a `legacy.larissa` made from it; `extracted/` with the game's tables in `extracted/tables/`, the original bytes). All of it is regenerated by
   the importer from your ISO. This is **provenance**: every file can be traced to a file, a resource id and an offset on the CD,
   and nothing in the repository carries the original's content to someone who does not own it.
 - **Committed instead of the bytes:** *hashes*. A fixture holds the file, bundle and offset and a SHA-256 of each whole record. The
   tests compare your import against the hashes, so a different release or a patched copy is caught instead of compared with
   itself. A hash of a whole record cannot be reversed to the record.
-- **Committed:** the code; the importer and its tables of *facts about the program*; the name registry; the durations; the cutscene
-  timelines and the few resources made from the program's code alone; the dev pack and its generator (`tools/dev_pack/`), which hold nothing of the
+- **Committed:** the code; the importer and its tables of *facts about the program*; the name registry; the durations; the menu layout
+  and the rule values; the dev pack and its generator (`tools/dev_pack/`), which hold nothing of the
   original; skins that hold no original art; your own sectors, campaigns and packs.
 - **Because of that:** a change to a generated file is never committed. To change the game's content, change the tools, or make a
   sector or campaign of your own (sector 32 and up) and keep that. Editing sector 5 in `godot/packs/legacy/data/sectors/sector_05/` changes only your

@@ -130,7 +130,8 @@ func test_a_pack_that_lacks_files_is_reported_as_exactly_those() -> void:
 	assert_array(held).is_equal([
 		"assets/ui/title/title_sky_1039.png", "data/problems/problem_art_index.json",
 		"data/problems/problem_type_00.tres", "data/problems/problem_type_01.tres", "data/problems/problem_type_02.tres"])
-	assert_array(missing).contains(["data/zones.tres", "data/problems/problem_type_03.tres", "data/problems/problem_type_33.tres", "data/story/news_cartoon.tres"])
+	assert_array(missing).contains(["data/zones.tres", "data/problems/problem_type_03.tres", "data/problems/problem_type_33.tres", "data/story/news_cartoon.tres",
+			"data/story/title_ship.tres", "data/story/story_script.tres", "data/story/voyager_closing_script.tres", "data/story/closing_crew.tres"])
 	assert_array(missing).not_contains(["data/problems/problem_art_index.json", "data/problems/problem_type_02.tres", "assets/ui/title/title_sky_1039.png"])
 	var groups := PackNeeds.by_group(PackNeeds.gaps(chain))
 	assert_array(groups.keys()).contains([PackNeeds.GROUP_FILES, PackNeeds.GROUP_PROBLEMS, PackNeeds.GROUP_PICTURES])

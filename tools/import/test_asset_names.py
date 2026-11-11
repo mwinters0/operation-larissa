@@ -78,7 +78,7 @@ def test_a_named_entry_has_its_file_under_name_and_number_and_not_under_the_old_
 @pytest.mark.legacy
 def test_a_named_music_picture_or_problem_art_entry_has_its_file_under_name_and_number():
     for name, number, _ in _flat("music"):
-        song = next(e for e in common.load_json(common.DOCS_DATA / "music_map.json")["music"] if e["id"] == number)
+        song = next(e for e in common.load_json(common.TABLES / "music_map.json")["music"] if e["id"] == number)
         for letter, adlib in (("e", False), ("b", True)):
             midi = (letter + song["file"][1:]).rsplit(".", 1)[0].lower()
             path = asset_names.music_file(number, midi, adlib)
@@ -101,7 +101,7 @@ def test_every_file_of_the_asset_kinds_is_a_named_or_an_unnamed_entrys_file():
     found = set((common.ASSETS / "audio" / "sfx").glob("*.wav")) | set((common.ASSETS / "audio" / "voice").glob("*.wav"))
     assert found == wanted
     music = {asset_names.music_file(e["id"], (letter + e["file"][1:]).rsplit(".", 1)[0].lower(), letter == "b")
-             for e in common.load_json(common.DOCS_DATA / "music_map.json")["music"] for letter in "eb"}
+             for e in common.load_json(common.TABLES / "music_map.json")["music"] for letter in "eb"}
     assert set((common.ASSETS / "audio" / "music").rglob("*.ogg")) == music
     ui = {p for p in pictures.homes().values() if "ui" in p.parts[-3:-1]}
     assert set((common.ASSETS / "ui").rglob("*.png")) == ui

@@ -5,7 +5,7 @@ extends Resource
 ## prompt text go, and the colours and font of the text.
 ##
 ## Teaches: a small settings Resource filled by the importer (`tools/import/step_problems.py`,
-## from `docs/data/problem_diagrams.json`) so that no layout number is written in a script.
+## from `extracted/tables/problem_diagrams.json`) so that no layout number is written in a script.
 
 ## The screen picture: a title bar, the diagram monitor (left) and the text monitor (right).
 @export var background: Texture2D

@@ -32,14 +32,14 @@ extends RefCounted
 ## Findings of the original sectors that are how the original is: sector -> [{check, screen (optional), contains (a piece of "object message"), reason}].
 const ORIGINAL_ALLOWED := {
 	7: [
-		{"check": "link.one_way", "screen": 4, "contains": "right link leads to screen 9", "reason": "the original's table: screen 4 right -> 9, but 9 left -> 5 (docs/data/sectors.json)"},
-		{"check": "link.one_way", "screen": 9, "contains": "left link leads to screen 5", "reason": "the original's table: screen 9 left -> 5, but 5 right -> 6 (docs/data/sectors.json)"},
+		{"check": "link.one_way", "screen": 4, "contains": "right link leads to screen 9", "reason": "the original's table: screen 4 right -> 9, but 9 left -> 5 (extracted/tables/sectors.json)"},
+		{"check": "link.one_way", "screen": 9, "contains": "left link leads to screen 5", "reason": "the original's table: screen 9 left -> 5, but 5 right -> 6 (extracted/tables/sectors.json)"},
 	],
 	13: [
-		{"check": "link.one_way", "screen": 3, "contains": "up link leads to screen 7", "reason": "the original's table: screen 3 up -> 7, but 7 down -> 8 (docs/data/sectors.json)"},
+		{"check": "link.one_way", "screen": 3, "contains": "up link leads to screen 7", "reason": "the original's table: screen 3 up -> 7, but 7 down -> 8 (extracted/tables/sectors.json)"},
 	],
 	15: [
-		{"check": "link.one_way", "screen": 7, "contains": "left link leads to screen 4", "reason": "the original's table: screen 7 left -> 4, but 4 right -> none (docs/data/sectors.json)"},
+		{"check": "link.one_way", "screen": 7, "contains": "left link leads to screen 4", "reason": "the original's table: screen 7 left -> 4, but 4 right -> none (extracted/tables/sectors.json)"},
 	],
 	31: [
 		{"check": "reach.piece", "screen": 0, "contains": "piece 0", "reason": "the data canister (16, 288) on screen 0 sits in the pocket of the start station, closed on every side except through the sub's own launch position; the finale never asks for pieces (test_sector_reachability.gd KNOWN_UNREACHABLE_PIECES)"},

@@ -21,7 +21,7 @@ needs_original = pytest.mark.skipif(not screen_record.RAW_FIXTURE.exists(),
 def test_the_hash_fixture_holds_provenance_and_hashes_and_matches_the_game_files():
     """No importer-written bytes needed: the committed fixture is what the raw sector resources hash to."""
     text = screen_record.HASH_FIXTURE.read_text()
-    sectors = common.load_json(common.DOCS_DATA / "sectors.json")
+    sectors = common.load_json(common.TABLES / "sectors.json")
     assert text == screen_record.build_hash_fixture(sectors)
     parsed = json.loads(text)
     assert parsed["size"] == 0x500 and [e["index"] for e in parsed["sectors"]] == list(range(32))
@@ -34,8 +34,9 @@ def test_the_hash_fixture_holds_provenance_and_hashes_and_matches_the_game_files
 
 
 @needs_original
+@pytest.mark.legacy
 def test_the_raw_fixture_is_the_records_and_is_not_committed():
-    sectors = common.load_json(common.DOCS_DATA / "sectors.json")
+    sectors = common.load_json(common.TABLES / "sectors.json")
     assert screen_record.RAW_FIXTURE.read_text() == screen_record.build_raw_fixture(sectors)
     assert "godot/tests/fixtures/original/" in (common.ROOT / ".gitignore").read_text()
 
@@ -50,9 +51,10 @@ def test_every_committed_screen_file_is_what_the_original_records_build():
 
 
 @needs_original
+@pytest.mark.legacy
 def test_the_raw_fixture_matches_sectors_json_and_the_decoded_fields():
     originals = reset.load_originals()
-    for sec in common.load_json(common.DOCS_DATA / "sectors.json"):
+    for sec in common.load_json(common.TABLES / "sectors.json"):
         for k, sc in enumerate(sec["screens"]):
             record = screen_record.original_record(sec, k)
             assert record == originals[(sec["index"], k)]

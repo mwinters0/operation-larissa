@@ -1,11 +1,10 @@
 """Dev sprite frames, sprite metadata (box hit rectangles that match the dev pictures) and bubble rules.
 
-The file NAMES come from the importer's own naming code (asset_names, pictures.home) and the slot tables of docs/data/sprite_slots.json;
+The file NAMES come from the importer's own naming code (asset_names, pictures.home) and the slot tables of tools/analysis/data/sprite_slots.json;
 the sizes come from dev_pictures. Nothing is read from the legacy pack.
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import devlib                                    # first: it puts tools/import on the path
@@ -19,6 +18,12 @@ from pictures import home
 import dev_pictures
 
 SPEED = importer.TICK_HZ
+
+# The pieces' animations, over the five pictures piece_00..04 (rock, two sparkles, red canister, green canister). Our own: the canister blinks between its
+# two pictures every other tick, a rock sparkles on 3 ticks of 10. The two animations differ in length on purpose (the engine plays one frame per
+# tick, whatever the length: `Collectible`).
+CANISTER_PICTURES = [3, 3, 4, 4]
+ROCK_PICTURES = [0, 0, 1, 2, 1, 0, 0, 0, 0, 0]
 
 
 def _rel(path: Path) -> str:
@@ -76,9 +81,8 @@ def frame_sets() -> dict[str, tuple[list[str], list]]:
     sub = numbered("sub", "sub", 13)
     sets["sub_frames"] = (sub, [(n, pick(sub, idx), loop) for n, idx, loop in amap.SUB])
     pieces = numbered("pieces", "piece", 5)
-    anim = json.loads((devlib.ROOT / "docs" / "data" / "piece_animation.json").read_text())
-    sets["pieces_frames"] = (pieces, [("canister", pick(pieces, anim["canister_pictures"]), True),
-                                      ("rock", pick(pieces, anim["rock_pictures"]), True)])
+    sets["pieces_frames"] = (pieces, [("canister", pick(pieces, CANISTER_PICTURES), True),
+                                      ("rock", pick(pieces, ROCK_PICTURES), True)])
     station = numbered("station", "station", 7)
     sets["station_frames"] = (station, [(n, pick(station, idx), loop) for n, idx, loop in amap.STATION])
     bubbles = numbered("fx", "fx_bubbles", 8)

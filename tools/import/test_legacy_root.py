@@ -24,9 +24,9 @@ def test_res_paths_of_legacy_lead_into_its_folder_and_back():
     inside = common.LEGACY / "assets" / "tiles" / "x.png"
     assert common.res_path(inside) == "res://packs/legacy/assets/tiles/x.png"
     assert common.res_path(common.LEGACY / "data" / "zones.tres") == "res://packs/legacy/data/zones.tres"
-    assert common.res_path(common.PROJECT_DATA / "closing_crew.tres") == "res://data/closing_crew.tres"
+    assert common.res_path(common.PROJECT_DATA / "ui" / "menu_layout.tres") == "res://data/ui/menu_layout.tres"
     assert common.file_of_res("res://packs/legacy/assets/tiles/x.png") == inside
-    assert common.file_of_res("res://data/closing_crew.tres") == common.PROJECT_DATA / "closing_crew.tres"
+    assert common.file_of_res("res://data/ui/menu_layout.tres") == common.PROJECT_DATA / "ui" / "menu_layout.tres"
 
 
 def test_sectors_of_legacy_and_the_designers_own_live_in_different_folders():
@@ -68,8 +68,8 @@ def test_the_importer_lists_the_pack_files_its_steps_write_inside_the_pack():
 
 @pytest.mark.legacy
 def test_the_story_and_console_steps_split_their_files_between_the_project_and_the_pack(monkeypatch):
-    """The committed timelines and the menu layout go to godot/data/ (and `--clean` owns exactly those), the news cartoon and the other layouts to
-    the legacy pack: the steps' own owned_files say which, and what they write is exactly the two lists together."""
+    """The menu layout goes to godot/data/ (and `--clean` owns exactly that), the cutscenes' choreography and the other layouts to the legacy pack:
+    the console step's own owned_files says which, and what the steps write is exactly the two lists together."""
     import step_console
     import step_story
     written: list[Path] = []
@@ -78,7 +78,7 @@ def test_the_story_and_console_steps_split_their_files_between_the_project_and_t
         module.run()
     in_project = {p for p in written if p.is_relative_to(common.PROJECT_DATA)}
     in_pack = {p for p in written if p.is_relative_to(common.PACK_DATA)}
-    assert in_project == set(step_story.owned_files()) | set(step_console.owned_files()) and in_project | in_pack == set(written)
-    assert common.PACK_DATA / "story" / "news_cartoon.tres" in in_pack and common.PROJECT_DATA / "story" / "news_cartoon.tres" not in in_project
+    assert in_project == set(step_console.owned_files()) and in_project | in_pack == set(written)
+    assert {p.name for p in in_pack if p.parent.name == "story"} == {"news_cartoon.tres", "news_ambient.tres", "title_ship.tres", "title_reveal.tres", "expert_hoist.tres", "expert_deck.tres", "expert_wait.tres", "story_script.tres", "voyager_closing_script.tres", "closing_crew.tres"}
     assert {p.name for p in in_pack if p.parent.name == "ui"} == {"hud_layout.tres", "calculator_layout.tres", "story_layout.tres"}
-    assert import_all.OWNED_FILES["story"] is step_story.owned_files and import_all.OWNED_FILES["console"] is step_console.owned_files
+    assert "story" not in import_all.OWNED_FILES and import_all.OWNED_FILES["console"] is step_console.owned_files

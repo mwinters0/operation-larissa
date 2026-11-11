@@ -1,9 +1,9 @@
 """Shared helpers for the import pipeline.
 
 Rules of the pipeline (see docs/port/FIDELITY.md, "The importer's rules"):
-  * input  = extracted/ and docs/data/ only (never the game's files; but import_all.py first checks with
+  * input  = extracted/ (its tables/ too) and tools/analysis/data/ only (never the game's files; but import_all.py first checks with
     source_files.py that the CD image they were extracted from is the reference release, and its first two steps,
-    step_extract.py, make extracted/ and the game's tables in docs/data/ from that image),
+    step_extract.py, make extracted/ and the game's tables in extracted/tables/ from that image),
   * output = the legacy pack, loose files in the project's own folder godot/packs/legacy (`legacy_root`: pack.json, assets/, data/,
     midi/; git-ignored; deterministic, so a second run changes nothing),
   * files are only rewritten when their content changes, so Godot does not
@@ -20,7 +20,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 EXTRACTED = ROOT / "extracted"
-DOCS_DATA = ROOT / "docs" / "data"
+TABLES = EXTRACTED / "tables"                       # the game's own data tables, written by the importer's "tables" step (GENERATED_TABLES)
+ANALYSIS_DATA = ROOT / "tools" / "analysis" / "data"  # our own analysis (layouts, field meanings), committed
 GODOT = ROOT / "godot"
 PROJECT_DATA = GODOT / "data"        # the COMMITTED data of the project (not the legacy pack's: PACK_DATA)
 PACKS = GODOT / "packs"
@@ -54,9 +55,9 @@ ZONE_TITLES = ["Dragon Reef", "Fossil Trench", "Limestone Ridge", "Sea Forest", 
 ZONE_BANNER_IDS = [1195, 1196, 1197, 1198, 1199]
 # (The default educational level per zone is read from the program: ds_tables.py.)
 
-# Which picture is in which creature / deco slot is data: docs/data/sprite_slots.json. Creature sets 5 and 6
+# Which picture is in which creature / deco slot is data: tools/analysis/data/sprite_slots.json. Creature sets 5 and 6
 # are the Voyager and Expert finales.
-SPRITE_SLOTS_FILE = DOCS_DATA / "sprite_slots.json"
+SPRITE_SLOTS_FILE = ANALYSIS_DATA / "sprite_slots.json"
 
 
 def foe_slots(zone: int) -> list[int]:
@@ -98,7 +99,7 @@ ORIGINAL_FIXTURES = GODOT / "tests" / "fixtures" / "original"
 LEGACY_AREA = Path(os.environ.get("NEP_LEGACY") or PROJECT_DATA / "legacy")
 VOICE_CORRECTIONS = LEGACY_AREA / "voice_corrections.json"
 # One output of each importer step, relative to the legacy pack's root (godot/tests/legacy/legacy_pack.gd WITNESSES is the same list; test_import.py checks that they agree): the game is
-# "there" when all of them are. `legacy_missing` also asks for the tables dumped to docs/data, which only the tools read. (The voice transcripts may
+# "there" when all of them are. `legacy_missing` also asks for the tables of extracted/tables/ (GENERATED_TABLES). (The voice transcripts may
 # be left out, `--no-transcripts`: a test that reads them skips without them.)
 LEGACY_WITNESSES = [
     "data/sectors/sector_00/sector_00.tres", "data/sectors/sector_31/sector_31.tres", "data/campaigns/voyager.tres",
@@ -107,14 +108,18 @@ LEGACY_WITNESSES = [
     "data/ui/hud_layout.tres", "data/sfx_catalog.tres", "data/music_catalog.tres", "data/voice_index.tres",
     "data/story/news_cartoon.tres", "assets/tiles/zone0_tiles.png", "assets/tiles/invisible_wall.png",
 ]
-# The tables the importer's "tables" step dumps from the CD into docs/data/ (the other JSON there is analysis and committed).
+# The tables the importer's "tables" step (step_extract.py) writes from the CD into extracted/tables/ (TABLES): the game's own data, git-ignored with
+# extracted/. Our own analysis (layouts, field meanings, console and sprite-slot tables) is committed in tools/analysis/data/ (ANALYSIS_DATA).
 GENERATED_TABLES = ["sectors.json", "problem_records.json", "problem_tables_raw.json", "problem_gfx_bundles.json",
-                    "trigger_table.json", "zone_defaults.json", "onwin_map.json"]
+                    "trigger_table.json", "zone_defaults.json", "onwin_map.json",
+                    "music_map.json", "ink_tables.json", "hud_gauges.json", "lock_wheel.json", "ballast.json", "piece_animation.json",
+                    "dissolve_tables.json", "expert_closing.json", "opening.json", "audio_map.json", "bubbles.json", "databank.json",
+                    "problem_diagrams.json"]
 
 
 def legacy_missing() -> list[str]:
     """The files of the legacy pack (and the importer's other outputs the tests read) that are not there; empty after a full import."""
-    wanted = [LEGACY / name for name in LEGACY_WITNESSES] + [DOCS_DATA / name for name in GENERATED_TABLES]
+    wanted = [LEGACY / name for name in LEGACY_WITNESSES] + [TABLES / name for name in GENERATED_TABLES]
     return [str(path.relative_to(ROOT) if path.is_relative_to(ROOT) else path) for path in wanted if not path.exists()]
 
 

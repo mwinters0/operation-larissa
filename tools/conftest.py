@@ -2,7 +2,7 @@
 
 The legacy pack is the original game as the importer writes it from the user's own ISO (docs/play/LEGACY.md); none of it is committed, so a fresh
 checkout has the importer's code and its tests but not what they check. A test marked `@pytest.mark.legacy` reads the importer's
-outputs (the generated files under godot/, the tables dumped to docs/data/, the fixtures of the original bytes, extracted/) and is
+outputs (the generated files under godot/, the tables dumped to extracted/tables/, the fixtures of the original bytes, extracted/) and is
 skipped with `common.RUN_THE_IMPORTER` while any of them is missing; with the importer's output present it runs as always.
 
 The two groups of the Python suite, as `tools/run_tests.sh` has them for Godot: `uv run pytest tools -m "not legacy"` is the engine group (it needs no

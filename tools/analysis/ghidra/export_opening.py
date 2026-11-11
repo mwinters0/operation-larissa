@@ -1,5 +1,5 @@
 """Export the opening's animation tables (news cartoon crew / lights, title-scene ship, sub drop and splash) to
-docs/data/opening.json.
+extracted/tables/opening.json.
 
 Pure Python (no Ghidra needed to run it). Every rule below was read in the Ghidra decompilation of ONWIN32.EXE
 (OPENING.C, `OpeningSequence` = OpeningSequence (0x42b16b)); the function addresses are the ones in that dump. The routines are
@@ -26,7 +26,12 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))   # gamefiles.py reads the CD image (NEPTUNE.ISO)
+sys.path.append(str(ROOT / "tools" / "import"))   # common.py: where extracted/ and its tables/ are
+import utf8_mode
+utf8_mode.ensure()   # Windows: UTF-8 mode, like every entry point of the importer
 import gamefiles
+from common import EXTRACTED, TABLES
+OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else TABLES   # the importer passes common.TABLES
 D = gamefiles.read("ONWINCD/ONWIN32.EXE")
 pe = struct.unpack_from('<I', D, 0x3c)[0]
 nsec = struct.unpack_from('<H', D, pe + 6)[0]
@@ -50,7 +55,7 @@ def off(addr: int) -> int:
 
 
 # --- the point table ------------------------------------------------------------------------------------------
-raw_points = (ROOT / "extracted/data/NEP_raw/NEP_10012.bin").read_bytes()
+raw_points = (EXTRACTED / "data/NEP_raw/NEP_10012.bin").read_bytes()
 raw_points += b"\0" * (-len(raw_points) % 4)          # the resource length is rounded down by one byte
 _vals = [int.from_bytes(raw_points[i:i + 2], "little", signed=True) * 2 for i in range(0, len(raw_points), 2)]
 POINTS = [[_vals[i], _vals[i + 1]] for i in range(0, len(_vals), 2)]
@@ -165,7 +170,7 @@ def trail_and_ring() -> dict[str, Any]:
 
 
 def news_cartoon() -> dict[str, Any]:
-    texts = {t["id"]: t["text"] for t in json.loads((ROOT / "extracted/data/NEP_text.json").read_text())}
+    texts = {t["id"]: t["text"] for t in json.loads((EXTRACTED / "data/NEP_text.json").read_text())}
     bulletins = [{"id": 10003 + i, "characters": len(texts[10003 + i]), "typing_ticks": 3 * len(texts[10003 + i])}
                  for i in range(6)]
     crew_first_call = [1, 1, 1, 1, 220]               # crew 4 (the man from the left) only from call 220 (2190 ticks)
@@ -376,9 +381,10 @@ out = {
     "title_scene": title_scene(),
     "reveal_and_prompt": reveal_and_prompt(),
 }
-(ROOT / "docs/data/opening.json").write_text(json.dumps(out, indent=1) + "\n")
+OUT.mkdir(parents=True, exist_ok=True)
+(OUT / "opening.json").write_text(json.dumps(out, indent=1) + "\n", newline="\n")
 _t = out["title_scene"]
-print("wrote docs/data/opening.json:", len(_t["frames"]), "title frames; sub falls from redraw",
+print("wrote", OUT / "opening.json", ":", len(_t["frames"]), "title frames; sub falls from redraw",
       _t["sub"]["first_fall_redraw"], "to gone at", _t["sub"]["gone_redraw"], "; splash sound at redraw",
       _t["splash"]["sound_redraw"])
 for _c in out["news_cartoon"]["crew"]["members"]:

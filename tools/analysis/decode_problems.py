@@ -1,5 +1,5 @@
-"""Decode the stored problem tables (NEP.DLL ids 10512+4*type+level) into docs/data/problem_records.json
-using the verified record layouts in docs/data/problem_layouts32.json.
+"""Decode the stored problem tables (NEP.DLL ids 10512+4*type+level) into extracted/tables/problem_records.json
+using the verified record layouts in tools/analysis/data/problem_layouts32.json.
 
 CompactNumber (7 bytes in the file) [V, ONWIN32 bytes_to_CompactNumberType (0x423bc2) / CompactToNumber (0x427ee4) / NumberToDouble (0x42837c)]:
   u16 kind
@@ -10,8 +10,10 @@ Usage: uv run tools/analysis/decode_problems.py [out.json]
 import json, struct, sys
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
-LAY = json.loads((ROOT / "docs/data/problem_layouts32.json").read_text())["types"]
-RAW = str(ROOT / "extracted/data/NEP_raw/NEP_%d.bin")
+sys.path.append(str(ROOT / "tools" / "import"))   # common.py: where extracted/, its tables/ and our analysis data are
+from common import ANALYSIS_DATA, EXTRACTED, TABLES
+LAY = json.loads((ANALYSIS_DATA / "problem_layouts32.json").read_text())["types"]
+RAW = str(EXTRACTED / "data/NEP_raw/NEP_%d.bin")
 SZ = {"c": 1, "w": 2, "n": 7}
 
 def num(b):
@@ -40,7 +42,8 @@ def main():
     out = {str(t): {"record_size": LAY[str(t)]["record_size"],
                     "fields": [f["kind"] for f in LAY[str(t)]["fields"]],
                     "levels": [decode_table(t, lv) for lv in range(4)]} for t in range(34)}
-    dst = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "docs/data/problem_records.json"
+    dst = Path(sys.argv[1]) if len(sys.argv) > 1 else TABLES / "problem_records.json"
+    dst.parent.mkdir(parents=True, exist_ok=True)
     dst.write_text(json.dumps(out, separators=(",", ":")))
     print("wrote", dst, sum(len(l) for t in out.values() for l in t["levels"]), "records")
 

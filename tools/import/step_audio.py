@@ -13,7 +13,7 @@ from pathlib import Path
 
 from asset_manifest import copy_sound, put_port, put_song
 from asset_names import music_file, sfx_file, voice_file
-from common import ASSETS, MIDI, PACK_DATA, DOCS_DATA, EXTRACTED, ROOT, load_json, out_text, res_path, sha256_hex
+from common import ASSETS, MIDI, PACK_DATA, TABLES, EXTRACTED, ROOT, load_json, out_text, res_path, sha256_hex
 import tres
 
 SCRIPTS = "res://src/resources/"
@@ -155,7 +155,7 @@ def copy_midi(songs: list[dict]) -> int:
 
 
 def run(soundfont: str = DEFAULT_SOUNDFONT, adlib_soundfont: str = ADLIB_SOUNDFONT) -> None:
-    amap = load_json(DOCS_DATA / "audio_map.json")
+    amap = load_json(TABLES / "audio_map.json")
 
     # --- sound effects: 52 WAVs (their names are the "sound" names of the registry, which SfxCatalog reads itself) ---
     sfx_paths = []
@@ -199,7 +199,7 @@ def run(soundfont: str = DEFAULT_SOUNDFONT, adlib_soundfont: str = ADLIB_SOUNDFO
     out_text(PACK_DATA / "voice_cues.tres", c.render())
 
     # --- music: MIDI rendered to OGG, once per sound set ---------------------------------------------------------
-    songs = load_json(DOCS_DATA / "music_map.json")["music"]       # the verified id -> MIDI file map
+    songs = load_json(TABLES / "music_map.json")["music"]       # the verified id -> MIDI file map
     have_gm = shutil.which("fluidsynth") and shutil.which("ffmpeg") and Path(soundfont).exists()
     # The AdLib set (B*.MID) wants an OPL imitation (soundfonts/opl.sf2, not in the repository). A checkout that has none still gets a
     # complete the legacy pack: the set is rendered with the General MIDI soundfont then (it sounds like General MIDI), and says so below.

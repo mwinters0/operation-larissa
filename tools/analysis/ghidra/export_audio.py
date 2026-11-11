@@ -1,4 +1,4 @@
-"""Export the audio cue tables of the original (music, sound effects, speech) to docs/data/audio_map.json.
+"""Export the audio cue tables of the original (music, sound effects, speech) to extracted/tables/audio_map.json.
 
 Pure Python (no Ghidra needed to run it); every address and rule was read in the Ghidra decompilation of
 ONWIN32.EXE, the function names below are the ones in that dump (names_onwin32.json, or FUN_<address>).
@@ -26,7 +26,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools"))   # gamefiles.py reads the CD image (NEPTUNE.ISO)
+sys.path.append(str(ROOT / "tools" / "import"))   # common.py: where extracted/ and its tables/ are
+import utf8_mode
+utf8_mode.ensure()   # Windows: UTF-8 mode, like every entry point of the importer
 import gamefiles
+from common import EXTRACTED, TABLES
+OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else TABLES   # the importer passes common.TABLES
 D = gamefiles.read("ONWINCD/ONWIN32.EXE")
 pe = struct.unpack_from('<I', D, 0x3c)[0]
 nsec = struct.unpack_from('<H', D, pe + 6)[0]
@@ -68,7 +73,7 @@ def u32(addr: int) -> int:
 
 
 # Logical id -> real id table (resource OTHR/15001 of the EXE, 875 u16 values).
-RSRC = struct.unpack('<875H', (ROOT / "extracted/data/ONWIN32_resources/OTHR_15001.bin").read_bytes())
+RSRC = struct.unpack('<875H', (EXTRACTED / "data/ONWIN32_resources/OTHR_15001.bin").read_bytes())
 
 
 def real(logical: int) -> int:
@@ -164,6 +169,7 @@ out = {
     "sfx": {str(i): {"when": w, "evidence": e} for i, (w, e) in sorted(SFX.items())},
     "diagram_cues": {str(t): s for t, s in sorted(DIAGRAM_CUES.items())},
 }
-(ROOT / "docs/data/audio_map.json").write_text(json.dumps(out, indent=1) + "\n")
-print("wrote docs/data/audio_map.json:", len(music), "songs,", len(SFX), "known effects,",
+OUT.mkdir(parents=True, exist_ok=True)
+(OUT / "audio_map.json").write_text(json.dumps(out, indent=1) + "\n", newline="\n")
+print("wrote", OUT / "audio_map.json", ":", len(music), "songs,", len(SFX), "known effects,",
       sum(len(v) for v in voice["supply"]), "supply clips,", sum(len(v) for v in voice["logs"]), "log clips")

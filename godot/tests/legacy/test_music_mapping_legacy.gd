@@ -1,6 +1,6 @@
 class_name TestMusicMappingLegacy
 extends GdUnitTestSuite
-## Which song plays where in the original game (docs/data/music_map.json, from the decompiled `SelectSectorMusic`) and where its songs' files are.
+## Which song plays where in the original game (extracted/tables/music_map.json, from the decompiled `SelectSectorMusic`) and where its songs' files are.
 ## (How songs are cross-faded, looped and paused is in tests/engine/test_music_mapping.gd.)
 
 
@@ -30,7 +30,7 @@ func test_the_named_songs_match_the_map() -> void:
 
 
 func test_the_catalog_is_the_verified_map() -> void:
-	var map: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../docs/data/music_map.json"))
+	var map: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../extracted/tables/music_map.json"))
 	var catalog := Catalog.music_catalog()
 	assert_int(catalog.ids.size()).is_equal(10)
 	for entry: Dictionary in map["music"]:

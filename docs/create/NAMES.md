@@ -59,7 +59,7 @@ sound files (the twins are one file's worth of samples, and no other two are ali
 | `flag` | the creature scripts' global flag bit 0-15 | **sector** + common | `flag_03` |
 
 Why these scopes. A creature picture (`frame`) and a deco are *slots*: slot 40 is a different drawing in every zone
-(`docs/data/sprite_slots.json`), so a name that means slot 40 belongs to a zone; the common slots (0-34 and 0-69) are named
+(`tools/analysis/data/sprite_slots.json`), so a name that means slot 40 belongs to a zone; the common slots (0-34 and 0-69) are named
 once, in `common`. The finale sectors use the art zones 5 and 6 for creatures and zone 4's decorations
 (`ZoneData.tile_zone`), so a `deco` scope is the *art zone* and a `frame` scope is `SectorData.zone`. Creatures and screens
 are numbered per sector (there are 256 sector scopes, `NameRegistry.SECTOR_SCOPES`: one for every number a sector can have; the registry names
@@ -119,7 +119,7 @@ names.problems                               # what is wrong with the file (empt
 
 ## What is named, and from what
 
-* `sound`: the 24 effects the decompilation identified. The registry is the only place for names: `docs/data/audio_map.json`
+* `sound`: the 24 effects the decompilation identified. The registry is the only place for names: `extracted/tables/audio_map.json`
   (written by `tools/analysis/ghidra/export_audio.py`) keeps the numbers with *when* and *where* each is played, and `SfxCatalog`
   derives `named`, `id_of` and `name_of` from the registry. The 22 creature-only sounds (0-21) are named by their role:
   which creature plays it, doing what (`clam_chomp`, `eel_lash`, `oxygen_refill`). Nobody listened to them: the roles

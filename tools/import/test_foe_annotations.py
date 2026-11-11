@@ -431,7 +431,7 @@ def test_reset_writes_the_stored_names_and_comments_and_plain_ignores_them(tmp_p
 @pytest.mark.legacy
 def test_step_sectors_writes_the_stored_names_and_comments(no_names):
     import common
-    sec = {s["index"]: s for s in common.load_json(common.DOCS_DATA / "sectors.json")}[3]
+    sec = {s["index"]: s for s in common.load_json(common.TABLES / "sectors.json")}[3]
     annotations = fa.parse((EXAMPLE / "foe_annotations.json").read_text(encoding="utf-8"))[3]
     tres_text, foe_text_ = step_sectors.build_sector(sec, annotations)
     assert foe_text_ == (EXAMPLE / "sector_03_annotated.txt").read_text()

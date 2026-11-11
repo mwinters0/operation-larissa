@@ -2,7 +2,7 @@ class_name CalculatorLayout
 extends Resource
 ## The original's calculator: its pictures, where every key is, and how the display is drawn.
 ## Filled by the importer from the decompiled `GetAnswer` / `AddHotspot` / display routines
-## (`docs/data/console_layout.json`).
+## (`tools/analysis/data/console_layout.json`).
 ##
 ## Teaches: hit areas as data. The original registered one rectangle per key ("hotspot"); the Godot
 ## calculator creates one transparent `Button` per rectangle on top of the picture, so the key faces

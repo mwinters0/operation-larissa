@@ -13,7 +13,7 @@ up to the resource's 0x3E00 bytes):
     0x42 u8[12] left neighbour, 0x4E right, 0x5A up, 0x66 down      destination screen + 1, 0 = none
 
 Everything is read from the RAW sector resource (the same bytes the screen records come from: screen_record.py), never from
-the converted values in docs/data/sectors.json. The Godot side is SectorData.encode() / encode_resource().
+the converted values in extracted/tables/sectors.json. The Godot side is SectorData.encode() / encode_resource().
 
 What the 32 original headers show (checked here, so a surprise is an error and not silently dropped):
     * the unused piece slots (slot number >= the piece count) are zero except in sector 6 (slot 7) and sector 22 (slot 9):
@@ -44,7 +44,7 @@ def u16(raw: bytes, offset: int) -> int:
 
 
 def original_resource(sec: dict) -> bytes:
-    """The whole 0x3E00-byte original resource of the sector dict from docs/data/sectors.json (only its "source" is
+    """The whole 0x3E00-byte original resource of the sector dict from extracted/tables/sectors.json (only its "source" is
     used: the bytes come from the extracted copy of the game's file).
 
     NEP.DLL holds every sector resource with its full directory size of 0x3E00 bytes; tools/extract/extract_data.py

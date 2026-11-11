@@ -1,7 +1,7 @@
 class_name BubbleRules
 extends Resource
 ## The rules of the ambient bubbles, as decoded from the original's BUBBLES.C (DESIGN 9, "Ambient bubbles").
-## The values come from `docs/data/bubbles.json` through the importer (`data/bubble_rules.tres`); nothing here
+## The values come from `extracted/tables/bubbles.json` through the importer (`data/bubble_rules.tres`); nothing here
 ## is typed in by hand, so a change in the data changes the game and the tests.
 ##
 ## The original has exactly TWO bubbles, a thin "column" and a wider "cluster", each with its own speed and

@@ -4,7 +4,7 @@ extends StorySegment
 ## scientists began a top-secret research project in deep space ..."). Original: `OpeningStoryPages` (0x42a9f1) (OPENING.C)
 ## and the page player `PlayStoryPageSpeech` (0x42a817).
 ##
-## Teaches: a data-driven slideshow. `data/story/story_script.tres` (a `StoryScript`, written by the importer) says what each
+## Teaches: a data-driven slideshow. `data/story/story_script.tres` of the pack (a `StoryScript`: the legacy pack's is written by the importer) says what each
 ## page shows (the heading, the frame picture, the extra pictures) and how long it holds up the story, one function
 ## (`_show_page`) swaps the pictures, an `AnimationPlayer` fades each page in (a small timeline made here: the fade is
 ## ours), and an `AnimatedSprite2D` plays the blinking radar ring of page 5 (contrast: the sprite sheet animation of a
@@ -16,12 +16,13 @@ extends StorySegment
 ## to the next page (and cuts the speech off), Space / Escape end the story. The last page waits up to 45 seconds
 ## for a key or a click; when it runs out with none, `timed_out` tells the director to start the opening over.
 
-const SCRIPT := preload("res://data/story/story_script.tres")
 ## The fade-in of a page (ours; the original draws a page at once), in seconds.
 const FADE_SECONDS := 0.2
 
 signal _page_over
 
+## The pages and how long they hold (`Catalog.story_script`).
+var _script: StoryScript
 var page_index: int = -1
 ## True when the last page ran out its time with no key and no click (not Enter, a click or Space / Escape): the
 ## original's opening then starts over (see `Opening`). `OpeningStoryPages` (0x42a9f1) returns 0 for it and for Enter
@@ -41,12 +42,13 @@ var _generation: int = 0
 
 
 func _ready() -> void:
-	%Background.texture = Assets.ui_picture(SCRIPT.background)
-	heading.position = SCRIPT.heading_position
-	frame.position = SCRIPT.frame_position
-	caption.position = SCRIPT.caption_position
+	_script = Catalog.story_script()
+	%Background.texture = Assets.ui_picture(_script.background)
+	heading.position = _script.heading_position
+	frame.position = _script.frame_position
+	caption.position = _script.caption_position
 	ring.sprite_frames = _ring_frames()
-	ring.position = SCRIPT.ring_position + Vector2(26, 21)       # (an AnimatedSprite2D is centred)
+	ring.position = _script.ring_position + Vector2(26, 21)       # (an AnimatedSprite2D is centred)
 	click_label.text = Catalog.text(&"click_to_go_on")
 	var cast := CutsceneCast.new(self)
 	cast.bind(&"page", page)
@@ -58,8 +60,8 @@ func _ready() -> void:
 ## The radar ring's four pictures (`story_ring_0` .. `story_ring_3`) as a `SpriteFrames` for an `AnimatedSprite2D`.
 func _ring_frames() -> SpriteFrames:
 	var frames := SpriteFrames.new()
-	frames.set_animation_speed(&"default", 1.0 / CutsceneTimeline.seconds(SCRIPT.ring_picture_ticks))
-	for picture in SCRIPT.ring_pictures:
+	frames.set_animation_speed(&"default", 1.0 / CutsceneTimeline.seconds(_script.ring_picture_ticks))
+	for picture in _script.ring_pictures:
 		frames.add_frame(&"default", Assets.ui_picture(picture))
 	return frames
 
@@ -71,7 +73,7 @@ func _fade_in_timeline() -> CutsceneTimeline:
 	var timeline := CutsceneTimeline.made_in_code(0.5 * CutsceneTimeline.TICKS_PER_SECOND,
 			"Ours: the fade-in of a page (0.2 s); the original draws a page at once. The caption's delay is the original's (15 ticks).")
 	timeline.track(&"page", CutsceneTrack.PROP_FADE, [[0.0, 0.0], [fade, 1.0]], true)
-	timeline.track(&"caption", CutsceneTrack.PROP_VISIBLE, [[0.0, false], [fade + SCRIPT.caption_delay_ticks, true]])
+	timeline.track(&"caption", CutsceneTrack.PROP_VISIBLE, [[0.0, false], [fade + _script.caption_delay_ticks, true]])
 	return timeline
 
 
@@ -79,7 +81,7 @@ func _fade_in_timeline() -> CutsceneTimeline:
 
 ## Plays the pages in order until the story is over or skipped.
 func _run() -> void:
-	for i in SCRIPT.pages.size():
+	for i in _script.pages.size():
 		if done:
 			return
 		await _play_page(i)
@@ -96,7 +98,7 @@ func _play_page(index: int) -> void:
 ## Swaps the pictures for page `index` (0-8) and fades it in.
 func _show_page(index: int) -> void:
 	page_index = index
-	var data := SCRIPT.pages[index]
+	var data := _script.pages[index]
 	heading.texture = Assets.ui_picture(data.heading)
 	frame.texture = Assets.ui_picture(data.frame)
 	caption.texture = Assets.ui_picture(data.caption)
@@ -123,11 +125,11 @@ func _page_clock(index: int, generation: int) -> void:
 	var spoken := await Audio.speak(Catalog.voice_cues().story_page(index))          # (the ticks it took: the clips' recorded lengths)
 	if done or generation != _generation:
 		return
-	var remaining := roundi(SCRIPT.hold_ticks(index)) - spoken
+	var remaining := roundi(_script.hold_ticks(index)) - spoken
 	if remaining > 0:
 		await pause_ticks(remaining)                                                  # (stands still while the window is inactive)
 	if not done and generation == _generation:
-		timed_out = SCRIPT.pages[index].last
+		timed_out = _script.pages[index].last
 		_end_page()
 
 

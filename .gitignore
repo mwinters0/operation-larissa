@@ -21,18 +21,10 @@ prefix/
 /godot/packs/*
 !/godot/packs/README.md
 !/godot/packs/dev/
-# A file that is derived from the program's code alone (the cutscene timelines but the news cartoon's, sub_tuning, closing_crew, the menu layout) is
-# made by the importer too but commits, in godot/data/: it holds no picture, sound, text or level of the game and points at none (README.md, "the legacy pack").
+# godot/data/ is the project's own data and is committed: the rule values and the durations, the creature scripts' annotations, the menu layout (the one file the importer
+# writes there: it holds nothing of the game) and the sectors and campaigns of your own. The original's presentation (the cutscenes' choreography) is the legacy pack's.
 # your own data about the legacy pack that holds the game's content (the hand corrections of the voice transcripts; tools/import/common.py LEGACY_AREA)
 /godot/data/legacy/
-# tables dumped from the CD by tools/analysis/export_json.py, decode_problems.py and export_gfx_tbl.py (the importer's "tables" step)
-/docs/data/sectors.json
-/docs/data/problem_records.json
-/docs/data/problem_tables_raw.json
-/docs/data/problem_gfx_bundles.json
-/docs/data/trigger_table.json
-/docs/data/zone_defaults.json
-/docs/data/onwin_map.json
 # the references the snapshot test renders from its pictures
 /godot/tests/snapshots/*.png
 # A developer's own mise overrides (docs/SETUP.md)

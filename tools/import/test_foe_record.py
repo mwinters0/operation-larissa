@@ -15,7 +15,7 @@ import step_sectors
 
 
 def sectors() -> list[dict]:
-    return common.load_json(common.DOCS_DATA / "sectors.json")
+    return common.load_json(common.TABLES / "sectors.json")
 
 
 @pytest.mark.legacy
@@ -66,6 +66,7 @@ def test_the_committed_fixture_holds_the_hashes_and_no_bytes():
 
 
 @pytest.mark.skipif(not fr.RAW_FIXTURE.exists(), reason="run the importer on your copy of the game (needs %s)" % fr.RAW_FIXTURE)
+@pytest.mark.legacy
 def test_the_raw_fixture_is_the_record_bytes_and_is_not_committed():
     raw_fixture = json.loads(fr.RAW_FIXTURE.read_text())
     for sec, entry in zip(sectors(), raw_fixture["sectors"]):

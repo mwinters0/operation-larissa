@@ -3,14 +3,14 @@
 `ONWINCD/ONWIN.MAP` is the 16-bit build's link map. It is part of the game, so its names are not committed: an entry of
 names_onwin32.json, labels_onwin32.json or port_map_onwin32.json whose name is a MAP public holds `"map": "SSSS:OOOO"`, the
 16-bit address of that public, in place of `"name"` (the matching of the 32-bit function to the 16-bit public is our work and
-is committed; the name is the game's). The importer's `tables` step writes docs/data/onwin_map.json (git-ignored) from the ISO,
+is committed; the name is the game's). The importer's `tables` step writes extracted/tables/onwin_map.json (git-ignored) from the ISO,
 and every tool reads names through `resolve`, so the names are back wherever the tables are read.
 
 A MAP public's name is the C name without its one leading underscore (`_DoMathProblem` -> `DoMathProblem`). A name the port
 gave itself (`ShowProblemHint`, the runtime's `__scanner`, `Alarms` for `_alarms`) is committed as `"name"`. `with_name`
 decides which form to write, so a name typed in the Ghidra GUI that happens to be a MAP public is committed as its reference.
 
-  uv run tools/analysis/ghidra/map_names.py write [OUT]      # docs/data/onwin_map.json from the ISO (the importer runs this)
+  uv run tools/analysis/ghidra/map_names.py write [OUT]      # extracted/tables/onwin_map.json from the ISO (the importer runs this)
   uv run tools/analysis/ghidra/map_names.py find TEXT...     # entries whose name, address or reference contains TEXT
 
 Pure Python, imported by the Ghidra scripts too (the GUI's interpreter has no pycdlib: only `write` reads the ISO).
@@ -22,7 +22,9 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[2]
-TABLE = REPO / "docs" / "data" / "onwin_map.json"
+sys.path.append(str(REPO / "tools" / "import"))   # common.py: where the importer's tables are
+from common import TABLES
+TABLE = TABLES / "onwin_map.json"
 MAP_FILE = "ONWINCD/ONWIN.MAP"
 REF = re.compile(r"^[0-9A-F]{4}:[0-9A-F]{4}$")
 _PUBLIC = re.compile(r"^\s*([0-9A-F]{4}):([0-9A-F]{4})\s+(?:idle\s+|Abs\s+)?(.+?)\s*$")

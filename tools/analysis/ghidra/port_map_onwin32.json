@@ -76,7 +76,7 @@
  },
  "0x0041072e": {
   "status": "n/a",
-  "where": "n/a: the port draws the 16 VGA colours as exact RGB (docs/data/problem_diagrams.json \"colors\"); original colour error <= 8/255 per channel (colour 7 = 184 not 192), cosmetic only"
+  "where": "n/a: the port draws the 16 VGA colours as exact RGB (extracted/tables/problem_diagrams.json \"colors\"); original colour error <= 8/255 per channel (colour 7 = 184 not 192), cosmetic only"
  },
  "0x004107c7": {
   "name": "SetColor",
@@ -161,7 +161,7 @@
  "0x00410de3": {
   "name": "NumBundleItems",
   "status": "n/a",
-  "where": "n/a: the port reads bundle layouts from extracted data (docs/data/problem_gfx_bundles.json etc.)"
+  "where": "n/a: the port reads bundle layouts from extracted data (extracted/tables/problem_gfx_bundles.json etc.)"
  },
  "0x00410dee": {
   "name": "SetBundleItem",
@@ -189,11 +189,11 @@
  },
  "0x00411224": {
   "status": "n/a",
-  "where": "n/a: the port reads bundle contents from extracted data; bundle item order/ids are documented in docs/data/problem_gfx_bundles.json, DESIGN 5.5/9"
+  "where": "n/a: the port reads bundle contents from extracted data; bundle item order/ids are documented in extracted/tables/problem_gfx_bundles.json, DESIGN 5.5/9"
  },
  "0x004112ba": {
   "status": "n/a",
-  "where": "n/a: loads data tables, which the port gets from docs/data/*.json"
+  "where": "n/a: loads data tables, which the port gets from extracted/tables/*.json"
  },
  "0x00411315": {
   "name": "LoadSpeechClip",
@@ -212,7 +212,7 @@
  },
  "0x00411359": {
   "status": "n/a",
-  "where": "n/a: tables come from extracted data (docs/data/sectors.json, foe data)"
+  "where": "n/a: tables come from extracted data (extracted/tables/sectors.json, foe data)"
  },
  "0x0041136c": {
   "status": "n/a",
@@ -579,7 +579,7 @@
  "0x00413e8c": {
   "name": "LoadMidiFile",
   "status": "ported",
-  "where": "godot/src/resources/music_catalog.gd:path_for / stream (id -> song file; General MIDI 'E' vs AdLib 'B' set chosen by Audio.sound_set, a machine setting instead of midimap.cfg - documented difference, see InitMIDIDriver); data docs/data/music_map.json"
+  "where": "godot/src/resources/music_catalog.gd:path_for / stream (id -> song file; General MIDI 'E' vs AdLib 'B' set chosen by Audio.sound_set, a machine setting instead of midimap.cfg - documented difference, see InitMIDIDriver); data extracted/tables/music_map.json"
  },
  "0x00413f2b": {
   "status": "ported",
@@ -1023,7 +1023,7 @@
  },
  "0x00417dd8": {
   "status": "ported",
-  "where": "godot/src/problems/diagrams/diagram_base.gd with the type 1 spec in docs/data/problem_diagrams.json (panel picture at (16, 58) opaque, the four sequence numbers centred in 40 px boxes at x 44 / 98 / 152 / 206, y 178, the lock picture at (276, 176))"
+  "where": "godot/src/problems/diagrams/diagram_base.gd with the type 1 spec in extracted/tables/problem_diagrams.json (panel picture at (16, 58) opaque, the four sequence numbers centred in 40 px boxes at x 44 / 98 / 152 / 206, y 178, the lock picture at (276, 176))"
  },
  "0x00417f56": {
   "status": "ported",
@@ -1094,7 +1094,7 @@
  "0x00419567": {
   "name": "Prob28_Diagram",
   "status": "ported",
-  "where": "godot/src/problems/diagrams/ballast_panel_diagram.gd:_build (panel, 10 weight buttons (slot / selected pictures, labels centred in the slot width), Done button, fill / drain marker; data docs/data/problem_diagrams.json types 28 / 29)"
+  "where": "godot/src/problems/diagrams/ballast_panel_diagram.gd:_build (panel, 10 weight buttons (slot / selected pictures, labels centred in the slot width), Done button, fill / drain marker; data extracted/tables/problem_diagrams.json types 28 / 29)"
  },
  "0x004196e8": {
   "status": "not-ported",
@@ -1123,7 +1123,7 @@
  },
  "0x00419eec": {
   "status": "ported",
-  "where": "godot/src/ui/hud.gd + ui/console_frame.gd + resources/hud_layout.gd (bezel picture 0 at (12, 324), gauges, labels, frame); data docs/data/hud_gauges.json, console_layout.json; tests test_hud_layout.gd, test_hud_binding.gd"
+  "where": "godot/src/ui/hud.gd + ui/console_frame.gd + resources/hud_layout.gd (bezel picture 0 at (12, 324), gauges, labels, frame); data extracted/tables/hud_gauges.json, console_layout.json; tests test_hud_layout.gd, test_hud_binding.gd"
  },
  "0x00419f6e": {
   "status": "ported",
@@ -1189,7 +1189,7 @@
  "0x0041a800": {
   "name": "UpdateAmbientBubbles",
   "status": "ported",
-  "where": "godot/src/gameplay/bubbles.gd + resources/bubble_rules.gd (docs/data/bubbles.json): two bubbles, 1 in 50 spawn per tick, rise 10 / 6 px, drawn last (over the sub); held and cleared while a supply trip runs, whose routines never call it (Bubbles.hold, original_presenter.gd:_arrange). Random sequence differs from the Borland LCG (known deferred G15)"
+  "where": "godot/src/gameplay/bubbles.gd + resources/bubble_rules.gd (extracted/tables/bubbles.json): two bubbles, 1 in 50 spawn per tick, rise 10 / 6 px, drawn last (over the sub); held and cleared while a supply trip runs, whose routines never call it (Bubbles.hold, original_presenter.gd:_arrange). Random sequence differs from the Borland LCG (known deferred G15)"
  },
  "0x0041aaf8": {
   "name": "AddCalcHotspots",
@@ -1227,7 +1227,7 @@
  "0x0041b933": {
   "name": "Prob07_Diagram",
   "status": "ported",
-  "where": "godot/src/problems/diagrams/diagram_base.gd ('sequence' timeline: panel + unit picture, then f0..f4 with sound 0x22 at t = 0, 30, 60, 90, 120); docs/data/problem_diagrams.json type 7; test_diagram_animations.gd"
+  "where": "godot/src/problems/diagrams/diagram_base.gd ('sequence' timeline: panel + unit picture, then f0..f4 with sound 0x22 at t = 0, 30, 60, 90, 120); extracted/tables/problem_diagrams.json type 7; test_diagram_animations.gd"
  },
  "0x0041bc14": {
   "status": "n/a",
@@ -1270,7 +1270,7 @@
  "0x0041c060": {
   "name": "Prob24_Diagram",
   "status": "ported",
-  "where": "godot/src/problems/diagrams/diagram_base.gd with the type 24 spec in docs/data/problem_diagrams.json (clock: only the hour of hhmm on a 12 hour dial)"
+  "where": "godot/src/problems/diagrams/diagram_base.gd with the type 24 spec in extracted/tables/problem_diagrams.json (clock: only the hour of hhmm on a 12 hour dial)"
  },
  "0x0041c13c": {
   "status": "n/a",
@@ -1306,7 +1306,7 @@
  },
  "0x0041c650": {
   "status": "ported",
-  "where": "godot/src/story/expert_closing.gd + expert_closing_cable.gd + closing_crew_actor.gd (docs/data/expert_closing.json, data/closing_crew.tres; the timelines data/story/expert_hoist / deck / wait.tres by tools/import/step_story.py): 18-tick steps, turn, 20 idle steps, hook down 16 / up 17 steps, deck shot with crew / pod / cable, key / click to end, music 9501 stopped at the end; tests test_closing_sequences.gd, test_flow_fidelity.gd"
+  "where": "godot/src/story/expert_closing.gd + expert_closing_cable.gd + closing_crew_actor.gd (extracted/tables/expert_closing.json, data/story/closing_crew.tres; the timelines data/story/expert_hoist / deck / wait.tres by tools/import/step_story.py): 18-tick steps, turn, 20 idle steps, hook down 16 / up 17 steps, deck shot with crew / pod / cable, key / click to end, music 9501 stopped at the end; tests test_closing_sequences.gd, test_flow_fidelity.gd"
  },
  "0x0041cbac": {
   "name": "ExpertClosingEraseCable",
@@ -1351,7 +1351,7 @@
  "0x0041ceb7": {
   "name": "ExpertClosingCrewStep",
   "status": "ported",
-  "where": "godot/src/story/closing_crew_actor.gd + docs/data/expert_closing.json"
+  "where": "godot/src/story/closing_crew_actor.gd + extracted/tables/expert_closing.json"
  },
  "0x0041d088": {
   "name": "CollideAddRect",
@@ -1386,7 +1386,7 @@
  "0x0041d2d3": {
   "name": "Prob19_Diagram",
   "status": "ported",
-  "where": "godot/src/problems/diagrams/ruler_diagram.gd (family \"ruler\", docs/data/problem_diagrams.json type 19: picture 0 at (20,60), ruler 1 / 2 at (40,184), 2 px line from x = 50 + 12 a, y 177 / 178; checked against the decompilation)"
+  "where": "godot/src/problems/diagrams/ruler_diagram.gd (family \"ruler\", extracted/tables/problem_diagrams.json type 19: picture 0 at (20,60), ruler 1 / 2 at (40,184), 2 px line from x = 50 + 12 a, y 177 / 178; checked against the decompilation)"
  },
  "0x0041d99d": {
   "name": "DrawCustomizationDialog",
@@ -1562,12 +1562,12 @@
  "0x00420fe7": {
   "name": "Prob22_AngleToPicture",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json type 22 \"lookup\" entries (heading / 45 -> pictures 1,2,3,4,5,4,3,2), read by diagram_base.gd:_add_lookup_entry"
+  "where": "extracted/tables/problem_diagrams.json type 22 \"lookup\" entries (heading / 45 -> pictures 1,2,3,4,5,4,3,2), read by diagram_base.gd:_add_lookup_entry"
  },
  "0x00421046": {
   "name": "Prob22_AngleMirror",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json type 22 lookup \"flip\" (225, 270, 315 degrees), diagram_base.gd:_add_lookup_entry"
+  "where": "extracted/tables/problem_diagrams.json type 22 lookup \"flip\" (225, 270, 315 degrees), diagram_base.gd:_add_lookup_entry"
  },
  "0x0042108d": {
   "name": "Prob22_SuccessAnimation",
@@ -2066,7 +2066,7 @@
  "0x00429a73": {
   "name": "CartoonTypeLine",
   "status": "ported",
-  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (teletype visible_ratio, typing ticks_per_character 3 of docs/data/opening.json = set_alarm 2 + 1), bulletin() = texts 10003-10008"
+  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (teletype visible_ratio, typing ticks_per_character 3 of extracted/tables/opening.json = set_alarm 2 + 1), bulletin() = texts 10003-10008"
  },
  "0x00429b65": {
   "name": "CartoonWrapTypeText",
@@ -2081,7 +2081,7 @@
  "0x00429cc2": {
   "name": "TitleShipWobble",
   "status": "ported",
-  "where": "data/story/title_ship.tres [step_story.py:build_title_ship] (the +-2 wobble is in the table of docs/data/opening.json, so in the timeline)"
+  "where": "data/story/title_ship.tres [step_story.py:build_title_ship] (the +-2 wobble is in the table of extracted/tables/opening.json, so in the timeline)"
  },
  "0x00429d09": {
   "name": "TitleDrawBackdrop",
@@ -2361,7 +2361,7 @@
  },
  "0x0042dc3b": {
   "status": "ported",
-  "where": "godot/src/gameplay/collectible.gd (AnimatedSprite2D frame = GameClock.tick_count % frames: canister red/green each tick, rock sparkle table; docs/data/piece_animation.json); drawn over the station and, in play, under the sub (Collectibles layer of original_presenter.gd)"
+  "where": "godot/src/gameplay/collectible.gd (AnimatedSprite2D frame = GameClock.tick_count % frames: canister red/green each tick, rock sparkle table; extracted/tables/piece_animation.json); drawn over the station and, in play, under the sub (Collectibles layer of original_presenter.gd)"
  },
  "0x0042dcec": {
   "status": "n/a",
@@ -2390,12 +2390,12 @@
  "0x0042de8b": {
   "name": "Prob11_Diagram",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[11]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\" family: panel, pictures f1+3 / f2+6, f0 text)"
+  "where": "extracted/tables/problem_diagrams.json (types[11]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\" family: panel, pictures f1+3 / f2+6, f0 text)"
  },
  "0x0042df92": {
   "name": "Prob11_SuccessAnimation",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[11 success overlay]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (picture 2 + f3); problem_screen.gd:SUCCESS_REPLAY_TYPES; game only, never in practice (DESIGN 5.5)"
+  "where": "extracted/tables/problem_diagrams.json (types[11 success overlay]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (picture 2 + f3); problem_screen.gd:SUCCESS_REPLAY_TYPES; game only, never in practice (DESIGN 5.5)"
  },
  "0x0042e028": {
   "status": "ported",
@@ -2447,7 +2447,7 @@
  "0x0042e2a6": {
   "name": "Prob15_Diagram",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[15]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\")"
+  "where": "extracted/tables/problem_diagrams.json (types[15]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\")"
  },
  "0x0042e368": {
   "name": "Prob31_SolutionSubst",
@@ -2497,7 +2497,7 @@
  "0x0042eb3b": {
   "name": "Prob31_Diagram",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[31]) driven by godot/src/problems/diagrams/search_area_diagram.gd:_build (shape codes 1, 2, 3, 6; codes 4 and 5 are never stored)"
+  "where": "extracted/tables/problem_diagrams.json (types[31]) driven by godot/src/problems/diagrams/search_area_diagram.gd:_build (shape codes 1, 2, 3, 6; codes 4 and 5 are never stored)"
  },
  "0x0042ee04": {
   "name": "Prob32_SolutionSubst",
@@ -2507,7 +2507,7 @@
  "0x0042ee6c": {
   "name": "Prob32_Diagram",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[32]) driven by godot/src/problems/diagrams/search_grid_diagram.gd (grids 100 / 16 / 4, sound 0x29 every 2 ticks)"
+  "where": "extracted/tables/problem_diagrams.json (types[32]) driven by godot/src/problems/diagrams/search_grid_diagram.gd (grids 100 / 16 / 4, sound 0x29 every 2 ticks)"
  },
  "0x0042f00c": {
   "name": "Prob23_PromptSubst",
@@ -2527,12 +2527,12 @@
  "0x0042f0f9": {
   "name": "Prob23_Diagram",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[23]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\", mirrored picture by f2)"
+  "where": "extracted/tables/problem_diagrams.json (types[23]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\", mirrored picture by f2)"
  },
  "0x0042f163": {
   "name": "Prob23_SuccessAnimation",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[23 success \"pictures\"]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (sound 0x29, pictures at 22 and 44 ticks); tests/legacy/test_diagram_animations_legacy.gd:test_type_23_two_pictures_22_and_44_ticks_apart"
+  "where": "extracted/tables/problem_diagrams.json (types[23 success \"pictures\"]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (sound 0x29, pictures at 22 and 44 ticks); tests/legacy/test_diagram_animations_legacy.gd:test_type_23_two_pictures_22_and_44_ticks_apart"
  },
  "0x0042f250": {
   "name": "Prob27_PromptSubst",
@@ -2552,12 +2552,12 @@
  "0x0042f2f6": {
   "name": "Prob27_Diagram",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[27]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\": panel + needle lookup by speed)"
+  "where": "extracted/tables/problem_diagrams.json (types[27]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\": panel + needle lookup by speed)"
  },
  "0x0042f398": {
   "name": "Prob27_SuccessAnimation",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[27 success \"needle\"]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (sound 0x22, 20 ticks per step)"
+  "where": "extracted/tables/problem_diagrams.json (types[27 success \"needle\"]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (sound 0x22, 20 ticks per step)"
  },
  "0x0042f460": {
   "name": "CopyStringReturnEnd",
@@ -2749,12 +2749,12 @@
  "0x00431732": {
   "name": "Prob26_Diagram",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[26]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\": panel + needle lookup by speed)"
+  "where": "extracted/tables/problem_diagrams.json (types[26]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\": panel + needle lookup by speed)"
  },
  "0x004317d4": {
   "name": "Prob26_SuccessAnimation",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[26 success \"needle\"]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (sound 0x22, 20 ticks per step, counting down)"
+  "where": "extracted/tables/problem_diagrams.json (types[26 success \"needle\"]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (sound 0x22, 20 ticks per step, counting down)"
  },
  "0x004318a4": {
   "name": "Prob03_PromptSubst",
@@ -2774,17 +2774,17 @@
  "0x004319ad": {
   "name": "RadarBlip",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[3 \"blip\"]) driven by godot/src/problems/diagrams/sonar_diagram.gd (sound 0x29, pictures 9-11, 2 ticks each)"
+  "where": "extracted/tables/problem_diagrams.json (types[3 \"blip\"]) driven by godot/src/problems/diagrams/sonar_diagram.gd (sound 0x29, pictures 9-11, 2 ticks each)"
  },
  "0x00431a0f": {
   "name": "RadarSweep",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[3 \"sweep\"]) driven by godot/src/problems/diagrams/sonar_diagram.gd (2 turns of 12 steps, 6 ticks each)"
+  "where": "extracted/tables/problem_diagrams.json (types[3 \"sweep\"]) driven by godot/src/problems/diagrams/sonar_diagram.gd (2 turns of 12 steps, 6 ticks each)"
  },
  "0x00431b7d": {
   "name": "Prob03_Diagram",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[3]) driven by godot/src/problems/diagrams/sonar_diagram.gd"
+  "where": "extracted/tables/problem_diagrams.json (types[3]) driven by godot/src/problems/diagrams/sonar_diagram.gd"
  },
  "0x00431bd0": {
   "name": "Prob06_SolutionSubst",
@@ -2794,12 +2794,12 @@
  "0x00431c23": {
   "name": "Prob06_Diagram",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[6]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\", \"5000\" literal + f0)"
+  "where": "extracted/tables/problem_diagrams.json (types[6]) driven by godot/src/problems/diagrams/diagram_base.gd (\"items\", \"5000\" literal + f0)"
  },
  "0x00431d18": {
   "name": "Prob06_SuccessAnimation",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[6 success overlay]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (picture 2 + f2, no sound, no delay); game only, never in practice"
+  "where": "extracted/tables/problem_diagrams.json (types[6 success overlay]) driven by godot/src/problems/diagrams/diagram_base.gd:_schedule_success_replay (picture 2 + f2, no sound, no delay); game only, never in practice"
  },
  "0x00431db0": {
   "status": "ported",
@@ -2896,21 +2896,21 @@
  "0x00432191": {
   "name": "Prob02_DrawPanel",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[2 item 0]) driven by godot/src/problems/diagrams/diagram_base.gd (panel picture 0 at (16, 58))"
+  "where": "extracted/tables/problem_diagrams.json (types[2 item 0]) driven by godot/src/problems/diagrams/diagram_base.gd (panel picture 0 at (16, 58))"
  },
  "0x004321cb": {
   "name": "Prob02_AnimateBar",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[2 intro \"bars\"]) driven by godot/src/problems/diagrams/diagram_base.gd:play_intro (one segment per 6 ticks, sound 0x22, 30 ticks between bars)"
+  "where": "extracted/tables/problem_diagrams.json (types[2 intro \"bars\"]) driven by godot/src/problems/diagrams/diagram_base.gd:play_intro (one segment per 6 ticks, sound 0x22, 30 ticks between bars)"
  },
  "0x00432234": {
   "name": "Prob02_Diagram",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[2]) driven by godot/src/problems/diagrams/diagram_base.gd"
+  "where": "extracted/tables/problem_diagrams.json (types[2]) driven by godot/src/problems/diagrams/diagram_base.gd"
  },
  "0x00432330": {
   "status": "ported",
-  "where": "godot/src/rules/sim_world.gd:fire_pellet / request_fire (sound 0x18 / 0x1e when empty) + godot/src/gameplay/ink_pellet.gd + godot/src/core/sub_tuning.gd + godot/data/rules/tuning.json sub / ink (docs/data/ink_tables.json spawn offsets; max 2 in flight is ink.in_flight_max)"
+  "where": "godot/src/rules/sim_world.gd:fire_pellet / request_fire (sound 0x18 / 0x1e when empty) + godot/src/gameplay/ink_pellet.gd + godot/src/core/sub_tuning.gd + godot/data/rules/tuning.json sub / ink (extracted/tables/ink_tables.json spawn offsets; max 2 in flight is ink.in_flight_max)"
  },
  "0x004323f0": {
   "status": "ported",
@@ -2975,7 +2975,7 @@
  "0x004330a7": {
   "name": "Prob20_Diagram",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[20 intro \"lockstep\"]) driven by godot/src/problems/diagrams/diagram_base.gd (sound 0x22, 10 ticks per slice)"
+  "where": "extracted/tables/problem_diagrams.json (types[20 intro \"lockstep\"]) driven by godot/src/problems/diagrams/diagram_base.gd (sound 0x22, 10 ticks per slice)"
  },
  "0x004331a0": {
   "name": "Prob25_SolutionSubst",
@@ -2985,7 +2985,7 @@
  "0x004331d7": {
   "name": "Prob25_Diagram",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[25 intro \"sequence\"]) driven by godot/src/problems/diagrams/line_graph_diagram.gd (sound 0x23, 15 ticks per step)"
+  "where": "extracted/tables/problem_diagrams.json (types[25 intro \"sequence\"]) driven by godot/src/problems/diagrams/line_graph_diagram.gd (sound 0x23, 15 ticks per step)"
  },
  "0x004336a4": {
   "name": "Prob21_SolutionSubst",
@@ -3000,7 +3000,7 @@
  "0x0043378d": {
   "name": "Prob21_Diagram",
   "status": "ported",
-  "where": "docs/data/problem_diagrams.json (types[21]) driven by godot/src/problems/diagrams/tank_diagram.gd (sound 0x28, 6 ticks per step, liters / gallons scale)"
+  "where": "extracted/tables/problem_diagrams.json (types[21]) driven by godot/src/problems/diagrams/tank_diagram.gd (sound 0x28, 6 ticks per step, liters / gallons scale)"
  },
  "0x004339e0": {
   "status": "n/a",

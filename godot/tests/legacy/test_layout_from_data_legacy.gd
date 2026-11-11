@@ -17,7 +17,7 @@ func test_the_lock_wheels_centre_and_radius_are_the_pictures() -> void:
 	assert_float(lock.answer_wheel_radius()).is_equal(picture.get_size().x / 2.0)
 
 
-## The sizes of the console the importer wrote from the pictures equal what the pictures say, and the area of each gauge (the rectangle the original redraws, `docs/data/hud_gauges.json`) holds its icons.
+## The sizes of the console the importer wrote from the pictures equal what the pictures say, and the area of each gauge (the rectangle the original redraws, `extracted/tables/hud_gauges.json`) holds its icons.
 func test_the_consoles_sizes_are_the_pictures_and_each_gauges_area_holds_its_icons() -> void:
 	var layout: HudLayout = Catalog.hud_layout()
 	assert_object(layout.bezel_size).is_equal(Vector2i(layout.bezel.get_size()))

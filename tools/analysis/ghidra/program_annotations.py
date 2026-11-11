@@ -37,7 +37,7 @@ def key(address):
 
 def managed(spec=None):
     """(type paths, data addresses) that apply_problem_types.py owns."""
-    layout = ng.REPO / "docs/data/problem_layouts32.json"
+    layout = ng.REPO / "tools/analysis/data/problem_layouts32.json"
     spec = spec if spec is not None else (json.loads(layout.read_text()) if layout.exists() else {"types": {}})
     paths = {MANAGED_TYPES + "CompactNumber"} | {MANAGED_TYPES + "Prob%02d" % int(t) for t in spec["types"]}
     addrs = {"0x%08x" % int(s["global"], 16) for s in spec["types"].values()}

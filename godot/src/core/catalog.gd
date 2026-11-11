@@ -34,9 +34,12 @@ const PROBLEM_TYPE_COUNT := 34
 const LAST_PROBLEM_TYPE := 255
 const SCREENS_PER_SECTOR := 12
 
-## The project's own data, committed in `res://data/`: the rules (`rules/durations.json`, `rules/tuning.json`), the cutscene timelines, the menu layout, and the
-## sectors and campaigns the designers make (under every pack of the chain).
+## The project's own data, committed in `res://data/`: the rules (`rules/durations.json`, `rules/tuning.json`), the menu layout, and the
+## sectors and campaigns the designers make (under every pack of the chain). The cutscenes' choreography is a pack's (`story_timeline`).
 const PROJECT_DATA_DIR := "res://data/"
+## Where the story files of a pack are, by name: the cutscene timelines (`story_timeline`), `story_script`, `voyager_closing_script`, `closing_crew`
+## (`PackNeeds.FILES` lists the same files).
+const STORY_REL := "data/story/%s.tres"
 ## The string tables, in the order they are searched for a string id (the ids of all of them are one number space).
 const TEXT_TABLES: Array[String] = ["ui_strings", "story", "hints", "log_entries", "supply_messages", "closing",
 		"calc_notices", "help"]
@@ -552,9 +555,31 @@ static func bubble_rules() -> BubbleRules:
 	return _door("data/bubble_rules.tres") as BubbleRules
 
 
-## The six sailors of the Expert closing's deck shot (`ExpertCraneTable`).
+## The story file `story_name` (`STORY_REL`) of the first pack of the chain that holds it.
+static func _story(story_name: StringName) -> Resource:
+	return _door(STORY_REL % story_name)
+
+
+## The six sailors of the Expert closing's deck shot (`ExpertCraneTable`): `closing_crew` of the pack.
 static func closing_crew() -> ClosingCrewScripts:
-	return _load(PROJECT_DATA_DIR + "closing_crew.tres") as ClosingCrewScripts
+	return _story(&"closing_crew") as ClosingCrewScripts
+
+
+## The cutscene timeline `timeline_name` (`news_cartoon`, `news_ambient`, `title_ship`, `title_reveal`, `expert_hoist`, `expert_deck`, `expert_wait`): the
+## choreography is the first pack's of the chain that holds it (`STORY_REL`; `PackNeeds` requires every one of them, so the dev pack at the bottom
+## of the chain always answers). Not skinned: how long a cutscene lasts is not a skin's to change.
+static func story_timeline(timeline_name: StringName) -> CutsceneTimeline:
+	return _story(timeline_name) as CutsceneTimeline
+
+
+## The pages of the opening story (`StoryPages`): `story_script` of the pack.
+static func story_script() -> StoryScript:
+	return _story(&"story_script") as StoryScript
+
+
+## The loop counts of the Voyager closing's flight (`VoyagerClosing`): `voyager_closing_script` of the pack.
+static func voyager_closing_script() -> VoyagerClosingScript:
+	return _story(&"voyager_closing_script") as VoyagerClosingScript
 
 
 static func pieces_frames() -> SpriteFrames:

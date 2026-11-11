@@ -40,6 +40,7 @@ def test_the_committed_fixtures_hold_the_hashes_and_no_bytes():
 
 
 @pytest.mark.skipif(not ds.TRIGGER_RAW_FIXTURE.exists(), reason="run the importer on your copy of the game (needs %s)" % ds.TRIGGER_RAW_FIXTURE)
+@pytest.mark.legacy
 def test_the_raw_fixtures_are_the_table_bytes_and_are_not_committed():
     assert bytes.fromhex(json.loads(ds.TRIGGER_RAW_FIXTURE.read_text())["hex"]) == ds.trigger_table()
     assert bytes.fromhex(json.loads(ds.ZONES_RAW_FIXTURE.read_text())["hex"]) == ds.default_edu_levels()

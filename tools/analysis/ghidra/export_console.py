@@ -1,6 +1,6 @@
 """The sub console and the calculator, transcribed from the Ghidra decompilation of ONWIN32.EXE.
 
-Pure Python (no Ghidra, no CD needed to run). Writes docs/data/console_layout.json; the gauges themselves
+Pure Python (no Ghidra, no CD needed to run). Writes tools/analysis/data/console_layout.json; the gauges themselves
 (tanks, oxygen, ink pellets) are in hud_gauges.json (export_constants.py). Every number below was read from the
 function named next to it (addresses of the 32-bit build), all coordinates are pixels of the 640 x 400 window:
 
@@ -26,7 +26,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-OUT = ROOT / "docs" / "data" / "console_layout.json"
+OUT = ROOT / "tools" / "analysis" / "data" / "console_layout.json"
 
 BLACK, GREY = 0, 8
 

@@ -9,8 +9,8 @@ extends Resource
 ## the timeline, and the scene's own nodes play the actors); a skin can redraw the same cutscene with other nodes and
 ## other art and still takes exactly as long, because the time lives here and not in the art.
 ##
-## The timelines that come from the original are written by the importer (`tools/import/step_story.py`, into
-## `data/story/`); a few small ones that are our own (the fade of a story page, the flicker of the console lights)
+## The timelines that come from the original are written by the importer (`tools/import/step_story.py`, into the legacy pack's
+## `data/story/`; the dev pack's own, `tools/dev_pack/dev_story.py`, are made up); a few small ones that are our own (the fade of a story page, the flicker of the console lights)
 ## are made in code with `track()` and `cue()` below. `provenance` says which is which.
 
 ## The original's timer: 73 ticks a second. Every moment of a timeline is in ticks.

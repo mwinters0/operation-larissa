@@ -37,7 +37,7 @@ read it only when you need the why.
 - **The three layers.** Rules never change (a pack changes their values through `rules/tuning.json`, and a campaign that declares a sandboxed mod pack gets its rule hooks, `docs/engine/ARCHITECTURE.md` "Rule hooks"); content is data; presentation (skins)
   never changes a rule or a timing. `tests/engine/test_rules_are_plain_objects.gd` and `test_plays_identically.gd` enforce it.
 - **No original content in git.** Nothing derived from the ISO (pictures, sounds, texts, levels, scripts, tables) is committed: the legacy
-  pack (`godot/packs/legacy`), `extracted/`, the seven ISO tables in `docs/data/` (one is ONWIN.MAP's names: the Ghidra name tables commit a reference to a MAP name, never
+  pack (`godot/packs/legacy`), `extracted/`, the game's own tables in `extracted/tables/` (`GENERATED_TABLES` in `tools/import/common.py`; one is ONWIN.MAP's names: the Ghidra name tables commit a reference to a MAP name, never
   the name, `tools/analysis/ghidra/map_names.py`), `godot/tests/fixtures/original/`. Fixtures commit SHA-256
   hashes of whole records, never bytes. Screenshots of the port (they show the original's art) are never committed.
 - **Engine tests run on the dev pack** (`godot/tests/engine/`, never name `LegacyPack` or `res://packs/legacy`); tests of the original's data

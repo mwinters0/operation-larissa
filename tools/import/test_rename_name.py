@@ -35,7 +35,7 @@ def _copy_tree(root: Path) -> Path:
         shutil.copytree(common.GODOT / sub, root / "godot" / sub, ignore=shutil.ignore_patterns("*.uid", "fixtures", "snapshots"))
     for addon in code_names.OWN_ADDONS:
         shutil.copytree(common.GODOT / "addons" / addon, root / "godot" / "addons" / addon, ignore=keep)
-    shutil.copytree(common.ROOT / "docs", root / "docs", ignore=shutil.ignore_patterns("data", "*.png", "*.json", "*.jsonl"))
+    shutil.copytree(common.ROOT / "docs", root / "docs", ignore=shutil.ignore_patterns("*.png", "*.json", "*.jsonl"))
     shutil.copy(common.ROOT / "README.md", root / "README.md")
     shutil.copy(common.GODOT / "README.md", root / "godot" / "README.md")
     (root / "tools" / "import").mkdir(parents=True)

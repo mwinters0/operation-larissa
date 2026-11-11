@@ -294,7 +294,7 @@
  },
  "0x004415a4": {
   "name": "ExpertCraneTable",
-  "evidence": "ExpertClosingCrewStep: the six deck sailors' programs, 4-byte records [op, item, mirror, delay] (NOT a crane script), cut at each -3 byte, ends with -1; decoded in docs/data/expert_closing.json"
+  "evidence": "ExpertClosingCrewStep: the six deck sailors' programs, 4-byte records [op, item, mirror, delay] (NOT a crane script), cut at each -3 byte, ends with -1; decoded in extracted/tables/expert_closing.json"
  },
  "0x00441a74": {
   "name": "LogEntryClipFirst",
@@ -1253,11 +1253,11 @@
  "0x00442fd0": "NewPlayerNameTemplate",
  "0x00441188": {
   "name": "DissolveColumnOrder",
-  "evidence": "16 bytes {11,13,5,14,7,1,15,2,0,3,8,4,9,12,6,10}: which column residue (mod 16) pass p of dissolve (0x414f81) copies; docs/data/dissolve_tables.json"
+  "evidence": "16 bytes {11,13,5,14,7,1,15,2,0,3,8,4,9,12,6,10}: which column residue (mod 16) pass p of dissolve (0x414f81) copies; extracted/tables/dissolve_tables.json"
  },
  "0x00441198": {
   "name": "DissolveRowOrder",
-  "evidence": "16 bytes {13,11,6,10,3,1,15,0,12,5,7,2,4,14,9,8}: per row (row % 16) shift of the dissolve (0x414f81) pattern; docs/data/dissolve_tables.json"
+  "evidence": "16 bytes {13,11,6,10,3,1,15,0,12,5,7,2,4,14,9,8}: per row (row % 16) shift of the dissolve (0x414f81) pattern; extracted/tables/dissolve_tables.json"
  },
  "0x00442c5c": {
   "name": "DlgAboutBoxRecord",

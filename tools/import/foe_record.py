@@ -10,7 +10,7 @@ A sector's foe buffer (DESIGN 3.5) is `u8 count`, then `count` records of 34 byt
     0x12..0x21 the creature's run-time state while it is interrupted (saved pc, loop counters, saved x / y / frame /
                flip): the game writes it, the data starts out all zero (16 bytes, kept as `runtime_state`)
 Everything is read from the RAW foe buffer (the extracted NEP.DLL resource named in sectors.json under foes.source),
-never from the converted values in docs/data/sectors.json. The Godot side is FoeData.encode().
+never from the converted values in extracted/tables/sectors.json. The Godot side is FoeData.encode().
 
 What the 640 original records show (checked here, so a surprise is an error and not silently dropped):
     * dormant, hidden and flip are 0 or 1 in every record (FoeData keeps them as booleans);
@@ -43,7 +43,7 @@ def record_offset(k: int) -> int:
 
 
 def original_buffer(sec: dict) -> bytes:
-    """The foe buffer of the sector dict from docs/data/sectors.json (only its foes.source is used: the bytes come from the
+    """The foe buffer of the sector dict from extracted/tables/sectors.json (only its foes.source is used: the bytes come from the
     extracted copy of the game's file; the extractor cuts trailing zero bytes, which never reach into the records, since
     the script bytecode follows them)."""
     raw = (EXTRACTED / sec["foes"]["source"]["extracted"]).read_bytes()
@@ -120,7 +120,7 @@ def build_hash_fixture(sectors: list[dict]) -> str:
     creature, the offset of its record and the SHA-256 of the whole 34 bytes. No original bytes in it."""
     comment = ("Provenance and SHA-256 hashes of every creature's ORIGINAL 34-byte record, written by "
                "tools/import/step_sectors.py (import_all.py) from the raw foe buffer named under \"source\" (NEP.DLL, saved by "
-               "tools/extract/extract_data.py from your copy of the game; docs/data/sectors.json, from "
+               "tools/extract/extract_data.py from your copy of the game; extracted/tables/sectors.json, from "
                "tools/analysis/export_json.py, carries where it comes from), never hand-edited. It holds no original bytes: "
                "creature k of a sector is the \"size\" bytes at \"offset\" of its buffer (1 + 34 * k: the buffer starts "
                "with the count byte), \"sha256\" the hash of the whole record. godot/tests/legacy/test_foe_record_fidelity.gd "

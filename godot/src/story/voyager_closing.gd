@@ -8,8 +8,8 @@ extends StorySegment
 ## Teaches: a cutscene laid over the running game. The sector keeps showing underneath (this scene has a
 ## transparent background and is added to a `CanvasLayer` by `Game`); a clipped `Control` keeps the helicopter
 ## inside the playfield. The choreography is DATA again, but data with a twist: the finale starts wherever the sub is, so
-## the flight cannot be one fixed file. `data/story/voyager_closing_script.tres` (a `VoyagerClosingScript`) holds the
-## original's loop counts and `timeline()` runs them for the place the sub is in, giving a `CutsceneTimeline` that the
+## the flight cannot be one fixed file. `data/story/voyager_closing_script.tres` of the pack (a `VoyagerClosingScript`) holds the
+## loop counts (the original's, in the legacy pack) and `timeline()` runs them for the place the sub is in, giving a `CutsceneTimeline` that the
 ## usual `Cutscene.animation()` plays. The three message pages are an ordinary `await` loop on the `MessageQueue`.
 ## Coordinates are the original's WINDOW pixels (SubX, SubY = the top-left of the picture); `Playfield` is at (16, 32), and
 ## the cast subtracts that for the nodes inside it.
@@ -19,7 +19,6 @@ extends StorySegment
 ## sound 0x2d, 15 steps of 8 px up with spinning rotor; then 8 px to the left per step until the helicopter has left the
 ## playfield. (The music is stopped for the sequence in the Voyager game.)
 
-const SCRIPT := preload("res://data/story/voyager_closing_script.tres")
 const PAGES := 3
 
 var messages := MessageQueue.new(GameClock)
@@ -47,7 +46,7 @@ func start(sub_x: int, sub_y: int, cell: int) -> void:
 	cast.bind(&"sub", sub)
 	cast.bind(&"helicopter", heli_body)
 	cast.bind(&"rotor", heli_rotor)
-	Cutscene.install_timeline(animations, &"closing", SCRIPT.timeline(sub_x, sub_y, cell), cast)
+	Cutscene.install_timeline(animations, &"closing", Catalog.voyager_closing_script().timeline(sub_x, sub_y, cell), cast)
 	animations.play(&"closing")
 
 

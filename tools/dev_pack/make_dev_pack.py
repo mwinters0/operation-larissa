@@ -52,6 +52,7 @@ def data() -> None:
     import dev_rules
     import dev_sectors
     import dev_sprites
+    import dev_story
     import dev_tables
     import dev_tiles
     import dev_ui
@@ -59,7 +60,7 @@ def data() -> None:
     write_text(DEV / "pack.json", json.dumps(PACK_JSON, indent=2) + "\n")
     write_text(DEV / "assets" / "authoring_tool" / "README.md", AUTHORING_TOOL_README)
     write_text(DEV / "assets" / "problem_art" / "single" / "README.md", PROBLEM_ART_SINGLE_README)
-    counts = {"sprites": dev_sprites.write_all(), "tiles": dev_tiles.write_all(), "tables": dev_tables.write_all(), "ui": dev_ui.write_all(),
+    counts = {"sprites": dev_sprites.write_all(), "tiles": dev_tiles.write_all(), "tables": dev_tables.write_all(), "ui": dev_ui.write_all(), "story": dev_story.write_all(),
               "problems": dev_problems.write_all(), "rules": dev_rules.write_all(), "sectors and campaign": dev_sectors.write_all(), "test sectors": test_sectors.write_all(DEV)}
     print("  data: " + ", ".join("%s %d" % kv for kv in counts.items()))
 

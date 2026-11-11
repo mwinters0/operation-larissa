@@ -4,7 +4,7 @@ extends StorySegment
 ## capsule, and the news bulletins typed out and read aloud ("RED ALERT... GALAXY SPACE CAPSULE HAS ALTERED ITS
 ## COURSE ..."). Original: the first loop of `OpeningSequence` (OPENING.C).
 ##
-## Teaches: a cutscene whose choreography is DATA (`data/story/news_cartoon.tres`, a `CutsceneTimeline` the importer wrote from
+## Teaches: a cutscene whose choreography is DATA (`data/story/news_cartoon.tres`, a `CutsceneTimeline` of the pack; the legacy pack's is written by the importer from
 ## the original's tables) and whose view is this script: it builds the pictures, tells a `CutsceneCast` which node plays
 ## which actor ("crew_4" is the `Crew4` sprite), and has `Cutscene.animation()` turn the timeline into `Animation`s. There are
 ## TWO `AnimationPlayer`s, because one player plays one animation at a time:
@@ -25,12 +25,6 @@ extends StorySegment
 ## 25 redraws (3.4 s); the capsule's trail gets a new dot every 11 redraws, the ring starts 6 redraws after the
 ## last one. The crew's pictures and timings are the original's five little scripts; the importer plays them out, redraw by
 ## redraw, into the timeline.
-
-## What the original does, as data: `tools/import/step_story.py` writes both from `docs/data/opening.json`. The cartoon types the bulletins
-## of the game's own text, so its length is made from the pack's own text (the legacy pack: YOUR copy of the game) and is `load`ed, not `preload`ed: a checkout
-## without the game must still compile this script.
-const TIMELINE_REL := "data/story/news_cartoon.tres"
-const AMBIENT := preload("res://data/story/news_ambient.tres")
 
 ## The ambient animation's step: the original's redraw every 10 ticks (the flicker of the console lights changes at that rate).
 const REDRAW_TICKS := 10.0
@@ -84,8 +78,9 @@ func _ready() -> void:
 	# (characters hidden before shaping) the label wraps the part typed so far, and a word that reaches the
 	# edge jumps to the next line.
 	teletype.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
-	Cutscene.install_timeline(ambient, &"ambient", AMBIENT.merged_with(_flicker_timeline()), _cast)
-	Cutscene.install_timeline(script_player, &"news", Packs.resource(TIMELINE_REL) as CutsceneTimeline, _cast)
+	var alarms := Catalog.story_timeline(&"news_ambient")
+	Cutscene.install_timeline(ambient, &"ambient", alarms.merged_with(_flicker_timeline(alarms)), _cast)
+	Cutscene.install_timeline(script_player, &"news", Catalog.story_timeline(&"news_cartoon"), _cast)
 	ambient.play(&"ambient")
 	script_player.play(&"news")
 	Audio.play_music(AudioService.SONG_OPENING)
@@ -151,10 +146,10 @@ func _build_stage() -> void:
 ## time), so there is no original timeline for them: this one is ours, baked into a loop as long as the alarm lights'
 ## (`news_ambient.tres`) and merged with it. Status lights: each redraw a light is on with probability 100 / 299 and shows
 ## one of three pictures; panel lights are always on and show one of three pictures.
-func _flicker_timeline() -> CutsceneTimeline:
-	var flicker := CutsceneTimeline.made_in_code(AMBIENT.length,
+func _flicker_timeline(alarms: CutsceneTimeline) -> CutsceneTimeline:
+	var flicker := CutsceneTimeline.made_in_code(alarms.length,
 			"Ours: the console's lights flicker at random in the original (CartoonStatusLights, CartoonPanelLights); a generator seeded with 73 bakes it into a loop.", true)
-	var steps := roundi(AMBIENT.length / REDRAW_TICKS)
+	var steps := roundi(alarms.length / REDRAW_TICKS)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 73
 	for i in _status_lights.size():

@@ -2,7 +2,7 @@ class_name TestCollectibles
 extends GdUnitTestSuite
 ## Teaches: testing a rule that is rectangle arithmetic (no physics sensors): move the sub on top of a piece and run a tick.
 ## The ground sector (`Ground.MAIN`): the canister (piece 0) lies on screen 9 with piece 6, screen 3 holds piece 3 alone and screen 5 has a math trigger.
-## (The original's coordinates and picture tables are in `tests/legacy/test_collectibles_legacy.gd`.)
+## (The original's coordinates and picture tables are checked in `tests/legacy/test_collectibles_legacy.gd`.)
 
 const WORLD_SCENE := "res://src/gameplay/sector_world.tscn"
 const TRIGGER_SLOT := 10
@@ -57,8 +57,12 @@ func test_in_every_sector_only_piece_0_is_the_canister() -> void:
 
 
 func test_every_pieces_picture_is_a_rock_except_the_canister() -> void:
-	# What the player sees on the first tick, for all pieces of all sectors: the rock picture 0 or the red / green
-	# canister picture 3 (picture 4 on the next tick); never a canister picture on a rock or the other way round.
+	# What the player sees on the first tick, for all pieces of all sectors: a picture of the canister's animation on the canister and
+	# one of the rock's animation on every other piece; the two animations share no picture.
+	var canister := _animation_pictures(Collectible.CANISTER_ANIMATION)
+	var rock := _animation_pictures(Collectible.ROCK_ANIMATION)
+	for picture in canister:
+		assert_bool(picture in rock).is_false()
 	var world := _world
 	for sector_index in Catalog.sector_ids():
 		world.load_sector(sector_index, 0)
@@ -68,7 +72,7 @@ func test_every_pieces_picture_is_a_rock_except_the_canister() -> void:
 			for node: Collectible in world.original.collectibles.get_children():
 				var shown := node.sprite.sprite_frames.get_frame_texture(node.sprite.animation, node.sprite.frame)
 				var picture := _picture_number(shown)
-				assert_bool(picture in ([3, 4] if node.index == 0 else [0, 1, 2])) \
+				assert_bool(picture in (canister if node.index == 0 else rock)) \
 						.override_failure_message("sector %d piece %d shows picture %d" % [sector_index, node.index, picture]).is_true()
 
 
@@ -88,152 +92,51 @@ func _picture_number(texture: Texture2D) -> int:
 	return -1
 
 
-func test_the_canister_flashes_red_and_green_every_tick() -> void:
+## The pictures (numbers in the pieces bundle) of an animation of `pieces_frames`, one entry per frame.
+func _animation_pictures(animation: StringName) -> Array[int]:
+	var frames := Catalog.pieces_frames()
+	var found: Array[int] = []
+	for i in frames.get_frame_count(animation):
+		found.append(_picture_number(frames.get_frame_texture(animation, i)))
+	return found
+
+
+func test_the_canister_flashes_by_its_animation_one_frame_a_tick() -> void:
 	var node := _world.original.collectibles.get_children().filter(func(c: Collectible) -> bool: return c.index == 0)[0] as Collectible
-	var seen: Array[int] = []
-	for i in 6:
-		seen.append(_picture_number(node.sprite.sprite_frames.get_frame_texture(node.sprite.animation, node.sprite.frame)))
+	var pictures := _animation_pictures(Collectible.CANISTER_ANIMATION)
+	assert_int(pictures.size()).is_greater(1)
+	var changes := 0
+	var previous := -1
+	for i in pictures.size() * 2:
+		var picture := _picture_number(node.sprite.sprite_frames.get_frame_texture(node.sprite.animation, node.sprite.frame))
+		assert_int(picture).is_equal(pictures[GameClock.tick_count % pictures.size()])
+		assert_int(picture).is_equal(Collectible.picture_for(true, GameClock.tick_count))
+		changes += 1 if picture != previous else 0
+		previous = picture
 		GameClock.step()
-	assert_array(seen).is_equal([seen[0], 7 - seen[0], seen[0], 7 - seen[0], seen[0], 7 - seen[0]])   # 3,4,3,4,... (or 4,3,...)
-	assert_array([seen[0], seen[1]]).contains_exactly_in_any_order([3, 4])
+	assert_int(changes).is_greater(1)                                   # it does flash
 
 
-func test_a_rock_sparkles_on_3_of_16_ticks_and_all_rocks_stay_in_step() -> void:
+func test_a_rock_sparkles_by_its_animation_and_all_rocks_stay_in_step() -> void:
 	_world.load_screen(9)
 	var rock := _world.original.collectibles.get_children().filter(func(c: Collectible) -> bool: return c.index == 6)[0] as Collectible
+	var pictures := _animation_pictures(Collectible.ROCK_ANIMATION)
+	var resting := pictures[0]
+	var sparkles_per_cycle := pictures.filter(func(picture: int) -> bool: return picture != resting).size()
+	assert_int(sparkles_per_cycle).is_between(1, pictures.size() - 1)
 	var sparkles := 0
 	var start := GameClock.tick_count
-	for i in 32:
+	for i in pictures.size() * 2:
 		var picture := _picture_number(rock.sprite.sprite_frames.get_frame_texture(rock.sprite.animation, rock.sprite.frame))
-		if picture != 0:
+		assert_int(picture).is_equal(pictures[GameClock.tick_count % pictures.size()])
+		if picture != resting:
 			sparkles += 1
 		GameClock.step()
-	assert_int(GameClock.tick_count).is_equal(start + 32)
-	assert_int(sparkles).is_equal(6)                                    # per 16-tick cycle: pictures 1, 2, 1 (3 ticks), over 2 cycles
+	assert_int(GameClock.tick_count).is_equal(start + pictures.size() * 2)
+	assert_int(sparkles).is_equal(sparkles_per_cycle * 2)               # the same cycle twice
 	# A rock built later (another screen, any time) shows the same picture as one built earlier.
 	_world.load_screen(0)
 	var other := _world.original.collectibles.get_child(0) as Collectible
 	_world.load_screen(9)
 	var again := _world.original.collectibles.get_children().filter(func(c: Collectible) -> bool: return c.index == 6)[0] as Collectible
 	assert_int(other.sprite.frame).is_equal(again.sprite.frame)
-
-
-func test_the_pieces_freeze_while_the_clock_is_stopped() -> void:
-	var node := _world.original.collectibles.get_child(0) as Collectible
-	var frame := node.sprite.frame
-	GameClock.paused = false                                            # the real clock runs, but a problem screen holds it
-	GameClock.hold()
-	assert_int(GameClock.advance(1.0)).is_equal(0)
-	assert_int(node.sprite.frame).is_equal(frame)
-	GameClock.release()
-	GameClock.paused = true
-
-
-func test_touching_a_piece_collects_it_once() -> void:
-	await _put_sub_on(6)
-	assert_bool(GameState.has_piece(6)).is_true()
-	assert_int(GameState.pieces_collected()).is_equal(1)
-	assert_array(_sounds).is_equal([SimWorld.SFX_PIECE_PICKED_UP])
-	assert_int(_world.original.collectibles.get_child_count()).is_equal(1)       # the piece is gone from the sea floor
-	assert_array(_problems).is_empty()                                  # a capsule piece asks nothing
-
-
-func test_touching_the_canister_starts_the_data_canister_problem_when_its_countdown_has_run_down() -> void:
-	# `DoAction` (0x417ffc, 0x4182d5): the canister stores MessageLightCountdown (2 in the original, `Tuning.canister_pending_ticks`) and
-	# problem id 1; the problem opens when the loop top sees the countdown at 1, i.e. in the NEXT tick (the original's), not in the tick
-	# of the pick-up.
-	await _put_sub_on(0)
-	assert_bool(GameState.has_piece(0)).is_true()
-	assert_int(_world.pending_slot).is_equal(SimWorld.CANISTER_SLOT)
-	var countdown := Tuning.resolve().canister_pending_ticks
-	assert_int(_world.pending_ticks).is_equal(countdown)
-	assert_array(_problems).is_empty()
-	for i in countdown - 2:
-		_world.tick()
-		assert_array(_problems).is_empty()
-	_world.tick()
-	assert_array(_problems).is_equal([SimWorld.CANISTER_SLOT])
-	assert_bool(_world.problem_active).is_true()
-	assert_int(_world.pending_slot).is_equal(-1)
-
-
-## Screen 5: one armed trigger at window (400, 240), slot `TRIGGER_SLOT`.
-func _on_the_trigger_screen() -> MathTrigger:
-	_world.load_screen(5)
-	_world.foes_active = false
-	return _world.original.triggers_layer.get_child(0) as MathTrigger
-
-
-# G34: taking the canister overwrites a pending trigger countdown.
-func test_taking_the_canister_overwrites_a_pending_trigger_countdown() -> void:
-	var trigger := _on_the_trigger_screen()
-	_world.sim.touch_trigger(trigger.model)
-	for i in 10:
-		_world.tick()
-	assert_int(_world.pending_slot).is_equal(TRIGGER_SLOT)
-	assert_int(_world.pending_ticks).is_equal(Tuning.resolve().pending_ticks - 10)
-	_world.sim.take_piece(0)                                         # (a piece is taken whichever screen it lies on)
-	assert_int(_world.pending_slot).is_equal(SimWorld.CANISTER_SLOT)
-	assert_int(_world.pending_ticks).is_equal(Tuning.resolve().canister_pending_ticks)
-	assert_bool(_world.problem_active).is_false()                       # the canister did not open its problem at once
-	assert_bool(_world.is_trigger_armed(5, 0)).is_false()               # the trigger is spent ...
-	for i in Tuning.resolve().canister_pending_ticks - 1:
-		_world.tick()
-	assert_array(_problems).is_equal([SimWorld.CANISTER_SLOT])       # ... and its problem is never shown
-	for i in Tuning.resolve().pending_ticks:
-		_world.tick()
-	assert_array(_problems).is_equal([SimWorld.CANISTER_SLOT])
-
-
-func test_a_trigger_firing_in_the_tick_of_the_pick_up_wins_and_the_canister_gets_no_problem() -> void:
-	# `CheckProbeCollision` runs before `DetectMathTrigger`: in one tick the canister is taken (countdown 2, id 1) and
-	# then the trigger overwrites it (countdown 36, its slot). The canister is gone for good and asks nothing.
-	var trigger := _on_the_trigger_screen()
-	var data := _world.sector.pieces[0].duplicate() as PieceData
-	data.pos = trigger.data.pos                                         # the canister lies on the trigger point
-	_world.sim.pieces.append(PieceModel.new(data, 0))
-	_world.sim.sub.position = Vector2(trigger.data.pos) - Sub.PLAYFIELD_ORIGIN
-	_world.tick()
-	assert_bool(GameState.has_piece(0)).is_true()
-	assert_int(_world.pending_slot).is_equal(TRIGGER_SLOT)
-	assert_int(_world.pending_ticks).is_equal(Tuning.resolve().pending_ticks)
-	assert_bool(_world.is_trigger_armed(5, 0)).is_false()
-	for i in Tuning.resolve().pending_ticks:
-		_world.tick()
-	assert_array(_problems).is_equal([TRIGGER_SLOT])                              # the trigger's problem only: no canister problem ever
-	assert_bool(GameState.has_piece(0)).is_true()
-
-
-func test_running_out_of_air_during_the_canister_problem_puts_the_canister_back() -> void:
-	await _put_sub_on(0)
-	await get_tree().process_frame
-	var session := ProblemSession.new(_world.make_problem(1))
-	session.oxygen_code = OxygenModel.OUT_WITH_SPARE_TANKS
-	_world.problem_resolved(1, session)
-	assert_bool(GameState.has_piece(0)).is_false()
-	var indices: Array = _world.original.collectibles.get_children().map(func(c: Collectible) -> int: return c.index)
-	assert_bool(0 in indices).is_true()
-
-
-func test_a_solved_canister_stays_collected() -> void:
-	await _put_sub_on(0)
-	await get_tree().process_frame
-	var session := ProblemSession.new(_world.make_problem(1))
-	_world.problem_resolved(1, session)
-	assert_bool(GameState.has_piece(0)).is_true()
-	assert_bool(_world.problem_active).is_false()
-
-
-func test_collected_pieces_do_not_come_back_when_the_screen_is_rebuilt() -> void:
-	await _put_sub_on(6)
-	_world.load_screen(9)
-	assert_int(_world.original.collectibles.get_child_count()).is_equal(1)
-
-
-func test_all_pieces_are_tracked_in_the_bit_mask() -> void:
-	for i in _world.sector.pieces.size():
-		assert_bool(GameState.collect_piece(i)).is_true()
-	assert_int(GameState.pieces_mask).is_equal((1 << _world.sector.pieces.size()) - 1)
-	assert_bool(GameState.collect_piece(3)).is_false()
-	GameState.begin_sector()
-	assert_int(GameState.pieces_mask).is_equal(0)

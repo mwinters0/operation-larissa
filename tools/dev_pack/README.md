@@ -18,6 +18,8 @@ tools/godot.sh --headless --path godot -s ../tools/dev_pack/godot/check_dev_pack
 downloads its voice the first time), then the Godot import (it writes the `.import` files and `.godot/imported` copies of new pictures and sounds), then the check and the tests, and commit the files the generator and the import
 changed. `--refresh-inventory` rebuilds `inventory.json` from the file names of the legacy pack and is the one step that needs legacy; without legacy the committed list is the inventory, and `test_dev_pack.py` compares the pack with it.
 
+The generator reads nothing the importer writes (`extracted/`, so no `GENERATED_TABLES` of `tools/import/common.py`), only the committed analysis in `tools/analysis/data/` (`problem_layouts32.json`, `problem_fields.json`, `sprite_slots.json`), so it runs on a checkout with no ISO.
+
 The output is committed and the generator is deterministic (Piper aside): run it again and `git status` stays clean. A file you edit by
 hand is yours until the next run, so change the generator too. `test_dev_pack.py` fails when the generator would rewrite a file.
 
@@ -28,14 +30,15 @@ hand is yours until the next run, so change the generator too. `test_dev_pack.py
 | `inventory.json`, `inventory.py` | The list of files the pack must have (from the legacy pack's file NAMES; `make_dev_pack.py --refresh-inventory` rebuilds it, needs legacy). |
 | `dev_pictures.py` | Every PNG (flat shape, 1 px outline, its name written on it) and its `.import` stub (path-derived uid). Sizes are in `spec()`. |
 | `dev_tiles.py`, `dev_tables.py` | The tile set; zones and the trigger table. |
-| `dev_sprites.py` | Sprite frames, sprite metadata (box hit rectangles that match the pictures), bubble rules. |
+| `dev_sprites.py` | Sprite frames (the pieces' animations are `CANISTER_PICTURES` and `ROCK_PICTURES`), sprite metadata (box hit rectangles that match the pictures), bubble rules. |
 | `dev_ui.py` | HUD, calculator and story layouts, the news cartoon. |
+| `dev_story.py` | The other cutscene data: the ambient, title and Expert closing timelines, the story pages, the Voyager flight, the closing crew; short and made up, on the actor names and property words the scenes play. |
 | `dev_problems.py` | The 34 problem types (a few made-up records per level), the problem screen layout, the text tables. |
 | `dev_sectors.py` | Sectors, campaigns, and the `dev_tour` campaign. |
 | `dev_rules.py` | `rules/tuning.json`: dev's rule values (below). |
 | `test_sectors/` | The test sectors (100 and up), one module per area: `batch_a.py` ... `batch_e.py` (see "Test sectors"). |
-| `problem_art.json` | Which art folder each of the 34 problem types draws from (the pack's file layout). The generator reads no `docs/data/` file that the importer writes. |
-| `audio.py`, `audio_*.py` | The sounds, speech, songs, MIDI and the sound catalogs. |
+| `problem_art.json` | Which art folder each of the 34 problem types draws from (the pack's file layout). |
+| `audio.py`, `audio_*.py` | The sounds, speech, songs, MIDI and the sound catalogs (the ten songs are `SONGS`: the ids the engine looks up and the pack's file names). |
 | `godot/check_dev_pack.gd` | A Godot script that loads the pack with the engine's own classes and asks each resource if it is sound (see below). |
 
 ## Rule values

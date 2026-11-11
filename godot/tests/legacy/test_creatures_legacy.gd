@@ -217,7 +217,7 @@ func test_the_hit_bubbles_sit_where_the_table_says() -> void:
 
 
 func test_the_two_orders_are_the_bytes_of_the_exe() -> void:
-	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../docs/data/dissolve_tables.json"))
+	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../extracted/tables/dissolve_tables.json"))
 	assert_array(DissolvePattern.COLUMN_ORDER).is_equal(_ints(data["column_order"]))   # 0x441188
 	assert_array(DissolvePattern.ROW_ORDER).is_equal(_ints(data["row_order"]))         # 0x441198
 	assert_int(DissolvePattern.PASSES).is_equal(int(data["passes"]))

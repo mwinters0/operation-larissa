@@ -59,7 +59,7 @@ def homes() -> dict[int, Path]:
     for folder, ids in UI_FOLDERS.items():
         for pid in ids:
             claim(pid, ui_file(folder, pid))
-    # The finale zones' creatures (zones 5 and 6 of docs/data/sprite_slots.json) are pictures of bundles 110 and 112, which are
+    # The finale zones' creatures (zones 5 and 6 of tools/analysis/data/sprite_slots.json) are pictures of bundles 110 and 112, which are
     # also in the problem-art id range.
     for zone in FINALE_ZONES:
         for slot, pid in enumerate(foe_slots(zone)[FOE_ZONE_BASE:], FOE_ZONE_BASE):

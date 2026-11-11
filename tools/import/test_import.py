@@ -39,6 +39,16 @@ def test_validate():
 
 
 @pytest.mark.legacy
+def test_generated_tables_are_what_the_tables_step_writes():
+    """`common.GENERATED_TABLES` (what `legacy_missing` asks for) is exactly the files the "tables" step leaves in `common.TABLES`.
+
+    The list is by hand, so a new exporter whose file is not listed (or a listed file no exporter writes any more) fails here. Needs the
+    tables of a full import, and no stale file from an earlier layout."""
+    written = sorted(p.name for p in common.TABLES.iterdir())
+    assert written == sorted(common.GENERATED_TABLES)
+
+
+@pytest.mark.legacy
 def test_idempotent_data_steps():
     """Re-running the data-producing steps changes no bytes."""
     import step_console, step_problems, step_sectors, step_sprites, step_tiles
@@ -50,9 +60,9 @@ def test_idempotent_data_steps():
 
 @pytest.mark.legacy
 def test_piece_animation_matches_the_decompiled_tables():
-    """The pieces' SpriteFrames hold the canister flash and the rock sparkle from docs/data/piece_animation.json."""
+    """The pieces' SpriteFrames hold the canister flash and the rock sparkle from extracted/tables/piece_animation.json."""
     import json
-    anim = json.loads((common.DOCS_DATA / "piece_animation.json").read_text())
+    anim = json.loads((common.TABLES / "piece_animation.json").read_text())
     assert anim["canister_pictures"] == [3, 4]
     assert len(anim["rock_pictures"]) == anim["period"] == 16
     assert anim["rock_pictures"] == [1, 2, 1] + [0] * 13
@@ -69,9 +79,9 @@ def test_piece_animation_matches_the_decompiled_tables():
 
 @pytest.mark.legacy
 def test_bubble_rules_match_the_decompiled_tables():
-    """bubble_rules.tres is written from docs/data/bubbles.json (BUBBLES.C, DrawSub)."""
+    """bubble_rules.tres is written from extracted/tables/bubbles.json (BUBBLES.C, DrawSub)."""
     import json
-    data = json.loads((common.DOCS_DATA / "bubbles.json").read_text())
+    data = json.loads((common.TABLES / "bubbles.json").read_text())
     amb = data["ambient"]
     assert amb["max_bubbles"] == len(amb["slots"]) == 2
     assert amb["bundle"] == 22 and len(amb["picture_sizes"]) == 8
@@ -90,12 +100,13 @@ def test_bubble_rules_match_the_decompiled_tables():
         assert common.png_size("res://packs/legacy/assets/sprites/fx/fx_bubbles_%02d.png" % i) == tuple(size)
 
 
+@pytest.mark.legacy
 def test_the_project_tuning_file_matches_the_decompiled_tables():
     """godot/data/rules/tuning.json is committed, not generated: its tables for the ink pellets and for what DrawSub puts on the sub are
-    those of docs/data/ink_tables.json and docs/data/bubbles.json, its collision rectangles those of DESIGN 3.3."""
+    those of extracted/tables/ink_tables.json and extracted/tables/bubbles.json, its collision rectangles those of DESIGN 3.3."""
     import json
     sub = json.loads((common.GODOT / "data" / "rules" / "tuning.json").read_text())["sub"]
-    ink = json.loads((common.DOCS_DATA / "ink_tables.json").read_text())
+    ink = json.loads((common.TABLES / "ink_tables.json").read_text())
     assert sub["ink_spawn_dx"] == ink["spawn_dx_by_subcell"]
     assert sub["ink_spawn_dy"] == ink["spawn_dy_by_subcell"]
     assert sub["ink_direction"] == ink["dir_by_subcell"]
@@ -103,7 +114,7 @@ def test_the_project_tuning_file_matches_the_decompiled_tables():
     assert sub["ink_step_dy"] == ink["step_dy_by_dir"]
     assert sub["ink_splash_dx"] == ink["splash_dx"]
     assert sub["ink_splash_dy"] == ink["splash_dy"]
-    overlays = json.loads((common.DOCS_DATA / "bubbles.json").read_text())["sub_overlays"]
+    overlays = json.loads((common.TABLES / "bubbles.json").read_text())["sub_overlays"]
     assert sub["hit_bubble_x_by_cell"] == overlays["hit_bubbles"]["x_by_cell"] == [4, 4, 4, 4, 16, 16, 16, 16, 16]
     assert sub["light_cells"] == overlays["message_light"]["cells"] == [0, 1, 2, 6, 7, 8]
     assert sub["light_dx_by_cell"] == overlays["message_light"]["dx_by_cell"] == [46, 46, 46, 0, 0, 0, 34, 33, 35]
@@ -242,15 +253,14 @@ def test_the_legacy_pack_holds_no_rule_values():
 
 
 def test_every_file_the_importer_writes_for_legacy_is_git_ignored():
-    """The legacy pack is never committed: godot/packs/legacy and anything else in godot/packs/ are ignored, except the README and the dev pack. The files the importer also writes into the project that commit (they are made from the committed analysis alone: the closing crew,
-    the cutscene timelines but the news cartoon's, the menu layout) are not ignored. `git check-ignore` is the judge, so a pattern that does not
+    """The legacy pack is never committed: godot/packs/legacy and anything else in godot/packs/ are ignored, except the README and the dev pack. The one file the importer also writes into the project, the menu layout, commits and is not ignored. `git check-ignore` is the judge, so a pattern that does not
     match the real path is found here."""
     import subprocess
-    ignored = ["godot/packs/legacy", "godot/packs/legacy/data/zones.tres", "godot/packs/legacy/assets/tiles/zone0_tiles.png", "godot/packs/some_pack", "godot/data/legacy/voice_corrections.json", "docs/data/sectors.json",
-               "godot/tests/fixtures/original/screens.json"]
+    ignored = ["godot/packs/legacy", "godot/packs/legacy/data/zones.tres", "godot/packs/legacy/assets/tiles/zone0_tiles.png", "godot/packs/some_pack", "godot/data/legacy/voice_corrections.json", "extracted/tables/sectors.json",
+               "extracted/tables/hud_gauges.json", "godot/tests/fixtures/original/screens.json"]
     committed = ["godot/packs/README.md", "godot/packs/dev/pack.json", "godot/packs/dev/data/zones.tres", "godot/data/sectors/foe_annotations.json", "godot/data/sectors/sector_32/sector_32.tres",
-                 "godot/data/rules/tuning.json", "godot/data/closing_crew.tres", "godot/data/ui/menu_layout.tres", "godot/data/story/title_ship.tres",
-                 "godot/data/rules/durations.json", "docs/data/hud_gauges.json", "godot/names/original.json"]
+                 "godot/data/rules/tuning.json", "godot/data/ui/menu_layout.tres",
+                 "godot/data/rules/durations.json", "tools/analysis/data/console_layout.json", "godot/names/original.json"]
     for path, want in [(p, True) for p in ignored] + [(p, False) for p in committed]:
         done = subprocess.run(["git", "check-ignore", "-q", path], cwd=common.ROOT, check=False)
         assert (done.returncode == 0) == want, path

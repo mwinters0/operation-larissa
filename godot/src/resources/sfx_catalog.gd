@@ -11,7 +11,7 @@ extends Resource
 var named: Dictionary:
 	get:
 		return NameRegistry.original().entries(&"sound")
-## Problem type -> the effect its diagram plays while it is built (docs/data/audio_map.json "diagram_cues").
+## Problem type -> the effect its diagram plays while it is built (extracted/tables/audio_map.json "diagram_cues").
 @export var diagram_cues: Dictionary = {}
 ## (`diagram_cues` has numbers for keys: how the JSON form of a pack reads them, `ResourceJson`.)
 const JSON_INT_KEYS: Array[String] = ["diagram_cues"]

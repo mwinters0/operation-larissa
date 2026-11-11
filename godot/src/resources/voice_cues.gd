@@ -1,7 +1,7 @@
 @tool
 class_name VoiceCues
 extends Resource
-## Which speech clips the original plays when (docs/data/audio_map.json, read from the decompiled game).
+## Which speech clips the original plays when (extracted/tables/audio_map.json, read from the decompiled game).
 ##
 ## The 371 clips are NE1SOUND 4000-4370; the game never plays one by itself, it plays RUNS of clips: the lines of a
 ## canister log, of a mission-control message, of the opening story. Each run is one entry of `groups`, stored as the

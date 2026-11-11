@@ -39,7 +39,7 @@ offsets point at what they say (RUND headers, sound headers; needs `NEPTUNE.ISO`
 (`audio/sfx/lock_tick_38.wav`), or keeps a numbered name when nobody has named it (`sfx_28.wav`, `foe_028.png`, `foe_z3_040.png`); the
 rule per kind is in [`NAMES.md`](../create/NAMES.md), "Asset file names", and in code in `tools/import/asset_names.py`.
 
-**The slot tables.** Which picture sits in which creature or deco slot is data too: `docs/data/sprite_slots.json` (hand-kept,
+**The slot tables.** Which picture sits in which creature or deco slot is data too: `tools/analysis/data/sprite_slots.json` (hand-kept,
 read by `step_sprites.py`, `pictures.py` and `common.py`; `test_sprite_slots.py` checks it against the bundles). A foe record's
 frame byte indexes the creature slots (0-27 common, 28-34 the ink burst, `ink_burst`, 35+ the zone's own), a deco id the deco slots (0-69
 common, 70+ the zone's own); the manifest then says which file holds each picture.
@@ -98,7 +98,7 @@ common, then the zone's decos), `foes_zone{z}.tres` (0-27 creatures, 28-34 the i
 `sub_frames.tres` (bundle 15 in order), and likewise the pieces, the station and the fx sets. So `FoeData.frame` and
 `DecoPlacement.slot` bind one to one to a frame of `all`. The real, named animations (`ink_burst`, `bubbles`, `station_open`,
 `dolphin_swim`, ...) are curated by hand in `tools/import/animation_map.py` and play one frame per game tick; the pieces' `canister`
-and `rock` come from `docs/data/piece_animation.json`.
+and `rock` come from `extracted/tables/piece_animation.json`.
 
 ## Sounds
 
@@ -127,7 +127,7 @@ variable slots, grouped by a bundle per problem type (the phrasings, the step-by
 
 The binary tables are decoded where the port needs them: sector maps and creature records (`DESIGN.md` sections 4 and 3.5; fixtures
 `screens.json`, `foe_records.json`, `foe_scripts.json`), sprite sizes and hit rectangles (`sprite_meta.json`), the trigger table,
-the problem parameter tables (`DESIGN.md` section 5.4, `docs/data/problem_*.json`). The text of the UI is in the executables' string
+the problem parameter tables (`DESIGN.md` section 5.4, `extracted/tables/problem_*.json`, `tools/analysis/data/problem_*.json`). The text of the UI is in the executables' string
 tables (`DESIGN.md`). The bitmap font data (type 32514: first and last character, height, a width table, the low and high bytes of each glyph's
 offset, then 1-bit rows padded to bytes) is not imported; the port uses an ordinary font and writes the key glyphs below 0x20 as
 labels (`DESIGN.md` section 5.5).

@@ -1,7 +1,7 @@
 """Dev problems: the 34 problem types with a few made-up records per level, the problem screen layout and the text tables.
 
 STRUCTURE comes from the program, as the importer has it (the layout of a record's fields, which field holds the answer, how an answer
-is compared: tools/import/problem_tables.py, step_problems.COMPARE, docs/data/problem_*.json). VALUES are dev's: the titles, the texts (each
+is compared: tools/import/problem_tables.py, step_problems.COMPARE, tools/analysis/data/problem_*.json). VALUES are dev's: the titles, the texts (each
 says which type and position it is), the records (small numbers by simple rules) and every coordinate of the drawings.
 Every type but the three with a screen of their own (0 the combination lock, 28 and 29 the ballast panels) draws the generic
 "items" diagram: its panel picture and the first fields of the record as numbers.
@@ -268,7 +268,7 @@ def problem_art_index(inv: dict) -> str:
 
 def write_all() -> int:
     inv = inventory.load()
-    fields_json = json.loads((devlib.ROOT / "docs" / "data" / "problem_fields.json").read_text())
+    fields_json = json.loads((devlib.ROOT / "tools" / "analysis" / "data" / "problem_fields.json").read_text())
     files = inv["files"]
     for t in range(TYPES):
         write_text(DEV / "data" / "problems" / ("problem_type_%02d.tres" % t), problem_type_tres(t, files, fields_json))

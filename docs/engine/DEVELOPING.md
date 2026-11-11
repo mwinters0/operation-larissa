@@ -17,7 +17,7 @@ Exit code 0 means everything passed; reports go to `godot/reports/`. There are t
 the script passes the choice after `--`, where `Packs.start()` reads it:
 
 - **`godot/tests/engine/`** (`-- --pack=dev`): the engine, on the dev pack's own numbers, records and test sectors. It needs no legacy
-  pack, no ISO and no ISO-derived `docs/data/` table, and never skips for want of content.
+  pack, no ISO and no ISO-derived table of `extracted/tables/`, and never skips for want of content.
 - **`godot/tests/legacy/`** (`-- --pack=legacy`): the original game: the fidelity hashes, the original's numbers and texts, whole
   Voyager and Expert runs ([`../port/FIDELITY.md`](../port/FIDELITY.md)). Without `godot/packs/legacy` the script says so
   and the group passes; a file skips itself with "run the importer on your copy of the game" (`before(do_skip := not
@@ -65,11 +65,11 @@ that needs a place with a stated property gets a test sector of the dev pack
 
 ## The importer and the dev pack
 
-Re-running the importer, its steps and options: [`../play/LEGACY.md`](../play/LEGACY.md). The game's own tables in `docs/data/`
-(`sectors.json`, `problem_tables_raw.json`, `trigger_table.json`, `zone_defaults.json` from `tools/analysis/export_json.py`;
-`problem_records.json` from `decode_problems.py`; `problem_gfx_bundles.json` from `export_gfx_tbl.py`) are the importer's `tables` step
-and are git-ignored. The rest of `docs/data/*.json` was read from the decompiled program (`tools/analysis/ghidra/export_*.py`, and the
-pure-Python `export_console.py`) and is committed; rerun those only when the analysis changes. Regenerating the dev pack:
+Re-running the importer, its steps and options: [`../play/LEGACY.md`](../play/LEGACY.md). The game's own tables in `extracted/tables/`
+(`GENERATED_TABLES` in `tools/import/common.py`; the scripts that make them are `TABLE_SCRIPTS` and `run_tables` in `tools/import/step_extract.py`)
+are the importer's `tables` step and are git-ignored (they are in `extracted/`), so a Python test that reads one is marked `@pytest.mark.legacy`. `tools/analysis/data/*.json`
+is our own analysis (layouts, field meanings, `console_layout.json` from `tools/analysis/ghidra/export_console.py`) and is committed; the tools and the dev pack read
+only those. Regenerating the dev pack:
 [`../../tools/dev_pack/README.md`](../../tools/dev_pack/README.md).
 
 ## Screenshots

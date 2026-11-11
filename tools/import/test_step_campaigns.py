@@ -22,7 +22,7 @@ def test_the_committed_campaign_is_what_the_importer_writes(game):
 
 @pytest.mark.legacy
 def test_the_two_campaigns_hold_the_tables_of_the_program():
-    databank = common.load_json(common.DOCS_DATA / "databank.json")
+    databank = common.load_json(common.TABLES / "databank.json")
     text = {g: sc.build_campaign(g) for g in (0, 1)}
     assert "log_unlock_order = PackedInt32Array(%s)" % ", ".join(map(str, databank["unlock_order_voyager"])) in text[0]
     assert "log_unlock_order = PackedInt32Array(%s)" % ", ".join(map(str, databank["unlock_order_expert"])) in text[1]

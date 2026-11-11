@@ -8,7 +8,7 @@ through PyGhidra (no GUI). Do **not** analyse the patched copy under `prefix/` (
 * Ghidra 12.2 and a JDK: [`docs/SETUP.md`](../../../docs/SETUP.md) (`GHIDRA_INSTALL_DIR` overrides where Ghidra is)
 * the pure-Python scripts (see the table and "Reproducing the data files") run in the repository's environment: `uv run <script>`
 * the game's CD image at `NEPTUNE.ISO` in the repository root (or `NEP_ISO`): the headless scripts take ONWIN32.EXE from it (`tools/gamefiles.py`)
-* `docs/data/onwin_map.json`, ONWIN.MAP's names, which the importer's `tables` step writes from the ISO (or `uv run tools/analysis/ghidra/map_names.py write`): every script that reads or writes the name tables needs it
+* `extracted/tables/onwin_map.json`, ONWIN.MAP's names, which the importer's `tables` step writes from the ISO (or `uv run tools/analysis/ghidra/map_names.py write`): every script that reads or writes the name tables needs it
 * `run.sh` builds its own `tools/analysis/ghidra/.venv` from the PyGhidra wheels shipped inside Ghidra (separate from the repository's `.venv`; only the scripts that import `ghidra.*` run there, via `./run.sh`), and adds `pycdlib` from PyPI to it so that `tools/gamefiles.py` can read the CD image
 
 To browse the program in the Ghidra GUI with these names applied, run the apply scripts from the GUI, or send GUI renames back to the JSON, see [`docs/port/GHIDRA_GUI.md`](../../../docs/port/GHIDRA_GUI.md).
@@ -31,26 +31,26 @@ Then read `/tmp/all.c` with an editor / `grep`. For example `CheckAnswer` is the
 | `nepghidra.py` | helpers (open project, decompile, name file loading, idempotent `set_label`, GUI-vs-headless `run`) |
 | `run.sh` | creates `.venv` with PyGhidra, runs a script inside it |
 | `dump_c.py` | export decompiled C |
-| `apply_problem_types.py` | creates struct types for the 34 problem records from `docs/data/problem_layouts32.json` and retypes the globals so the decompiler prints `g_prob03->f2_n`. Runs headless or from the GUI Script Manager; safe to repeat |
+| `apply_problem_types.py` | creates struct types for the 34 problem records from `tools/analysis/data/problem_layouts32.json` and retypes the globals so the decompiler prints `g_prob03->f2_n`. Runs headless or from the GUI Script Manager; safe to repeat |
 | `apply_names.py` | applies `names_onwin32.json` (address -> name, optional evidence) and `labels_onwin32.json` (globals). Runs headless or from the GUI Script Manager (`pyghidraRun`); safe to repeat |
 | `export_names.py` | the reverse: writes user-defined function names / global labels from the program (e.g. renamed in the GUI) that are new or differ into the two JSON files (evidence is optional and added by hand). `--dry-run` prints the diff, `--check` also exits 1 when there is something to export; `--dir DIR` redirects the files. Headless or GUI. See [`docs/port/GHIDRA_GUI.md`](../../../docs/port/GHIDRA_GUI.md) |
 | `apply_annotations.py`, `export_annotations.py` | the same round trip for everything else you add in the GUI (comments, types, signatures, variables, labels inside functions, equates, Note bookmarks) through `annotations_onwin32.json`; the export tells your work from Ghidra's by a cached fresh import (`--baseline`) and merges three ways. Headless or GUI. See [`docs/port/GHIDRA_GUI.md`](../../../docs/port/GHIDRA_GUI.md) section 8 |
 | `annotations.py`, `program_annotations.py` | the annotation file's format and three-way merge (pure Python, `test_annotations.py`), and its Ghidra side (read, write, baseline, record of the last apply) |
 | `check_annotations.py` | round trip of the annotation tools on two throw-away projects (every kind of annotation; about 90 s, needs the ISO): run it after changing the two modules above |
 | `open_gui.py` | opens the Ghidra GUI (through PyGhidra, so the Script Manager runs our scripts) on the project the scripts above build; `mise run ghidra:gui` runs only this; `mise run ghidra:import` runs the two exports with `--check` and the three apply scripts, `mise run ghidra:export` the two exports. See [`docs/port/GHIDRA_GUI.md`](../../../docs/port/GHIDRA_GUI.md) |
-| `derive_problem_layouts.py` | rebuilds `docs/data/problem_layouts32.json` from a decompilation of `ReadProblemRecord`. Run it on a dump taken **before** `apply_problem_types.py` (it parses the untyped `DAT_` form); the committed JSON is its output |
+| `derive_problem_layouts.py` | rebuilds `tools/analysis/data/problem_layouts32.json` from a decompilation of `ReadProblemRecord`. Run it on a dump taken **before** `apply_problem_types.py` (it parses the untyped `DAT_` form); the committed JSON is its output |
 | `dump_asm.py` | export the disassembly of selected functions (the decompiler drops x87 floating point instructions: read the asm wherever a decompiled function does arithmetic on doubles) |
-| `export_diagrams.py` | pure Python: the geometry of every problem diagram (transcribed from `Prob*_Diagram`, tables read from the EXE) -> `docs/data/problem_diagrams.json`, see DESIGN 5.5 |
-| `export_opening.py` | pure Python: the opening's crew scripts, light rules, the title scene's ship / sub drop / splash as a per-redraw table (transcribed from OPENING.C, run as state machines) -> `docs/data/opening.json`, see DESIGN 2.1 |
-| `export_console.py` | pure Python: the sub console labels / message lights / frame rectangles and the calculator's key hotspots and LCD display geometry (transcribed from `DisplayBezel`, `AddHotspot`, `GetAnswer`, `DrawCalcDisplay`) -> `docs/data/console_layout.json` |
-| `export_bubbles.py` | pure Python: the ambient bubbles (BUBBLES.C: spawn rule, speeds, picture order derived by running the state machines, blocked screens) and the DrawSub overlays (hit bubbles, message light tables) -> `docs/data/bubbles.json`, see DESIGN 9 |
-| `export_constants.py` | pure Python: dumps music / ink / HUD / lock / ballast / piece / dissolve tables straight from the EXE to `docs/data/*.json` |
-| `export_audio.py` | pure Python: the audio cue tables (music ids and files, sound effects and their callers, speech clips per cue, sample rates) -> `docs/data/audio_map.json`, see DESIGN 7 |
-| `export_databank.py` | pure Python: the canister log screen's tables (unlock order per game, row positions, speech clips per entry, row caption) -> `docs/data/databank.json`, see DESIGN 7.1 |
+| `export_diagrams.py` | pure Python: the geometry of every problem diagram (transcribed from `Prob*_Diagram`, tables read from the EXE) -> `extracted/tables/problem_diagrams.json` (the importer's `tables` step runs it; git-ignored), see DESIGN 5.5 |
+| `export_opening.py` | pure Python: the opening's crew scripts, light rules, the title scene's ship / sub drop / splash as a per-redraw table (transcribed from OPENING.C, run as state machines) -> `extracted/tables/opening.json` (the importer's `tables` step runs it; git-ignored), see DESIGN 2.1 |
+| `export_console.py` | pure Python: the sub console labels / message lights / frame rectangles and the calculator's key hotspots and LCD display geometry (transcribed from `DisplayBezel`, `AddHotspot`, `GetAnswer`, `DrawCalcDisplay`) -> `tools/analysis/data/console_layout.json` |
+| `export_bubbles.py` | pure Python: the ambient bubbles (BUBBLES.C: spawn rule, speeds, picture order derived by running the state machines, blocked screens) and the DrawSub overlays (hit bubbles, message light tables) -> `extracted/tables/bubbles.json` (the importer's `tables` step runs it; git-ignored), see DESIGN 9 |
+| `export_constants.py` | pure Python: dumps the music / ink / HUD / lock / ballast / piece / dissolve / expert closing tables straight from the EXE to `extracted/tables/*.json` (the importer's `tables` step runs it; git-ignored) |
+| `export_audio.py` | pure Python: the audio cue tables (music ids and files, sound effects and their callers, speech clips per cue, sample rates) -> `extracted/tables/audio_map.json` (the importer's `tables` step runs it; git-ignored), see DESIGN 7 |
+| `export_databank.py` | pure Python: the canister log screen's tables (unlock order per game, row positions, speech clips per entry, row caption) -> `extracted/tables/databank.json` (the importer's `tables` step runs it; git-ignored), see DESIGN 7.1 |
 | `audit_callsites.py` | every call site of the sound / timing / text / bundle primitives and their wrappers (Ghidra references + resolved switch handlers + a raw `E8`/`E9` scan), with the constant arguments -> JSON |
 | `audit_rows.py`, `audit_report.py`, `audit_intro.md` | the hand annotations and the generator for [`docs/port/AUDIT_CALLSITES.md`](../../../docs/port/AUDIT_CALLSITES.md) (fails when a call site has no row) |
 | `names_onwin32.json`, `labels_onwin32.json` | the naming work product (a name may carry an `evidence` note; a name of ONWIN.MAP is a `map` reference) |
-| `map_names.py` | ONWIN.MAP's publics: `write` makes `docs/data/onwin_map.json` from the ISO (the importer runs it), `resolve` / `with_name` turn references into names and back for the other scripts, `find TEXT` prints the entries whose name, address or reference contains TEXT, with evidence and port status. `test_map_names.py` checks the format, and (legacy) that no committed name is a MAP name |
+| `map_names.py` | ONWIN.MAP's publics: `write` makes `extracted/tables/onwin_map.json` from the ISO (the importer runs it), `resolve` / `with_name` turn references into names and back for the other scripts, `find TEXT` prints the entries whose name, address or reference contains TEXT, with evidence and port status. `test_map_names.py` checks the format, and (legacy) that no committed name is a MAP name |
 | `annotations_onwin32.json` | the annotation work product (written by `export_annotations.py`) |
 | `port_map_onwin32.json` | original function -> Godot port status (all 847 named functions; the `name` only where it is ours) |
 | `check_port_map.py` | reports every port-code name in the port map's `where` texts and the audit's `port` texts that the code does not define (and every line-number reference); `test_check_port_map.py` runs it in `uv run pytest tools` |
@@ -89,10 +89,16 @@ a GUI name that is a MAP public as its reference. The docs and code comments nam
 * To resolve a data address to bytes without Ghidra, see `export_constants.py` (small PE reader).
 
 ## Reproducing the data files
-Run `mise run setup` once at the repository root, then:
+Run `mise run setup` once at the repository root. The tables that hold the game's own data (`GENERATED_TABLES` in `tools/import/common.py`) are git-ignored and
+written by the importer's `tables` step, which needs the ISO and, for some of them, the `extract` step's `extracted/` before it:
 ```zsh
-uv run tools/analysis/decode_problems.py          # docs/data/problem_records.json
-uv run tools/analysis/make_problem_fields.py      # docs/data/problem_fields.json
-uv run tools/analysis/ghidra/export_constants.py  # music_map / ink_tables / hud_gauges / lock_wheel / ballast / piece_animation / dissolve_tables
-uv run tools/analysis/ghidra/export_opening.py    # opening.json (crew, lights, ship, sub drop, splash)
+uv run tools/import/import_all.py --only extract,tables   # all of them (docs/play/LEGACY.md for the options)
+```
+Each exporter also runs alone, `uv run tools/analysis/ghidra/<script> [OUTDIR]` (`decode_problems.py` and `export_json.py` are in `tools/analysis/`; the folder defaults to `common.TABLES`, `extracted/tables/`, the one place that names it); `export_constants.py` writes
+`music_map`, `ink_tables`, `hud_gauges`, `lock_wheel`, `ballast`, `piece_animation`, `dissolve_tables` and `expert_closing`, `export_opening.py` `opening.json`,
+`export_audio.py` `audio_map.json`, `export_bubbles.py` `bubbles.json`, `export_databank.py` `databank.json`, `export_diagrams.py` `problem_diagrams.json`. The files that stay
+committed are our own analysis and read nothing from the game's files:
+```zsh
+uv run tools/analysis/make_problem_fields.py      # tools/analysis/data/problem_fields.json
+uv run tools/analysis/ghidra/export_console.py    # tools/analysis/data/console_layout.json
 ```

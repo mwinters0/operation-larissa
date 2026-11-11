@@ -67,7 +67,7 @@ def test_one_label_per_offset_and_shared_entries_use_the_first_name():
 
 @pytest.mark.legacy
 def test_the_hash_fixture_is_the_hash_of_the_original_scripts_and_holds_no_bytes():
-    sectors = common.load_json(common.DOCS_DATA / "sectors.json")
+    sectors = common.load_json(common.TABLES / "sectors.json")
     text = foe_script.HASH_FIXTURE.read_text()
     assert text == foe_script.build_hash_fixture(sectors)
     fixture = json.loads(text)["sectors"]
@@ -86,7 +86,7 @@ def test_the_hash_fixture_is_the_hash_of_the_original_scripts_and_holds_no_bytes
 @pytest.mark.legacy
 def test_the_stored_text_is_the_disassembly_of_the_original_script_and_the_tres_refers_to_it():
     store = foe_annotations.load()
-    for sec in common.load_json(common.DOCS_DATA / "sectors.json"):
+    for sec in common.load_json(common.TABLES / "sectors.json"):
         base, script = foe_script.script_of(sec)
         # the stored text in the .foe file is this disassembly (with the designers' names and comments from the
         # annotation store, if any), and the .tres refers to the file
@@ -99,8 +99,9 @@ def test_the_stored_text_is_the_disassembly_of_the_original_script_and_the_tres_
 
 
 @needs_scripts
+@pytest.mark.legacy
 def test_the_raw_fixture_is_the_original_scripts_and_is_not_committed():
-    sectors = common.load_json(common.DOCS_DATA / "sectors.json")
+    sectors = common.load_json(common.TABLES / "sectors.json")
     assert foe_script.RAW_FIXTURE.read_text() == foe_script.build_raw_fixture(sectors)
     for sec, entry in zip(sectors, foe_script.load_originals()):
         base, script = foe_script.script_of(sec)

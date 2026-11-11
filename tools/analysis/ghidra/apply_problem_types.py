@@ -2,7 +2,7 @@
 """Create one struct per problem type (Prob00..Prob33) in the Ghidra program and retype the global
 pointers the engine uses for them, so the decompiler shows `rec->f3_n` instead of raw offsets.
 
-Input: ../../../docs/data/problem_layouts32.json   (memory layout of each record in ONWIN32.EXE)
+Input: ../../../tools/analysis/data/problem_layouts32.json   (memory layout of each record in ONWIN32.EXE)
 Field naming: f<index in file order>_<c|w|n>   c=u8, w=u16, n=CompactNumber (9 bytes in memory).
 Run:  ./run.sh apply_problem_types.py     (headless), or from the GUI Script Manager (see docs/port/GHIDRA_GUI.md).
 Safe to run repeatedly: the structs are replaced in place and the labels are not duplicated.
@@ -10,7 +10,7 @@ Safe to run repeatedly: the structs are replaced in place and the labels are not
 import json
 import nepghidra as ng
 
-LAYOUT = ng.REPO / "docs/data/problem_layouts32.json"
+LAYOUT = ng.REPO / "tools/analysis/data/problem_layouts32.json"
 
 def apply(prog, spec=None, log=print):
     spec = json.loads(LAYOUT.read_text()) if spec is None else spec

@@ -1,31 +1,36 @@
 class_name TestStoryTimelinesLegacy
 extends GdUnitTestSuite
 ## (The legacy half: the original's tables. Well-formedness of every timeline: tests/engine/test_story_timelines.gd.)
-## Teaches: checking generated data against its source, again. The cutscenes' timelines (`data/story/*.tres`) are produced by the
-## importer from `docs/data/opening.json` (the opening's tables, decompiled from OPENING.C) and from the decompiled loops of
+## Teaches: checking generated data against its source, again. The cutscenes' timelines (the legacy pack's `data/story/*.tres`) are produced by the
+## importer from `extracted/tables/opening.json` (the opening's tables, decompiled from OPENING.C) and from the decompiled loops of
 ## CLOSING.C; these tests re-read the JSON and compare in GDScript, with their own small copy of the rules (a crew member's
 ## script repeats, only the man on the left walks), so a mistake in the Python cannot make its own test agree. The sailors of the
 ## Expert closing are checked against `ClosingCrewActor`, the GDScript twin of the importer's interpreter.
 ##
-## (Lengths and the moments of every cutscene as they were before the timelines became data: `test_cutscene_timing.gd`.)
+## (The length and every moment of every cutscene, as hashes: `test_cutscene_timing.gd`.)
 
 ## Without the legacy pack (the original game, made by the importer from your own copy) this suite skips.
 func before(do_skip := not LegacyPack.present(), skip_reason := "run the importer on your copy of the game (uv run tools/import/import_all.py)") -> void:
 	pass
 
 
-## (The news cartoon is made of the game's text, so it is the legacy pack and loaded, not preloaded: this file compiles without the game.)
-var NEWS: CutsceneTimeline = load(LegacyPack.ROOT + "data/story/news_cartoon.tres") if FileAccess.file_exists(LegacyPack.ROOT + "data/story/news_cartoon.tres") else null
-const AMBIENT := preload("res://data/story/news_ambient.tres")
-const SHIP := preload("res://data/story/title_ship.tres")
-const REVEAL := preload("res://data/story/title_reveal.tres")
-const HOIST := preload("res://data/story/expert_hoist.tres")
-const DECK := preload("res://data/story/expert_deck.tres")
-const WAIT := preload("res://data/story/expert_wait.tres")
-const STORY := preload("res://data/story/story_script.tres")
-const VOYAGER := preload("res://data/story/voyager_closing_script.tres")
+## (The choreography is the legacy pack's and loaded, not preloaded: this file compiles without the game.)
+static func _legacy(file: String) -> Resource:
+	var path := LegacyPack.ROOT + "data/story/" + file + ".tres"
+	return load(path) if FileAccess.file_exists(path) else null
 
-var _json: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../docs/data/opening.json"))
+
+var NEWS: CutsceneTimeline = _legacy("news_cartoon")
+var AMBIENT: CutsceneTimeline = _legacy("news_ambient")
+var SHIP: CutsceneTimeline = _legacy("title_ship")
+var REVEAL: CutsceneTimeline = _legacy("title_reveal")
+var HOIST: CutsceneTimeline = _legacy("expert_hoist")
+var DECK: CutsceneTimeline = _legacy("expert_deck")
+var WAIT: CutsceneTimeline = _legacy("expert_wait")
+var STORY: StoryScript = _legacy("story_script")
+var VOYAGER: VoyagerClosingScript = _legacy("voyager_closing_script")
+
+var _json: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../extracted/tables/opening.json"))
 
 
 ## The `ui_picture` name of the original's picture number.

@@ -21,7 +21,7 @@ What the 384 original records show (checked here, so a surprise is an error and 
 
 Where a record comes from (provenance, kept machine-readable): sector S is NEP.DLL logical resource
 SECTOR_TBL[S], saved by tools/extract/extract_data.py as extracted/data/NEP_raw/NEP_<real id>.bin; screen k is
-the 0x500 bytes at offset HEADER_SIZE + k * RECORD_SIZE of it. docs/data/sectors.json carries both ("source",
+the 0x500 bytes at offset HEADER_SIZE + k * RECORD_SIZE of it. extracted/tables/sectors.json carries both ("source",
 "record_offset") and the record itself ("record_hex"), exported from the game's files by tools/analysis/export_json.py.
 
 The fixtures that guard the records (docs/port/FIDELITY.md, "Fixtures commit hashes, not bytes"): the committed
@@ -69,7 +69,7 @@ def record_offset(screen: int) -> int:
 
 
 def original_record(sec: dict, screen: int) -> bytes:
-    """The 0x500 original bytes of screen `screen` of the sector dict from docs/data/sectors.json.
+    """The 0x500 original bytes of screen `screen` of the sector dict from extracted/tables/sectors.json.
 
     Read from the extracted copy of the game's resource (sec["source"]["extracted"], the raw bytes) when it is
     there, else from "record_hex" in sectors.json; if both are there they must agree, so the decoded export can

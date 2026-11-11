@@ -105,9 +105,15 @@ def voice_paths() -> list[str]:
     return [rel(asset_names.voice_file(v)) for v in voice_ids()]
 
 
+# The ten songs: the ids the engine looks up (SelectSectorMusic: 9504 + sector % 6; 9500 / 9501 the finales; 9502 sign-in; 9503 title, names in the
+# registry) with the file names of the pack's layout (`midi_names` of the catalog: the first letter says the set, B or E; inventory.json has the paths).
+SONGS = [{"id": 9500 + i, "file": file} for i, file in enumerate(
+    ["BEND.MID", "BEND2.MID", "BNEPT1.MID", "BNEPT2.MID", "BSECT1.MID", "BSECT2.MID", "BSECT3.MID", "BSECT4.MID", "BSECT5.MID", "BSECT6.MID"])]
+
+
 def songs() -> list[dict]:
-    """The ten songs: [{"id": 9500, "file": "BEND.MID"}, ...] (docs/data/music_map.json: an id and the name of a file, nothing else is used)."""
-    return [{"id": e["id"], "file": e["file"]} for e in common.load_json(common.DOCS_DATA / "music_map.json")["music"]]
+    """The ten songs: [{"id": 9500, "file": "BEND.MID"}, ...]."""
+    return SONGS
 
 
 def midi_name(song: dict, letter: str) -> str:

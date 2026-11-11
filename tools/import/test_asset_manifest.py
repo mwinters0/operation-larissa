@@ -117,6 +117,7 @@ def tree_hash(*folders: Path) -> str:
     return h.hexdigest()
 
 
+@pytest.mark.legacy
 def test_a_second_importer_run_changes_nothing():
     """What `git diff godot/` empty means, without git: every file the importer writes is byte for byte what it was."""
     need_iso()

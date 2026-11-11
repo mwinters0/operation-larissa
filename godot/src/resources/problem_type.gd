@@ -53,7 +53,7 @@ const JSON_PATH_FIELDS: Array[String] = ["art_dir", "art_files"]
 ## Side tables of a few types: lock wheel labels (0), ballast denominations (28, 29),
 ## the bound fields of the water-pressure range (4).
 @export var extras: Dictionary = {}
-## How the original draws this type's diagram (docs/data/problem_diagrams.json, DESIGN 5.5):
+## How the original draws this type's diagram (extracted/tables/problem_diagrams.json, DESIGN 5.5):
 ## `family` names the `DiagramBase` subclass (`DiagramFactory`), `items` is the list of pictures
 ## and numbers drawn onto the art (vocabulary in `DiagramBase`), plus a few family-specific keys.
 @export var diagram: Dictionary = {}

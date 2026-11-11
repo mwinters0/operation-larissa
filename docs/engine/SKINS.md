@@ -44,7 +44,7 @@ and the window gets the skin's render settings; screens made later (a problem, a
   `Label` nodes inside the label boxes. The boxes' sizes are layout data (`HudLayout.game_size`, `zone_size`, `sector_size`,
   `custom_size`, written by `tools/import/step_console.py`) and the label clips to its box, so any font leaves every rectangle as the layout
   gives it (`tests/engine/test_skin_hud.gd`). The rest of the console has rectangles in the layout too (`bezel_size`, `ship_size`, `computer_size`, written from
-  the pictures like the labels', and `tank_rect`, `oxygen_rect`, `ink_rect`, the areas the original redraws, from `docs/data/hud_gauges.json`): they are
+  the pictures like the labels', and `tank_rect`, `oxygen_rect`, `ink_rect`, the areas the original redraws, from `extracted/tables/hud_gauges.json`): they are
   the rectangles a skin mod's script draws the console's parts in (`ConsoleState.rects`, `create/SKIN_API.md` "The console's layers").
 
 ## Two skins at once: `skin_compare.tscn`

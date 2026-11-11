@@ -194,14 +194,14 @@ Then it makes the legacy pack's folder and its `pack.json` (below, "Where the le
 | Step | What it makes |
 |---|---|
 | `extract` | Unpacks pictures, sounds, MIDI, text and data resources from the ISO into `extracted/` (the three extractors `extract_images.py`, `extract_sounds.py`, `extract_data.py` in `tools/extract/`, and the contact sheets of `make_sheets.py`, printed with their times). `tools/extract/run_all.sh` runs the same scripts alone, and also `extract_previews.py` (the promotional content of other titles), which the importer leaves out. |
-| `tables` | Dumps the game's data tables to seven JSON files in `docs/data/` (`sectors`, `problem_records`, `problem_tables_raw`, `problem_gfx_bundles`, `trigger_table`, `zone_defaults`, and `onwin_map`, the names of ONWIN.MAP that the Ghidra tools resolve; by `tools/analysis/export_json.py`, `decode_problems.py`, `export_gfx_tbl.py` and `ghidra/map_names.py`). |
+| `tables` | Dumps the game's own data tables to JSON files in `extracted/tables/` (`GENERATED_TABLES` in `tools/import/common.py` lists them): the sectors with their creatures and scripts, the problem tables and records, the art bundle of each problem type, the trigger table, the default levels, ONWIN.MAP's names (which the Ghidra tools resolve), and what is read from ONWIN32.EXE's data (the music map, the audio cues, the HUD gauges, the lock and ballast labels, the piece animation, the ink and bubble tables, the opening and closing scripts, the canister log, the problem diagrams). The scripts are `tools/analysis/export_json.py`, `decode_problems.py`, `export_gfx_tbl.py`, `ghidra/map_names.py` and the `ghidra/export_*.py` of `TABLE_SCRIPTS` in `tools/import/step_extract.py`. |
 | `images` | The legacy pack's `assets/backgrounds/`, `ui/`, `problem_art/`, `authoring_tool/`. |
 | `tiles` | `assets/tiles/` (zone atlases, currents) and `data/neptune_tileset.tres`, in the pack. |
-| `sprites` | `assets/sprites/`, `data/sprite_frames/`, `sprite_meta/`, `bubble_rules.tres` in the pack; `godot/data/closing_crew.tres` in the project (committed); the `sprite_meta.json` hash fixture. |
+| `sprites` | `assets/sprites/`, `data/sprite_frames/`, `sprite_meta/`, `bubble_rules.tres` in the pack; the `sprite_meta.json` hash fixture. |
 | `sectors` | The 32 original sectors in the pack's `data/sectors/sector_00..31/` (header, creature script, 12 screens each), `zones.tres`, `trigger_table.tres`, the original bytes behind the fixtures (below) and their hash fixtures (`screens.json`, `foe_scripts.json`, `foe_records.json`, `sector_headers.json`, `trigger_table.json`, `zones.json`). |
 | `problems` | The pack's `data/problems/` (the 34 problem types and their text tables), the problem pictures, and the `problem_tables.json` hash fixture. |
 | `console` | The pack's `data/ui/` (HUD, calculator and story layouts); the menu layout is the project's `godot/data/ui/menu_layout.tres` (committed). |
-| `story` | The pack's `data/story/news_cartoon.tres`; the other cutscene timelines are the project's `godot/data/story/` (committed). |
+| `story` | The pack's `data/story/`: the cutscene timelines (`news_cartoon`, `news_ambient`, `title_ship`, `title_reveal`, `expert_hoist`, `expert_deck`, `expert_wait`), `story_script`, `voyager_closing_script` and `closing_crew`. |
 | `campaigns` | The pack's `data/campaigns/voyager.tres` and `expert.tres`. |
 | `transcripts` | Turns the 423 voice clips into text: see "Voice transcripts". Writes `extracted/sounds/voice_transcripts.json` and `voice_transcripts_machine.json`. |
 | `audio` | The 52 sound effects and 371 speech clips (`assets/audio/`), the music rendered from MIDI (both sets), the catalogs (`sfx_catalog`, `music_catalog`, `voice_index`, `voice_cues`), and a copy of the MIDI files in the pack's `midi/`. The speech text in `voice_index.tres` comes from the transcripts; after a run without them the clips have no text. |
@@ -445,7 +445,7 @@ Reports go to `godot/reports/`. The other suites, the test helpers and how to ru
   copy of the game ...` for the legacy group when `packs/legacy/data/sectors/sector_00/sector_00.tres` or `packs/legacy/data/zones.tres`
   is missing (this is also what you see when the importer has not run), and the script still exits 0.
 - Inside the legacy group a test that needs more than that skips with `run the importer on your copy of the game`, and the Python tests
-  with the marker `@pytest.mark.legacy`; the Python check also wants the seven `docs/data/` tables and
+  with the marker `@pytest.mark.legacy`; the Python check also wants the tables of `extracted/tables/` (`GENERATED_TABLES`) and
   `extracted/sounds/voice_transcripts.json`, and says which file is missing first. The legacy test helper checks 17 files, spread over
   the importer's steps (`LegacyPack.WITNESSES` in `godot/tests/legacy/legacy_pack.gd`); a small number missing (one of the
   `res://packs/legacy/assets/tiles/` pictures, say) usually means a step did not finish, a large one that the importer has not run.
@@ -531,7 +531,7 @@ packs/legacy/
 |---|---|---|
 | `NEPTUNE.ISO` (or `$NEP_ISO`) | Your copy of the game. | you |
 | `extracted/` | The first readable form of the ISO's pictures, sounds, MIDI and data; the importer's input. Includes `sounds/voice_transcripts.json`. | `extract`, `transcripts` |
-| `docs/data/` seven files: `sectors.json`, `problem_records.json`, `problem_tables_raw.json`, `problem_gfx_bundles.json`, `trigger_table.json`, `zone_defaults.json`, `onwin_map.json` | The game's data tables. The other JSON files in `docs/data/` are facts read from the program's code and are committed. | `tables` |
+| `extracted/tables/` the files of `GENERATED_TABLES` (`tools/import/common.py`) | The game's data tables (our own analysis, which is committed, is in `tools/analysis/data/`). | `tables` |
 | `<legacy>/pack.json` | The pack's manifest. | the importer, before any step |
 | `<legacy>/assets/` | Pictures, sounds, speech, music, each with a stub `.import` file. | `images`, `tiles`, `sprites`, `problems`, `audio` |
 | `<legacy>/data/sectors/sector_00..31/` | The original sectors. Sectors of your own, 32 and up, go to `godot/data/sectors/` in the project and are committed. | `sectors` |
@@ -539,7 +539,7 @@ packs/legacy/
 | `<legacy>/data/zones.tres`, `trigger_table.tres`, `neptune_tileset.tres`, `bubble_rules.tres` | Zones, triggers, tileset, bubble rules. | `sectors`, `tiles`, `sprites` |
 | `<legacy>/data/campaigns/voyager.tres`, `expert.tres` | The original's two games. Campaigns of your own go to `godot/data/campaigns/` and are committed. | `campaigns` |
 | `<legacy>/data/{sfx,music}_catalog.tres`, `voice_index.tres`, `voice_cues.tres` | The sound catalogs. | `audio` |
-| `<legacy>/data/ui/{hud,calculator,story}_layout.tres`, `<legacy>/data/story/news_cartoon.tres` | Layouts and the news cartoon. | `console`, `story` |
+| `<legacy>/data/ui/{hud,calculator,story}_layout.tres`, `<legacy>/data/story/*.tres` | Layouts, and the choreography of the cutscenes. | `console`, `story` |
 | `<legacy>/midi/` | The original MIDI songs, for playing the music through a soundfont at runtime. | `audio` |
 | `godot/tests/fixtures/original/` | The original bytes behind the committed hash fixtures: sector headers, creature records and scripts, screens, sprite metadata, trigger table, zones, problem tables. The reset tools and the fidelity tests read them. Rebuilt on every import; never edit. | `sectors`, `sprites`, `problems` |
 | `godot/data/legacy/` | Your own hand data about the legacy pack (it stays in the project, not in the pack: it is an input of the importer). It holds `voice_corrections.json`. The importer never writes it; `transcripts.py --correct` does. `$NEP_LEGACY` puts the folder elsewhere. | you |
@@ -550,9 +550,8 @@ packs/legacy/
 
 Committed even though the importer also writes them, with the same bytes, so a clean import leaves `git status` clean:
 
-- the files made from the program's code alone, with nothing of the game in them, which stay in the project's `godot/data/` and not in
-  the pack: `closing_crew.tres`, the cutscene timelines in `story/` (all but the news cartoon's, whose length is that
-  of the game's bulletins, which is the legacy pack's), and `ui/menu_layout.tres`;
+- `godot/data/ui/menu_layout.tres`, the one file the importer writes into the project: where the menu bar's popups open, measured with the
+  theme font, with nothing of the game in it;
 - provenance and hashes, with no bytes of the game: `tools/import/asset_manifest.json` and the hash fixtures in `godot/tests/fixtures/`
   that the `sectors`, `sprites` and `problems` steps write (the step table names them).
 
@@ -560,8 +559,9 @@ If `git status` shows any change after an import, something in the tree is not w
 
 Committed and never written by an import: `tools/import/source_files.json` (the reference release's hashes; only
 `source_files.py --write` writes it, see "Troubleshooting"), `godot/tests/fixtures/voice_transcripts.json` (only
-`transcripts.py --write-fixture`), the other files in `godot/tests/fixtures/` (test data that is not hashes, such as
-`cutscene_timing.json` and `foe_names_probe.json`), and the hand-made files: `godot/names/original.json`,
+`transcripts.py --write-fixture`), `godot/tests/fixtures/cutscene_timing.json` (one hash per cutscene's timing; only
+`tools/godot.sh --headless --path godot -s ../tools/import/godot/write_cutscene_timing.gd` writes it, from the legacy pack), the other files in
+`godot/tests/fixtures/` (test data that is not hashes, such as `foe_names_probe.json`), and the hand-made files: `godot/names/original.json`,
 `godot/data/rules/durations.json`, `godot/data/sectors/foe_annotations.json` (the project's, also for the original's sectors), your own
 sectors and campaigns.
 

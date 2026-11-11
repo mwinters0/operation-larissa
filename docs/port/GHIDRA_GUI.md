@@ -10,7 +10,7 @@ write it when there is something to say (a caller, a string, a table it indexes)
 (a constant such as `float_99_0`).
 
 `map` is the 16-bit address (`SSSS:OOOO`) of the ONWIN.MAP public the address is; the name is read from your ISO, never committed
-(`docs/data/onwin_map.json`, made by the importer's `tables` step; see [`tools/analysis/ghidra/README.md`](../../tools/analysis/ghidra/README.md)).
+(`extracted/tables/onwin_map.json`, made by the importer's `tables` step; see [`tools/analysis/ghidra/README.md`](../../tools/analysis/ghidra/README.md)).
 * `tools/analysis/ghidra/annotations_onwin32.json`: everything else you add in the GUI: comments, types, signatures,
   variables, labels inside functions, equates, Note bookmarks (section 8)
 

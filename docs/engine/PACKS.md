@@ -165,10 +165,10 @@ The skins that come with the game have scenes and scripts, so they are code of t
 
 `ResourceJson` writes any Resource as one key per `@export` field, leaving defaults out, and reads it back with `Script.new()` only
 (never `ResourceLoader`); an unknown field or a value of the wrong kind is a problem in `problems`, not silence. `Vector2i` is `[x, y]`,
-`Rect2i` `[x, y, w, h]`, `Color` `[r, g, b, a]`, `PackedVector2Array` and `PackedColorArray` lists of those, `PackedByteArray` base64 (the
+`Rect2i` and `Rect2` `[x, y, w, h]`, `Color` `[r, g, b, a]`, `PackedVector2Array` and `PackedColorArray` lists of those, `PackedByteArray` base64 (the
 screens' tiles), a typed `Array[PieceData]` a list of objects; a class lists number-keyed Dictionary fields in `JSON_INT_KEYS`. Where the type does
 not say what a value is (inside a Dictionary or an untyped Array) it is tagged `{"$": "float", "v": 1}` (a whole float; a whole number alone is an
-int), `StringName`, `Vector2`, `Vector2i`, `Rect2i`, `Color`, or a packed array. A campaign by hand: `{"class": "Campaign", "id": "orchard", "title": "Orchard", "sectors": [40, 41], "finales":
+int), `StringName`, `Vector2`, `Vector2i`, `Rect2i`, `Rect2`, `Color`, or a packed array. A campaign by hand: `{"class": "Campaign", "id": "orchard", "title": "Orchard", "sectors": [40, 41], "finales":
 [42], ...}`. `SectorJson.save(sector, pack_root)` writes a sector's JSON and `.foe`; a copy is made with
 `SectorFactory.copied_script_text` so its script means the same under the new number (`tests/pack_shelf.gd`).
 

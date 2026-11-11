@@ -1,4 +1,4 @@
-"""Writes docs/data/problem_fields.json: per-field meaning, answer rule and text-slot mapping for the 34
+"""Writes tools/analysis/data/problem_fields.json: per-field meaning, answer rule and text-slot mapping for the 34
 stored problem types.  Every entry was read from the decompiled ONWIN32.EXE (see tools/analysis/ghidra/ and
 docs/port/DESIGN.md section 5.4); items tagged "I" are inferences (diagram code not followed to the end).
 
@@ -176,5 +176,5 @@ out = {"_doc": (__doc__ or "").strip(), "compare_primitives": {
     "NumbersClose": "|expected-answer| <= tol",
     "kind": "0 = decimal (u8 exp digits, i32 raw -> raw/10^exp), 1 = mixed fraction (i8 whole, u8 num, u16 den -> whole+num/den)"},
     "types": {str(k): v for k, v in sorted(T.items())}}
-(ROOT / "docs/data/problem_fields.json").write_text(json.dumps(out, indent=1, ensure_ascii=False))
+(ROOT / "tools/analysis/data/problem_fields.json").write_text(json.dumps(out, indent=1, ensure_ascii=False))
 print("wrote", len(T), "types")

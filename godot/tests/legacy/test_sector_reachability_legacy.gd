@@ -17,7 +17,7 @@ const WORLD_SCENE := "res://src/gameplay/sector_world.tscn"
 ## position; the sub is only ever outside it. The finale never asks for pieces, so the game is not affected.
 const KNOWN_UNREACHABLE_PIECES := {31: [0]}
 
-## Neighbour tables of the original that do not lead back (checked against docs/data/sectors.json, i.e. they are in the game data).
+## Neighbour tables of the original that do not lead back (checked against extracted/tables/sectors.json, i.e. they are in the game data).
 const KNOWN_ONE_WAY_NEIGHBOURS := {
 	7: ["screen 9 left -> 5, but 5 right -> 6", "screen 4 right -> 9, but 9 left -> 5"],
 	13: ["screen 3 up -> 7, but 7 down -> 8"],
@@ -199,11 +199,11 @@ func test_no_tile_is_both_solid_and_a_current() -> void:
 
 
 func test_sector_data_equals_the_extracted_original_data() -> void:
-	# docs/data/sectors.json comes straight from the original's data (tools/analysis); the port's .tres files must hold the same
+	# extracted/tables/sectors.json comes straight from the original's data (tools/analysis); the port's .tres files must hold the same
 	# tiles, neighbour tables, pieces and start positions.
-	var path := ProjectSettings.globalize_path("res://").path_join("../docs/data/sectors.json").simplify_path()
+	var path := ProjectSettings.globalize_path("res://").path_join("../extracted/tables/sectors.json").simplify_path()
 	if not FileAccess.file_exists(path):
-		prints("docs/data/sectors.json not found, skipped")
+		prints("extracted/tables/sectors.json not found, skipped")
 		return
 	var original: Array = JSON.parse_string(FileAccess.get_file_as_string(path))
 	assert_int(original.size()).is_equal(Catalog.ORIGINAL_SECTOR_COUNT)

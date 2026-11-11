@@ -796,7 +796,7 @@ The text in an original sector's file is a readable form of the **original game'
 not a rewrite, and a test proves it.
 
 - **Where the text comes from.** The importer writes the legacy pack's `.foe` files from the original
-  bytes in `docs/data/sectors.json` with a Python disassembler (`tools/import/foe_text.py`), and the
+  bytes in `extracted/tables/sectors.json` with a Python disassembler (`tools/import/foe_text.py`), and the
   three label properties of every foe to `sector_NN.tres`. After that the files are the stored
   version; the importer is only for a first creation or a full reset.
 - **The test.** `godot/tests/legacy/test_foe_asm_legacy.gd` assembles each original sector's stored
@@ -846,7 +846,7 @@ original sector afterwards.
    is already original it changes nothing. If the sector is listed in `DELIBERATE_SCRIPT_CHANGES`,
    remove it from there.
 3. **Do not use `import_all.py --only sectors` for this.** It regenerates the WHOLE sector files
-   from `extracted/` and `docs/data/`, so it also wipes every deliberate change, in the scripts
+   from `extracted/` (its `tables/` too), so it also wipes every deliberate change, in the scripts
    and in all other sector data. The comment at the top of `tools/import/step_sectors.py` says so.
 4. **The test enforces it.** `test_foe_asm_legacy.gd` fails for an edited original sector until it is
    reset (point 2) or listed in `DELIBERATE_SCRIPT_CHANGES`.

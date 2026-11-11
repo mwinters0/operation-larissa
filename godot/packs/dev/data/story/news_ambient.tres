@@ -1,0 +1,61 @@
+[gd_resource type="Resource" script_class="CutsceneTimeline" format=3]
+
+[ext_resource type="Script" path="res://src/resources/cutscene_timeline.gd" id="1_cutscene_timeline"]
+[ext_resource type="Script" path="res://src/resources/cutscene_track.gd" id="2_cutscene_track"]
+[ext_resource type="Script" path="res://src/resources/cutscene_cue.gd" id="3_cutscene_cue"]
+
+[sub_resource type="Resource" id="Track_1"]
+script = ExtResource("2_cutscene_track")
+actor = &"alarm_0"
+property = &"picture"
+times = PackedFloat64Array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150)
+values = [&"alarm_light_0", &"alarm_light_1", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_2", &"alarm_light_0"]
+
+[sub_resource type="Resource" id="Track_2"]
+script = ExtResource("2_cutscene_track")
+actor = &"alarm_0"
+property = &"mirror"
+times = PackedFloat64Array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150)
+values = [false, false, false, false, true, true, true, true, false, false, false, false, true, true, true, true]
+
+[sub_resource type="Resource" id="Track_3"]
+script = ExtResource("2_cutscene_track")
+actor = &"alarm_1"
+property = &"picture"
+times = PackedFloat64Array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150)
+values = [&"alarm_light_1", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1"]
+
+[sub_resource type="Resource" id="Track_4"]
+script = ExtResource("2_cutscene_track")
+actor = &"alarm_1"
+property = &"mirror"
+times = PackedFloat64Array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150)
+values = [false, false, false, false, true, true, true, true, false, false, false, false, true, true, true, true]
+
+[sub_resource type="Resource" id="Track_5"]
+script = ExtResource("2_cutscene_track")
+actor = &"alarm_2"
+property = &"picture"
+times = PackedFloat64Array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150)
+values = [&"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_2", &"alarm_light_0", &"alarm_light_1", &"alarm_light_2"]
+
+[sub_resource type="Resource" id="Track_6"]
+script = ExtResource("2_cutscene_track")
+actor = &"alarm_2"
+property = &"mirror"
+times = PackedFloat64Array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150)
+values = [false, false, false, false, true, true, true, true, false, false, false, false, true, true, true, true]
+
+[sub_resource type="Resource" id="Track_7"]
+script = ExtResource("2_cutscene_track")
+actor = &"ring"
+property = &"picture"
+times = PackedFloat64Array(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150)
+values = [&"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3", &"crash_ring_0", &"crash_ring_1", &"crash_ring_2", &"crash_ring_3"]
+
+[resource]
+script = ExtResource("1_cutscene_timeline")
+length = 160
+loop = true
+tracks = Array[ExtResource("2_cutscene_track")]([SubResource("Track_1"), SubResource("Track_2"), SubResource("Track_3"), SubResource("Track_4"), SubResource("Track_5"), SubResource("Track_6"), SubResource("Track_7")])
+provenance = "Dev pack: the alarm lights and the pulsing ring, a loop of 16 redraws of 10 ticks (tools/dev_pack/dev_story.py)."

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ClosingCrewScripts" format=3]
+
+[ext_resource type="Script" path="res://src/resources/closing_crew_scripts.gd" id="1_closing_crew_scripts"]
+
+[resource]
+script = ExtResource("1_closing_crew_scripts")
+first_picture = 2012
+start_x = PackedInt32Array(300, 340, 380, 420, 460, 500)
+start_y = PackedInt32Array(214, 214, 214, 214, 214, 214)
+scripts = Array[PackedInt32Array]([PackedInt32Array(-8, 0, 0, 2, -2, 1, 0, 2, -4, 2, 0, 1, -4, 3, 0, 1, -6, 1, 0, 1, -7, 1, 0, 1, -5, 2, 1, 1, -5, 3, 1, 1, -8, 0, 0, 3, -3, 0, 0, 0), PackedInt32Array(-8, 0, 0, 3, -2, 1, 0, 2, -4, 2, 0, 1, -4, 3, 0, 1, -6, 1, 0, 1, -7, 1, 0, 1, -5, 2, 1, 1, -5, 3, 1, 1, -8, 0, 0, 3, -3, 0, 0, 0), PackedInt32Array(-8, 0, 0, 4, -2, 1, 0, 2, -4, 2, 0, 1, -4, 3, 0, 1, -6, 1, 0, 1, -7, 1, 0, 1, -5, 2, 1, 1, -5, 3, 1, 1, -8, 0, 0, 3, -3, 0, 0, 0), PackedInt32Array(-8, 0, 0, 5, -2, 1, 0, 2, -4, 2, 0, 1, -4, 3, 0, 1, -6, 1, 0, 1, -7, 1, 0, 1, -5, 2, 1, 1, -5, 3, 1, 1, -8, 0, 0, 3, -3, 0, 0, 0), PackedInt32Array(-8, 0, 0, 6, -2, 1, 0, 2, -4, 2, 0, 1, -4, 3, 0, 1, -6, 1, 0, 1, -7, 1, 0, 1, -5, 2, 1, 1, -5, 3, 1, 1, -8, 0, 0, 3, -3, 0, 0, 0), PackedInt32Array(-8, 0, 0, 7, -2, 1, 0, 2, -4, 2, 0, 1, -4, 3, 0, 1, -6, 1, 0, 1, -7, 1, 0, 1, -5, 2, 1, 1, -5, 3, 1, 1, -8, 0, 0, 3, -3, 0, 0, 0)])

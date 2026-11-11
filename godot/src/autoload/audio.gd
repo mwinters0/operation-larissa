@@ -15,7 +15,7 @@ extends Node
 ##   * settings that belong to the machine (volumes) in a `ConfigFile`, and settings that belong to the player
 ##     (sound / music / voice on or off) in the player's save, applied with `apply_profile`.
 ##
-## How the original behaved (all found in the decompilation, see docs/data/audio_map.json):
+## How the original behaved (all found in the decompilation, see extracted/tables/audio_map.json):
 ##   * ONE wave device [V]: `PlayWave` (0x4150c4) starts with `KillWave` (0x4151a4), and every effect
 ##     (`PlaySoundEffect` 0x431f1f, `RepeatCommonSoundEffect` 0x431f97, which has the same body here) and every speech
 ##     clip goes through it. So a new effect cuts the previous effect AND a speech clip, a speech clip cuts an effect,

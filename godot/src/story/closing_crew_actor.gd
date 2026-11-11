@@ -5,7 +5,7 @@ extends RefCounted
 ## with the program taken from `ExpertCraneTable` (0x4415a4) and the picture drawn by `ExpertClosingDrawCrewPicture`
 ## (0x41ce8f). The table's name is misleading: it is not a crane script, it holds six walk / wave programs.
 ##
-## Teaches: a data-driven animation. The behaviour of six characters is a few hundred numbers (`data/closing_crew.tres`)
+## Teaches: a data-driven animation. The behaviour of six characters is a few hundred numbers (`data/story/closing_crew.tres` of the pack)
 ## and one `step()` that reads them: the same idea as the creatures' scripts (`FoeVM`), only much smaller.
 ##
 ## A program is a list of records `[op, item, mirror, delay]`. `step()` runs one animation step:

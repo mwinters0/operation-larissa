@@ -25,9 +25,9 @@ extends RefCounted
 ##     file in the pack that holds it (`res://packs/dev/assets/...`), which `Packs.file_at` then serves. A string that is not under a pack stays as it is.
 ##   * a sub-resource used more than once in the file: `{"$id": "r1", ...fields}` the first time and `{"$id": "r1"}` after.
 ##   * `SpriteFrames` and `TileSet`: engine classes, described by `EngineJson`; any other engine class is a problem.
-##   * Rect2i `[x, y, w, h]`, Color `[r, g, b, a]`, PackedVector2Array a list of `[x, y]`, PackedColorArray a list of `[r, g, b, a]`.
+##   * Rect2i and Rect2 `[x, y, w, h]`, Color `[r, g, b, a]`, PackedVector2Array a list of `[x, y]`, PackedColorArray a list of `[r, g, b, a]`.
 ##   * where the field's type does not say what a value is (inside a Dictionary or an untyped Array), the value is tagged `{"$": "float", "v": 1}`
-##     (a whole float; a whole number alone is an int), `StringName`, `Vector2`, `Vector2i`, `Rect2i`, `Color` or a packed array.
+##     (a whole float; a whole number alone is an int), `StringName`, `Vector2`, `Vector2i`, `Rect2i`, `Rect2`, `Color` or a packed array.
 ## A field the class does not have is a problem (`problems`, a typo is found), not silently ignored.
 ##
 ## NEVER `ResourceLoader`. Nothing here opens a .tres or a script: the objects are made with `Script.new()` of the classes the game itself
@@ -63,7 +63,7 @@ const TAGS := {
 	TYPE_PACKED_INT32_ARRAY: "PackedInt32Array", TYPE_PACKED_INT64_ARRAY: "PackedInt64Array", TYPE_PACKED_FLOAT32_ARRAY: "PackedFloat32Array",
 	TYPE_PACKED_FLOAT64_ARRAY: "PackedFloat64Array", TYPE_PACKED_STRING_ARRAY: "PackedStringArray", TYPE_PACKED_VECTOR2_ARRAY: "PackedVector2Array",
 	TYPE_PACKED_COLOR_ARRAY: "PackedColorArray", TYPE_STRING_NAME: "StringName", TYPE_VECTOR2: "Vector2", TYPE_VECTOR2I: "Vector2i",
-	TYPE_RECT2I: "Rect2i", TYPE_COLOR: "Color", TYPE_FLOAT: "float",
+	TYPE_RECT2I: "Rect2i", TYPE_RECT2: "Rect2", TYPE_COLOR: "Color", TYPE_FLOAT: "float",
 }
 
 static var _classes: Dictionary = {}
@@ -166,6 +166,8 @@ func _decode_value(value: Variant, kind: int, template: Variant, label: String, 
 			return Vector2(float(value[0]), float(value[1])) if _is_numbers(value, 2) else _wrong(label, "[x, y]", template)
 		TYPE_RECT2I:
 			return Rect2i(int(value[0]), int(value[1]), int(value[2]), int(value[3])) if _is_numbers(value, 4) else _wrong(label, "[x, y, width, height]", template)
+		TYPE_RECT2:
+			return Rect2(float(value[0]), float(value[1]), float(value[2]), float(value[3])) if _is_numbers(value, 4) else _wrong(label, "[x, y, width, height]", template)
 		TYPE_COLOR:
 			return Color(float(value[0]), float(value[1]), float(value[2]), float(value[3])) if _is_numbers(value, 4) else _wrong(label, "[r, g, b, a]", template)
 		TYPE_PACKED_BYTE_ARRAY:
@@ -323,7 +325,7 @@ func _tagged(tag: String, v: Variant, label: String) -> Variant:
 			return StringName(v) if v is String else _wrong(label, "text", &"")
 	if not v is Array:
 		return _wrong(label, "a list", null)
-	if kind in [TYPE_VECTOR2, TYPE_VECTOR2I, TYPE_RECT2I, TYPE_COLOR]:
+	if kind in [TYPE_VECTOR2, TYPE_VECTOR2I, TYPE_RECT2I, TYPE_RECT2, TYPE_COLOR]:
 		return _decode_value(v, kind, null, label)
 	return _packed(kind, v)
 
@@ -448,7 +450,7 @@ func _encode(value: Variant, loose: bool) -> Variant:
 			return [value.x, value.y]
 		TYPE_VECTOR2:
 			return [value.x, value.y]
-		TYPE_RECT2I:
+		TYPE_RECT2I, TYPE_RECT2:
 			return [value.position.x, value.position.y, value.size.x, value.size.y]
 		TYPE_COLOR:
 			return [value.r, value.g, value.b, value.a]

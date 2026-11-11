@@ -28,7 +28,7 @@ from __future__ import annotations
 import json
 import struct
 
-from common import DOCS_DATA, GODOT, ORIGINAL_FIXTURES, load_json, raw_table, sha256_hex
+from common import ANALYSIS_DATA, GODOT, ORIGINAL_FIXTURES, load_json, raw_table, sha256_hex
 
 TYPES, LEVELS = 34, 4
 FIRST_ID = 10512                    # type * 4 + level is added
@@ -54,7 +54,7 @@ def extracted_name(t: int, level: int) -> str:
 
 def field_kinds(t: int) -> str:
     """One character per field of type `t`, in file order: c, b, w or n (the string `field_kinds` of problem_type_NN.tres)."""
-    spec = load_json(DOCS_DATA / "problem_layouts32.json")["types"][str(t)]
+    spec = load_json(ANALYSIS_DATA / "problem_layouts32.json")["types"][str(t)]
     kinds = "".join(f["kind"] for f in spec["fields"])
     signed = SIGNED_BYTE_FIELDS.get(t, ())
     kinds = "".join("b" if i in signed else k for i, k in enumerate(kinds))

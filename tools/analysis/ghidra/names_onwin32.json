@@ -297,7 +297,7 @@
  },
  "0x0041a800": {
   "name": "UpdateAmbientBubbles",
-  "evidence": "BUBBLES.C; two bubbles, spawn 1/50 per tick (rand() % 50), x random, rise 10 / 6 px per tick, picture cycles; see docs/data/bubbles.json"
+  "evidence": "BUBBLES.C; two bubbles, spawn 1/50 per tick (rand() % 50), x random, rise 10 / 6 px per tick, picture cycles; see extracted/tables/bubbles.json"
  },
  "0x0041aaf8": {
   "name": "AddCalcHotspots",
@@ -941,7 +941,7 @@
  },
  "0x0042dc3b": {
   "map": "0014:162C",
-  "evidence": "PROBE.C (MAP DrawProbePieces): draws the pieces once per game frame (the canister flashes between pictures, rocks use table 0x442e70 with the shared counter 0x442e6c); docs/data/piece_animation.json, DESIGN 3.6"
+  "evidence": "PROBE.C (MAP DrawProbePieces): draws the pieces once per game frame (the canister flashes between pictures, rocks use table 0x442e70 with the shared counter 0x442e6c); extracted/tables/piece_animation.json, DESIGN 3.6"
  },
  "0x0042dcec": {
   "map": "0014:16AE",
@@ -2281,7 +2281,7 @@
  },
  "0x00414f81": {
   "map": "0006:003C",
-  "evidence": "WTRANSIT.C (MAP _dissolve): dissolve(srcx,srcy,w,h,dstx,dsty): 16 passes; pass p, for every pair of rows local_8 = 0,2,4..<h, copies the 2x2 blocks at x = 16 n - rowtab[local_8 % 16] + coltab[p] (0 <= x < w-2) from the source rectangle to the destination; coltab = 0x441188 {11,13,5,14,7,1,15,2,0,3,8,4,9,12,6,10}, rowtab = 0x441198 {13,11,6,10,3,1,15,0,12,5,7,2,4,14,9,8} (bytes checked in the EXE; only even row indices occur); FlushRect(dst box) after each pass, then one full CopyBackBufferRect + FlushRect (the last column x = w-1 is only reached by it). No delay anywhere: the pace is the speed of the blits. Only caller: RedrawFrameAfterTankLoss (0x418bcb), which dissolves the scene without the sub over the sub's box (docs/data/dissolve_tables.json)"
+  "evidence": "WTRANSIT.C (MAP _dissolve): dissolve(srcx,srcy,w,h,dstx,dsty): 16 passes; pass p, for every pair of rows local_8 = 0,2,4..<h, copies the 2x2 blocks at x = 16 n - rowtab[local_8 % 16] + coltab[p] (0 <= x < w-2) from the source rectangle to the destination; coltab = 0x441188 {11,13,5,14,7,1,15,2,0,3,8,4,9,12,6,10}, rowtab = 0x441198 {13,11,6,10,3,1,15,0,12,5,7,2,4,14,9,8} (bytes checked in the EXE; only even row indices occur); FlushRect(dst box) after each pass, then one full CopyBackBufferRect + FlushRect (the last column x = w-1 is only reached by it). No delay anywhere: the pace is the speed of the blits. Only caller: RedrawFrameAfterTankLoss (0x418bcb), which dissolves the scene without the sub over the sub's box (extracted/tables/dissolve_tables.json)"
  },
  "0x00415079": {
   "map": "0006:0135",

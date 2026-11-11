@@ -1,4 +1,4 @@
-"""pytest checks of docs/data/sprite_slots.json, the slot -> picture table of the creature and deco sets."""
+"""pytest checks of tools/analysis/data/sprite_slots.json, the slot -> picture table of the creature and deco sets."""
 import json
 import sys
 from pathlib import Path

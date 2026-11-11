@@ -4,8 +4,8 @@ A `Campaign` (godot/src/resources/campaign.gd, docs/engine/ARCHITECTURE.md) is t
 and finale, its educational levels, its canister log and supply messages. For the two games of the original every number comes from the
 program, so the files are written here and nowhere else:
 
-    unlock order of the log   docs/data/databank.json            LogUnlockOrderVoyager 0x4419d5, LogUnlockOrderExpert 0x4419e4
-    default levels            docs/data/zone_defaults.json       DS 0x25A8, bytes game * 5 + zone (ds_tables.py; the same bytes as zones.tres)
+    unlock order of the log   extracted/tables/databank.json            LogUnlockOrderVoyager 0x4419d5, LogUnlockOrderExpert 0x4419e4
+    default levels            extracted/tables/zone_defaults.json       DS 0x25A8, bytes game * 5 + zone (ds_tables.py; the same bytes as zones.tres)
     names of the strings      godot/names/original.json          the `text` name of each string number (the log entries 10648-10677, the
                                                                  supply messages 10678-10707, the game names 11199 / 11200, the buttons 11258 / 11259)
 
@@ -20,7 +20,7 @@ from pathlib import Path
 import ds_tables
 import step_story
 import tres
-from common import PACK_DATA, DOCS_DATA, load_json, out_text
+from common import PACK_DATA, TABLES, load_json, out_text
 
 SCRIPT = "res://src/resources/campaign.gd"
 SECTORS_PER_GAME = 15
@@ -41,7 +41,7 @@ def _names(numbers: list[int]) -> str:
 def build_campaign(game: int) -> str:
     """The text of data/campaigns/<id>.tres for game 0 (Voyager) or 1 (Expert)."""
     c = CAMPAIGNS[game]
-    unlock = load_json(DOCS_DATA / "databank.json")["unlock_order_voyager" if game == 0 else "unlock_order_expert"]
+    unlock = load_json(TABLES / "databank.json")["unlock_order_voyager" if game == 0 else "unlock_order_expert"]
     edu = ds_tables.default_edu_levels()
     sectors = list(range(c["first"], c["first"] + SECTORS_PER_GAME))
     first_entry = game * SECTORS_PER_GAME
@@ -50,7 +50,7 @@ def build_campaign(game: int) -> str:
     t.set("provenance", tres.s(
         "ORIGINAL: the %s game of ONWIN32.EXE. Sectors %d-%d and finale %d (GetGameLevel 0x42e12c, IncrementSector 0x42e0b2); "
         "default_edu_levels = bytes %d-%d of the table at DS 0x25A8 (= zones.tres); log_unlock_order = LogUnlockOrder%s 0x%s "
-        "(PrepareCanisterLog 0x41e787, docs/data/databank.json); texts: the log entries and supply messages of NEP.DLL by registry name; "
+        "(PrepareCanisterLog 0x41e787, extracted/tables/databank.json); texts: the log entries and supply messages of NEP.DLL by registry name; "
         "song: SelectSectorMusic 0x43200f; closing: Game.show_closing. Written by tools/import/step_campaigns.py."
         % (name, sectors[0], sectors[-1], c["finale"], 5 * game, 5 * game + 4, name, ("4419d5", "4419e4")[game])))
     t.set("id", '&"%s"' % c["id"])
