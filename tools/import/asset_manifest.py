@@ -148,7 +148,7 @@ def prune(dirs: list[Path]) -> tuple[int, int]:
             old = (same_number or waiting)[0]
             waiting.remove(old)
             old_sidecar = Path(str(old) + ".import")
-            sidecar.write_text(old_sidecar.read_text().replace(old.name, new.name).replace(res_path(old), res_path(new)))
+            sidecar.write_text(old_sidecar.read_text().replace(old.name, new.name).replace(res_path(old), res_path(new)), newline="\n")
             old_sidecar.unlink()
             carried += 1
     for p in stale:

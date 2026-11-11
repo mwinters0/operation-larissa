@@ -40,7 +40,7 @@ def clean(e):
 
 def write_json(p, o):
     p.parent.mkdir(parents=True, exist_ok=True)
-    with open(p, 'w', encoding='utf-8') as f:
+    with open(p, 'w', encoding='utf-8', newline='\n') as f:
         json.dump(o, f, indent=1, ensure_ascii=False)
 
 def parse_strtab(d):
@@ -82,7 +82,7 @@ def do_nep():
     for t in texts:
         grouped.setdefault(str(t['bundle']), []).append(dict(id=t['id'], text=t['text']))
     write_json(OUT / 'data' / 'NEP_text_by_bundle.json', grouped)
-    with open(OUT / 'data' / 'NEP_text.txt', 'w', encoding='utf-8') as f:
+    with open(OUT / 'data' / 'NEP_text.txt', 'w', encoding='utf-8', newline='\n') as f:
         for b, items in sorted(grouped.items(), key=lambda x: (x[0] == 'None', int(x[0]) if x[0] != 'None' else 0)):
             f.write(f'==== BNDL {b} ====\n')
             f.writelines(f'--- {it["id"]}\n{it["text"]}\n' for it in items)

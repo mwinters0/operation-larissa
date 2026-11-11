@@ -86,7 +86,7 @@ def adopt_song(dest: Path, midi_stem: str, song_id: int) -> bool:
     for sidecar in (".import",):                       # Godot's import file moves with its asset (see asset_manifest.prune)
         old = Path(str(found[0]) + sidecar)
         if old.exists():
-            Path(str(dest) + sidecar).write_text(old.read_text().replace(found[0].name, dest.name))
+            Path(str(dest) + sidecar).write_text(old.read_text().replace(found[0].name, dest.name), newline="\n")
             old.unlink()
     found[0].rename(dest)
     return True
