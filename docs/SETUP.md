@@ -57,62 +57,42 @@ its options, and what to do when it refuses: [`play/LEGACY.md`](play/LEGACY.md).
 ### On Windows: build the original game and play it
 
 Windows runs the importer and the game, and the editor opens. The tests (`tools/run_tests.sh`), the pack files (`godot:pack`) and the
-release builds call bash scripts, so they are Linux-only; their mise tasks say so on Windows. Everything here is typed in PowerShell, in
-the repository root.
+release builds call bash scripts, so they are Linux-only; their mise tasks say so on Windows.
 
-1. **The programs.** Git, mise, and FFmpeg's full build (it has the libvorbis encoder the music needs) come from winget:
+With Git installed (`winget install --id Git.Git -e`) and the repository cloned, one script does the rest. In PowerShell, in the
+repository root:
 
-   ```powershell
-   winget install --id Git.Git -e
-   winget install --id jdx.mise -e
-   winget install --id Gyan.FFmpeg -e
-   ```
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\setup_windows.ps1
+```
 
-   FluidSynth has no winget package: download `fluidsynth-<version>-win10-x64.zip` from its
-   [GitHub releases](https://github.com/FluidSynth/fluidsynth/releases), unpack it (for example to `C:\Tools\fluidsynth`) and put its
-   `bin` folder on your `PATH`:
+It asks for your CD image (or takes `-Iso C:\path\to\copy.iso`) and checks it against the reference release before it installs
+anything, then installs what is missing: mise and uv, FFmpeg (winget `Gyan.FFmpeg`, which has the libvorbis encoder), FluidSynth (the
+`win10-x64` zip of its latest GitHub release, checked against the SHA-256 GitHub publishes, into `%LOCALAPPDATA%\Programs\FluidSynth`
+and onto your user `PATH`), Godot (mise's, else the official Windows build of the pinned version, named by `GODOT_BIN`), and through
+`mise run setup` the Python environment, the godot-sandbox extension and the General MIDI soundfont (`tools/fetch_soundfont.py`:
+`FluidR3_GM.sf2` from Debian's `fluid-soundfont-gm` package, version and SHA-256 pinned, into the git-ignored `soundfonts\`). Then it
+runs `legacy:checktools` and `legacy:import`, and starts the game (`-NoPlay` stops before). It keeps your image's path in the user
+variable `NEP_ISO`, and a second run skips everything already in place.
 
-   ```powershell
-   [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Tools\fluidsynth\bin", "User")
-   ```
+Afterwards, from the repository root:
 
-   The General MIDI soundfont needs nothing from you: `mise run setup` (step 3) runs `tools/fetch_soundfont.py`, which downloads
-   Debian's `fluid-soundfont-gm` package (version and SHA-256 pinned, about 115 MB) and takes `FluidR3_GM.sf2` out of it into
-   `soundfonts\` (git-ignored), where the importer looks for it on Windows. Another General MIDI soundfont works with `--soundfont`,
-   and the music then sounds like that soundfont.
+```powershell
+mise run godot:play legacy        # play the original
+mise run godot:editor             # the project in the Godot editor
+mise run legacy:import            # build the legacy pack again (importer options after --)
+```
 
-   Close PowerShell and open it again, so it sees the new `PATH`.
-
-2. **mise in PowerShell.** Activate mise with its shims (they work in Windows PowerShell 5.1 and in PowerShell 7):
-
-   ```powershell
-   New-Item -Force -ItemType File $PROFILE | Out-Null      # only when you have no profile yet
-   Add-Content $PROFILE 'mise activate pwsh --shims | Out-String | Invoke-Expression'
-   ```
-
-   Open PowerShell again. (If it refuses to run the profile, allow your own scripts: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.)
-
-3. **The repository, the tools and your copy of the game:**
-
-   ```powershell
-   mise trust
-   mise run setup                                   # uv, Godot 4.7.2 and a JDK, then .venv, the godot-sandbox extension and the soundfont
-   $env:NEP_ISO = "C:\path\to\your\copy.iso"        # or: Copy-Item C:\path\to\your\copy.iso NEPTUNE.ISO
-   uv run tools/import/source_files.py              # "your copy is the reference release (31 files)"
-   mise run legacy:checktools                       # names anything missing and how to get it
-   mise run legacy:import                           # NEPTUNE.ISO -> the legacy pack
-   mise run godot:play legacy                       # play the original
-   mise run godot:editor                            # the project in the Godot editor
-   ```
+To type `uv` and `godot` directly as well, activate mise's shims in your PowerShell profile:
+`Add-Content $PROFILE 'mise activate pwsh --shims | Out-String | Invoke-Expression'`.
 
 What differs from Linux:
 
 - **Godot.** `tools/godot.py` takes the place of `tools/godot.sh`: where a manual writes `tools/godot.sh <arguments>`, Windows runs
   `uv run tools/godot.py <arguments>`, and the importer and the mise tasks call it themselves. It runs `GODOT_BIN`, else `godot` on the
-  `PATH`, else mise's install of the pinned Godot, and always the `_console.exe` of a Windows Godot ("Godot" below). When `mise install`
-  cannot install Godot, download Godot 4.7.2 for Windows from [godotengine.org](https://godotengine.org/download/archive/4.7.2-stable/),
-  then `$env:MISE_DISABLE_TOOLS = "godot"` and
-  `$env:GODOT_BIN = "C:\path\to\Godot_v4.7.2-stable_win64_console.exe"`.
+  `PATH`, else mise's install of the pinned Godot, and always the `_console.exe` of a Windows Godot ("Godot" below). When mise cannot
+  install Godot, `setup_windows.ps1` puts the official Windows build in `%LOCALAPPDATA%\Programs\Godot\` and sets the user variables
+  `GODOT_BIN` (its `_console.exe`) and `MISE_DISABLE_TOOLS=godot`.
 - **Text.** The Python tools switch themselves to Python's UTF-8 mode (`tools/utf8_mode.py`) and write LF line endings, so a Windows
   run writes the same files as a Linux one. `.gitattributes` keeps LF in the checkout too. A clone made before that file was in it
   still has CRLF files: `git rm -r --cached -q .` then `git reset --hard` checks them out again with LF (commit or stash your own work

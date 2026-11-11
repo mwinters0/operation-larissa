@@ -31,10 +31,10 @@ LAUNCHER = "tools/godot.py" if WINDOWS else "tools/godot.sh"      # what runs Go
 DNF_MUSIC = "sudo dnf install ffmpeg-free fluidsynth fluid-soundfont-common fluid-soundfont-gm"
 # How to get each music tool on Windows (docs/SETUP.md, "On Windows"); on Linux the one dnf line installs all three.
 WINDOWS_HINTS = {
-    "ffmpeg": "winget install --id Gyan.FFmpeg -e",
-    "fluidsynth": "download the win10-x64 zip of a FluidSynth release (github.com/FluidSynth/fluidsynth/releases) and put its bin "
-                  "folder on the PATH",
-    "soundfont": "uv run tools/fetch_soundfont.py (mise run setup does it on Windows)",
+    "ffmpeg": "tools\\setup_windows.ps1 installs it (or: winget install --id Gyan.FFmpeg -e)",
+    "fluidsynth": "tools\\setup_windows.ps1 installs it (or: the win10-x64 zip of a release from "
+                  "github.com/FluidSynth/fluidsynth/releases, its bin folder on the PATH)",
+    "soundfont": "uv run tools/fetch_soundfont.py (mise run setup and tools\\setup_windows.ps1 run it)",
 }
 
 

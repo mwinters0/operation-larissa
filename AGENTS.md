@@ -60,7 +60,8 @@ read it only when you need the why.
   own installs; others come from the system's packages, documented for Fedora. Only Linux is tested.
 - **Scripts call plain names** (`uv`, `godot`, `ffmpeg`), never `mise exec`, so other installs still run. Godot goes through
   `tools/godot.sh`; a Python tool asks `tools/godot.py` (`command()`), which is that wrapper on Linux and finds Godot itself on Windows.
-- **Windows runs the importer and the game** (`docs/SETUP.md`, "On Windows"). A Python entry point calls `utf8_mode.ensure()` first; a
+- **Windows runs the importer and the game** (`docs/SETUP.md`, "On Windows"; `tools/setup_windows.ps1` installs a tool the importer
+  needs on Windows, so a new one gets a step there too). A Python entry point calls `utf8_mode.ensure()` first; a
   text file a tool writes is written as bytes or with `newline="\n"`; a mise task that calls a bash script has a `run_windows`.
 - **A new external program** a tool calls gets a check in `tools/import/tool_check.py` (when the importer calls it), a pin in
   `mise.toml` when mise has it, and its row in `docs/SETUP.md`.
