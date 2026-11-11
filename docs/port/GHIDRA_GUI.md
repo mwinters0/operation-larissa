@@ -2,8 +2,12 @@
 
 Our decompilation work runs headless (see [`tools/analysis/ghidra/README.md`](../../tools/analysis/ghidra/README.md)). Its results live in three files in the repo:
 
-* `tools/analysis/ghidra/names_onwin32.json`: function address -> `{name, evidence}`, or `{map, evidence}` for a name of ONWIN.MAP
-* `tools/analysis/ghidra/labels_onwin32.json`: global address -> name, or `{name, evidence}`, or `{map}` / `{map, evidence}`
+* `tools/analysis/ghidra/names_onwin32.json`: function address -> `{name}`, or `{map}` for a name of ONWIN.MAP
+* `tools/analysis/ghidra/labels_onwin32.json`: global address -> name, or `{name}`, or `{map}`
+
+Any entry may also carry an `evidence` note: one line saying how we know what the function or global is. It is optional:
+write it when there is something to say (a caller, a string, a table it indexes), leave it out where the name is self-evident
+(a constant such as `float_99_0`).
 
 `map` is the 16-bit address (`SSSS:OOOO`) of the ONWIN.MAP public the address is; the name is read from your ISO, never committed
 (`docs/data/onwin_map.json`, made by the importer's `tables` step; see [`tools/analysis/ghidra/README.md`](../../tools/analysis/ghidra/README.md)).
@@ -13,10 +17,15 @@ Our decompilation work runs headless (see [`tools/analysis/ghidra/README.md`](..
 This guide builds a Ghidra project with all of it applied, then opens it in the GUI so you can click around the code
 instead of reading `dump_c.py` output, and add to it.
 
-**The short way:** `mise run ghidra:gui` does sections 2 and 3 in one command. It refuses first when the project holds GUI
-work that is not in the JSON yet (section 7, "Export before you apply"), then builds or updates the project
-(`apply_problem_types.py`, `apply_names.py`, `apply_annotations.py`), then opens it in the PyGhidra GUI (`open_gui.py`). It
-returns when Ghidra closes. Close Ghidra before you run it again: only one process can open the project.
+**The short way:** three mise tasks, each run by hand when you want it, with Ghidra closed (only one process can open
+the project):
+
+* `mise run ghidra:import` (section 2, the import): builds or updates the project from the JSON (`apply_problem_types.py`,
+  `apply_names.py`, `apply_annotations.py`). It refuses when the project holds GUI work that is not in the JSON yet
+  (section 7, "Export before you apply"): run `ghidra:export` first. Run it for a fresh project and after a `git pull`.
+* `mise run ghidra:gui` (section 3): opens the project in the PyGhidra GUI as it is (`open_gui.py`), and returns when
+  Ghidra closes. It checks and applies nothing, so it always opens.
+* `mise run ghidra:export` (section 7): writes the GUI's names and annotations into the JSON.
 
 **Why the project is not committed.** A Ghidra project holds a copy of the program's bytes, so it is made from the game,
 and nothing made from the game is committed ([`../../AGENTS.md`](../../AGENTS.md)). It is also a binary database that git
@@ -77,7 +86,7 @@ below. Or start Ghidra with the **PyGhidra** launcher, not `ghidraRun`. `ghidraR
 * **Window > Functions** lists every function in a sortable table, and you can filter it by name.
 * **G** (Go To) jumps to a name or an address, such as `PlaySoundEffect` or `0x425772`.
 * The **Decompile** window (Window > Decompile) follows the cursor. Click any call to follow it.
-* Each named function carries its `evidence` note as a function comment, shown above the function in the Listing.
+* A named function with an `evidence` note carries it as a function comment, shown above the function in the Listing.
   Labelled globals with evidence get a plate comment.
 * **Data Type Manager** > `ONWIN32.EXE` holds the problem-record structs (`Prob00`..`Prob33`), so fields show up as
   `g_prob03->f2_n`.
@@ -137,8 +146,9 @@ The JSON files are the source of truth. The Ghidra project is a disposable build
    ./run.sh export_annotations.py [--dry-run | --check]    # the same three for annotations
    ```
 
-3. **Fill in the evidence.** `export_names.py` appends a new name with `"evidence": ""`: open the JSON file and write the
-   one line saying how you know what the function or global is. `git diff` shows which entries are yours.
+3. **Add evidence where it helps.** `export_names.py` appends a new name without an `evidence` note. Where the name is not
+   self-evident, add one (in the JSON, or as the function's plate comment before you export). `git diff` shows which
+   entries are yours.
 4. **Commit** the JSON files.
 
 `export_names.py` details: renamed entries keep their evidence; nothing is ever deleted from the JSON, and the formatting
@@ -150,7 +160,7 @@ Other things to know:
 
 * **Export before you apply.** `apply_names.py` renames functions back to the JSON name, and `apply_annotations.py` writes
   the file's comments, types and variables over the project's, so GUI work that was not exported yet is lost.
-  `mise run ghidra:gui` checks both first and refuses. (`apply_names.py` lists the renames it overwrites; a GUI-renamed
+  `mise run ghidra:import` checks both first and refuses. (`apply_names.py` lists the renames it overwrites; a GUI-renamed
   *label* is not removed: the JSON label is added as the primary one and the old name stays as a second label.)
 * **Ghidra only lets one process open a project at a time.** Close the project in the GUI before you run a
   `./run.sh` script against it, or the script fails with a lock error. `export_annotations.py --baseline` is the one

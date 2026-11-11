@@ -3,7 +3,8 @@
 
 Collects every USER_DEFINED function name and global label (Ghidra's own FUN_ / DAT_ / LAB_ / s_ ... names
 and the g_probNN labels made by apply_problem_types.py are skipped) and, compared with the JSON files:
-  * adds the ones that are not in the file, with an empty "evidence" string (you must fill it in),
+  * adds the ones that are not in the file: a function as {"name": ...}, a label as a plain string. Evidence is optional:
+    add an "evidence" note by hand (or as the plate comment in Ghidra, export_annotations.py) when there is something to say,
   * updates the name where the address is in the file under a different name (evidence is kept).
 A name that is an ONWIN.MAP public is written as its reference ("map"), never as the name (map_names.py; the table the importer
 made from your ISO must exist). Nothing is ever removed and existing evidence is never touched. File formatting is preserved (indent=1,
@@ -14,7 +15,7 @@ made from your ISO must exist). Nothing is ever removed and existing evidence is
              (answer No to just look). The GUI cannot pass arguments; use the headless form for --dir.
 
   --dry-run, -n   print the diff, write nothing
-  --check         print the diff, write nothing, and exit 1 when there is something to export (`mise run ghidra:gui`
+  --check         print the diff, write nothing, and exit 1 when there is something to export (`mise run ghidra:import`
                   runs it first, so that apply_names.py never renames back a GUI rename that is not in the JSON yet)
   --dir DIR       read/write the JSON files in DIR instead of next to this script (for testing)
 """
@@ -62,10 +63,11 @@ def collect(prog, managed=()):
     return funcs, labels, notes
 
 
-def merge(existing, found, syms):
+def merge(existing, found, syms, functions=True):
     """Return (new dict, [(key, old name or None, new name)]). existing keeps its order, additions go last.
 
-    existing is the committed table (names or ONWIN.MAP references), syms the MAP's publics (map_names.symbols())."""
+    existing is the committed table (names or ONWIN.MAP references), syms the MAP's publics (map_names.symbols()).
+    A new function is a dict ({"name"} or {"map"}), a new label a plain string (or {"map"}); neither has evidence."""
     out = dict(existing)
     changes = []
     for k, names in found.items():
@@ -74,7 +76,7 @@ def merge(existing, found, syms):
         if cur_name is not None and cur_name in names:      # the file's name is still one of the labels there
             continue
         new = names[0]
-        out[k] = map_names.with_name({"evidence": ""} if cur is None else cur, new, syms)
+        out[k] = map_names.with_name(({} if functions else None) if cur is None else cur, new, syms)
         changes.append((k, cur_name, new))
     return out, changes
 
@@ -94,19 +96,18 @@ def export(prog, directory, dry_run, log=print):
     funcs, labels, notes = collect(prog, managed)
     syms = map_names.symbols()
     total = 0
-    new_entries = 0
     for fname, found, what in (("names_onwin32.json", {k: [v] for k, v in funcs.items()}, "function"),
                                ("labels_onwin32.json", labels, "label")):
         path = directory / fname
         raw = path.read_text() if path.exists() else "{}\n"
         existing = json.loads(raw)
-        merged, changes = merge(existing, found, syms)
+        merged, changes = merge(existing, found, syms, what == "function")
         for k, names in found.items():
             if len(names) > 1:
                 notes.append("%s %s has several user labels %s; only %s is exported" % (what, k, names, names[0]))
         for k, old, new in changes:
             if old is None:
-                log("+ %s  %s  %s   (new, evidence empty)" % (what, k, new))
+                log("+ %s  %s  %s   (new)" % (what, k, new))
             else:
                 log("~ %s  %s  %s -> %s" % (what, k, old, new))
         total += len(changes)
@@ -118,13 +119,10 @@ def export(prog, directory, dry_run, log=print):
             else:
                 path.write_text(new_text)
                 log("wrote %s" % path)
-        new_entries += sum(1 for _, old, _ in changes if old is None)
     for n in notes:
         log("note: " + n)
     if not total:
         log("nothing to export: the JSON files already hold every user-defined name")
-    elif new_entries:
-        log("%d new entries have an empty evidence string: fill them in before committing" % new_entries)
     return total
 
 
@@ -138,7 +136,7 @@ def main(prog):
     if args.check:
         if export(prog, args.dir, True):
             print("REFUSED: the Ghidra project has names that are not in the JSON files yet; applying the JSON would rename "
-                  "them back. Export them first: cd tools/analysis/ghidra && ./run.sh export_names.py")
+                  "them back. Export them first: mise run ghidra:export")
             sys.exit(1)
         return
     dry = args.dry_run

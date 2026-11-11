@@ -9,7 +9,7 @@ of the record of what was applied, so the next export does not take it for a del
 
   headless:  ./run.sh apply_annotations.py [--dir DIR]   (opens/creates the project in NEP_GHIDRA_PROJECT)
   GUI:       Script Manager > apply_annotations.py    (applies to the open program; then File > Save)
-Annotations made in the GUI and not exported yet may be overwritten: run export_annotations.py first (`mise run ghidra:gui`
+Annotations made in the GUI and not exported yet may be overwritten: run export_annotations.py first (`mise run ghidra:import`
 refuses to apply while there are some).
 
 Teaches: writing to a Ghidra program in one transaction, and checking a write by reading it back.

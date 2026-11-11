@@ -616,7 +616,10 @@ def export(prog, directory, dry_run, baseline, log=print):
     for k, _, new in changes:
         if k[0] == "evidence":
             table = names if k[1] == "function" else labels
-            table[k[2]]["evidence"] = "" if new is an.MISSING else new
+            if new is an.MISSING:
+                table[k[2]].pop("evidence", None)          # evidence is optional: a cleared plate leaves none
+            else:
+                table[k[2]]["evidence"] = new
     texts = {an.FILE: an.dump(doc), "names_onwin32.json": json.dumps(names, indent=1) + "\n",
              "labels_onwin32.json": json.dumps(labels, indent=1) + "\n"}
     for n, text in texts.items():

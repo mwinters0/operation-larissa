@@ -16,7 +16,7 @@ file since (git pull) is kept. annotations.py has the file format.
              so it remembers what was exported.
 
   --dry-run, -n   print the diff, write nothing
-  --check         print the diff, write nothing, exit 1 when there is something to export (`mise run ghidra:gui` runs it
+  --check         print the diff, write nothing, exit 1 when there is something to export (`mise run ghidra:import` runs it
                   first, so that apply_annotations.py never overwrites work that is not in the file yet)
   --dir DIR       read and write the JSON files in DIR instead of next to this script
 
@@ -46,7 +46,7 @@ def main(prog, baseline):
     if args.check:
         if ga.export(prog, args.dir, True, baseline):
             print("REFUSED: the Ghidra project has annotations that are not in %s yet; applying the file would overwrite "
-                  "them. Export them first: cd tools/analysis/ghidra && ./run.sh export_annotations.py" % an.FILE)
+                  "them. Export them first: mise run ghidra:export" % an.FILE)
             sys.exit(1)
         return
     dry = args.dry_run

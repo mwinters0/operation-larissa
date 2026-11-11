@@ -128,7 +128,12 @@ exec "$out/operation-larissa.x86_64"
 # ---- Reverse engineering: ONWIN32.EXE in Ghidra (docs/port/GHIDRA_GUI.md; Ghidra itself is installed by hand, docs/SETUP.md)
 
 [tasks."ghidra:gui"]
-description = "Open ONWIN32.EXE in the Ghidra GUI with our names and annotations applied (refuses while the project has GUI work not yet exported)"
+description = "Open the Ghidra project in the GUI as it is (ghidra:import builds it and brings in the JSON; ghidra:export writes GUI work back)"
+dir = "tools/analysis/ghidra"
+run = "./run.sh open_gui.py"
+
+[tasks."ghidra:import"]
+description = "Build or update the Ghidra project from the tracked JSON files (refuses while the project has GUI work not yet exported: run ghidra:export first)"
 dir = "tools/analysis/ghidra"
 run = [
   "./run.sh export_names.py --check",
@@ -136,7 +141,6 @@ run = [
   "./run.sh apply_problem_types.py",
   "./run.sh apply_names.py",
   "./run.sh apply_annotations.py",
-  "./run.sh open_gui.py",
 ]
 
 [tasks."ghidra:export"]

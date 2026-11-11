@@ -124,7 +124,7 @@ version is yours to find.
 | Piper text-to-speech | regenerating the dev pack's audio | `uv run --group dev-pack ...` | Not installed by default. Its voice (63 MB) goes to `~/.cache/neptune-dev-pack/` on first use. [`../tools/dev_pack/README.md`](../tools/dev_pack/README.md). |
 | Steam with *Proton Experimental*, `7z`, `xxd`, PipeWire | running the *original* game under Wine (the `mise -E proton run` tasks) | Steam; `sudo dnf install 7zip xxd` | The Proton path is `PROTON` in `mise.proton.toml`. Quick start above. Music also needs `fluidsynth` and the GM soundfont. [`port/FIDELITY.md`](port/FIDELITY.md), "Comparing with the original game". |
 | A JDK 21 or newer | the Ghidra workflow | `mise install` (Temurin 25) | |
-| Ghidra 12.2 | decompiling `ONWIN32.EXE` | [ghidra-sre.org](https://ghidra-sre.org/) | Ghidra at `~/.local/bin/ghidra/ghidra_12.2_PUBLIC` (or `GHIDRA_INSTALL_DIR`). `mise run ghidra:gui` opens it with our names applied ([`port/GHIDRA_GUI.md`](port/GHIDRA_GUI.md)). [`../tools/analysis/ghidra/README.md`](../tools/analysis/ghidra/README.md). |
+| Ghidra 12.2 | decompiling `ONWIN32.EXE` | [ghidra-sre.org](https://ghidra-sre.org/) | Ghidra at `~/.local/bin/ghidra/ghidra_12.2_PUBLIC` (or `GHIDRA_INSTALL_DIR`). `mise run ghidra:import` builds the project with our names, `mise run ghidra:gui` opens it ([`port/GHIDRA_GUI.md`](port/GHIDRA_GUI.md)). [`../tools/analysis/ghidra/README.md`](../tools/analysis/ghidra/README.md). |
 
 The importer checks its own tools before it writes anything and refuses with the list of what is missing
 (`tools/import/tool_check.py`). A tool that is there at another version than the pinned one gets a warning, not a refusal.
