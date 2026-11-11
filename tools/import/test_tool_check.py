@@ -118,4 +118,4 @@ def test_on_windows_each_missing_music_tool_has_its_own_hint(path_of_fakes, tmp_
     problems = tool_check.missing(["audio"], str(tmp_path / "no.sf2"))
     assert [p.split(" ")[0] for p in problems] == ["ffmpeg", "fluidsynth", "General"]
     assert "Gyan.FFmpeg" in problems[0] and "Gyan.FFmpeg" not in problems[1] + problems[2]
-    assert "FluidSynth" in problems[1] and "soundfonts" in problems[2]
+    assert "FluidSynth" in problems[1] and "fetch_soundfont.py" in problems[2]

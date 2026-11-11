@@ -76,10 +76,10 @@ the repository root.
    [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Tools\fluidsynth\bin", "User")
    ```
 
-   The General MIDI soundfont goes in the repository's `soundfonts\` folder (git-ignored), as `soundfonts\FluidR3_GM.sf2`: that is
-   where the importer looks for it on Windows. It is the file the `fluid-soundfont-gm` package installs on Linux
-   (`/usr/share/soundfonts/FluidR3_GM.sf2` on Fedora, `/usr/share/sounds/sf2/FluidR3_GM.sf2` on Debian and Ubuntu). Another
-   General MIDI soundfont works with `--soundfont`, and the music then sounds like that soundfont.
+   The General MIDI soundfont needs nothing from you: `mise run setup` (step 3) runs `tools/fetch_soundfont.py`, which downloads
+   Debian's `fluid-soundfont-gm` package (version and SHA-256 pinned, about 115 MB) and takes `FluidR3_GM.sf2` out of it into
+   `soundfonts\` (git-ignored), where the importer looks for it on Windows. Another General MIDI soundfont works with `--soundfont`,
+   and the music then sounds like that soundfont.
 
    Close PowerShell and open it again, so it sees the new `PATH`.
 
@@ -96,7 +96,7 @@ the repository root.
 
    ```powershell
    mise trust
-   mise run setup                                   # uv, Godot 4.7.2 and a JDK, then .venv and the godot-sandbox extension
+   mise run setup                                   # uv, Godot 4.7.2 and a JDK, then .venv, the godot-sandbox extension and the soundfont
    $env:NEP_ISO = "C:\path\to\your\copy.iso"        # or: Copy-Item C:\path\to\your\copy.iso NEPTUNE.ISO
    uv run tools/import/source_files.py              # "your copy is the reference release (31 files)"
    mise run legacy:checktools                       # names anything missing and how to get it
@@ -185,7 +185,7 @@ version is yours to find.
 | Godot AI (editor plugin and its MCP server) | optional: an AI assistant working in the open editor | in the repository (`godot/addons/godot_ai`); the server comes through `uv` | Quick start above, "For AI coding assistants". [github.com/hi-godot/godot-ai](https://github.com/hi-godot/godot-ai). |
 | `ffmpeg` with the libvorbis encoder | the importer's `audio` step; the dev pack's `audio` stage | `sudo dnf install ffmpeg-free`; Windows: `winget install --id Gyan.FFmpeg -e` | RPM Fusion's `ffmpeg` works too. |
 | `fluidsynth` | the importer's `audio` step (MIDI to WAV); the Proton tasks' MIDI | `sudo dnf install fluidsynth`; Windows: the `win10-x64` zip of a [release](https://github.com/FluidSynth/fluidsynth/releases), its `bin` on the `PATH` | |
-| A General MIDI soundfont | the importer's `audio` step | `sudo dnf install fluid-soundfont-common fluid-soundfont-gm`; Windows: that package's `FluidR3_GM.sf2` copied to `soundfonts\` | Installs `/usr/share/soundfonts/FluidR3_GM.sf2`, the importer's default on Linux; on Windows the default is `soundfonts\FluidR3_GM.sf2`. `--soundfont` names another. |
+| A General MIDI soundfont | the importer's `audio` step | `sudo dnf install fluid-soundfont-common fluid-soundfont-gm`; Windows: `uv run tools/fetch_soundfont.py` (`mise run setup` runs it) | Installs `/usr/share/soundfonts/FluidR3_GM.sf2`, the importer's default on Linux; on Windows the default is `soundfonts\FluidR3_GM.sf2`. `--soundfont` names another. |
 | `soundfonts/opl.sf2` | optional: the AdLib set of songs | your own copy (135 MB) | Not in the repository, git-ignored. Without it the AdLib set sounds like General MIDI. See [`play/LEGACY.md`](play/LEGACY.md), "Soundfonts". |
 | The speech engine (faster-whisper, CTranslate2) and its model | the importer's `transcripts` step | `uv sync` | Pinned versions. The model (about 480 MB) is downloaded on first use. |
 | Piper text-to-speech | regenerating the dev pack's audio | `uv run --group dev-pack ...` | Not installed by default. Its voice (63 MB) goes to `~/.cache/neptune-dev-pack/` on first use. [`../tools/dev_pack/README.md`](../tools/dev_pack/README.md). |
