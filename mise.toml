@@ -27,15 +27,18 @@ run = "uv run tools/fetch_sandbox.py"
 [tasks."godot:import"]
 description = "Godot imports the project's assets: once in a fresh checkout, and after the importer or new assets"
 run = "tools/godot.sh --headless --path godot --import"
+run_windows = "uv run tools/godot.py --headless --path godot --import"
 
 [tasks."godot:editor"]
 description = "Open the project in the Godot editor"
 run = "tools/godot.sh --path godot -e"
+run_windows = "uv run tools/godot.py --path godot -e"
 
 [tasks."godot:play"]
 description = "Play a pack by its id (dev, legacy, any other): mise run godot:play <id>"
 usage = 'arg "<pack>"'
 run = 'tools/godot.sh --path godot -- --pack=${usage_pack}'
+run_windows = 'uv run tools/godot.py --path godot -- --pack=%usage_pack%'
 
 [tasks."godot:pack"]
 description = "Write <id>.larissa, a pack file of the complete pack <id> (dev, legacy, a copy of dev), into the current directory or --out: mise run godot:pack <id> [--out <dir>] [--version <v>] [--no-reach]"
@@ -52,6 +55,7 @@ case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
 mkdir -p "$out"
 tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --export-pack=${usage_pack} --archive "--out=$out" ${usage_version:+--version=$usage_version} ${usage_no_reach:+--no-reach}
 '''
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."pack:archive"]
 description = "Write <id>.larissa, the pack file of a pack folder of yours (checked first), into the current directory or --out; the pack it is laid over (its base) must be found: mise run pack:archive <folder> [--out <dir>]"
@@ -68,6 +72,7 @@ case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
 mkdir -p "$out"
 tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- "--archive-folder=$folder" "--out=$out" --no-reach
 '''
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."pack:install"]
 description = "Install a pack (a folder, or a <id>.larissa) into the game's user folder, so that --pack=<id> finds it: mise run pack:install <folder-or-file>"
@@ -78,6 +83,7 @@ pack="${usage_pack}"
 case "$pack" in /*) ;; *) pack="{{cwd}}/$pack" ;; esac
 tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- "--install=$pack"
 '''
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."examples:pack"]
 description = "pack:archive for the example pack examples/packs/<example> (modern): mise run examples:pack <example> [--out <dir>]"
@@ -91,11 +97,13 @@ out="${usage_out:-{{cwd}}}"
 case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
 mise run pack:archive "{{config_root}}/examples/packs/${usage_example}" --out "$out"
 '''
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."examples:install"]
 description = "pack:install for the example pack examples/packs/<example> (modern): mise run examples:install <example>"
 usage = 'arg "<example>"'
 run = 'mise run pack:install "{{config_root}}/examples/packs/${usage_example}"'
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."skin:templates"]
 description = "Write the art templates of a skin (one flat-colour PNG per picture a skin may replace, with its key and size on it) into the folder skin_templates of the current directory or --out; --pack legacy gives the original's sizes: mise run skin:templates [--out <dir>] [--pack <id>]"
@@ -110,14 +118,17 @@ case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
 mkdir -p "$out"
 tools/godot.sh --headless --path godot res://src/skins/skin_templates_tool.tscn -- "--out=$out" ${usage_pack:+--pack=$usage_pack}
 '''
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."test:engine"]
 description = "The engine's gdUnit4 tests, on the dev pack"
 run = "tools/run_tests.sh engine"
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."test:legacy"]
 description = "The gdUnit4 tests of the original game, on the legacy pack (they pass, saying so, when there is no legacy pack)"
 run = "tools/run_tests.sh legacy"
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."lint:tools"]
 description = "Lint and type-check the Python tools (ruff, pyright; pyright installs the dev-pack group so it sees every import)"
@@ -158,6 +169,7 @@ mise run godot:pack legacy --no-reach --out "$out"
 tools/godot.sh --headless --path godot --export-release "Linux" "$out/operation-larissa.x86_64"
 echo "the game is $out/operation-larissa.x86_64, legacy.larissa beside it: mise run release:play"
 '''
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."release:build_web"]
 description = "Export the game (Web, release) into build/web with legacy.larissa beside index.html (the legacy pack must be built: mise run legacy:import); fetches the templates first when missing"
@@ -173,6 +185,7 @@ mise run godot:pack legacy --no-reach --out "$out"
 tools/godot.sh --headless --path godot --export-release "Web" "$out/index.html"
 echo "the page is $out/index.html, legacy.larissa beside it: serve the folder (uv run python -m http.server -d $out 8080) and open http://localhost:8080"
 '''
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."release:play"]
 description = "Play the game that release:build_linux exported (build/game, or --out <dir>)"
@@ -183,6 +196,7 @@ case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
 [ -x "$out/operation-larissa.x86_64" ] || { echo "no game in $out: mise run release:build_linux" >&2; exit 1; }
 exec "$out/operation-larissa.x86_64"
 '''
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 
 # ---- Reverse engineering: ONWIN32.EXE in Ghidra (docs/port/GHIDRA_GUI.md; Ghidra itself is installed by hand, docs/SETUP.md)
@@ -191,6 +205,7 @@ exec "$out/operation-larissa.x86_64"
 description = "Open the Ghidra project in the GUI as it is (ghidra:import builds it and brings in the JSON; ghidra:export writes GUI work back)"
 dir = "tools/analysis/ghidra"
 run = "./run.sh open_gui.py"
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."ghidra:import"]
 description = "Build or update the Ghidra project from the tracked JSON files (refuses while the project has GUI work not yet exported: run ghidra:export first)"
@@ -202,6 +217,7 @@ run = [
   "./run.sh apply_names.py",
   "./run.sh apply_annotations.py",
 ]
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."ghidra:export"]
 description = "Write the names and annotations made in the Ghidra GUI into the tracked JSON files (save and close Ghidra first)"
@@ -210,3 +226,4 @@ run = [
   "./run.sh export_names.py",
   "./run.sh export_annotations.py",
 ]
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
