@@ -66,40 +66,59 @@ start shows, and `test_plays_identically` / `test_skins_dont_change_the_game` co
 function and every duration; a mod changes only what they look like. 3D models and animation trees need real nodes, which a sandbox
 cannot grant: they stay what a project skin can do (`creatures`), and the docs say so.
 
+Each item below is one session's work: it ends with its tests, docs and `CODEMAP.md` lines, and is committed on its own. Items
+of a phase are done in order.
+
 **Art templates.** Each phase that lets a skin replace pictures ends with templates for them: for every picture key it opens up
 (K1: the HUD's bezel, gauges, lights and label boxes; later phases their own keys), a PNG of the original's exact size in one flat
 colour with the key and the size written on it, made by a committed tool (one line in `CODEMAP.md`; the sizes come from the layouts,
 not from the original's pixels, so the templates carry no original content and are committed in the example pack). The user draws the
-real art from them.
+real art from them. K1d builds the tool; each later phase's last item adds its keys to it.
 
-- **K1: skins as data.** A skin pack needs no script. New `skin` keys in the manifest (`ModSpec`, `PackCheck`, `ModSkin`):
-  - `render`: texture filter and the two snapping flags (`RenderSettings`).
-  - `hud_font` (and size, colour): a `.ttf` of the pack, loaded from bytes; packs accept `.ttf` (`Pack`, the data form).
-  - `pictures`: skin key to a PNG of the pack (`ui_picture/<name>`, the HUD's keys), worn only while this skin is (unlike a pack's
-    `pictures/`, which win under every skin).
-  - `layers`: a layer of the original presenter by name (`background`, `back_decos`, `walls`, `station`, `mid_decos`,
-    `collectibles`, `sub`, `foes`, `pellets`, `front_decos`, `anim_decos`, `bubbles`) to a checked shader (`ModShader`) and
-    uniforms; the engine sets `phase` (ticks plus the tick fraction, still while the clock is held) as `modern_presenter.gd` does.
-  - An `entry` script is optional for a skin with no `skin_frame`.
-  - `modern` becomes the example pack (`examples/packs/modern/`, its `.larissa` built by a mise task): the water shimmer on
-    `background`, Exo 2 on the HUD, linear filtering, and the HUD art from the templates. `res://skins/modern/` and
-    `test_skin_modern.gd` go; the example's tests take their place. A creator tutorial "Your first skin" in `create/` walks through it.
-  - Settle the export: `create/CONTENT.md` says the project's skins are not exported, and the export filter does not exclude
-    `skins/*`; make the two agree.
-- **K2: layers drawn by a script.** A script replaces chosen layers (`skin_layer(name, state, fraction, events)` returns a draw list
-  for that layer); the others stay the original's. The draw list may name a picture of the chain by skin key (`frame/sub_00`,
-  `background/<current>`): the game resolves it, the mod never holds it. The state gains the screen's background, decorations and
-  station (closing the Open item of a skin mod told no background). The skin mod that draws everything becomes the case "every layer".
-  Templates for any key a K2 example replaces.
-- **K3: the HUD as a layer.** The console's state as plain data (oxygen, ink, tanks, pieces, the labels' words, the lights), and a
-  script that draws the HUD or parts of it inside the layout's rectangles. Templates for the HUD's parts at their sizes.
-- **K4: problem screens.** A mod opts in to drawing original types (0 to 33) by number, the original diagram being the fallback;
-  presentation events for every type (start, step, verdict, damage, success, timeout), told after the rules decided; animation on the
-  engine's clock, whose lengths stay the original's whatever the mod draws; sounds by name. Templates for the problem screen's frame
-  and panels.
-- **K5: the menus' style.** A theme as data (fonts, colours, panel and button styles, pictures by key) for sign-in, the dialogs, the
-  message box and the problem screen's frame, applied by `ThemeBuilder`; the controls, their order and what they do stay the
-  engine's. Templates for each picture the theme may replace.
+**K1: skins as data.** A skin pack needs no script.
+- **K1a: render and pictures.** New `skin` keys in the manifest (`ModSpec`, `PackCheck`, `ModSkin`): `render` (texture filter and the
+  two snapping flags, `RenderSettings`) and `pictures` (skin key to a PNG of the pack: `ui_picture/<name>`, the HUD's keys), worn only
+  while this skin is (unlike a pack's `pictures/`, which win under every skin). An `entry` script is optional for a skin with no
+  `skin_frame`.
+- **K1b: the HUD font.** `hud_font` (and size, colour): a `.ttf` of the pack, loaded from bytes; packs accept `.ttf` (`Pack`, the data
+  form, `PackCheck`, the pack file).
+- **K1c: shaders on layers.** `layers`: a layer of the original presenter by name (`background`, `back_decos`, `walls`, `station`,
+  `mid_decos`, `collectibles`, `sub`, `foes`, `pellets`, `front_decos`, `anim_decos`, `bubbles`) to a checked shader (`ModShader`) and
+  uniforms; the engine sets `phase` (ticks plus the tick fraction, still while the clock is held) as `modern_presenter.gd` does.
+- **K1d: the template tool.** The art templates tool, with the HUD's keys (bezel, gauges, lights, label boxes) at their layout sizes.
+- **K1e: `modern` as the example pack.** `examples/packs/modern/`, its `.larissa` built by a mise task: the water shimmer on
+  `background`, Exo 2 on the HUD, linear filtering, and the HUD art from the templates. `res://skins/modern/` and
+  `test_skin_modern.gd` go; the example's tests take their place. Settle the export: `create/CONTENT.md` says the project's skins are
+  not exported, and the export filter does not exclude `skins/*`; make the two agree.
+- **K1f: "Your first skin".** A creator tutorial in `create/` that walks through the example pack.
+
+**K2: layers drawn by a script.**
+- **K2a: the screen in the state.** The state gains the screen's background, decorations and station (closing the Open item of a skin
+  mod told no background), for `skin_frame` as it is.
+- **K2b: pictures by key.** The draw list may name a picture of the chain by skin key (`frame/sub_00`, `background/<current>`): the
+  game resolves it, the mod never holds it; `ModDraw` checks the key.
+- **K2c: `skin_layer`.** A script replaces chosen layers (`skin_layer(name, state, fraction, events)` returns a draw list for that
+  layer); the others stay the original's. The skin mod that draws everything becomes the case "every layer". An example and templates
+  for any key it replaces.
+
+**K3: the HUD as a layer.**
+- **K3a: the console's state.** Oxygen, ink, tanks, pieces, the labels' words and the lights as plain data, built from the owner like
+  `SkinState`.
+- **K3b: a script draws the HUD.** The whole HUD or parts of it, inside the layout's rectangles; templates for the HUD's parts at their
+  sizes.
+
+**K4: problem screens.**
+- **K4a: original types by number.** A mod opts in to drawing original types (0 to 33) by number; the original diagram is the fallback
+  for the others and for a faulty mod.
+- **K4b: presentation events.** Start, step, verdict, damage, success, timeout, told after the rules decided, for every type. May take
+  two sessions by family of diagrams (`src/problems/diagrams/`); the event set is fixed in the first.
+- **K4c: animation and sounds.** Animation on the engine's clock, whose lengths stay the original's whatever the mod draws; sounds by
+  name. Templates for the problem screen's frame and panels.
+
+**K5: the menus' style.** The controls, their order and what they do stay the engine's.
+- **K5a: a theme as data.** Fonts, colours, panel and button styles and pictures by key, applied by `ThemeBuilder` to sign-in, the
+  dialogs and the message box.
+- **K5b: the problem screen's frame.** The theme reaches the problem screen's frame; templates for each picture the theme may replace.
 
 ## After this: the remake
 
