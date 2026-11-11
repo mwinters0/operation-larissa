@@ -57,7 +57,7 @@ def main():
     pal = pals[900]
     (OUT / 'palettes').mkdir(parents=True, exist_ok=True)
     for pid, p in pals.items():
-        with open(OUT / 'palettes' / f'pal_{pid}.json', 'w', newline='\n') as fh:
+        with open(OUT / 'palettes' / f'pal_{pid}.json', 'w') as fh:
             json.dump([list(c) for c in p], fh)
         with open(OUT / 'palettes' / f'pal_{pid}.pal', 'wb') as f:      # raw RGB 768 bytes
             f.writelines(bytes(c) for c in p)
@@ -99,9 +99,9 @@ def main():
                           note='frames in playback/index order; strip cells are top-left aligned in cell_w x cell_h')
     for k, v in manifest.items():
         v['bundle'] = next((b for b, a in anims.items() if v['id'] in a['frame_ids'] and v['dll'] == 'NEP256'), None)
-    with open(OUT / 'images' / 'manifest.json', 'w', newline='\n') as fh:
+    with open(OUT / 'images' / 'manifest.json', 'w') as fh:
         json.dump(manifest, fh, indent=1)
-    with open(OUT / 'images' / 'sprite_bundles.json', 'w', newline='\n') as fh:
+    with open(OUT / 'images' / 'sprite_bundles.json', 'w') as fh:
         json.dump(anims, fh, indent=1)
     print('images:', len(manifest), 'bundles:', len(anims))
 

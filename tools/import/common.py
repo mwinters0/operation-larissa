@@ -98,8 +98,7 @@ ORIGINAL_FIXTURES = GODOT / "tests" / "fixtures" / "original"
 LEGACY_AREA = Path(os.environ.get("NEP_LEGACY") or PROJECT_DATA / "legacy")
 VOICE_CORRECTIONS = LEGACY_AREA / "voice_corrections.json"
 # One output of each importer step, relative to the legacy pack's root (godot/tests/legacy/legacy_pack.gd WITNESSES is the same list; test_import.py checks that they agree): the game is
-# "there" when all of them are. `legacy_missing` also asks for the tables dumped to docs/data, which only the tools read. (The voice transcripts are
-# an optional step's: a test that reads them skips without them.)
+# "there" when all of them are. `legacy_missing` also asks for the tables dumped to docs/data and the voice transcripts, which only the tools read.
 LEGACY_WITNESSES = [
     "data/sectors/sector_00/sector_00.tres", "data/sectors/sector_31/sector_31.tres", "data/campaigns/voyager.tres",
     "data/campaigns/expert.tres", "data/zones.tres", "data/trigger_table.tres", "data/neptune_tileset.tres",
@@ -115,6 +114,7 @@ GENERATED_TABLES = ["sectors.json", "problem_records.json", "problem_tables_raw.
 def legacy_missing() -> list[str]:
     """The files of the legacy pack (and the importer's other outputs the tests read) that are not there; empty after a full import."""
     wanted = [LEGACY / name for name in LEGACY_WITNESSES] + [DOCS_DATA / name for name in GENERATED_TABLES]
+    wanted.append(EXTRACTED / "sounds" / "voice_transcripts.json")
     return [str(path.relative_to(ROOT) if path.is_relative_to(ROOT) else path) for path in wanted if not path.exists()]
 
 

@@ -62,7 +62,7 @@ def ensure_sidecar(path: Path) -> bool:
     """Writes the stub next to `path` unless it has a sidecar already. True if one was written."""
     if path.suffix not in IMPORTERS or sidecar(path).exists():
         return False
-    sidecar(path).write_text(stub_text(path), newline="\n")
+    sidecar(path).write_text(stub_text(path))
     return True
 
 

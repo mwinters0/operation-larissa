@@ -91,10 +91,7 @@ def test_every_cue_group_names_existing_clips():
 @pytest.mark.legacy
 def test_log_clips_say_the_entry_number_of_the_log_text():
     cues = common.load_json(common.DOCS_DATA / "audio_map.json")["voice"]
-    transcripts_file = common.EXTRACTED / "sounds" / "voice_transcripts.json"
-    if not transcripts_file.exists():
-        pytest.skip("no voice transcripts: the importer's optional step (import_all.py --transcripts)")
-    transcripts = common.load_json(transcripts_file)
+    transcripts = common.load_json(common.EXTRACTED / "sounds" / "voice_transcripts.json")
     texts = {t["id"]: t["text"] for t in common.load_json(common.EXTRACTED / "data" / "NEP_text.json")}
     for n, clips in enumerate(cues["logs"]):
         header = texts[10648 + n].split(":", 1)[0]                       # "ENTRY 1.01"

@@ -26,5 +26,5 @@ out = {
     "gfx_real": real,
 }
 dest = ROOT / "docs/data/problem_gfx_bundles.json"
-dest.write_text(json.dumps(out, indent=1) + "\n", newline="\n")
+dest.write_text(json.dumps(out, indent=1) + "\n")
 print("wrote", dest, real)

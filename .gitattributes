@@ -1,4 +1,0 @@
-# Text files keep LF line endings in every checkout, Windows included: the tools write LF and compare a file they write with the one on
-# disk byte for byte (tools/import/common.py write_bytes), and bash scripts do not run with CRLF. godot/.gitattributes says the same for
-# the Godot project.
-* text=auto eol=lf
