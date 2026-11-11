@@ -32,8 +32,8 @@ extends RefCounted
 ## Teaches: validating an untrusted description by naming each rule in one place, and clamping a request to a ceiling instead of refusing it (a limit is a request; the host decides).
 
 ## The version of the API a mod is given (`ModApi.build`). A mod that requires a higher one is refused. The version goes up when the API gains something a mod can ask for (2: the skin API, 3: the problem
-## screens, 4: the rule hooks, 5: the data skin, 6: a picture of the game by key in the draw list, 7: the skin's script draws chosen layers, 8: the console's parts are layers too, 9: a problem-screen mod draws the original's types by number), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
-const API_VERSION := 9
+## screens, 4: the rule hooks, 5: the data skin, 6: a picture of the game by key in the draw list, 7: the skin's script draws chosen layers, 8: the console's parts are layers too, 9: a problem-screen mod draws the original's types by number, 10: a problem-screen mod is told what happened), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
+const API_VERSION := 10
 ## The first version with the skin API: a skin mod requires it.
 const SKIN_API_VERSION := 2
 ## The first version with data skins: `render` and `pictures` in `skin`, and a skin with no `entry`.
@@ -46,6 +46,8 @@ const HUD_API_VERSION := 8
 const PROBLEM_API_VERSION := 3
 ## The first version with the original's problem types drawn by number: a mod whose `problems.types` lists one (below `Catalog.PROBLEM_TYPE_COUNT`) requires it.
 const ORIGINAL_PROBLEM_API_VERSION := 9
+## The first version with the presentation events of a problem (`ProblemEvents`): a mod that requires it defines `problem_frame(state, events)`, an older one `problem_frame(state)` and is told none.
+const PROBLEM_EVENTS_API_VERSION := 10
 ## The first version with rule hooks: a mod with `rules` requires it.
 const RULE_API_VERSION := 4
 ## The game's ceilings. A manifest can lower these, never raise them (the same numbers as the godot-sandbox example's loader).
@@ -534,6 +536,11 @@ func draws_frame() -> bool:
 	return is_skin and has_entry() and script_layers.is_empty()
 
 
+## Is the mod's `problem_frame` told what happened (`ProblemEvents`)? It is when the mod requires the API version that has them.
+func problem_events() -> bool:
+	return requires_api >= PROBLEM_EVENTS_API_VERSION
+
+
 ## Does the mod draw anything (a skin, or the screens of problem types)?
 func draws() -> bool:
 	return is_skin or has_problems
@@ -549,7 +556,7 @@ func functions() -> Dictionary[String, PackedStringArray]:
 		else:
 			found[ModSkin.LAYER_FUNCTION] = PackedStringArray(["name", "state", "fraction", "events"])
 	if has_problems:
-		found[ModProblems.FUNCTION] = PackedStringArray(["state"])
+		found[ModProblems.FUNCTION] = PackedStringArray(["state", "events"] if problem_events() else ["state"])
 	if not rule_answers.is_empty():
 		found[RuleHooks.FUNCTION_JUDGE] = PackedStringArray(["state"])
 	if not rule_instructions.is_empty():

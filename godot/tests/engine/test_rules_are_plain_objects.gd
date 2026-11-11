@@ -31,6 +31,7 @@ const RULE_FOLDERS: Array[String] = ["res://src/rules", "res://src/core"]
 const RULE_FILES: Array[String] = [
 	"res://src/ui/message_queue.gd",
 	"res://src/problems/problem_flow.gd",
+	"res://src/problems/problem_events.gd",
 	"res://src/problems/problem_factory.gd",
 	"res://src/problems/problem_session.gd",
 	"res://src/problems/problem_instance.gd",

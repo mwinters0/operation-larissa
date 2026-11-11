@@ -4,7 +4,7 @@ extends RefCounted
 ## `property_allowed` / `method_allowed` are the policies for the objects the game hands over. To give mods a new ability, add its key to `build` and its function below;
 ## to let a mod touch an object, grant the object (`_grant`) and allow the property or method in the policy. Nothing else in the game is reachable from a mod.
 ##
-## The API (`ModSpec.API_VERSION` 9; the first four keys are version 1, `skin` is version 2, `problems` is version 3, `rules` is version 4; version 5 adds to the manifest of a skin, version 6 to the draw list (`ModDraw`: a picture of the game by key) version 7 the layers a skin's script draws (`skin_layer`) and version 8 the console's parts among them, version 9 the original's problem types by number, not to this table):
+## The API (`ModSpec.API_VERSION` 10; the first four keys are version 1, `skin` is version 2, `problems` is version 3, `rules` is version 4; version 5 adds to the manifest of a skin, version 6 to the draw list (`ModDraw`: a picture of the game by key) version 7 the layers a skin's script draws (`skin_layer`) and version 8 the console's parts among them, version 9 the original's problem types by number and version 10 the events a problem screen is told, not to this table):
 ##
 ##     api_version  int       the version of this API
 ##     id           String    the mod's id (= its pack's id)
@@ -16,8 +16,8 @@ extends RefCounted
 ##                            in pixels), `max_commands`, `max_layers`, `max_uniforms`, `max_texts`, `max_text`, `min_font_size`, `max_font_size`, `shaders` (the paths its manifest lists). A skin gets nothing else: the state, the tick fraction and the
 ##                            events arrive as arguments of its own `skin_layer` (or `skin_frame`), and what it draws is a list it returns (`ModDraw`); no node, texture or material is granted.
 ##     problems     Dictionary   only for a mod whose manifest says `problems`: the facts a problem screen needs, plain values (docs/create/CONTENT.md, "Problem screens"): `types` (the problem types it draws),
-##                            `window` (the size in pixels), `max_commands`, `max_layers`, `max_uniforms`, `max_texts`, `max_text`, `min_font_size`, `max_font_size`, `shaders` (the paths its manifest lists).
-##                            A problem screen gets nothing else: the problem, the entry and the step arrive as the argument of its own `problem_frame`, and what it draws is a list it returns (`ModDraw`).
+##                            `window` (the size in pixels), `max_commands`, `max_layers`, `max_uniforms`, `max_texts`, `max_text`, `min_font_size`, `max_font_size`, `shaders` (the paths its manifest lists), `events` (the names of `ProblemEvents`).
+##                            A problem screen gets nothing else: the problem, the entry and the step arrive as the argument of its own `problem_frame`, and what happened as its `events` (API version 10), and what it draws is a list it returns (`ModDraw`).
 ##     rules        Dictionary   only for a mod whose manifest says `rules`: the facts a rule hook needs, plain values (docs/create/CONTENT.md, "Rule hooks"): `answers`, `instructions` and `sub` (what its manifest lists),
 ##                            `max_calls_per_tick`, `max_faults`, and the bounds of what a hook may answer: `max_memory_keys`, `max_memory_key`, `max_memory_text`, `max_memory_items`, `max_move`. A hook gets nothing else:
 ##                            its snapshot arrives as the argument of its own function (`HookState`), and what it answers is plain data the game validates and cuts (`RuleHooks`).
@@ -83,6 +83,7 @@ func _problem_facts(spec: ModSpec) -> Dictionary:
 		"max_commands": ModDraw.MAX_COMMANDS, "max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModDraw.MAX_UNIFORMS,
 		"max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT, "min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE,
 		"shaders": spec.problem_shaders.duplicate(),
+		"events": ProblemEvents.NAMES.map(func(each: StringName) -> String: return String(each)),
 	}
 
 

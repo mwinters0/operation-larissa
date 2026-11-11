@@ -10,7 +10,8 @@ extends RefCounted
 
 ## The family a mod's problem type names in its diagram data: `DiagramFactory` makes a `ModDiagram` for it.
 const FAMILY := "mod"
-## The function a problem-screen mod defines, called by `ModDiagram` when the problem, the entry or the step changes.
+## The function a problem-screen mod defines, called by `ModDiagram` when the problem, the entry or the step changes, and when something happened (`ProblemEvents`). From API version `ModSpec.PROBLEM_EVENTS_API_VERSION` it takes
+## `(state, events)`; a mod that requires less takes `(state)` and is told no events (`ModSpec.functions`).
 const FUNCTION := "problem_frame"
 
 ## The mod pack's id.
@@ -19,6 +20,8 @@ var pack_id: StringName = &""
 var types: Array[int] = []
 ## What the script may name: the pictures of `problems/` and the shaders of the manifest (`ModAssets`).
 var assets: ModAssets
+## Is the script told what happened (`ProblemEvents`)? It is when the mod requires the API version that has them: its `problem_frame` then takes the events as a second argument.
+var tells_events := false
 
 
 ## The problem screens of the mod pack `pack`, or null with every reason in `reasons`: a type the pack adds that it does not hold as data, that is not the type it is called, that names no `mod` diagram family or that has no
@@ -29,6 +32,7 @@ static func make(pack: Pack, reasons: Array[String]) -> ModProblems:
 	var screens := ModProblems.new()
 	screens.pack_id = pack.id
 	screens.types = pack.mod.problem_types.duplicate()
+	screens.tells_events = pack.mod.problem_events()
 	for type_id in screens.types:
 		if type_id < Catalog.PROBLEM_TYPE_COUNT:
 			check_original(pack, type_id, reasons)

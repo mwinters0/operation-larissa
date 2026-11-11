@@ -396,6 +396,11 @@ lock (`CombinationLock`, `LockProgram`, `LockWheel`) are its parts. A tick that 
 as the original's `DoMathProblem` returns, unless the problem cost the tank: then the tick ends there (`SimWorld.problem_resolved`;
 [DESIGN.md](../port/DESIGN.md) 3.10). `src/debug/problem_menu.tscn` plays any of the 34 types at any level.
 
+The flow also says what HAPPENED, once, in its `happened` signal (`ProblemEvents`: started, step, verdict, damage, success, timeout; the table is in
+[`../create/CONTENT.md`](../create/CONTENT.md), "Problem screens"): each is made after the flow decided it, a `step` is told when an input has been dealt
+with (`_settle_step`), and the screen passes each to the diagram (`DiagramBase.told`), where a `ModDiagram` keeps them for the script's next frame. No view infers
+a moment of its own; `tests/engine/test_problem_flow_machine.gd` pins the sequences without a scene.
+
 ## Campaigns in code
 
 A campaign is a `Campaign` resource (`src/resources/campaign.gd`): the ordered `sectors`, the `finales`, `default_edu_levels` per zone,

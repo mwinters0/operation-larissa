@@ -1,9 +1,23 @@
 # A small problem-screen mod: it draws the screen of problem type 40 ("fish in rows") from the problem it is told: a pool, a row of fish pictures of its own pack (problems/fish.png) for each row of the problem, what the player has
 # typed so far, and the prompt, through the game's font. It also opts in to draw two ORIGINAL types, 3 and 5, by number: for those it draws the pictures of the type's art bundle by their keys (the game's own pictures, under the skin in
-# use), the family the type's data names and what was typed; the other original types stay the original's. It keeps nothing but a count of the times it was asked (for the tests to ask): every picture is built from `state`, so a screen shown late is the screen shown early.
+# use), the family the type's data names and what was typed; the other original types stay the original's. Every picture is built from `state`, so a screen shown late is the screen shown early.
+# It also REACTS to what happened (the `events` of API version 10): a banner under the picture names the last event it was told and a bar changes colour with it (green for a right verdict, red for a wrong one, gold for a success,
+# grey for a time out, a damage bar per oxygen lost). That is memory of events, which a picture should not be built from; here it is what the tests look at. It keeps the count of the times it was asked and every event
+# it was told (for the tests to ask).
 var api : Dictionary = {}
 var asked := 0
 var last_step := ""
+var heard : Array = []
+var banner := ""
+var bar := Color(0.3, 0.3, 0.3)
+var damage := 0
+var calls_log : Array = []
+
+func events_heard() -> Array:
+	return heard.duplicate(true)
+
+func calls_log_sizes() -> Array:
+	return calls_log.duplicate()
 
 func mod_init(granted : Dictionary) -> void:
 	api = granted
@@ -11,11 +25,43 @@ func mod_init(granted : Dictionary) -> void:
 func times_asked() -> int:
 	return asked
 
-func problem_frame(state : Dictionary) -> Array:
+func react(events : Array) -> void:
+	calls_log.append(events.size())
+	for event in events:
+		heard.append(event)
+		banner = str(event[0])
+		match event[0]:
+			"started":
+				bar = Color(0.3, 0.3, 0.3)
+			"verdict":
+				bar = Color(0.1, 0.8, 0.2) if event[1] else Color(0.9, 0.1, 0.1)
+				banner += (" right" if event[1] else " wrong") + " try " + str(event[2])
+			"damage":
+				damage += event[1]
+			"success":
+				bar = Color(1.0, 0.8, 0.1)
+			"timeout":
+				bar = Color(0.5, 0.5, 0.5)
+			"step":
+				banner += " " + event[1]
+
+func reaction() -> Array:
+	var out := []
+	out.append(["rect", Rect2(16, 300, 200, 12), bar])
+	for i in damage:
+		out.append(["rect", Rect2(220 + i * 14, 300, 10, 12), Color.RED])
+	out.append(["text", "Heard: " + banner, Vector2(24, 320), 14, Color.WHITE])
+	return out
+
+func problem_frame(state : Dictionary, events : Array) -> Array:
 	asked += 1
 	last_step = state["step"]
-	if state["type"] != 40:
-		return original_type(state)
+	react(events)
+	var out := original_type(state) if state["type"] != 40 else own_type(state)
+	out.append_array(reaction())
+	return out
+
+func own_type(state : Dictionary) -> Array:
 	var out := []
 	out.append(["rect", Rect2(16, 16, 330, 230), Color(0.02, 0.10, 0.18)])
 	var rows : int = state["fields"][0]

@@ -215,8 +215,11 @@ static func _entry_script(live: Pack, report: PackReport) -> void:
 	else:
 		var needed := live.mod.functions()
 		for function in needed:
-			if RegEx.create_from_string("(?m)^func\\s+%s\\s*\\(" % function).search(source) == null:
+			var found := RegEx.create_from_string("(?m)^func\\s+%s\\s*\\(([^)]*)\\)" % function).search(source)
+			if found == null:
 				report.error("mod", "%s defines no %s: the manifest lists what is asked of it" % [entry, ModSpec.signature(function, needed[function])])
+			elif found.get_string(1).split(",", false).size() != needed[function].size():
+				report.error("mod", "%s defines %s with %d argument(s): the game calls it as %s (the \"requires_api\" of the manifest says which)" % [entry, function, found.get_string(1).split(",", false).size(), ModSpec.signature(function, needed[function])])
 
 
 static func _texts(live: Pack, report: PackReport) -> void:

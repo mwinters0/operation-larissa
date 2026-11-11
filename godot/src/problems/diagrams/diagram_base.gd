@@ -58,6 +58,8 @@ var type: ProblemType
 var problem: ProblemInstance
 var record: ProblemRecord
 var level: int = 0
+## The attempts so far (the flow's session), set by the screen right after the diagram is made: a picture reads it, never writes (`ModDiagram` tells a script which try the player is on). Null in a diagram made on its own.
+var session: ProblemSession
 var spec: Dictionary = {}
 var layout: ProblemScreenLayout
 var font: Font
@@ -93,6 +95,12 @@ func entry_changed(_text: String) -> void:
 
 ## The step of the problem changed. Ignored by a diagram whose picture does not depend on it; `ModDiagram` does not ignore it.
 func step_changed(_step: ProblemFlow.Step) -> void:
+	pass
+
+
+## Something happened on the screen (`ProblemEvents`: started, step, verdict, damage, success, timeout), told by the screen after the flow decided it, in the order it happened. The one place a diagram hears them; no family needs one for its
+## own picture (the build-up and the replay start from the flow's steps, with the lengths of data), `ModDiagram` hands them to its script.
+func told(_event: Array) -> void:
 	pass
 
 

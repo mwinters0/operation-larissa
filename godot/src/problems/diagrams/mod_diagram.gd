@@ -6,6 +6,11 @@ extends DiagramBase
 ## what it was told changes (the entry the player has typed so far, the step), never per frame, and it decides nothing: the calculator or the answer box, `AnswerChecker`, `ProblemSession` and `ProblemFlow` are the game's,
 ## so the answer, the tries, the oxygen and every duration are what they are for any type whatever the script returns.
 ##
+## WHAT HAPPENED. The screen tells each presentation event (`ProblemEvents`: started, step, verdict, damage, success, timeout, decided by `ProblemFlow` before this node hears of it) to `told`. A script of the API version that has them is
+## handed the ones since its last call as the second argument of `problem_frame(state, events)`, on the FRAME AFTER they happened (`_process`), the newest `ProblemEvents.MAX_EVENTS`; the state it is given is as of that call. An event
+## of a call that faults, or that comes while no mod runs, is not told again; a script that is bound later is told what happens after it (the state, with the step, the entry and the try, is what it builds from). The plain diagram under
+## the layers hears the same events (`DiagramBase.told`).
+##
 ## THE PLAIN PICTURE. Under the mod's layers this node holds the diagram the type's data names, made by `DiagramFactory.plain` (the original's `SonarDiagram`, `PieDiagram` ... for an original type, the generic `items` of
 ## the diagram spec for a `mod` family): it is what shows when the mod is absent (the chain has no such mod, it was refused or unloaded), quarantined, or has not yet returned a good list, so the problem is always shown and
 ## always completes. A frame the script spoils (an error, a result that is not a list) leaves the last good one on. The plain diagram is also what plays the build-up and the replay after a right answer: the lengths, the
@@ -18,6 +23,8 @@ extends DiagramBase
 
 var _entry := ""
 var _step := ProblemFlow.Step.ANSWERING
+## The events since the script's last call (`ProblemEvents`), told on the next frame.
+var _events: Array = []
 ## The hash of the state the script was last asked about, its last good answer (null: none), and the nodes showing it.
 var _asked_hash := 0
 var _answer: Variant = null
@@ -67,6 +74,23 @@ func _schedule_success_replay() -> DiagramTimeline:
 	return DiagramTimeline.new()
 
 
+## Something happened (`ProblemEvents`): the plain diagram hears it, and a script that is told events hears it on the next frame.
+func told(event: Array) -> void:
+	if _plain != null:
+		_plain.told(event)
+	var screens := ModHost.problem_screen(type.id)
+	if screens == null or not screens.tells_events:
+		return
+	ProblemEvents.push(_events, event)
+	set_process(true)
+
+
+## The frame after an event: the script is asked (with the events), whatever it was last told.
+func _process(_delta: float) -> void:
+	set_process(false)
+	_refresh(true)
+
+
 ## The entry the player has typed so far changed (the calculator's display or the answer box's text).
 func entry_changed(text: String) -> void:
 	_entry = text
@@ -79,22 +103,33 @@ func step_changed(new_step: ProblemFlow.Step) -> void:
 	_refresh()
 
 
-## Asks the script again if what it is told is not what it was last told, and shows its answer; shows the plain picture when there is no script to ask.
-func _refresh() -> void:
+## Asks the script again if what it is told is not what it was last told, and shows its answer; shows the plain picture when there is no script to ask. The events wait for the frame after they happened: only `with_events` (that frame) hands them over.
+func _refresh(with_events := false) -> void:
 	var screens := ModHost.problem_screen(type.id)
 	var node := ModHost.mod(screens.pack_id) if screens != null else null
 	if node == null:
+		_events.clear()
 		_show_plain()
 		return
-	var state := ProblemState.build(problem, _entry, _step)
-	if state.hash() == _asked_hash:
+	var state := ProblemState.build(problem, _entry, _step, _attempt())
+	var due := with_events and not _events.is_empty()
+	if not due and state.hash() == _asked_hash:
 		return
 	_asked_hash = state.hash()
-	var answer := ModLoader.call_mod(node, ModProblems.FUNCTION, [state])
+	var told_events: Array = _events if with_events else []
+	var arguments: Array = [state, told_events] if screens.tells_events else [state]
+	if with_events:
+		_events = []
+	var answer := ModLoader.call_mod(node, ModProblems.FUNCTION, arguments)
 	if not answer["ok"]:                        # (a fault: the frame went wrong, the last one stays)
 		return
 	_answer = answer["value"]
 	_show_answer(screens)
+
+
+## The try the player is on (1, or 2 after a miss), from the attempts so far.
+func _attempt() -> int:
+	return 1 if session == null else mini(session.misses, 1) + 1
 
 
 ## The last good answer of the script, checked and resolved now (a picture by key is the one the skin in use shows), and shown; a list that is not one leaves what is on.

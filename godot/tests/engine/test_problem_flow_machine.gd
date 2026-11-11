@@ -7,10 +7,12 @@ extends GdUnitTestSuite
 
 var _flow: ProblemFlow
 var _events: Array
+var _told: Array[String]               ## the presentation events (`ProblemEvents`) the flow told, "name argument ..." each
 
 
 func before_test() -> void:
 	_events = []
+	_told = []
 	_flow = ProblemFlow.new()
 	_flow.rng.seed = 7
 	_flow.oxygen_sink = func(_delta: int) -> int:
@@ -23,6 +25,14 @@ func before_test() -> void:
 	_flow.input_changed.connect(func(enabled: bool) -> void: _events.append("input " + ("on" if enabled else "off")))
 	_flow.prompt_shown.connect(func() -> void: _events.append(&"prompt"))
 	_flow.go_on_changed.connect(func(shown: bool) -> void: _events.append("go on " + str(shown)))
+	_flow.happened.connect(func(event: Array) -> void: _told.append(" ".join(event.map(func(part: Variant) -> String: return str(part)))))
+
+
+## The events told since the last call.
+func _took() -> Array[String]:
+	var taken := _told.duplicate()
+	_told.clear()
+	return taken
 
 
 func _begin(type_id: int, level: int) -> ProblemInstance:
@@ -219,3 +229,115 @@ func test_a_lock_miss_costs_one_oxygen_and_says_whether_the_air_is_gone() -> voi
 	assert_bool(_flow.session.solved).is_false()
 	assert_bool(_flow.closed).is_true()
 	assert_object(problem).is_not_null()
+
+
+# --- the presentation events (`ProblemEvents`): told once, by the machine that decides, after it decided ----------------------------------
+
+func test_a_problem_opens_with_started_and_a_right_first_answer_is_a_verdict_then_the_success() -> void:
+	var problem := _begin(6, 2)
+	assert_array(_took()).is_equal(["started"])
+	_flow.submit_answer(problem.expected)
+	assert_array(_took()).is_equal(["verdict true 1", "success true", "step waiting"])
+	_flow.advance_ticks(ProblemFlow.message_ticks() - 1)
+	assert_array(_took()).is_empty()
+	_flow.advance_ticks(1)
+	assert_array(_took()).is_equal(["timeout"])                              # (the message ran out; the end is the same "waiting" step: not told again)
+
+
+func test_a_wrong_answer_is_a_verdict_and_the_oxygen_it_cost_and_a_step_passed_through_is_not_told() -> void:
+	var problem := _begin(6, 2)
+	_took()
+	_flow.submit_answer(_wrong_answer(problem))
+	assert_array(_took()).is_equal(["verdict false 1", "damage 1 false", "step waiting"])
+	_flow.press_continue()                                                    # Enter ends "Error!": the hint, the second try
+	assert_array(_took()).is_equal(["step answering"])
+	_flow.submit_answer(problem.expected)
+	assert_array(_took()).is_equal(["verdict true 2", "success true", "step waiting"])
+	_flow.press_continue()                                                    # through "answering" to the end: both are "waiting" to the script
+	assert_array(_took()).is_empty()
+
+
+func test_a_time_out_is_told_before_the_step_it_leads_to() -> void:
+	var problem := _begin(6, 2)
+	_flow.submit_answer(_wrong_answer(problem))
+	_took()
+	_flow.advance_ticks(ProblemFlow.message_ticks())
+	assert_array(_took()).is_equal(["timeout", "step answering"])
+
+
+func test_two_misses_end_in_the_solution_and_a_success_that_is_not_the_players() -> void:
+	var problem := _begin(6, 2)
+	_flow.submit_answer(_wrong_answer(problem))
+	_flow.press_continue()
+	_took()
+	_flow.submit_answer(_wrong_answer(problem))
+	assert_array(_took()).is_equal(["verdict false 2", "damage 1 false", "step waiting"])
+	while _flow.step != ProblemFlow.Step.SOLUTION:
+		_flow.advance_ticks(ProblemFlow.message_ticks())
+	assert_array(_took().filter(func(told: String) -> bool: return told != "timeout")).is_empty()      # (the time outs of "Error!" and of the note to the ship; the step stays "waiting")
+	_flow.press_continue()                                                    # Enter leaves the solution: the success text of a problem that was not solved
+	assert_array(_took()).is_equal(["success false"])
+
+
+func test_the_oxygen_that_runs_out_is_told_with_the_damage() -> void:
+	_flow.oxygen_sink = func(_delta: int) -> int: return OxygenModel.OUT_WITH_SPARE_TANKS
+	var problem := _begin(6, 2)
+	_took()
+	_flow.submit_answer(_wrong_answer(problem))
+	assert_array(_took()).is_equal(["verdict false 1", "damage 1 true", "step waiting"])
+
+
+func test_practice_tells_the_verdict_and_costs_no_damage() -> void:
+	_flow.practice = true
+	var problem := _begin(6, 2)
+	_took()
+	_flow.submit_answer(_wrong_answer(problem))
+	assert_array(_took()).is_equal(["verdict false 1", "step waiting"])
+	_flow.press_continue()
+	_took()
+	_flow.submit_answer(problem.expected)
+	assert_array(_took()).is_equal(["verdict true 2", "success true", "step waiting"])
+
+
+func test_an_entry_with_nothing_usable_is_no_verdict() -> void:
+	_begin(6, 2)
+	_took()
+	_flow.submit_answer(null)
+	assert_array(_took()).is_empty()
+
+
+func test_the_build_up_is_a_step_and_the_replay_is_told_with_the_success() -> void:
+	_flow.replay_ticks = func() -> int: return 20
+	var problem := _begin(6, 2)
+	_flow.start_intro(30)
+	assert_array(_took()).is_equal(["started", "step intro"])
+	_flow.advance_ticks(29)
+	assert_array(_took()).is_empty()
+	_flow.advance_ticks(1)
+	assert_array(_took()).is_equal(["step answering"])
+	_flow.submit_answer(problem.expected)
+	assert_array(_took()).is_equal(["verdict true 1", "success true", "step waiting"])      # (the replay is "waiting": it ends in the success text, still "waiting")
+	_flow.advance_ticks(20)
+	assert_array(_took()).is_empty()
+
+
+func test_the_hold_of_the_ballast_panel_is_waiting_and_its_answer_is_judged_after() -> void:
+	_begin(28, 0)
+	_took()
+	_flow.hold_ballast(0, 5)
+	assert_array(_took()).is_equal(["step waiting"])
+	_flow.advance_ticks(5)
+	assert_array(_took().slice(0, 2)).is_equal(["verdict false 1", "damage 1 false"])      # (the weights 0 are wrong)
+
+
+func test_the_events_are_plain_values_in_the_shape_of_the_sectors() -> void:
+	var seen: Array = []
+	_flow.happened.connect(func(event: Array) -> void: seen.append(event))
+	var problem := _begin(6, 2)
+	_flow.submit_answer(problem.expected)
+	for event: Array in seen:
+		assert_bool(ProblemEvents.NAMES.has(StringName(event[0]))).is_true()
+		assert_bool(event[0] is String).is_true()
+		for argument: Variant in event.slice(1):
+			assert_bool(argument is bool or argument is int or argument is String).is_true()
+	assert_array(seen[1]).is_equal(["verdict", true, 1])

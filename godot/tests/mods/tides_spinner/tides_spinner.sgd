@@ -4,7 +4,7 @@ var api : Dictionary = {}
 func mod_init(granted : Dictionary) -> void:
 	api = granted
 
-func problem_frame(state : Dictionary) -> Array:
+func problem_frame(state : Dictionary, events : Array) -> Array:
 	var n := 0
 	while true:
 		n += 1

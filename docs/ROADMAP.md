@@ -75,8 +75,6 @@ not from the original's pixels, so the templates carry no original content and a
 real art from them. The tool is `SkinTemplates` (`docs/create/SKIN_API.md` "Art templates"); the original's exact sizes are those of the legacy pack's layouts (`--pack=legacy` reads sizes only), the dev pack's pictures having sizes of their own; each later phase's last item adds the layouts that hold its keys to `SkinTemplates.SOURCES`.
 
 **K4: problem screens.**
-- **K4b: presentation events.** Start, step, verdict, damage, success, timeout, told after the rules decided, for every type. May take
-  two sessions by family of diagrams (`src/problems/diagrams/`); the event set is fixed in the first.
 - **K4c: animation and sounds.** Animation on the engine's clock, whose lengths stay the original's whatever the mod draws; sounds by
   name. Templates for the problem screen's frame and panels.
 

@@ -4,6 +4,6 @@ var api : Dictionary = {}
 func mod_init(granted : Dictionary) -> void:
 	api = granted
 
-func problem_frame(state : Dictionary) -> Array:
+func problem_frame(state : Dictionary, events : Array) -> Array:
 	api["no_such_function"].call("frame")
 	return []

@@ -4,19 +4,20 @@ extends RefCounted
 ## `build` is the one builder of the state a script gets (`problem_frame(state)`); like `SkinState` it makes the Dictionaries fresh per call and read-only (`ModLoader.freeze`), and it holds no object. The state is
 ## the problem's VALUES (the record's fields, the way the original's diagram code reads them: a ruler is drawn to the length it asks about), what the type's data says about its picture (the diagram family, its spec, the
 ## keys of its art, so that a mod can draw an original type from the same facts the original's diagram does) and the screen's state; it is not the judgement. The script is never told
-## whether an entry is right, how many tries are used, the oxygen, the hint or the solution: the game's checker (`AnswerChecker`, `ProblemSession`, `ProblemFlow`) is the only thing that knows, and nothing a script
-## returns reaches it.
+## whether an entry is right, the oxygen, the hint or the solution: the game's checker (`AnswerChecker`, `ProblemSession`, `ProblemFlow`) is the only thing that knows, and nothing a script
+## returns reaches it. It is told which TRY the player is on (`attempt`: the first, or the second after a miss, which the player sees) and, after the rules decided, what happened (`ProblemEvents`, the `events` argument of `problem_frame`): the
+## state is the truth and the events are changes, so a script bound in the middle of a problem builds the same picture from the state.
 ##
 ## Teaches: a read-only edge drawn by copying into the plainest form there is: values. And what NOT to put on it: the verdict.
 
 ## The window a problem screen is drawn in (pixels), the same as `DiagramBase.WINDOW_SIZE`.
 const WINDOW_SIZE := Vector2i(640, 400)
-## The steps a script is told apart: the diagram builds up (`intro`), an answer is awaited (`answering`), anything else is on screen (`waiting`: a message, the solution, a replay).
-const STEPS: Array[String] = ["intro", "answering", "waiting"]
+## The steps a script is told apart (`ProblemEvents.STEPS`): the diagram builds up (`intro`), an answer is awaited (`answering`), anything else is on screen (`waiting`: a message, the solution, a replay).
+const STEPS: Array[String] = ProblemEvents.STEPS
 
 
-## The state of `problem` with `entry` typed so far (what the calculator or the answer box shows) at `step`.
-static func build(problem: ProblemInstance, entry: String, step: ProblemFlow.Step) -> Dictionary:
+## The state of `problem` with `entry` typed so far (what the calculator or the answer box shows) at `step`, on try `attempt` (1 or 2).
+static func build(problem: ProblemInstance, entry: String, step: ProblemFlow.Step, attempt: int = 1) -> Dictionary:
 	var state := {
 		"type": problem.type.id,
 		"level": problem.level,
@@ -28,6 +29,7 @@ static func build(problem: ProblemInstance, entry: String, step: ProblemFlow.Ste
 		"art": art_keys(problem.type),
 		"entry": entry,
 		"step": step_name(step),
+		"attempt": clampi(attempt, 1, 2),
 		"window": Vector2(WINDOW_SIZE),
 	}
 	ModLoader.freeze(state)
@@ -44,10 +46,5 @@ static func art_keys(type: ProblemType) -> Array:
 
 ## The name of the step a script is told (one of `STEPS`).
 static func step_name(step: ProblemFlow.Step) -> String:
-	match step:
-		ProblemFlow.Step.INTRO:
-			return STEPS[0]
-		ProblemFlow.Step.ANSWERING:
-			return STEPS[1]
-	return STEPS[2]
+	return ProblemEvents.step_name(step)
 

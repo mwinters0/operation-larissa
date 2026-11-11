@@ -480,7 +480,7 @@ The worked example is `godot/tests/mods/tides/` (the type is built in `godot/tes
 
 ```
 pack.json     {"id": "tides", "title": "Tides", "version": "1.0", "base": "legacy",
-               "mod": {"entry": "tides.sgd", "requires_api": 9, "problems": {"types": [3, 5, 40], "shaders": ["problems/glow.gdshader"]}}}
+               "mod": {"entry": "tides.sgd", "requires_api": 10, "problems": {"types": [3, 5, 40], "shaders": ["problems/glow.gdshader"]}}}
 data/problems/problem_type_40.json   the type: texts, records, how an answer is judged; its diagram is {"family": "mod", "items": [...]}
 tides.sgd     the script
 problems/*.png, problems/*.gdshader   pictures and shaders (listed in the manifest) the screen may name
@@ -492,7 +492,7 @@ are answered through their own diagram, so no mod can list them. If several mods
 `pack_tool --check=<folder>` judges the manifest, the type files, the pictures, the shaders and the presence of `problem_frame`; a mod that fails is refused with the reason when the game loads it, and its type is then shown as its data describes it.
 
 ```
-func problem_frame(state : Dictionary) -> Array:
+func problem_frame(state : Dictionary, events : Array) -> Array:
 	var out := []
 	for row in state["fields"][0]:
 		for column in state["fields"][1]:
@@ -501,7 +501,7 @@ func problem_frame(state : Dictionary) -> Array:
 	return out
 ```
 
-`problem_frame` is called when the screen is shown and again only when what it is told changes (the player types a key, the step changes); it returns a draw list in window pixels (`window`, 640 x 400, clipped to it), the **same list** a skin returns, checked by the same code:
+`problem_frame` is called when the screen is shown, when what it is told changes (the player types a key, the step changes) and on the frame after something happened ("What happened"); it returns a draw list in window pixels (`window`, 640 x 400, clipped to it), the **same list** a skin returns, checked by the same code:
 [`SKIN_API.md`](SKIN_API.md), "The draw list" has the commands (`rect`, `line`, `picture`, `region`, `text`, `layer`), their caps and the shaders. A picture is a PNG of the folder `problems/` of the mod's own pack, or a picture of the game named by its skin key (`problem_art/log_scan_0`, `ui_picture/...`; `SKIN_API.md`, "Pictures by key"), which the game resolves under the skin in use (a mod that does needs `requires_api` 6). The calculator, the prompt and the message box are drawn by the game over the picture.
 The script runs under the mod's limits, and a mod that draws is held to at most 10 million instructions per call. Every mod runs under at least 1 million: a limit of 0 in a manifest is 1, so no mod runs uncounted.
 
@@ -517,10 +517,24 @@ The script runs under the mod's limits, and a mod that draws is held to at most 
 | `art` | the skin keys (`problem_art/pa_1843`) of the type's pictures in the order `diagram` numbers them (`pic`): a script names one to draw it; `""` for a file that has none |
 | `entry` | what the calculator or the answer box shows now (`"0"` before anything is typed) |
 | `step` | `intro` while the diagram builds up, `answering` while an answer is awaited, `waiting` while a message, the solution or the success text is up |
+| `attempt` | the try the player is on: 1, or 2 after a miss (the hint is up) |
 | `window` | the size of the window, 640 x 400 |
 
-The fields, `family`, `diagram` and `art` are the problem's and the type's data, the answer's field included (a ruler is drawn to the length it asks about). The script is **not** told whether an entry is right, the tries, the oxygen, the hint, the solution
-or the success text. `api["problems"]` has the plain facts: `types`, `window`, `max_commands`, `max_layers`, `max_uniforms`, `max_texts`, `max_text`, `min_font_size`, `max_font_size` and the manifest's `shaders`.
+The fields, `family`, `diagram` and `art` are the problem's and the type's data, the answer's field included (a ruler is drawn to the length it asks about). The script is **not** told whether an entry is right before the game has judged it, the oxygen, the hint, the solution
+or the success text. `api["problems"]` has the plain facts: `types`, `window`, `max_commands`, `max_layers`, `max_uniforms`, `max_texts`, `max_text`, `min_font_size`, `max_font_size`, the manifest's `shaders` and the names of the `events`.
+
+**What happened.** From `requires_api` 10 `problem_frame(state, events)` takes the events since its last call as a second argument; a mod that requires less defines `problem_frame(state)` and is told none. An event is `[name, arguments...]`, the shape of the sector's events ([`SKIN_API.md`](SKIN_API.md), "The events"), and is told **after the game decided it**: the engine's problem flow (`ProblemFlow`, the one emitter) says it, never the script's own reading of the screen, and nothing the script returns reaches the flow. Every type has the same set, the original's and a pack's:
+
+| Event | Arguments | When |
+| --- | --- | --- |
+| `started` | none | the problem opened; the first event |
+| `step` | `name` (`intro`, `answering`, `waiting`) | the step of the state changed to `name`; last of the events one input causes (an answer, a tick, Enter), so a step passed through on the way is not told |
+| `verdict` | `right`, `attempt` (1 or 2) | an answer was judged; an entry with nothing usable in it ("Type a number first.") is no answer |
+| `damage` | `amount` (1), `tank_lost` | a wrong answer cost oxygen, and `tank_lost` says it used up the air; after the `verdict`; not told in Math Practice, where wrong answers cost nothing |
+| `success` | `solved` | the success replay and text begin; `solved` is false for the success text that follows the worked solution of a second miss. Math Practice tells a right answer too |
+| `timeout` | none | a message ran out its time (146 ticks) with no Enter or click; the step it leads to follows |
+
+The events come **on the frame after they happened**, in the order they happened, as one list in one call (the newest 64 if more came); the state of that call is as of then. A call that faults, or events that come while no mod runs (the mod is quarantined, unloaded or absent), are not told again. Events are changes and the state is the truth: a script bound in the middle of a problem (its mod runs from then on) is told what happens after it, not what happened before, and builds the picture from the state (the step, the entry, the `attempt`), so a picture that is a function of the state is the same whenever the script began. A reaction, such as a flash for a wrong verdict, is the one thing a picture does from memory of events; it changes nothing the game does. The lock and the ballast panels hear the events as well, and no mod draws them. The worked example, `godot/tests/mods/tides/`, shows the last event it heard and a mark for each oxygen lost.
 
 **What the game does with the answer.** The draw list is checked command by command and drawn by the game (`ModDraw`, `ModLayer`); a command that is not exactly one of the list is dropped, so a script cannot draw anything but pictures of its own pack, rectangles, lines and text in the game's font. A frame the script spoils (an error, a result that is
 not a list) leaves the last good one on; before the first good one, and once the mod is quarantined (it faulted too often), unloaded or absent, the screen shows the plain picture of the type's data (for an original type, the original's diagram). The mod's picture does not animate, and the problem is as long as the game makes it: the build-up and the replay after a right answer of an original type run on their own lengths and with their own sounds whatever the mod draws. A picture named by key follows the skin in use, also when the skin changes in the middle of the problem.

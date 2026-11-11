@@ -27,6 +27,9 @@ extends RefCounted
 ## (`start_intro(ticks)`, `replay_ticks`); a pressed Done button of the ballast panel is held for the ticks in its data
 ## (`hold_ballast`). The view plays inside that time: it asks `presentation_elapsed()` where the step is and shows that.
 ## A replaced picture, a slower tween or another frame rate cannot make a step longer or shorter.
+##
+## WHO TELLS WHAT HAPPENED: this machine, once, in `happened` (`ProblemEvents`: started, step, verdict, damage, success, timeout), after it decided. The view passes each to its diagram; a diagram that a mod draws hands it to the script.
+## No diagram infers a moment from what it sees. `step` events are told when the flow has settled from one input (`_settle_step`), not at every `_set_step`, so a step passed through is not told.
 
 ## The step of the problem. INTRO: the diagram builds up, no prompt, keys discarded. ANSWERING: waiting for an answer.
 ## MESSAGE: a timed message. SOLUTION: the worked solution, until Enter or a click. REPLAY: the diagram replays the right
@@ -58,6 +61,8 @@ signal log_screen_requested(sector: int)
 signal intro_finished
 ## The problem is over (also when the air ran out); the session says how it went.
 signal finished(finished_session: ProblemSession)
+## Something happened that a view may show (`ProblemEvents`): `[name, arguments...]`, plain values, told after the rules decided it.
+signal happened(event: Array)
 
 const SFX_CORRECT := &"correct"
 const SFX_WRONG := &"wrong"
@@ -93,6 +98,7 @@ var replaying: bool = false
 var _ticks_left: int = 0                     # ticks left of the build-up, the replay or the hold
 var _elapsed: int = 0                        # ticks gone by in it (the view shows the diagram as of this tick)
 var _held_mask: int = 0                      # the weights chosen while the Done button is held
+var _told_step: String = ""                  # the step name (`ProblemEvents.step_name`) the last `step` event (or `started`) told
 
 var _message_ticks: int = 0                  # ticks left of the message on screen
 var _after_message: Callable                 # what happens when the message is over (time-out, Enter or click)
@@ -119,6 +125,8 @@ func begin(new_problem: ProblemInstance) -> void:
 	_after_message = Callable()
 	_set_step(Step.ANSWERING)
 	prompt_shown.emit()
+	_told_step = ProblemEvents.step_name(step)
+	_happen(ProblemEvents.STARTED)
 
 
 ## `DrawProblemDiagram` (0x424f3d) builds the picture up in front of the player (its own sounds and `DelayTicks`), and only
@@ -132,6 +140,7 @@ func start_intro(ticks: int) -> void:
 	_set_step(Step.INTRO)
 	if ticks <= 0:
 		animation_finished()
+	_settle_step()
 
 
 ## How many ticks of the build-up or the replay are over (the view shows the diagram as of this tick). It keeps counting for the
@@ -158,6 +167,7 @@ func animation_finished() -> void:
 	elif step == Step.REPLAY and replaying:                    # (once: only a replay that is playing ends, and only one time)
 		replaying = false
 		_after_replay()
+	_settle_step()
 
 
 # --- answers -------------------------------------------------------------------------------
@@ -177,14 +187,17 @@ func submit_answer(answer: Variant) -> void:
 			_on_wrong(false)
 		ProblemSession.Outcome.WRONG_SOLUTION:
 			_on_wrong(true)
+	_settle_step()
 
 
 ## Right answer (`DoMathProblem` (0x423629)): sound 0x20, then in the game the success text, in practice a phrase.
 func _on_right() -> void:
+	_happen(ProblemEvents.VERDICT, [true, session.misses + 1])
 	sfx_requested.emit(SFX_CORRECT)
 	reacted.emit(&"right")
 	input_changed.emit(false)
 	if practice:
+		_happen(ProblemEvents.SUCCESS, [true])
 		_show_message(CorrectPhrase.pick(rng), close)           # `ShowCorrectPhrase` (0x4235e5); no success text, no replay
 	else:
 		_show_success()
@@ -193,6 +206,7 @@ func _on_right() -> void:
 ## The text for a right answer, or after the solution of a second miss: `ShowSuccessMessage` (0x4272f1).
 ## The data canister has no success text of its own: its log screen takes over and reads its entry aloud.
 func _show_success() -> void:
+	_happen(ProblemEvents.SUCCESS, [session.solved])
 	input_changed.emit(false)
 	_after_message = Callable()
 	var ticks: int = replay_ticks.call()
@@ -225,6 +239,7 @@ func _after_replay() -> void:
 
 ## Wrong answer: sound 0x21 and -1 oxygen (not in practice), then "Error!" (`ShowWrongAnswerNotice(type, 0)` (0x426317)).
 func _on_wrong(second: bool) -> void:
+	_happen(ProblemEvents.VERDICT, [false, 2 if second else 1])
 	_lose_oxygen()
 	input_changed.emit(false)
 	_show_message(Catalog.text(STRING_ERROR), func() -> void: _after_error(second))
@@ -270,6 +285,7 @@ func _lose_oxygen() -> void:
 	var code: int = oxygen_sink.call(-1)
 	if code != OxygenModel.OK and session.oxygen_code == OxygenModel.OK:
 		session.oxygen_code = code
+	_happen(ProblemEvents.DAMAGE, [1, code != OxygenModel.OK])
 
 
 # --- the combination lock -------------------------------------------------------------------
@@ -306,6 +322,7 @@ func hold_ballast(mask: int, ticks: int) -> void:
 	_set_step(Step.HOLD)
 	if ticks <= 0:
 		_end_hold()
+	_settle_step()
 
 
 func _end_hold() -> void:
@@ -348,6 +365,7 @@ func advance_ticks(ticks: int) -> void:
 		Step.MESSAGE:
 			_message_ticks -= ticks
 			if _message_ticks <= 0:
+				_happen(ProblemEvents.TIMEOUT)
 				press_continue()
 		Step.INTRO, Step.REPLAY, Step.HOLD:
 			_elapsed += ticks
@@ -368,6 +386,7 @@ func press_continue() -> void:
 	_set_step(Step.ANSWERING)                                   # (the callback decides what comes next)
 	if then.is_valid():
 		then.call()
+	_settle_step()
 
 
 ## True while a result is on screen (a timed message or the worked solution) and not the next answer.
@@ -385,6 +404,7 @@ func close() -> void:
 		return
 	closed = true
 	_set_step(Step.OVER)
+	_settle_step()
 	finished.emit(session)
 
 
@@ -396,3 +416,16 @@ func abandon() -> void:
 func _set_step(new_step: Step) -> void:
 	step = new_step
 	step_changed.emit(new_step)
+
+
+## Tells `happened(step ...)` if the step the state tells is not the one last told: called when an input has been dealt with, so a step the flow only passed through is not told.
+func _settle_step() -> void:
+	var told := ProblemEvents.step_name(step)
+	if told == _told_step:
+		return
+	_told_step = told
+	_happen(ProblemEvents.STEP, [told])
+
+
+func _happen(event_name: StringName, args: Array = []) -> void:
+	happened.emit(ProblemEvents.make(event_name, args))

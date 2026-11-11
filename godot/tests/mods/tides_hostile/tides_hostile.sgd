@@ -5,7 +5,7 @@ var api : Dictionary = {}
 func mod_init(granted : Dictionary) -> void:
 	api = granted
 
-func problem_frame(state : Dictionary) -> Array:
+func problem_frame(state : Dictionary, events : Array) -> Array:
 	var out := []
 	out.append(["rect", Rect2(0, 0, 640, 400), Color.BLACK])
 	out.append(["text", "The answer is right", Vector2(10, 10), 17, Color.GREEN])

@@ -129,7 +129,8 @@ func test_a_problem_mod_is_given_the_problem_facts_and_other_mods_are_not() -> v
 	var api: Dictionary = ModApi.new(Mods.loader()).build("x", tides.pack)
 	assert_int(api["api_version"]).is_equal(ModSpec.API_VERSION)
 	assert_dict(api["problems"]).is_equal({"types": [TYPE] + ModProblemShelf.ORIGINALS, "window": Vector2(640, 400), "max_commands": ModDraw.MAX_COMMANDS, "max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModDraw.MAX_UNIFORMS,
-			"max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT, "min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE, "shaders": ["problems/glow.gdshader"]})
+			"max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT, "min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE, "shaders": ["problems/glow.gdshader"],
+			"events": ["started", "step", "verdict", "damage", "success", "timeout"]})
 	assert_bool(api.has("skin")).is_false()
 	for value: Variant in api["problems"].values():
 		assert_bool(value is Object).is_false()                                                      # (numbers and names: nothing to reach through)
@@ -321,11 +322,14 @@ func test_the_state_a_problem_mod_gets_is_plain_data_without_a_verdict() -> void
 	_mount(["tides"] as Array[String])
 	var problem := ProblemFactory.make(TYPE, 0, null, 0)
 	var state := ProblemState.build(problem, "12", ProblemFlow.Step.ANSWERING)
-	assert_array(state.keys()).contains_exactly_in_any_order(["type", "level", "title", "prompt", "fields", "family", "diagram", "art", "entry", "step", "window"])
+	assert_array(state.keys()).contains_exactly_in_any_order(["type", "level", "title", "prompt", "fields", "family", "diagram", "art", "entry", "step", "attempt", "window"])
 	assert_str(state["family"]).is_equal(ModProblems.FAMILY)
 	assert_int(state["type"]).is_equal(TYPE)
 	assert_str(state["entry"]).is_equal("12")
 	assert_str(state["step"]).is_equal("answering")
+	assert_int(state["attempt"]).is_equal(1)
+	assert_int(ProblemState.build(problem, "", ProblemFlow.Step.ANSWERING, 2)["attempt"]).is_equal(2)
+	assert_int(ProblemState.build(problem, "", ProblemFlow.Step.ANSWERING, 7)["attempt"]).is_equal(2)
 	assert_array(state["fields"].slice(0, 2)).is_equal([3, 4])
 	assert_dict(state["fields"][2]).is_equal({"text": "12", "value": 12.0, "fraction": false})
 	assert_bool(state.is_read_only() and (state["fields"] as Array).is_read_only() and (state["fields"][2] as Dictionary).is_read_only()).is_true()
@@ -336,7 +340,7 @@ func test_the_state_a_problem_mod_gets_is_plain_data_without_a_verdict() -> void
 		assert_bool(ProblemState.STEPS.has(ProblemState.step_name(flow_step))).is_true()
 	assert_str(ProblemState.step_name(ProblemFlow.Step.INTRO)).is_equal("intro")
 	assert_str(ProblemState.step_name(ProblemFlow.Step.MESSAGE)).is_equal("waiting")
-	for key: String in state:                                                                         # (no verdict, no tries, no oxygen, no hint or solution)
+	for key: String in state:                                                                         # (no verdict, no count of misses, no oxygen, no hint or solution)
 		assert_bool(["correct", "right", "wrong", "misses", "tries", "oxygen", "hint", "solution", "success", "expected"].has(key)).is_false()
 	var fractions := ProblemKit.type_of("exact", "cn", 1, [ProblemKit.flat([2, ProblemKit.fraction(0, 1, 4)])])
 	fractions.id = TYPE
@@ -450,7 +454,7 @@ func _scripts(dir: String) -> Array[String]:
 # --- the mod decides nothing ------------------------------------------------------------------------------------------------
 
 ## What happens when `answers` are given to problem `record` on a fresh screen: the step, the words, the oxygen after each, the sounds and the session.
-func _play(answers: Array, record: int = 0, type_id: int = TYPE) -> Array[String]:
+func _play(answers: Array, record: int = 0, type_id: int = TYPE) -> Array[String]:     # (a frame after each: what a mod is told is told then)
 	GameState.reset()
 	var screen: ProblemScreen = ProblemRunner.SCREEN_SCENE.instantiate()
 	add_child(screen)
@@ -480,6 +484,7 @@ func _play(answers: Array, record: int = 0, type_id: int = TYPE) -> Array[String
 				screen.press_continue()
 			"wait":
 				screen.advance_ticks(ProblemFlow.message_ticks())
+		await get_tree().process_frame
 		trace.append("%s: %s | %s | oxygen %d" % [answer, ProblemFlow.Step.keys()[screen.step()], screen.text_label.text.replace("\n", " / "), GameState.oxygen()])
 	trace.append("sounds %s, finished %s, clock held %s" % [sounds, done, GameClock.paused])
 	screen.free()
@@ -494,11 +499,11 @@ const PLAYS: Array = [
 ]
 
 
-func test_the_plays_of_a_problem_are_the_same_whichever_mod_draws_it_or_none() -> void:
+func test_the_plays_of_a_problem_are_the_same_whichever_mod_draws_it_or_none() -> void:       # (events told: `tides` hears them, the hostile one claims, the faulty one raises)
 	_plain()
 	var baseline: Array = []
 	for play: Array in PLAYS:
-		baseline.append(_play(play))
+		baseline.append(await _play(play))
 	assert_str("\n".join(baseline[0])).contains("solved true misses 0")
 	assert_str("\n".join(baseline[2])).contains("solved false misses 2")
 	ModProblemShelf.release(_shelves)
@@ -507,7 +512,7 @@ func test_the_plays_of_a_problem_are_the_same_whichever_mod_draws_it_or_none() -
 		var mod := ModHost.mod(String(_shelves.back().id))
 		assert_object(mod).override_failure_message("%s did not load: %s" % [name, ModHost.failure(String(_shelves.back().id))]).is_not_null()
 		for i in PLAYS.size():
-			assert_array(_play(PLAYS[i])).override_failure_message("%s changed the play %s" % [name, PLAYS[i]]).is_equal(baseline[i])
+			assert_array(await _play(PLAYS[i])).override_failure_message("%s changed the play %s" % [name, PLAYS[i]]).is_equal(baseline[i])
 		Mods.loader().forgive(String(_shelves.back().id))
 		ModProblemShelf.release(_shelves)
 
@@ -845,7 +850,7 @@ func test_the_plays_of_an_original_type_are_the_same_whichever_mod_draws_it_or_n
 	]
 	var baseline: Array = []
 	for play: Array in plays:
-		baseline.append(_play(play, 0, ModProblemShelf.ORIGINAL))
+		baseline.append(await _play(play, 0, ModProblemShelf.ORIGINAL))
 	assert_str("\n".join(baseline[0])).contains("solved true misses 0").contains("build-up 60 ticks")
 	assert_str("\n".join(baseline[0])).override_failure_message("the build-up's sounds are the original's").contains("sounds [")
 	assert_str("\n".join(baseline[2])).contains("solved false misses 2")
@@ -854,7 +859,7 @@ func test_the_plays_of_an_original_type_are_the_same_whichever_mod_draws_it_or_n
 		assert_object(ModHost.mod(String(_shelves.back().id))).override_failure_message("%s did not load: %s" % [name, ModHost.failure(String(_shelves.back().id))]).is_not_null()
 		assert_object(ModHost.problem_screen(ModProblemShelf.ORIGINAL)).override_failure_message("%s does not draw the type" % name).is_not_null()
 		for i in plays.size():
-			assert_array(_play(plays[i], 0, ModProblemShelf.ORIGINAL)).override_failure_message("%s changed the play %s" % [name, plays[i]]).is_equal(baseline[i])
+			assert_array(await _play(plays[i], 0, ModProblemShelf.ORIGINAL)).override_failure_message("%s changed the play %s" % [name, plays[i]]).is_equal(baseline[i])
 		Mods.loader().forgive(String(_shelves.back().id))
 		ModProblemShelf.release(_shelves)
 
@@ -931,11 +936,232 @@ func test_a_skin_changed_in_the_middle_of_a_problem_is_what_the_pictures_by_key_
 
 func test_the_manifest_form_and_the_docs_agree() -> void:
 	var doc := FileAccess.get_file_as_string("res://../docs/create/CONTENT.md")
-	for key in ["type", "level", "title", "prompt", "fields", "family", "diagram", "art", "entry", "step", "window"]:
+	for key in ["type", "level", "title", "prompt", "fields", "family", "diagram", "art", "entry", "step", "attempt", "window"]:
 		assert_bool(doc.contains("`%s`" % key)).override_failure_message("CONTENT.md does not mention the key `%s` of the state of a problem screen" % key).is_true()
-	for fact in ["types", "window", "max_commands", "max_texts", "max_text", "min_font_size", "max_font_size", "shaders"]:
+	for fact in ["types", "window", "max_commands", "max_texts", "max_text", "min_font_size", "max_font_size", "shaders", "events"]:
 		assert_bool(doc.contains("`%s`" % fact)).override_failure_message("CONTENT.md does not mention api[\"problems\"][\"%s\"]" % fact).is_true()
 	assert_bool(doc.contains("`%s`" % ModProblems.FUNCTION)).is_true()
 	assert_bool(doc.contains("`%s`" % ModProblems.FAMILY)).is_true()
+	for event_name in ProblemEvents.NAMES:
+		assert_bool(doc.contains("`%s`" % event_name)).override_failure_message("CONTENT.md does not name the event `%s`" % event_name).is_true()
 	for step in ProblemState.STEPS:
 		assert_bool(doc.contains("`%s`" % step)).override_failure_message("CONTENT.md does not name the step `%s`" % step).is_true()
+
+
+# --- what happened: the presentation events -----------------------------------------------------------------------------------
+
+## What the script of the running mod of `shelf` has been told so far, each event as "name argument ...".
+func _heard(shelf: PackShelf) -> Array[String]:
+	var heard: Array[String] = []
+	for event: Array in ModHost.mod(String(shelf.id)).call("events_heard"):
+		heard.append(" ".join(event.map(func(part: Variant) -> String: return str(part))))
+	return heard
+
+
+## How many events each call of the script that was told some carried.
+func _batches(shelf: PackShelf) -> Array:
+	return (ModHost.mod(String(shelf.id)).call("calls_log_sizes") as Array).filter(func(size: int) -> bool: return size > 0)
+
+
+func test_a_mod_is_told_what_happened_on_the_frame_after_with_the_state_as_of_then() -> void:
+	var shelf := _mount(["tides"] as Array[String])
+	var screen := _screen(0)
+	assert_array(_heard(shelf)).override_failure_message("nothing is told before the frame after").is_empty()
+	await get_tree().process_frame
+	assert_array(_heard(shelf)).is_equal(["started"])
+	screen.submit_answer(NumberValue.parse("12"))
+	assert_array(_heard(shelf)).override_failure_message("the verdict is decided now and told on the next frame").is_equal(["started"])
+	await get_tree().process_frame
+	assert_array(_heard(shelf)).is_equal(["started", "verdict true 1", "success true", "step waiting"])
+	assert_str(ModHost.mod(String(shelf.id)).get("last_step")).is_equal("waiting")                 # (the state it was given with them is as of then)
+	var lines := _lines(screen)
+	assert_int(_count(lines, "text Heard: step waiting")).override_failure_message("what it draws from them: %s" % [lines]).is_equal(1)
+	assert_bool(lines.any(func(line: String) -> bool: return line.begins_with("rect") and line.contains("(1.0, 0.8, 0.1, 1.0)"))).override_failure_message("the gold bar of a success: %s" % [lines]).is_true()
+	screen.advance_ticks(ProblemFlow.message_ticks())
+	await get_tree().process_frame
+	assert_array(_heard(shelf).slice(-1)).is_equal(["timeout"])
+	assert_array(_batches(shelf)).is_equal([1, 3, 1])                                                # (one call for the events of each frame)
+	screen.free()
+
+
+func test_a_wrong_answer_then_a_right_one_is_told_in_the_order_it_happened() -> void:
+	var shelf := _mount(["tides"] as Array[String])
+	var screen := _screen(0)
+	screen.submit_answer(NumberValue.parse("13"))
+	await get_tree().process_frame
+	var lines := _lines(screen)
+	assert_int(_count(lines, "text Heard: step waiting")).is_equal(1)
+	assert_int(lines.filter(func(line: String) -> bool: return line.contains("(1.0, 0.0, 0.0, 1.0)")).size()).override_failure_message("one red damage mark: %s" % [lines]).is_equal(1)
+	assert_int(lines.filter(func(line: String) -> bool: return line.contains("(0.9, 0.1, 0.1, 1.0)")).size()).override_failure_message("the red bar of a wrong verdict: %s" % [lines]).is_equal(1)
+	screen.press_continue()                                                                           # Enter ends "Error!": the hint and the second try
+	screen.submit_answer(NumberValue.parse("12"))
+	await get_tree().process_frame
+	screen.press_continue()
+	await get_tree().process_frame
+	assert_array(_heard(shelf)).is_equal(["started", "verdict false 1", "damage 1 false", "step waiting", "step answering", "verdict true 2", "success true", "step waiting"])
+	assert_array(_batches(shelf)).is_equal([4, 4])                                                 # (a call for the events of each frame: the first has the first answer and started, which no frame had yet taken)
+	assert_int(GameState.oxygen()).is_equal(GameState.tuning.max_oxygen - 1)
+	screen.free()
+
+
+func test_a_message_that_runs_out_its_time_is_a_timeout_before_the_step_it_leads_to() -> void:
+	var shelf := _mount(["tides"] as Array[String])
+	var screen := _screen(0)
+	screen.submit_answer(NumberValue.parse("13"))
+	screen.advance_ticks(ProblemFlow.message_ticks())
+	await get_tree().process_frame
+	assert_array(_heard(shelf)).is_equal(["started", "verdict false 1", "damage 1 false", "step waiting", "timeout", "step answering"])
+	screen.submit_answer(NumberValue.parse("13"))
+	while not screen.is_waiting_for_continue() or screen.step() == ProblemFlow.Step.MESSAGE:                # ("Error!", the note to the ship: each runs out its time)
+		screen.advance_ticks(ProblemFlow.message_ticks())
+	await get_tree().process_frame
+	assert_array(_heard(shelf).slice(6)).is_equal(["verdict false 2", "damage 1 false", "step waiting", "timeout", "timeout"])
+	screen.press_continue()                                                                           # Enter leaves the worked solution: the success text of a problem that was not solved
+	await get_tree().process_frame
+	assert_array(_heard(shelf).slice(-1)).is_equal(["success false"])
+	screen.free()
+
+
+func test_the_build_up_of_an_original_type_is_a_step_and_its_events_are_the_same_for_every_type() -> void:
+	var shelf := _mount(["tides"] as Array[String])
+	var screen := _original_screen()
+	var diagram := screen.diagram as ModDiagram
+	await get_tree().process_frame
+	assert_array(_heard(shelf)).is_equal(["started", "step intro"])
+	assert_int(String(ModHost.mod(String(shelf.id)).get("last_step")).length()).is_greater(0)
+	screen.advance_ticks(diagram.intro_length())
+	await get_tree().process_frame
+	assert_array(_heard(shelf)).is_equal(["started", "step intro", "step answering"])
+	screen.submit_answer(ProblemFactory.make(ModProblemShelf.ORIGINAL, 0, null, 0).expected)
+	await get_tree().process_frame
+	assert_array(_heard(shelf).slice(3)).is_equal(["verdict true 1", "success true", "step waiting"])
+	screen.free()
+
+
+func test_math_practice_is_told_the_verdict_and_no_damage() -> void:
+	var shelf := _mount(["tides"] as Array[String])
+	var screen: ProblemScreen = ProblemRunner.SCREEN_SCENE.instantiate()
+	screen.practice = true
+	add_child(screen)
+	screen.start(ProblemFactory.make(TYPE, 0, null, 0))
+	screen.submit_answer(NumberValue.parse("13"))
+	await get_tree().process_frame
+	assert_array(_heard(shelf)).is_equal(["started", "verdict false 1", "step waiting"])
+	assert_int(GameState.oxygen()).is_equal(GameState.tuning.max_oxygen)
+	screen.free()
+
+
+func test_the_state_tells_the_try_the_player_is_on_and_an_event_changes_nothing_of_it() -> void:
+	var shelf := _mount(["tides"] as Array[String])
+	var screen := _screen(0)
+	var mod := ModHost.mod(String(shelf.id))
+	screen.submit_answer(NumberValue.parse("13"))
+	screen.press_continue()
+	await get_tree().process_frame
+	var state := ProblemState.build(screen.diagram.problem, "", ProblemFlow.Step.ANSWERING, 2)
+	assert_int(state["attempt"]).is_equal(2)
+	assert_int((screen.diagram as ModDiagram)._attempt()).override_failure_message("the diagram reads the try from the attempts so far").is_equal(2)
+	assert_int(ModHost.mod(String(shelf.id)).call("times_asked")).is_greater(1)
+	assert_object(mod).is_not_null()
+	screen.free()
+
+
+func test_only_the_newest_events_are_told_when_many_come_between_two_frames() -> void:
+	var shelf := _mount(["tides"] as Array[String])
+	var screen := _screen(0)
+	var diagram := screen.diagram as ModDiagram
+	for i in ProblemEvents.MAX_EVENTS + 36:
+		diagram.told(ProblemEvents.make(ProblemEvents.TIMEOUT))
+	await get_tree().process_frame
+	assert_int(_batches(shelf).back()).is_equal(ProblemEvents.MAX_EVENTS)
+	screen.free()
+
+
+func test_a_skin_change_in_the_middle_of_a_problem_replays_no_event_and_the_next_ones_still_come() -> void:
+	var shelf := _mount(["tides"] as Array[String])
+	var screen := _screen(0)
+	await get_tree().process_frame
+	var before := _heard(shelf)
+	var skin := GameSkin.new()
+	skin.id = &"test_problem_events"
+	SkinChoice.select(skin)
+	await get_tree().process_frame
+	assert_array(_heard(shelf)).is_equal(before)
+	screen.submit_answer(NumberValue.parse("12"))
+	await get_tree().process_frame
+	assert_array(_heard(shelf).slice(before.size())).is_equal(["verdict true 1", "success true", "step waiting"])
+	screen.free()
+
+
+func test_a_mod_that_is_not_running_is_told_nothing_and_what_it_missed_is_not_told_later() -> void:
+	var shelf := _mount(["tides_faulty"] as Array[String])
+	var screen := _screen(0)
+	var diagram := screen.diagram as ModDiagram
+	for i in ModLoader.MAX_FAULTS + 5:
+		diagram.entry_changed(str(i))
+	Mods.loader().check_health()
+	assert_bool(ModHost.is_quarantined(String(shelf.id))).is_true()
+	screen.submit_answer(NumberValue.parse("12"))
+	await get_tree().process_frame
+	assert_bool(diagram._events.is_empty()).is_true()
+	Mods.loader().resume(String(shelf.id))
+	await get_tree().process_frame
+	assert_bool(diagram._events.is_empty()).override_failure_message("what happened while it did not run is not told when it runs again").is_true()
+	screen.free()
+	Mods.loader().forgive(String(shelf.id))
+
+
+func test_a_mod_of_the_api_before_the_events_is_called_with_the_state_alone_and_is_told_none() -> void:
+	var old := PackShelf.new()
+	_shelves.append(old)
+	old.add_mod_fixture("%s/tides" % ModProblemShelf.FIXTURES, {"requires_api": 9})
+	ModProblemShelf.add_files(old)
+	old.write_text("tides.sgd", "var api = {}\nvar asked = 0\nfunc mod_init(a):\n\tapi = a\nfunc times_asked():\n\treturn asked\nfunc problem_frame(state):\n\tasked += 1\n\treturn [[\"rect\", Rect2(0, 0, 10, 10), Color.RED]]\n")
+	old.mount()
+	Mods.sync()
+	assert_object(ModHost.mod(String(old.id))).override_failure_message("an older mod is refused: %s" % ModHost.failure(String(old.id))).is_not_null()
+	assert_bool(ModHost.problem_screen(TYPE).tells_events).is_false()
+	var screen := _screen(0)
+	screen.submit_answer(NumberValue.parse("12"))
+	await get_tree().process_frame
+	assert_int(_count(_lines(screen), "rect")).is_equal(1)
+	assert_int(ModHost.mod(String(old.id)).call("times_asked")).is_greater(1)                        # (asked as the step changed: with the state alone)
+	assert_array((screen.diagram as ModDiagram)._events).is_empty()
+	screen.free()
+	ModProblemShelf.release(_shelves)
+	var asked_for_events := _refused(ModProblemShelf.problem_type(), "var api = {}\nfunc mod_init(a):\n\tapi = a\nfunc problem_frame(state):\n\treturn []\n")
+	assert_str(ModHost.failure(String(asked_for_events.id))).contains("problem_frame(state, events)")
+	assert_bool(_report(asked_for_events).errors().any(func(f: PackReport.Finding) -> bool: return f.message.contains("problem_frame(state, events)"))).is_true()
+
+
+## A diagram that writes down what it was told (`DiagramBase.told`).
+class SpyDiagram:
+	extends DiagramBase
+	var heard: Array[String] = []
+
+	func told(event: Array) -> void:
+		heard.append(" ".join(event.map(func(part: Variant) -> String: return str(part))))
+
+
+func test_every_diagram_hears_what_the_flow_decided_through_the_screen_and_the_plain_diagram_under_a_mod_does_too() -> void:
+	var screen: ProblemScreen = ProblemRunner.SCREEN_SCENE.instantiate()
+	add_child(screen)
+	var problem := ProblemFactory.make(6, 2, null, 0)
+	screen.start(problem)
+	var spy := SpyDiagram.new()
+	screen.diagram.queue_free()
+	screen.diagram = spy
+	screen.add_child(spy)
+	screen.submit_answer(NumberValue.parse(str(problem.expected.to_int() + 1000)))
+	assert_array(spy.heard).is_equal(["verdict false 1", "damage 1 false", "step waiting"])
+	screen.free()
+	_mount(["tides"] as Array[String])
+	var drawn := _screen(0)
+	var plain := SpyDiagram.new()
+	var diagram := drawn.diagram as ModDiagram
+	diagram._plain.queue_free()
+	diagram._plain = plain
+	diagram.add_child(plain)
+	drawn.submit_answer(NumberValue.parse("12"))
+	assert_array(plain.heard).is_equal(["verdict true 1", "success true", "step waiting"])
+	drawn.free()
