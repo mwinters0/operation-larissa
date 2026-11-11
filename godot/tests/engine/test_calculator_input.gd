@@ -32,15 +32,16 @@ func test_a_pressed_key_is_lit_for_twelve_ticks() -> void:
 	var calc := _calculator()
 	assert_float(calc._flash_timer.wait_time).is_equal_approx(12.0 / 73.0, 0.0001)
 	var button := calc.button_for("7")
-	assert_bool(button.has_theme_stylebox_override("normal")).is_false()
+	assert_bool(calc.looks_lit("7")).is_false()
 	calc.input_key("7")
 	assert_bool(calc.is_flashing()).is_true()
-	assert_bool(button.has_theme_stylebox_override("normal")).is_true()           # the "pressed" look, also under the mouse
-	assert_bool(button.has_theme_stylebox_override("hover")).is_true()
+	assert_bool(calc.looks_lit("7")).is_true()                                  # the "pressed" look, also under the mouse (`CalcKeyLit`)
+	assert_object(button.get_theme_stylebox("normal")).is_same(button.get_theme_stylebox("pressed"))
+	assert_object(button.get_theme_stylebox("hover")).is_same(button.get_theme_stylebox("pressed"))
 	assert_str(calc.display.text).is_equal("7")                                  # the display answers at once
 	calc.end_flash()
 	assert_bool(calc.is_flashing()).is_false()
-	assert_bool(button.has_theme_stylebox_override("normal")).is_false()
+	assert_bool(calc.looks_lit("7")).is_false()
 
 
 func test_the_flash_ends_by_itself_after_its_time() -> void:
@@ -104,7 +105,7 @@ func test_the_keyboard_goes_through_the_same_flash() -> void:
 	key.pressed = true
 	calc._unhandled_key_input(key)
 	assert_bool(calc.is_flashing()).is_true()
-	assert_bool(calc.button_for("4").has_theme_stylebox_override("normal")).is_true()
+	assert_bool(calc.looks_lit("4")).is_true()
 
 
 func test_space_is_the_fraction_key() -> void:
@@ -184,7 +185,7 @@ func test_after_a_result_a_command_key_acts_when_its_flash_is_over() -> void:
 	_sfx.clear()
 	calc.input_key("*")
 	assert_array(_sfx).is_equal([&"calc_backspace"])                          # the click is immediate ...
-	assert_bool(calc.button_for("*").has_theme_stylebox_override("normal")).is_true()
+	assert_bool(calc.looks_lit("*")).is_true()
 	assert_str(calc.model.pending_operator()).is_empty()         # ... the operator is not set yet
 	calc.end_flash()
 	assert_str(calc.model.pending_operator()).is_equal("*")

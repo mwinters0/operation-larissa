@@ -14,9 +14,8 @@ enum Kind { PICTURE, TEXT, RECT }
 enum Align { LEFT, CENTER, RIGHT, MIDDLE }
 
 var kind: Kind = Kind.PICTURE
-## PICTURE: index of the picture in the type's art bundle, and its texture.
+## PICTURE: index of the picture in the type's art bundle. The texture is not kept: the diagram looks it up each time it draws (`DiagramBase.texture_of`), so the picture is the one of the skin in use.
 var pic: int = -1
-var texture: Texture2D
 ## Top-left corner (PICTURE, RECT) or the top of the text line (TEXT).
 var position: Vector2 = Vector2.ZERO
 ## PICTURE: mirrored left to right (the original's "flip" flag).

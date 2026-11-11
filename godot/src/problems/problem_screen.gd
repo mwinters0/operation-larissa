@@ -66,8 +66,6 @@ var log_screen: LogScreen
 var rng := RandomNumberGenerator.new()
 
 var _flow := ProblemFlow.new()                ## the rules of this problem: what happens when
-var _early_events: Array = []                  ## the events of `begin` and what follows until the diagram is made (`start`): the diagram of this problem hears them first
-var _diagram_hears := false                    ## is `diagram` the one of the problem being shown? (else an event waits in `_early_events`)
 var _ticks := TickMeter.new()                  ## real time -> the original's ticks, for the steps that wait
 var _holding_clock: bool = false
 var _holding_losses: bool = false              ## this screen's one hold on `GameState.hold_losses` (a count there: a second `start` must not add one)
@@ -132,6 +130,7 @@ func _connect_flow() -> void:
 	_flow.intro_finished.connect(func() -> void: intro_finished.emit())
 	_flow.finished.connect(_on_flow_finished)
 	_flow.happened.connect(_on_event)
+	_flow.presented.connect(_follow_flow)
 
 
 ## The skin in use is another: the frame is dressed again (`_dress`). The calculator and the "Ans:" panel hear of it themselves.
@@ -186,14 +185,15 @@ func start(problem: ProblemInstance) -> void:
 		content.visible = true
 	_flow.practice = practice
 	_flow.answer_judge = Callable() if practice else _judge       # (Math Practice is of no campaign: the type's data judges, whatever mod an earlier game had)
-	_early_events.clear()
-	_diagram_hears = false                            # (the flow begins before the diagram is made: its first events wait for it)
+	_show_diagram(problem)                            # (the diagram is made before the flow begins: it hears every event of this problem, the first too)
 	_flow.begin(problem)                              # the prompt is written by the flow's event
+	diagram.session = _flow.session
+	if diagram is LockDiagram:
+		_start_lock(problem, diagram as LockDiagram)
 	_hold_clock()
 	_hold_losses()
 	title_label.text = problem.title
 	feedback.text = ""
-	_show_diagram(problem)
 	_show_input(problem)
 	animations.play(&"open")
 	if lock == null and diagram.has_intro():
@@ -232,18 +232,10 @@ func _show_diagram(problem: ProblemInstance) -> void:
 	diagram_host.add_child(diagram)
 	diagram.sfx_requested.connect(func(sfx: StringName) -> void: sfx_requested.emit(sfx))   # build-up and replay sounds, clicks, the radar ping
 	diagram.sfx_stop_requested.connect(Audio.stop_sfx)                                      # StopCommonSoundEffect
-	diagram.step_changed(_flow.step)
-	diagram.session = _flow.session
-	_diagram_hears = true
-	for event: Array in _early_events:                 # (`started` and whatever came before the picture: this problem's diagram is told from the start)
-		diagram.told(event)
-	_early_events.clear()
 	diagram.animation_finished.connect(_flow.animation_finished)    # a skipped animation ends the step at once (debug screenshots, tests)
 	ballast = diagram as BallastPanelDiagram
 	if ballast != null:
 		ballast.done_pressed.connect(_flow.hold_ballast)         # the flow holds the pressed Done button for the ticks in the panel's data
-	elif diagram is LockDiagram:
-		_start_lock(problem, diagram as LockDiagram)
 
 
 ## Picks the right way to answer: weights, the calculator, or a plain typed number.
@@ -312,10 +304,8 @@ func _show_go_on(shown: bool) -> void:
 
 ## The flow says something happened (`ProblemEvents`): the diagram of the problem is told, in the order it happened.
 func _on_event(event: Array) -> void:
-	if _diagram_hears and diagram != null:
+	if diagram != null:
 		diagram.told(event)
-	else:
-		_early_events.append(event)
 
 
 ## What the calculator or the answer box shows changed: the diagram is told (`DiagramBase.entry_changed`).
@@ -385,13 +375,10 @@ func _write_prompt(problem: ProblemInstance) -> void:
 ## Lets `ticks` 73 Hz ticks pass (a test can play a whole problem by calling this). The flow counts them; the diagram is shown as of
 ## the flow's tick.
 func advance_ticks(ticks: int) -> void:
-	var presenting := _flow.is_presenting()
-	_flow.advance_ticks(ticks)
-	if presenting:
-		_follow_flow()
+	_flow.advance_ticks(ticks)                      # (it tells `presented` when the build-up or the replay moved: `_follow_flow`)
 
 
-## The diagram plays INSIDE the time the flow gives it: it shows the picture of the flow's tick (and the sounds that fall due).
+## The diagram plays INSIDE the time the flow gives it: it shows the picture of the flow's tick (and the sounds that fall due). The flow tells it (`ProblemFlow.presented`) before it ends the step that tick ends, so the last picture and its sounds come before the step that follows.
 func _follow_flow() -> void:
 	if diagram != null and diagram.is_playing():
 		diagram.animate_to(_flow.presentation_elapsed())

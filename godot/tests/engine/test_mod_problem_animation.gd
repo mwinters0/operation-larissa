@@ -116,6 +116,19 @@ func test_the_state_tells_where_the_build_up_is_and_the_mod_is_asked_as_each_tic
 	screen.free()
 
 
+func test_the_last_tick_of_a_build_up_is_told_before_the_step_that_ends_it() -> void:
+	var tides := _mount("tides")
+	var mod := _mod(tides)
+	var screen := _screen(ORIGINAL)
+	var length := (screen.diagram as ModDiagram).intro_length()
+	screen.advance_ticks(length)
+	var calls: Array = mod.call("calls_seen")
+	var end_at := calls.find(["intro", length, "intro"])
+	assert_int(end_at).override_failure_message("the end tick is told while the step is still the build-up: %s" % [calls]).is_greater(-1)
+	assert_array(calls.slice(end_at)).override_failure_message("then the idle clock, then the step that follows: %s" % [calls]).is_equal([["intro", length, "intro"], ["", 0, "intro"], ["", 0, "answering"]])
+	screen.free()
+
+
 func test_the_calls_of_a_slow_frame_name_the_ticks_they_skipped() -> void:
 	var tides := _mount("tides")
 	var mod := _mod(tides)

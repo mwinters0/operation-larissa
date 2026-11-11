@@ -18,7 +18,7 @@ func before(do_skip := not LegacyPack.present(), skip_reason := "run the importe
 ## Builds the diagram of record `index` of `type_id` at `level` (the pie chart's legend rotation can be chosen).
 func _diagram(type_id: int, level: int, index: int, rotation: int = 0) -> DiagramBase:
 	var problem := ProblemInstance.build(Catalog.problem_type(type_id), level, index, rotation)
-	return auto_free(DiagramFactory.create(problem)) as DiagramBase
+	return auto_free(DiagramFactory.plain(problem)) as DiagramBase
 
 
 ## Calls `check` with the diagram of every stored record of the type.
@@ -50,8 +50,8 @@ func test_all_1276_records_draw_something_inside_the_window() -> void:
 			assert_int(diagram.items.size()).is_greater(0)
 			for item in diagram.items:
 				if item.kind == DiagramItem.Kind.PICTURE:
-					assert_object(item.texture).is_not_null()
-					assert_bool(WINDOW.encloses(Rect2(item.position, item.texture.get_size()))).override_failure_message(
+					assert_object(diagram.texture_of(item)).is_not_null()
+					assert_bool(WINDOW.encloses(Rect2(item.position, diagram.texture_of(item).get_size()))).override_failure_message(
 							"type %d picture %d at %s leaves the window" % [type_id, item.pic, item.position]).is_true())
 	assert_int(drawn).is_equal(1276)
 

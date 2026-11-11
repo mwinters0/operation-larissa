@@ -61,6 +61,8 @@ signal log_screen_requested(sector: int)
 signal intro_finished
 ## The problem is over (also when the air ran out); the session says how it went.
 signal finished(finished_session: ProblemSession)
+## The build-up or the replay counted ticks (`presentation_elapsed` has the new count), told BEFORE the step it may end is ended: the view shows the picture of that tick, the last one included, and then hears the step change.
+signal presented
 ## Something happened that a view may show (`ProblemEvents`): `[name, arguments...]`, plain values, told after the rules decided it.
 signal happened(event: Array)
 
@@ -147,11 +149,6 @@ func start_intro(ticks: int) -> void:
 ## tick that ended the step, so the view can show the last picture.
 func presentation_elapsed() -> int:
 	return _elapsed
-
-
-## True while the diagram is playing: the build-up or a replay.
-func is_presenting() -> bool:
-	return step == Step.INTRO or step == Step.REPLAY
 
 
 ## The diagram's animation is over before its time (it was skipped: the debug screenshots and the tests do that), or its last tick
@@ -370,6 +367,8 @@ func advance_ticks(ticks: int) -> void:
 		Step.INTRO, Step.REPLAY, Step.HOLD:
 			_elapsed += ticks
 			_ticks_left -= ticks
+			if step != Step.HOLD:
+				presented.emit()                                    # (the view shows this tick, the last one too, before the step that follows is told)
 			if _ticks_left <= 0:
 				if step == Step.HOLD:
 					_end_hold()

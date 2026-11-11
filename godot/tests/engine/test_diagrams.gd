@@ -14,7 +14,7 @@ const PANEL := {"pic": 0, "pos": [20, 60]}
 ## Builds the diagram of record `index` of the chain's type `type_id` at `level`.
 func _diagram(type_id: int, level: int, index: int, rotation: int = 0) -> DiagramBase:
 	var problem := ProblemInstance.build(Catalog.problem_type(type_id), level, index, rotation)
-	return auto_free(DiagramFactory.create(problem)) as DiagramBase
+	return auto_free(DiagramFactory.plain(problem)) as DiagramBase
 
 
 ## A diagram of a spec of the test's own with the record `numbers` (three decimals).
@@ -43,8 +43,8 @@ func test_every_record_draws_something_inside_the_window() -> void:
 				assert_int(diagram.items.size()).is_greater(0)
 				for item in diagram.items:
 					if item.kind == DiagramItem.Kind.PICTURE:
-						assert_object(item.texture).is_not_null()
-						assert_bool(WINDOW.encloses(Rect2(item.position, item.texture.get_size()))).override_failure_message(
+						assert_object(diagram.texture_of(item)).is_not_null()
+						assert_bool(WINDOW.encloses(Rect2(item.position, diagram.texture_of(item).get_size()))).override_failure_message(
 								"type %d picture %d at %s leaves the window" % [type_id, item.pic, item.position]).is_true()
 				drawn += 1
 	assert_int(drawn).is_equal(stored)

@@ -1,5 +1,5 @@
 class_name Calculator
-extends Control
+extends CalculatorPanel
 ## The on-screen calculator, drawn from the original's own picture.
 ##
 ## Teaches: building a UI on top of ART. The 292 x 130 picture already shows every key face, so the
@@ -39,8 +39,9 @@ const SFX_KEY := &"calc_backspace"
 ## How long a pressed key stays lit and the calculator takes no input: `set_alarm(0, 12)` = 12 ticks of 1/73 s. The number is the
 ## rules' (`CalculatorModel.key_flash_ticks()`); this widget is told it and only turns it into seconds for its `Timer`.
 const TICKS_PER_SECOND := TickMeter.TICKS_PER_SECOND
-
-@export var layout: CalculatorLayout
+## The theme's looks of a key (`ThemeBuilder`): the invisible rectangle over the key's art, and the key lit for `key_flash_ticks`.
+const KEY := &"CalcKey"
+const KEY_LIT := &"CalcKeyLit"
 
 var model := CalculatorModel.new()
 ## While false the calculator ignores the keyboard (a finished problem).
@@ -49,11 +50,8 @@ var keyboard_enabled: bool = true:
 		keyboard_enabled = value
 		set_process_unhandled_key_input(value)
 
-@onready var picture: TextureRect = %Picture
-@onready var display: LcdDisplay = %Display
 @onready var keys: Control = %Keys
 
-var _scene_layout: CalculatorLayout        ## the pack's layout (or the one the scene was given): what the skin's version is made from, again and again
 var _buttons: Dictionary = {}     # key name -> Button
 var _flash_timer: Timer
 var _flashing_key: String = ""    # the lit key while the flash lasts, else ""
@@ -62,7 +60,7 @@ var _deferred_key: String = ""            # a command key that acts when the fla
 
 
 func _ready() -> void:
-	_scene_layout = layout if layout != null else Catalog.pack_resource("data/ui/calculator_layout.tres") as CalculatorLayout       # (the pack's; the skin in use may show another)
+	_load_layout()
 	_flash_timer = Timer.new()
 	_flash_timer.one_shot = true
 	_flash_timer.wait_time = TickMeter.seconds(CalculatorModel.key_flash_ticks())
@@ -70,7 +68,7 @@ func _ready() -> void:
 	add_child(_flash_timer)
 	for key_name in _scene_layout.key_names:                 # (one button per key; where each goes is `_dress`'s)
 		var button := Button.new()
-		button.theme_type_variation = &"CalcKey"
+		button.theme_type_variation = KEY
 		button.focus_mode = Control.FOCUS_NONE               # the keyboard goes to the widget, not to a focused button
 		button.tooltip_text = key_name
 		button.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS     # `pressed` on the mouse DOWN: the original clicks on the press
@@ -91,14 +89,7 @@ func _on_skin_changed(_skin: GameSkin) -> void:
 ## problem both call it): the picture is stretched to the layout's size, so a skin's picture of another size moves nothing. The keys' looks and the display's field are the theme's (`key` and `display`): they are looked up, not set here.
 func _dress() -> void:
 	layout = Catalog.skinned(_scene_layout) as CalculatorLayout
-	position = Vector2(layout.picture_position)
-	picture.texture = layout.picture
-	picture.size = Vector2(layout.picture_size)
-	size = Vector2(layout.picture_size)                       # (from the layout's data, not from the texture that happens to be loaded)
-	custom_minimum_size = size
-	display.layout = layout
-	display.frame_origin = layout.picture_position
-	display.origin = layout.display_origin_calculator
+	_dress_panel(layout.picture_position, layout.picture, layout.picture_size, layout.display_origin_calculator)
 	for i in layout.key_names.size():
 		var button := _buttons.get(layout.key_names[i]) as Button
 		if button != null:
@@ -163,22 +154,9 @@ func _start_flash(key: String) -> void:
 	_flash_timer.start()
 
 
-## The lit key wears the theme's "pressed" look, also under the mouse (hover). It is made from the theme in force, so it is made again when the theme changes under it (`_notification`: a skin put on during the 12 ticks).
+## The lit key wears the theme's `CalcKeyLit` look (`ThemeBuilder`: the `key` style's "pressed" look, also under the mouse). Nothing is copied: the button looks the variation up, so a skin put on during the 12 ticks shows in it.
 func _light(button: Button) -> void:
-	var lit := button.get_theme_stylebox("pressed")
-	button.add_theme_stylebox_override("normal", lit)
-	button.add_theme_stylebox_override("hover", lit)
-
-
-func _notification(what: int) -> void:
-	if what == NOTIFICATION_THEME_CHANGED and not _flashing_key.is_empty():
-		_light_again.call_deferred()                          # (at the end of the frame: the button has been told of the new theme too, and a lookup answers from what it was told)
-
-
-func _light_again() -> void:
-	var button := _buttons.get(_flashing_key) as Button
-	if button != null:
-		_light(button)
+	button.theme_type_variation = KEY_LIT
 
 
 ## The 12 ticks are over (or a test does not want to wait): the key goes dark and the next waiting key is taken.
@@ -186,8 +164,7 @@ func end_flash() -> void:
 	_flash_timer.stop()
 	var button := _buttons.get(_flashing_key) as Button
 	if button != null:
-		button.remove_theme_stylebox_override("normal")
-		button.remove_theme_stylebox_override("hover")
+		button.theme_type_variation = KEY
 	_flashing_key = ""
 	if not _deferred_key.is_empty():
 		var key := _deferred_key
@@ -195,6 +172,12 @@ func end_flash() -> void:
 		_apply(key)
 	if not _waiting_keys.is_empty() and _flashing_key.is_empty():
 		input_key(_waiting_keys.pop_front())
+
+
+## Does the button of `key` wear the lit look (for tests)?
+func looks_lit(key: String) -> bool:
+	var button := _buttons.get(key) as Button
+	return button != null and button.theme_type_variation == KEY_LIT
 
 
 ## The invisible button of `key` (for tests and for flashing it on a key press).

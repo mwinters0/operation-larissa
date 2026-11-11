@@ -16,6 +16,7 @@ var bar := Color(0.3, 0.3, 0.3)
 var damage := 0
 var calls_log : Array = []
 var clocks : Array = []
+var calls_seen_log : Array = []
 var sounding := false
 var sound_only := false
 var asked_sounds : Array = []
@@ -25,6 +26,9 @@ func sound_on() -> void:
 
 func sound_only_on() -> void:
 	sound_only = true
+
+func calls_seen() -> Array:
+	return calls_seen_log.duplicate(true)
 
 func clocks_seen() -> Array:
 	return clocks.duplicate(true)
@@ -99,6 +103,7 @@ func crossings(clock : Dictionary) -> Array:
 func problem_frame(state : Dictionary, events : Array) -> Variant:
 	asked += 1
 	last_step = state["step"]
+	calls_seen_log.append([state["clock"]["animation"], state["clock"]["tick"], state["step"]])
 	react(events)
 	var out := original_type(state) if state["type"] != 40 else own_type(state)
 	out.append_array(reaction())

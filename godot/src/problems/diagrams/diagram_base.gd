@@ -91,6 +91,36 @@ func _init() -> void:
 	set_process(false)                          # only a diagram that counts its own ticks needs `_process`
 
 
+func _enter_tree() -> void:
+	if not SkinChoice.events.changed.is_connected(_on_skin_changed):
+		SkinChoice.events.changed.connect(_on_skin_changed)
+
+
+func _exit_tree() -> void:
+	if SkinChoice.events.changed.is_connected(_on_skin_changed):
+		SkinChoice.events.changed.disconnect(_on_skin_changed)
+
+
+## The skin in use is another: the pictures are looked up again (an item holds the number of its picture, never the picture) and drawn again, wherever the animation is.
+func _on_skin_changed(_skin: GameSkin) -> void:
+	if type == null:
+		return
+	_resolve_textures()
+	queue_redraw()
+
+
+## The pictures of the type's art bundle as the skin in use shows them (the skin's picture for the file, else the file): the one place `_textures` is made, by `setup` and by a skin put on.
+func _resolve_textures() -> void:
+	_textures.clear()
+	for path in type.art_files:
+		_textures.append(Assets.texture_at(path))
+
+
+## The texture of a picture item under the skin in use.
+func texture_of(item: DiagramItem) -> Texture2D:
+	return _textures[item.pic]
+
+
 ## What the player has typed so far changed (`text` is what the calculator or the answer box shows). A diagram whose picture does not depend on the entry ignores it; `ModDiagram` does not.
 func entry_changed(_text: String) -> void:
 	pass
@@ -117,9 +147,7 @@ func setup(new_problem: ProblemInstance) -> void:
 	layout = Catalog.screen_layout()
 	font = layout.make_font()
 	font_size = layout.font_size()
-	_textures.clear()
-	for path in type.art_files:
-		_textures.append(Assets.texture_at(path))          # (the skin's picture for the file, else the file)
+	_resolve_textures()
 	_end_animation_clock()
 	items.clear()
 	_groups.clear()
@@ -150,13 +178,14 @@ func _draw() -> void:
 
 
 func _draw_picture(item: DiagramItem) -> void:
+	var texture := texture_of(item)
 	if item.flip:
 		# mirror left to right around the picture's own centre line: scale x by -1 about its right edge, then draw as usual
-		draw_set_transform(item.position + Vector2(item.texture.get_width(), 0.0), 0.0, Vector2(-1.0, 1.0))
-		draw_texture(item.texture, Vector2.ZERO)
+		draw_set_transform(item.position + Vector2(texture.get_width(), 0.0), 0.0, Vector2(-1.0, 1.0))
+		draw_texture(texture, Vector2.ZERO)
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	else:
-		draw_texture(item.texture, item.position)
+		draw_texture(texture, item.position)
 
 
 ## The original calls TextOut(x, y): `y` is the top of the line, so the baseline is one ascent lower.
@@ -181,7 +210,6 @@ func add_picture(pic: int, at: Vector2, flip: bool = false) -> DiagramItem:
 	var item := DiagramItem.new()
 	item.kind = DiagramItem.Kind.PICTURE
 	item.pic = pic
-	item.texture = _textures[pic]
 	item.position = at
 	item.flip = flip
 	items.append(item)
@@ -323,7 +351,7 @@ func is_playing() -> bool:
 func animation_name() -> StringName:
 	if not _playing:
 		return &""
-	return &"replay" if _keeps_last_step else &"intro"
+	return &"replay" if _playing_timeline == success_replay else &"intro"
 
 
 func animation_tick() -> int:

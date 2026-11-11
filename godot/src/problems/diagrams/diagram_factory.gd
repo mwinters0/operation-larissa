@@ -1,8 +1,8 @@
 class_name DiagramFactory
 extends RefCounted
-## Creates the diagram control of a problem type from the "family" its spec names: THE one place that decides which diagram draws a type. A mod draws it (`ModDiagram`) when the type's family is `mod` (a type a pack adds) or
-## a mod that runs opted in to draw it by number (`ModHost.problem_screen`) and the type is not one whose answer the engine's own input takes (`takes_input`: the lock and the ballast panels); every other type is drawn by
-## the diagram of its family, and a `ModDiagram` falls back on the same one (`plain`) whenever its mod gives nothing.
+## Creates the diagram control of a problem type from the "family" its spec names: THE one place that decides which diagram draws a type. Every type whose answer the engine's own input does not take is wrapped in a `ModDiagram`, the one node
+## that asks whether a mod draws the screen (`ModHost.problem_screen`, a type a pack adds with the family `mod` or an original type a running mod opted in to draw by number) and, whenever it does not, shows the diagram of the family
+## (`plain`) it holds. The lock and the ballast panels (`takes_input`) are their own diagrams: the engine draws them, whatever a mod lists.
 ##
 ## Teaches: the factory pattern with a plain `match` on a string coming from data. Adding a family
 ## means a new subclass of `DiagramBase` and one line here.
@@ -13,13 +13,14 @@ const INPUT_FAMILIES: Array[String] = ["lock", "ballast_panel"]
 
 ## A set-up diagram for `problem`, ready to be added to the scene tree.
 static func create(problem: ProblemInstance) -> DiagramBase:
-	var family: String = problem.type.diagram["family"]
-	var diagram: DiagramBase = ModDiagram.new() if family == ModProblems.FAMILY or (not takes_input(family) and ModHost.problem_screen(problem.type.id) != null) else _new_for(family)
+	if takes_input(problem.type.diagram["family"]):
+		return plain(problem)
+	var diagram := ModDiagram.new()
 	diagram.setup(problem)
 	return diagram
 
 
-## The set-up diagram the type's data names, whatever a mod does: what a `ModDiagram` shows and plays under (and instead of) its mod's layers.
+## The set-up diagram the type's data names, whatever a mod does: what a `ModDiagram` shows and plays under (and instead of) its mod's layers, and the diagram of a lock or a ballast panel.
 static func plain(problem: ProblemInstance) -> DiagramBase:
 	var diagram := _new_for(problem.type.diagram["family"])
 	diagram.setup(problem)

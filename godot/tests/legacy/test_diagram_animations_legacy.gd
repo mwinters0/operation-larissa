@@ -18,7 +18,7 @@ func before(do_skip := not LegacyPack.present(), skip_reason := "run the importe
 
 func _diagram(type_id: int, level: int, index: int) -> DiagramBase:
 	var problem := ProblemInstance.build(Catalog.problem_type(type_id), level, index, 0)
-	return auto_free(DiagramFactory.create(problem)) as DiagramBase
+	return auto_free(DiagramFactory.plain(problem)) as DiagramBase
 
 
 ## The diagram of the first stored record of the type (its lowest level that has one).

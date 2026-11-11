@@ -116,7 +116,7 @@ func test_the_frame_and_the_panels_of_the_problem_screen_have_entries_at_the_lay
 	assert_object(sizes[_key_of(calculator.picture)]).is_equal(calculator.picture_size)
 	assert_object(sizes[_key_of(calculator.answer_panel)]).is_equal(calculator.answer_size)
 	assert_bool(_key_of(screen.background).begins_with("problem_art/")).is_true()
-	assert_object(sizes["problem_layer/window"]).is_equal(ProblemState.WINDOW_SIZE)
+	assert_object(sizes["problem_layer/window"]).is_equal(Vector2i(DiagramBase.WINDOW_SIZE))
 	var written := SkinTemplates.write(OUT)
 	assert_bool(written.has("%s/problem_layer/window.png" % OUT)).is_true()
 	assert_bool(written.has("%s/%s.png" % [OUT, _key_of(screen.background)])).is_true()

@@ -34,6 +34,8 @@ const HALL_OF_FAME := preload("res://src/ui/hall_of_fame.tscn")
 const HELP_VIEWER := preload("res://src/ui/help_viewer.tscn")
 const AUDIO_SETTINGS_DIALOG := preload("res://src/ui/audio_settings_dialog.tscn")
 const PACK_DIALOG := preload("res://src/ui/pack_dialog.tscn")
+## The theme's look of a button that is pressed (`_show_pressed`).
+const PRESSED_LOOK := &"SignInPressed"
 
 ## The original counts time in 1/73 s ticks (`DelayTicks`).
 const TICK_SECONDS := 1.0 / 73.0
@@ -104,8 +106,6 @@ var quits_program: bool = true
 @onready var packs_button: Button = %Packs
 @onready var menu_bar: GameMenuBar = %MenuBar
 @onready var message_view: MessageBoxView = %MessageBox
-## The button that wears the pressed look (`_show_pressed`), or null.
-var _pressed_button: Button = null
 @onready var overlay: CanvasLayer = %Overlay
 @onready var info_label: Label = %Info
 @onready var frame: TextureRect = $Frame
@@ -566,40 +566,20 @@ func _ask_exit_question() -> bool:
 
 
 ## The pressed look of the original's picture buttons (`SetSignInButtonLooks` 0x42f611 draws the pressed picture of one of
-## the four buttons): the theme's "pressed" box and font colour, put over the normal ones. It is made from the theme in force, so it is made again
-## when the theme changes under it (a skin put on while a button is pressed): `_notification`, which waits for the end of the frame, when the button has been told of the new theme too (a parent hears of it first, and a
-## control's lookups of the theme answer from what it was told).
+## the four buttons): the theme's type variation `SignInPressed` (`ThemeBuilder`: the "pressed" box and font colour of a Button as its normal look). Nothing is copied: the button looks the variation up, so a skin put on while it is pressed shows in it.
 func _show_pressed(button: Button) -> void:
 	_release_buttons()
-	_pressed_button = button
-	_wear_pressed(button)
-
-
-func _wear_pressed(button: Button) -> void:
-	button.add_theme_stylebox_override(&"normal", button.get_theme_stylebox(&"pressed"))
-	button.add_theme_color_override(&"font_color", button.get_theme_color(&"font_pressed_color"))
+	button.theme_type_variation = PRESSED_LOOK
 
 
 func _release_buttons() -> void:
-	_pressed_button = null
 	for button: Button in [start_button, new_button, practice_button, exit_button]:
-		button.remove_theme_stylebox_override(&"normal")
-		button.remove_theme_color_override(&"font_color")
-
-
-func _notification(what: int) -> void:
-	if what == NOTIFICATION_THEME_CHANGED and _pressed_button != null:
-		_wear_pressed_again.call_deferred()
-
-
-func _wear_pressed_again() -> void:
-	if _pressed_button != null:
-		_wear_pressed(_pressed_button)
+		button.theme_type_variation = &""
 
 
 ## True while `button` wears the pressed look (for tests).
 func looks_pressed(button: Button) -> bool:
-	return button.has_theme_stylebox_override(&"normal")
+	return button.theme_type_variation == PRESSED_LOOK
 
 
 func show_hall_of_fame() -> void:

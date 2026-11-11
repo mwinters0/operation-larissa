@@ -43,6 +43,7 @@ const RULE_FILES: Array[String] = [
 	"res://src/problems/calculator_model.gd",
 	"res://src/problems/lock_program.gd",
 	"res://src/problems/lock_wheel.gd",
+	"res://src/problems/diagrams/diagram_item.gd",
 	"res://src/problems/diagrams/diagram_step.gd",
 	"res://src/problems/diagrams/diagram_timeline.gd",
 ]
@@ -57,12 +58,11 @@ const EXCLUDED: Dictionary = {
 	"res://src/core/window_focus.gd": "the test runner's switch for the window's focus, read by the audio and clock autoloads; it asks the engine's main loop which script runs",
 	"res://src/problems/prompt_sender.gd": "the sender picture of a prompt: its rule is static, but `texture` loads the picture; only the problem screen calls that",
 	"res://src/problems/problem_runner.gd": "puts a problem screen on a host NODE and waits for it: a helper of the views, not a rule",
-	"res://src/problems/diagrams/diagram_item.gd": "one entry of a diagram's DRAW LIST: it holds the Texture2D the view paints (the problem models only hold picture numbers)",
 	"res://src/problems/diagrams/diagram_factory.gd": "builds the diagram CONTROL of a problem type",
 }
 
 ## Bases of the files in `src/problems/` that are views (the rest must be in `RULE_FILES` or `EXCLUDED`).
-const VIEW_BASES: Array[String] = ["Control", "Node", "DiagramBase"]
+const VIEW_BASES: Array[String] = ["Control", "Node", "DiagramBase", "CalculatorPanel"]
 
 
 func test_the_rules_name_no_node_picture_font_input_or_autoload() -> void:

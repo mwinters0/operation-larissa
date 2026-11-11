@@ -79,7 +79,7 @@ func _skin_facts(spec: ModSpec) -> Dictionary:
 ## The `problems` key: numbers and names, no object.
 func _problem_facts(spec: ModSpec) -> Dictionary:
 	return {
-		"types": spec.problem_types.duplicate(), "window": Vector2(ProblemState.WINDOW_SIZE),
+		"types": spec.problem_types.duplicate(), "window": DiagramBase.WINDOW_SIZE,
 		"max_commands": ModDraw.MAX_COMMANDS, "max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModShader.MAX_UNIFORMS,
 		"max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT, "min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE,
 		"shaders": spec.problem_shaders.duplicate(),

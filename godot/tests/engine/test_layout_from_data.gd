@@ -160,4 +160,4 @@ func _collect(dir: String, found: Array[String]) -> void:
 func _diagram(type_id: int) -> DiagramBase:
 	var type := Catalog.problem_type(type_id)
 	var level := type.levels_available.find(1)
-	return auto_free(DiagramFactory.create(ProblemInstance.build(type, level, 0, 0))) as DiagramBase
+	return auto_free(DiagramFactory.plain(ProblemInstance.build(type, level, 0, 0))) as DiagramBase

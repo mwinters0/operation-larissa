@@ -10,12 +10,6 @@ extends RefCounted
 ##
 ## Teaches: a read-only edge drawn by copying into the plainest form there is: values. And what NOT to put on it: the verdict.
 
-## The window a problem screen is drawn in (pixels), the same as `DiagramBase.WINDOW_SIZE`.
-const WINDOW_SIZE := Vector2i(640, 400)
-## The steps a script is told apart (`ProblemEvents.STEPS`): the diagram builds up (`intro`), an answer is awaited (`answering`), anything else is on screen (`waiting`: a message, the solution, a replay).
-const STEPS: Array[String] = ProblemEvents.STEPS
-
-
 ## The state of `problem` with `entry` typed so far (what the calculator or the answer box shows) at `step`, on try `attempt` (1 or 2), with the animation's position `clock` (`clock`, `idle_clock` for a script that is not told one).
 static func build(problem: ProblemInstance, entry: String, step: ProblemFlow.Step, attempt: int = 1, clock_of_animation: Dictionary = {}) -> Dictionary:
 	var state := {
@@ -28,10 +22,10 @@ static func build(problem: ProblemInstance, entry: String, step: ProblemFlow.Ste
 		"diagram": problem.type.diagram.duplicate(true),
 		"art": art_keys(problem.type),
 		"entry": entry,
-		"step": step_name(step),
+		"step": ProblemEvents.step_name(step),
 		"attempt": clampi(attempt, 1, 2),
 		"clock": clock_of_animation if not clock_of_animation.is_empty() else idle_clock(),
-		"window": Vector2(WINDOW_SIZE),
+		"window": DiagramBase.WINDOW_SIZE,
 	}
 	ModLoader.freeze(state)
 	return state
@@ -55,9 +49,4 @@ static func art_keys(type: ProblemType) -> Array:
 	for path in type.art_files:
 		keys.append(GameSkin.key_of(path))
 	return keys
-
-
-## The name of the step a script is told (one of `STEPS`).
-static func step_name(step: ProblemFlow.Step) -> String:
-	return ProblemEvents.step_name(step)
 

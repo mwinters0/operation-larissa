@@ -346,7 +346,7 @@ func test_the_radar_sweep_pings_when_the_beam_reaches_the_blip() -> void:
 	problem.type = type
 	var screen := scene_runner(SCREEN_SCENE).scene() as ProblemScreen
 	screen.start(problem)
-	var sonar := screen.diagram as SonarDiagram
+	var sonar := (screen.diagram as ModDiagram).plain() as SonarDiagram
 	assert_object(sonar).is_not_null()
 	assert_int(sonar.blip_sfx()).is_equal(ping)
 	assert_int(sonar.blip_step()).is_equal(0)

@@ -84,4 +84,4 @@ static func diagram_of(spec: Dictionary, numbers: Array = [0, 0, 0], level: int 
 		record.append_array(PackedInt64Array(decimal(number, places)))
 	type.records = [record]
 	type.record_levels = PackedInt32Array([level])
-	return DiagramFactory.create(ProblemInstance.build(type, level, 0))
+	return DiagramFactory.plain(ProblemInstance.build(type, level, 0))

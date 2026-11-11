@@ -48,7 +48,7 @@ const COLOR_ITEMS: Dictionary[String, Array] = {
 	"title": [["ConsoleTitle", "font_color"], ["HudLabel", "font_color"], ["Hint", "font_color"]],
 	"button": [["Button", "font_color"]],
 	"button_hover": [["Button", "font_hover_color"]],
-	"button_pressed": [["Button", "font_pressed_color"], ["Button", "font_focus_color"]],
+	"button_pressed": [["Button", "font_pressed_color"], ["Button", "font_focus_color"], ["SignInPressed", "font_color"]],
 	"button_disabled": [["Button", "font_disabled_color"]],
 	"good": [["Good", "font_color"]],
 	"bad": [["Bad", "font_color"], ["ProblemWrong", "font_color"]],
@@ -61,7 +61,7 @@ const STYLE_ITEMS: Dictionary[String, Array] = {
 	"console": [["ConsolePanel", "panel"]],
 	"button/normal": [["Button", "normal"]],
 	"button/hover": [["Button", "hover"]],
-	"button/pressed": [["Button", "pressed"]],
+	"button/pressed": [["Button", "pressed"], ["SignInPressed", "normal"]],
 	"button/disabled": [["Button", "disabled"]],
 	"button/focus": [["Button", "focus"]],
 	"input/normal": [["LineEdit", "normal"]],
@@ -69,10 +69,10 @@ const STYLE_ITEMS: Dictionary[String, Array] = {
 	"input/read_only": [["LineEdit", "read_only"]],
 	"key/normal": [["CalcKey", "normal"]],
 	"key/hover": [["CalcKey", "hover"]],
-	"key/pressed": [["CalcKey", "pressed"]],
+	"key/pressed": [["CalcKey", "pressed"], ["CalcKeyLit", "normal"], ["CalcKeyLit", "hover"]],
 }
 
-## The engine's own theme (the project theme without a skin's theme on it), made once; null until a skin's theme is first worn. Never changed: every theme derived from it is a copy.
+## The engine's own theme (the project theme without a skin's theme on it), made once; null until `engine` is first asked. Never changed: every theme derived from it is a copy.
 static var _engine: Theme
 ## Does the project theme hold a skin's theme (so that the engine's has to be put back)?
 static var _worn := false
@@ -103,7 +103,8 @@ static func build_engine_theme() -> Theme:
 	return theme
 
 
-## The engine's own theme: the project theme as it is before a skin's theme is laid on it. A copy that no skin's theme touches (the items are shared, and an item is replaced, never changed).
+## The engine's own theme: the project theme as it is before a skin's theme is laid on it. A copy that no skin's theme touches (the items are shared, and an item is replaced, never changed). `apply` is the only thing that puts a skin's
+## theme on the project theme and it takes this snapshot first, so the snapshot is the file's theme whenever it is first asked for (`derive`, `engine_font` or a test); the project theme is the one cached resource, so a `load` of its file shows what is worn.
 static func engine() -> Theme:
 	if _engine == null:
 		_engine = Theme.new()
@@ -113,8 +114,8 @@ static func engine() -> Theme:
 
 ## The default font of the engine's own theme: what the diagrams of the problem screens draw their text in (`ProblemScreenLayout.make_font`), under every skin.
 static func engine_font() -> Font:
-	var base := ThemeDB.get_project_theme() if _engine == null else _engine
-	return base.default_font if base != null and base.has_default_font() else ThemeDB.fallback_font
+	var base := engine()
+	return base.default_font if base.has_default_font() else ThemeDB.fallback_font
 
 
 ## Puts the theme `skin` asks for on the project theme: the engine's with the skin's `menu_theme` laid over it, or the engine's own again for a skin that says none. `SkinChoice.select` calls it, so it is
@@ -123,10 +124,11 @@ static func apply(skin: GameSkin) -> void:
 	var project := ThemeDB.get_project_theme()
 	if project == null or Engine.is_editor_hint():
 		return
+	var pristine := engine()                                    # (before anything is laid on the project theme: this is the only place that does)
 	var data := skin.menu_theme_in_use()
 	if data == null and not _worn:
 		return
-	var theme := engine() if data == null else derive(data, skin)
+	var theme := pristine if data == null else derive(data, skin)
 	project.merge_with(theme)                                    # (over the project theme, never after a `clear`: an emptied theme for a moment makes every control size itself by the fallback font, and a control that grew does not shrink back)
 	_worn = data != null
 
@@ -226,6 +228,16 @@ static func _buttons(theme: Theme) -> void:
 	theme.set_stylebox("focus", "CalcKey", none)
 	theme.set_stylebox("hover", "CalcKey", _box(Color(1, 1, 0.33, 0.16), YELLOW, 1, 0, 0))
 	theme.set_stylebox("pressed", "CalcKey", _box(Color(1, 1, 1, 0.38), WHITE, 1, 0, 0))
+	# CalcKeyLit: the key that is lit for the 12 ticks after a press wears the "pressed" look, also under the mouse (`Calculator`). `STYLE_ITEMS` sets it from the same `key/pressed` a skin says.
+	theme.set_type_variation("CalcKeyLit", "CalcKey")
+	theme.set_stylebox("normal", "CalcKeyLit", theme.get_stylebox("pressed", "CalcKey"))
+	theme.set_stylebox("hover", "CalcKeyLit", theme.get_stylebox("pressed", "CalcKey"))
+
+	# SignInPressed: the pressed look of the original's picture buttons on the sign-in screen (`SetSignInButtonLooks` 0x42f611 draws the pressed picture of one of the four buttons): the "pressed" box and font colour of a Button, as its normal look.
+	# `COLOR_ITEMS` and `STYLE_ITEMS` set it from the same `button_pressed` and `button/pressed` a skin says.
+	theme.set_type_variation("SignInPressed", "Button")
+	theme.set_stylebox("normal", "SignInPressed", theme.get_stylebox("pressed", "Button"))
+	theme.set_color("font_color", "SignInPressed", theme.get_color("font_pressed_color", "Button"))
 
 
 static func _panels(theme: Theme) -> void:

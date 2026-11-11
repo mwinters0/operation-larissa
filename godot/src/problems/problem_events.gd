@@ -8,7 +8,7 @@ extends RefCounted
 ## The set is the same for every problem type, the original's 34 and a pack's. The lock and the ballast panels hear them too (their diagram ignores them); no mod draws those two.
 ##
 ##   started    -                     the problem opened. The first event of a problem.
-##   step       name                  the step the state tells (`ProblemState.STEPS`: intro, answering, waiting) changed to `name`. It comes LAST of the events one input causes (the answer, the tick, Enter), when the flow has settled:
+##   step       name                  the step the state tells (`ProblemEvents.STEPS`: intro, answering, waiting) changed to `name`. It comes LAST of the events one input causes (the answer, the tick, Enter), when the flow has settled:
 ##                                    a step the flow passes through on its way (Enter on a message goes through "answering" to the closing) is not told.
 ##   verdict    right, attempt        an answer was judged: `right` (true or false), `attempt` the try it was (1 or 2). An entry with nothing usable in it ("Type a number first.") is no answer and no verdict.
 ##   damage     amount, tank_lost     a wrong answer cost `amount` oxygen (1); `tank_lost`: that used up the air. Not told in Math Practice, where wrong answers cost nothing. Follows the `verdict`.

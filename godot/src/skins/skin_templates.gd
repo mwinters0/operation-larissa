@@ -9,7 +9,7 @@ extends RefCounted
 ## The frame of the problem screen is among them: the screen picture (`problem_art/pa_1780`), the calculator (`pa_1781`), the "Ans:" panel (`pa_1802`) and the calculator's digits and signs are in the layouts of the screen and of the calculator.
 ## THE PICTURES A SCRIPT DRAWS, whole-part pictures of a screen (`layers`), not pictures a skin replaces (no `pictures` entry names them; they are drawn over and put in the skin's `skin/` folder, or in the `problems/` folder of a problem mod, named in a draw list):
 ## one for each layer of the console (`SkinLayers.hud_layers`, key `hud_layer/<layer>`, `hud_layer/hud_oxygen`), the size of the layer's rectangle in the HUD layout (`ConsoleState.rects`), and one for the whole 640 x 400 window of a problem screen
-## (`problem_layer/window`, `ProblemState.WINDOW_SIZE`; `ModDiagram`, `docs/create/CONTENT.md` "Problem screens").
+## (`problem_layer/window`, `DiagramBase.WINDOW_SIZE`; `ModDiagram`, `docs/create/CONTENT.md` "Problem screens").
 ##
 ## THE SIZES ARE THE PACK'S. The dev pack's console has the sizes the dev pack made for itself; the original's are those of the legacy pack (`--pack=legacy` reads only the sizes, and writes none of the
 ## original's pixels).
@@ -101,7 +101,7 @@ static func layers() -> Array[Entry]:
 		var rects := ConsoleState.rects(hud)
 		for layer in SkinLayers.hud_layers():
 			found.append(Entry.new("%s/%s" % [LAYER_KIND, layer], Vector2i((rects[String(layer)] as Rect2).size)))
-	found.append(Entry.new("%s/%s" % [PROBLEM_LAYER_KIND, PROBLEM_WINDOW], ProblemState.WINDOW_SIZE))
+	found.append(Entry.new("%s/%s" % [PROBLEM_LAYER_KIND, PROBLEM_WINDOW], Vector2i(DiagramBase.WINDOW_SIZE)))
 	return found
 
 

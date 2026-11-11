@@ -1,5 +1,5 @@
 class_name AnswerBox
-extends Control
+extends CalculatorPanel
 ## The "Ans:" panel: where the player types an answer when there is no calculator.
 ##
 ## Teaches: a keyboard-driven widget that is not a `LineEdit`. The original shows the typed
@@ -22,10 +22,6 @@ signal notice_requested(notice: CalculatorModel.Notice)
 
 const SFX_BACKSPACE := &"calc_backspace"
 
-@export var layout: CalculatorLayout
-
-var _scene_layout: CalculatorLayout        ## the pack's layout (or the one the scene was given): what the skin's version is made from, again and again
-
 var text: String = "":
 	set(value):
 		text = value
@@ -38,12 +34,9 @@ var keyboard_enabled: bool = true:
 		keyboard_enabled = value
 		set_process_unhandled_key_input(value)
 
-@onready var picture: TextureRect = %Picture
-@onready var display: LcdDisplay = %Display
-
 
 func _ready() -> void:
-	_scene_layout = layout if layout != null else Catalog.pack_resource("data/ui/calculator_layout.tres") as CalculatorLayout        # (the pack's; the skin in use may show another)
+	_load_layout()
 	display.show_markers = false
 	display.text = "0"
 	_dress()
@@ -59,14 +52,7 @@ func _on_skin_changed(_skin: GameSkin) -> void:
 ## problem both call it. The display's field is the theme's `display` colour: looked up, not set here.
 func _dress() -> void:
 	layout = Catalog.skinned(_scene_layout) as CalculatorLayout
-	position = Vector2(layout.answer_position)
-	picture.texture = layout.answer_panel
-	picture.size = Vector2(layout.answer_size)
-	size = Vector2(layout.answer_size)                      # (from the layout's data, not from the texture that happens to be loaded)
-	custom_minimum_size = size
-	display.layout = layout
-	display.frame_origin = layout.answer_position
-	display.origin = layout.display_origin_answer
+	_dress_panel(layout.answer_position, layout.answer_panel, layout.answer_size, layout.display_origin_answer)
 
 
 ## Empties the box for a new problem.

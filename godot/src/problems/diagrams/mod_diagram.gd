@@ -1,31 +1,31 @@
 class_name ModDiagram
 extends DiagramBase
-## The diagram of a problem type whose screen a MOD draws: a type a pack adds (diagram family `mod`) or an original type a mod opted in to draw by number (`ModProblems`, `DiagramFactory`). The type is plain data like the
+## The diagram of EVERY problem type but the lock and the ballast panels (`DiagramFactory.create`), and the one node that asks whether a mod draws a screen (`ModHost.problem_screen`): a type a pack adds (diagram family `mod`) or an original type a mod
+## opted in to draw by number (`ModProblems`) has its picture drawn by the mod when one runs, any other type, or one whose mod is not there (yet, any more), shows the plain picture below. The type is plain data like the
 ## original's 34 (words, records, how an answer is judged); this node only shows the picture on the left monitor, by asking the mod's sandboxed script what to draw: `problem_frame(state)` gets the problem's values and the
 ## screen's state as plain data (`ProblemState.build`) and returns a draw list that the game checks (`ModDraw.validate`) and draws in the `ModLayer` nodes of a `ModLayerStack` of its own. The script is asked again only when
 ## what it was told changes (the entry the player has typed so far, the step, and, for a script that `ModSpec.tells_problem_state`, the clock of the build-up or the replay), never per frame, and it decides nothing: the calculator or the answer box, `AnswerChecker`, `ProblemSession` and `ProblemFlow` are the game's,
 ## so the answer, the tries, the oxygen and every duration are what they are for any type whatever the script returns.
 ##
-## WHAT HAPPENED. The screen tells each presentation event (`ProblemEvents`: started, step, verdict, damage, success, timeout, decided by `ProblemFlow` before this node hears of it) to `told`. A script that is told them (`ModSpec.tells_problem_state`) is
+## STATE AND EVENTS. The state (`ProblemState.build`) is the channel of what IS: the step (`step_changed`), the entry (`entry_changed`), the try and the clock; a script builds its picture from it, so one bound at any moment draws what one bound from the start draws. The events are the channel of what CHANGED. The screen tells each
+## presentation event (`ProblemEvents`: started, step, verdict, damage, success, timeout, decided by `ProblemFlow` before this node hears of it) to `told`. A script that is told them (`ModSpec.tells_problem_state`) is
 ## handed the ones since its last call as the second argument of `problem_frame(state, events)`, on the FRAME AFTER they happened (`_process`), the newest `ProblemEvents.MAX_EVENTS`; the state it is given is as of that call. An event
-## of a call that faults, or that comes while no mod runs, is not told again; a script that is bound later is told what happens after it (the state, with the step, the entry and the try, is what it builds from). The plain diagram under
-## the layers hears the same events (`DiagramBase.told`).
+## of a call that faults, or that comes while no mod runs, is not told again; a script that is bound later is told what happens after it. The plain diagram under the layers hears none: its picture and its build-up come from the data and the flow's steps.
 ##
 ## THE PLAIN PICTURE. Under the mod's layers this node holds the diagram the type's data names, made by `DiagramFactory.plain` (the original's `SonarDiagram`, `PieDiagram` ... for an original type, the generic `items` of
-## the diagram spec for a `mod` family): it is what shows when the mod is absent (the chain has no such mod, it was refused or unloaded), quarantined, or has not yet returned a good list, so the problem is always shown and
+## the diagram spec for a `mod` family): it is what shows when the mod is absent (the chain has no such mod, it was refused or unloaded, or it arrives after the problem began: each time this node is asked it looks again), quarantined, or has not yet returned a good list, so the problem is always shown and
 ## always completes. A frame the script spoils (an error, a result that is not a list) leaves the last good one on. The plain diagram is also what plays the build-up and the replay after a right answer: the lengths, the
 ## ticks and the sounds are the original's whether it is seen or the mod's layers are, and a mod cannot add a tick to a problem.
 ##
 ## THE CLOCK (for a script that `ModSpec.tells_problem_state`). While the plain diagram plays the build-up or the replay, the script is asked again as each tick of it goes by and the state's `clock` (`ProblemState.clock`) says which animation, how many
 ## of its ticks are over, how long it is and the tick the script was last told: all of it the plain diagram's (`animation_name`, `animation_tick`, `animation_length`, from the `animate_to` the step machine's count drives), so a mod draws frame N of a
 ## length the engine owns, stands still when the machine's time does (a held clock feeds no tick) and cannot lengthen or shorten anything: the flow waits for the plain diagram's timeline, whatever is drawn over it. A script of an older API (before `ModSpec.DRAWS_THE_GAME_API_VERSION`) is told
-## the idle clock and asked as before. The animation's last call carries the end tick, so a sound due at the end is not missed; the call after it carries the idle clock. The flow ends an animation a moment before the screen has shown its last tick, so the step that ends it is told on the frame after, with the clock caught up
-## (the end tick was told, then the idle clock).
+## the idle clock and asked as before. The animation's last call carries the end tick, so a sound due at the end is not missed; the call after it carries the idle clock. The screen shows the last tick of an animation before the flow ends the step (`ProblemFlow.presented`), so the end tick is told with the step still the animation's, then the idle clock, then the step that follows.
 ## SOUNDS. A script of the API that has the clock may return `{"draw": [...], "sounds": ["diagram_pop"]}` instead of a draw list (a `draw` that is missing leaves what is on screen, a `sounds` that is missing asks for none): `ModSounds` keeps the names of the chain's sounds
 ## within its bounds and this node asks for each as the plain diagram does (`sfx_requested`). A mod whose manifest says `own_sounds` has the plain diagram's own sounds (the build-up's, the replay's) left unplayed for as long as it runs and is not quarantined; the lengths are
 ## the same, since a sound holds nothing up.
 ##
-## A picture the mod names by key is resolved under the skin in use (`ModDraw`); when the skin changes the last good answer is checked and resolved again, so the screen shows what one opened under that skin shows.
+## A picture the mod names by key is resolved under the skin in use (`ModDraw`); when the skin changes the last good answer is checked and resolved again (and the plain diagram looks its pictures up again, `DiagramBase`), so the screen shows what one opened under that skin shows.
 ##
 ## Teaches: one builder for every way a problem is opened (`DiagramFactory.create`, reached by `ProblemScreen.start` from the game, the practice set, the debug menu and the tests), a view that is derived from its
 ## owners each time (the problem, the entry, the mod chain, the skin) so that it is the same whichever way it came about, and a wrapper that forwards what it does not change.
@@ -54,16 +54,6 @@ func _init() -> void:
 	add_child(_stack)
 
 
-func _enter_tree() -> void:
-	if not SkinChoice.events.changed.is_connected(_on_skin_changed):
-		SkinChoice.events.changed.connect(_on_skin_changed)
-
-
-func _exit_tree() -> void:
-	if SkinChoice.events.changed.is_connected(_on_skin_changed):
-		SkinChoice.events.changed.disconnect(_on_skin_changed)
-
-
 func setup(new_problem: ProblemInstance) -> void:
 	super.setup(new_problem)
 	_asked_hash = 0
@@ -88,11 +78,9 @@ func _schedule_success_replay() -> DiagramTimeline:
 	return DiagramTimeline.new()
 
 
-## Something happened (`ProblemEvents`): the plain diagram hears it, and a script that is told events hears it on the next frame.
+## Something happened (`ProblemEvents`): a script that is told events hears it on the next frame.
 func told(event: Array) -> void:
-	if _plain != null:
-		_plain.told(event)
-	var screens := ModHost.problem_screen(type.id)
+	var screens := _screens()
 	if screens == null or not screens.spec.tells_problem_state():
 		return
 	ProblemEvents.push(_events, event)
@@ -114,15 +102,12 @@ func entry_changed(text: String) -> void:
 ## The step of the problem changed.
 func step_changed(new_step: ProblemFlow.Step) -> void:
 	_step = new_step
-	if _plain != null and _plain.is_playing() and new_step != ProblemFlow.Step.INTRO and new_step != ProblemFlow.Step.REPLAY:
-		set_process(true)                               # (the flow ended the animation before the screen showed its last tick: the script is told on the frame after, when the clock has caught up with the step)
-		return
 	_refresh()
 
 
 ## Asks the script again if what it is told is not what it was last told, and shows its answer; shows the plain picture when there is no script to ask. The events wait for the frame after they happened: only `with_events` (that frame) hands them over.
 func _refresh(with_events := false) -> void:
-	var screens := ModHost.problem_screen(type.id)
+	var screens := _screens()
 	var node := ModHost.mod(screens.pack_id) if screens != null else null
 	if node == null:
 		_events.clear()
@@ -168,7 +153,7 @@ func _clock(screens: ModProblems) -> Dictionary:
 func _on_animation_moved() -> void:
 	if problem == null:
 		return
-	var screens := ModHost.problem_screen(type.id)
+	var screens := _screens()
 	if screens == null or not screens.spec.tells_problem_state():
 		return
 	var animation := _plain.animation_name()
@@ -189,8 +174,13 @@ func _plain_sound_stop() -> void:
 
 
 func _plain_is_silenced() -> bool:
-	var screens := ModHost.problem_screen(type.id) if type != null else null
+	var screens := _screens()
 	return screens != null and screens.own_sounds and ModHost.mod(screens.pack_id) != null
+
+
+## The problem screens of the mod that draws this type now (the one place this node asks `ModHost`), or null: the plain picture shows.
+func _screens() -> ModProblems:
+	return ModHost.problem_screen(type.id) if type != null else null
 
 
 ## The try the player is on (1, or 2 after a miss), from the attempts so far.
@@ -204,18 +194,13 @@ func _show_answer(screens: ModProblems) -> void:
 	if drawn != null:
 		_showing_mod = true
 		_plain.visible = false
-		_stack.set_phase(float(maxi(_told_tick, 0)))              # (the tick of the animation the script was told; drawn when something changes, not every frame: a shader that moves by itself uses `TIME`)
+		_stack.set_phase(float(maxi(_told_tick, 0)))              # (the tick of the animation the script was told: the game clock is held while a problem is up, so the sector's phase, `GameClock.tick_count`, would stand still here; drawn when something changes, not every frame: a shader that moves by itself uses `TIME`)
 		_stack.show_drawn(drawn, screens.assets)
 
 
-## The skin in use changed: what the mod drew is resolved under the new skin without asking the script, and the plain picture is made again (unless it is playing: its animation ends in the picture of the skin it began under).
+## The skin in use changed: what the mod drew is resolved under the new skin without asking the script. (The plain diagram hears of the skin itself and looks its pictures up again, whatever it is doing.)
 func _on_skin_changed(_skin: GameSkin) -> void:
-	if problem == null:
-		return
-	if not _plain.is_playing():
-		_make_plain()
-		_plain.visible = not _showing_mod
-	var screens := ModHost.problem_screen(type.id)
+	var screens := _screens()
 	if _showing_mod and screens != null:
 		_show_answer(screens)
 
@@ -231,7 +216,7 @@ func _show_plain() -> void:
 	_plain.visible = true
 
 
-## Makes the plain diagram of the problem (the only one: a second `setup` or a new skin replaces it); its sounds and its end are this node's.
+## Makes the plain diagram of the problem (the only one: a second `setup` replaces it); its sounds and its end are this node's.
 func _make_plain() -> void:
 	if _plain != null:
 		remove_child(_plain)
@@ -254,20 +239,19 @@ func _on_animation_finished() -> void:
 
 ## What is on screen, as lines, for a test: the layers and their commands (a picture by its file), or the plain picture's items.
 func drawn_lines() -> Array[String]:
-	var lines: Array[String] = []
 	if not _showing_mod:
-		lines.append("plain %d items" % _plain.items.size())
-		return lines
-	for layer in _stack.layers():
-		lines.append("layer %s" % ("shaded" if layer.material != null else "plain"))
-		for command: Array in layer.commands:
-			lines.append(ModDraw.describe(command))
-	return lines
+		return ["plain %d items" % _plain.items.size()] as Array[String]
+	return _stack.lines()
 
 
 ## The layers (for a test).
 func layers() -> Array[ModLayer]:
 	return _stack.layers()
+
+
+## The pictures are the plain diagram's (this node keeps none): its items, its textures.
+func texture_of(item: DiagramItem) -> Texture2D:
+	return _plain.texture_of(item)
 
 
 ## The plain diagram (for a test).

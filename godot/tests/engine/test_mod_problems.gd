@@ -135,7 +135,6 @@ func test_a_problem_mod_is_given_the_problem_facts_and_other_mods_are_not() -> v
 	for value: Variant in api["problems"].values():
 		assert_bool(value is Object).is_false()                                                      # (numbers and names: nothing to reach through)
 	assert_bool(ModApi.new(Mods.loader()).build("x", null).has("problems")).is_false()
-	assert_that(ProblemState.WINDOW_SIZE).is_equal(Vector2i(DiagramBase.WINDOW_SIZE))
 
 
 # --- the text command of the shared validator -----------------------------------------------------------------------------
@@ -287,11 +286,11 @@ func test_the_mod_draws_the_screen_of_its_type_from_the_problem_and_the_entry() 
 	assert_int(_count(lines, "picture fish.png")).is_equal(12)                                         # (3 rows of 4)
 	assert_int(_count(lines, "text Typed: 0")).is_equal(1)                                              # (the calculator shows 0 before anything is typed)
 	assert_int(_count(lines, "text Fish in rows")).is_equal(1)
-	assert_int(_count(lines, "layer shaded")).is_equal(0)
+	assert_int(_count(lines, "layer shader=problems/glow.gdshader")).is_equal(0)
 	screen.calculator.press("7")
 	lines = _lines(screen)
 	assert_int(_count(lines, "text Typed: 7")).is_equal(1)
-	assert_int(_count(lines, "layer shaded")).is_equal(1)                                              # (the glow layer, through the mod's own shader)
+	assert_int(_count(lines, "layer shader=problems/glow.gdshader")).is_equal(1)                                              # (the glow layer, through the mod's own shader)
 	assert_int(_count(lines, "region fish.png")).is_equal(1)
 	var shaded := (screen.diagram as ModDiagram).layers().filter(func(layer: ModLayer) -> bool: return layer.material is ShaderMaterial)
 	assert_int(shaded.size()).is_equal(1)
@@ -338,9 +337,9 @@ func test_the_state_a_problem_mod_gets_is_plain_data_without_a_verdict() -> void
 	_plain_only(state, "state", bad)
 	assert_array(bad).is_empty()
 	for flow_step in ProblemFlow.Step.values():
-		assert_bool(ProblemState.STEPS.has(ProblemState.step_name(flow_step))).is_true()
-	assert_str(ProblemState.step_name(ProblemFlow.Step.INTRO)).is_equal("intro")
-	assert_str(ProblemState.step_name(ProblemFlow.Step.MESSAGE)).is_equal("waiting")
+		assert_bool(ProblemEvents.STEPS.has(ProblemEvents.step_name(flow_step))).is_true()
+	assert_str(ProblemEvents.step_name(ProblemFlow.Step.INTRO)).is_equal("intro")
+	assert_str(ProblemEvents.step_name(ProblemFlow.Step.MESSAGE)).is_equal("waiting")
 	for key: String in state:                                                                         # (no verdict, no count of misses, no oxygen, no hint or solution)
 		assert_bool(["correct", "right", "wrong", "misses", "tries", "oxygen", "hint", "solution", "success", "expected"].has(key)).is_false()
 	var fractions := ProblemKit.type_of("exact", "cn", 1, [ProblemKit.flat([2, ProblemKit.fraction(0, 1, 4)])])
@@ -743,7 +742,10 @@ func test_a_mod_draws_the_original_types_it_lists_and_the_original_draws_the_res
 		screen.free()
 	for type_id in [ModProblemShelf.NOT_DRAWN, 1, 33, 0, 28]:
 		var screen := _original_screen(type_id)
-		assert_bool(screen.diagram is ModDiagram).override_failure_message("type %d is not listed and the mod draws it" % type_id).is_false()
+		if DiagramFactory.takes_input(String(Catalog.problem_type(type_id).diagram["family"])):
+			assert_bool(screen.diagram is ModDiagram).override_failure_message("type %d is the engine's own input and a mod draws it" % type_id).is_false()
+		else:
+			assert_bool(_lines(screen)[0].begins_with("plain ")).override_failure_message("type %d is not listed and the mod draws it: %s" % [type_id, _lines(screen)]).is_true()
 		screen.free()
 	assert_object(ModHost.problem_screen(ModProblemShelf.ORIGINAL)).is_not_null()
 	assert_object(ModHost.problem_screen(ModProblemShelf.NOT_DRAWN)).is_null()
@@ -805,7 +807,7 @@ func test_the_state_of_an_original_type_is_the_types_own_data_and_still_no_verdi
 
 func test_a_mod_that_gives_nothing_leaves_the_original_diagram_of_the_type() -> void:
 	var plain := DiagramFactory.create(ProblemFactory.make(ModProblemShelf.ORIGINAL, 0, null, 0))
-	assert_bool(plain is ModDiagram).is_false()
+	assert_array((plain as ModDiagram).drawn_lines()).is_equal(["plain %d items" % plain.items.size()])          # (no mod: the plain picture of the data)
 	var expected := plain.items.size()
 	plain.free()
 	var shelf := _mount(["tides_faulty"] as Array[String])
@@ -821,11 +823,23 @@ func test_a_mod_that_gives_nothing_leaves_the_original_diagram_of_the_type() -> 
 	assert_bool(ModHost.is_quarantined(String(shelf.id))).is_true()
 	assert_object(ModHost.problem_screen(ModProblemShelf.ORIGINAL)).is_null()
 	var again := DiagramFactory.create(ProblemFactory.make(ModProblemShelf.ORIGINAL, 0, null, 0))
-	assert_bool(again is ModDiagram).override_failure_message("a quarantined mod still draws an original type").is_false()
+	assert_array((again as ModDiagram).drawn_lines()).override_failure_message("a quarantined mod still draws an original type").is_equal(["plain %d items" % expected])
 	assert_int(again.items.size()).is_equal(expected)
 	again.free()
 	screen.free()
 	Mods.loader().forgive(String(shelf.id))
+
+
+func test_a_mod_that_arrives_in_the_middle_of_an_original_problem_draws_from_then_on() -> void:
+	var screen := _original_screen()
+	var diagram := screen.diagram as ModDiagram
+	screen.advance_ticks(diagram.intro_length())
+	assert_bool(_lines(screen)[0].begins_with("plain ")).is_true()
+	_mount(["tides"] as Array[String])                                                             # (the pack joins the chain while the problem is up)
+	diagram.entry_changed("5")
+	assert_int(_count(_lines(screen), "text Typed: 5")).override_failure_message("the mod draws what one there from the start draws: %s" % [_lines(screen)]).is_equal(1)
+	assert_bool(diagram.plain().visible).is_false()
+	screen.free()
 
 
 func test_a_mod_that_is_gone_in_the_middle_of_an_original_problem_leaves_the_original_diagram() -> void:
@@ -921,7 +935,7 @@ func test_a_skin_changed_in_the_middle_of_a_problem_is_what_the_pictures_by_key_
 	assert_object(after[0]).is_same(Assets.picture_by_key(key))
 	assert_int(ModHost.mod(String(tides.id)).call("times_asked")).override_failure_message("a skin change asks the script nothing").is_equal(asked)
 	var plain_pictures := diagram.plain().pictures(0)
-	assert_object(plain_pictures[0].texture).override_failure_message("the plain picture is resolved under the new skin too").is_same(worn)
+	assert_object(diagram.plain().texture_of(plain_pictures[0])).override_failure_message("the plain picture is resolved under the new skin too").is_same(worn)
 	SkinChoice.select(SkinChoice.original())
 	assert_object(_textures(diagram)[0]).is_same(before[0])
 	var opened_late := _original_screen()                                                       # (a screen opened under the skin shows what the changed one shows)
@@ -945,7 +959,7 @@ func test_the_manifest_form_and_the_docs_agree() -> void:
 	assert_bool(doc.contains("`%s`" % ModProblems.FAMILY)).is_true()
 	for event_name in ProblemEvents.NAMES:
 		assert_bool(doc.contains("`%s`" % event_name)).override_failure_message("CONTENT.md does not name the event `%s`" % event_name).is_true()
-	for step in ProblemState.STEPS:
+	for step in ProblemEvents.STEPS:
 		assert_bool(doc.contains("`%s`" % step)).override_failure_message("CONTENT.md does not name the step `%s`" % step).is_true()
 
 
@@ -1144,7 +1158,7 @@ class SpyDiagram:
 		heard.append(" ".join(event.map(func(part: Variant) -> String: return str(part))))
 
 
-func test_every_diagram_hears_what_the_flow_decided_through_the_screen_and_the_plain_diagram_under_a_mod_does_too() -> void:
+func test_every_diagram_hears_what_the_flow_decided_from_started_and_the_plain_diagram_under_a_mod_hears_none() -> void:
 	var screen: ProblemScreen = ProblemRunner.SCREEN_SCENE.instantiate()
 	add_child(screen)
 	var problem := ProblemFactory.make(6, 2, null, 0)
@@ -1164,5 +1178,5 @@ func test_every_diagram_hears_what_the_flow_decided_through_the_screen_and_the_p
 	diagram._plain = plain
 	diagram.add_child(plain)
 	drawn.submit_answer(NumberValue.parse("12"))
-	assert_array(plain.heard).is_equal(["verdict true 1", "success true", "step waiting"])
+	assert_array(plain.heard).is_empty()
 	drawn.free()

@@ -56,8 +56,7 @@ func test_a_mod_that_draws_every_original_type_it_may_leaves_the_originals_diagr
 	var seen := {}
 	var baseline := {}
 	for entry: Array in problems:
-		var diagram := DiagramFactory.create(ProblemInstance.build(Catalog.problem_type(entry[0]), entry[1], entry[2], 0))
-		assert_bool(diagram is ModDiagram).is_false()
+		var diagram := DiagramFactory.plain(ProblemInstance.build(Catalog.problem_type(entry[0]), entry[1], entry[2], 0))
 		baseline[entry] = _signature(diagram)
 		diagram.free()
 		if not seen.has(entry[0]):
