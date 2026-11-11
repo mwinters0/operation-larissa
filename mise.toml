@@ -51,8 +51,34 @@ mkdir -p "$out"
 tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --export-pack=${usage_pack} --archive "--out=$out" ${usage_version:+--version=$usage_version} ${usage_no_reach:+--no-reach}
 '''
 
+[tasks."pack:archive"]
+description = "Write <id>.larissa, the pack file of a pack folder of yours (checked first), into the current directory or --out; the pack it is laid over (its base) must be found: mise run pack:archive <folder> [--out <dir>]"
+usage = '''
+arg "<folder>" help="the pack folder (relative to the current directory, or absolute)"
+flag "--out <dir>" help="the folder the pack file goes into (default the current directory)"
+'''
+run = '''
+set -e
+folder="${usage_folder}"
+case "$folder" in /*) ;; *) folder="{{cwd}}/$folder" ;; esac
+out="${usage_out:-{{cwd}}}"
+case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
+mkdir -p "$out"
+tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- "--archive-folder=$folder" "--out=$out" --no-reach
+'''
+
+[tasks."pack:install"]
+description = "Install a pack (a folder, or a <id>.larissa) into the game's user folder, so that --pack=<id> finds it: mise run pack:install <folder-or-file>"
+usage = 'arg "<pack>" help="a pack folder or a .larissa file (relative to the current directory, or absolute)"'
+run = '''
+set -e
+pack="${usage_pack}"
+case "$pack" in /*) ;; *) pack="{{cwd}}/$pack" ;; esac
+tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- "--install=$pack"
+'''
+
 [tasks."examples:pack"]
-description = "Write <example>.larissa, the pack file of the example pack examples/packs/<example> (modern), into the current directory or --out; the pack it is laid over (legacy) must be found: mise run examples:pack <example> [--out <dir>]"
+description = "pack:archive for the example pack examples/packs/<example> (modern): mise run examples:pack <example> [--out <dir>]"
 usage = '''
 arg "<example>"
 flag "--out <dir>" help="the folder the pack file goes into (default the current directory)"
@@ -61,14 +87,13 @@ run = '''
 set -e
 out="${usage_out:-{{cwd}}}"
 case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
-mkdir -p "$out"
-tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- "--archive-folder={{config_root}}/examples/packs/${usage_example}" "--out=$out" --no-reach
+mise run pack:archive "{{config_root}}/examples/packs/${usage_example}" --out "$out"
 '''
 
 [tasks."examples:install"]
-description = "Install the example pack examples/packs/<example> (modern) into the game's user folder, so that --pack=<example> finds it: mise run examples:install <example>"
+description = "pack:install for the example pack examples/packs/<example> (modern): mise run examples:install <example>"
 usage = 'arg "<example>"'
-run = 'tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- "--install={{config_root}}/examples/packs/${usage_example}"'
+run = 'mise run pack:install "{{config_root}}/examples/packs/${usage_example}"'
 
 [tasks."skin:templates"]
 description = "Write the art templates of a skin (one flat-colour PNG per picture a skin may replace, with its key and size on it) into the folder skin_templates of the current directory or --out; --pack legacy gives the original's sizes: mise run skin:templates [--out <dir>] [--pack <id>]"

@@ -45,7 +45,7 @@ tools/godot.sh --path godot -- --pack=reef --skin=reef
 `--pack=` chooses the pack the game uses (your folder laid over `legacy`); `--skin=` wears its skin. The skin's id is the pack's id. In a
 debug build you can also press **F3**, then **S**, to switch skins while you play. To play the example itself
 instead, `mise run examples:install modern` installs it into the game's user folder and `--pack=modern --skin=modern` wears it
-(`--uninstall=modern` of the pack tool takes it out again: step 8).
+(`--uninstall=modern` of the pack tool takes it out again: step 8). The example pack is told in [`CONTENT.md`](CONTENT.md), "Skins and packs".
 
 For a quick look at one screen without going through the menus, the sector viewer takes the same two options and can save a picture:
 
@@ -78,7 +78,7 @@ in the order of the keys, each with the sentence that says what it does and the 
 
 | Key | What it does | Reference |
 | --- | --- | --- |
-| `"requires_api": 5` | the version of the skin API the manifest is written for. A manifest with `render`, `pictures` (the problem screen's `problem_art` too), `hud_font`, `layers`, `theme` (the calculator's `key` and `display` too) and no `entry` says at least 5 | `SKIN_API.md`, "A skin with no script" |
+| `"requires_api"` | the version of the mod API the manifest is written for; a skin with no script needs the one that draws the game | `CONTENT.md`, "API versions" |
 | `render` | filtering and pixel snapping while the skin is worn. The example's `"linear"` and `false` make the original's small pictures smooth; leave `render` out and the original's `"nearest"` stays | the first bullet of the list there |
 | `hud_font` | the console's three boxes (game, zone, sector) as text in your font, with a size and a colour (step 5) | `hud_font` bullet |
 | `theme` | the look of the menus (sign-in, the dialogs, the message box) and of the problem screen's text and calculator keys: a font, colours, panel and button styles, pictures by key (step 5) | "The menus' theme" |
@@ -176,7 +176,7 @@ font, named colours, and the styles of panels and buttons, each field optional a
 }
 ```
 
-Put it in (the manifest says `"requires_api": 5`), start the game and open a dialog: the message box, with its title in your colour and its
+Put it in, start the game and open a dialog: the message box, with its title in your colour and its
 frame in your fill, is the quickest look. Leave `hud_font`'s `file` out and the console's boxes use the theme's font, so one font dresses the console and the menus.
 A style may also be a picture of yours: `"pressed": { "picture": "ui_picture/button_pressed", "slice": [4, 4, 4, 4] }` (map the key in `pictures`; `slice` is
 the margins of the picture that stay unstretched). The controls keep their places and what they do: only fonts, colours, borders and pictures change.
@@ -274,20 +274,19 @@ code ([`MAKING_CONTENT.md`](MAKING_CONTENT.md), section 10).
 A pack in `godot/packs/` is yours alone: it is in your project, not in your game's user folder, and not in a copy of the game you give someone else. To hand it over, write the pack file:
 
 ```sh
-tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --archive-folder=godot/packs/reef --out=$HOME/packs --no-reach
+mise run pack:archive godot/packs/reef --out $HOME/packs
 ```
 
-That writes `$HOME/packs/reef.larissa`: the folder as one file, checked first. The task for the
-example is `mise run examples:pack modern [--out <dir>]` (it writes `modern.larissa`: `--archive-folder=examples/packs/modern`).
+That writes `$HOME/packs/reef.larissa`: the folder as one file, checked first (`mise run examples:pack modern` does the same for the example pack). A folder anywhere will do, relative to where you are or absolute.
 
 To try the file the way a friend would:
 
 ```sh
-tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --install=$HOME/packs/reef.larissa
+mise run pack:install $HOME/packs/reef.larissa
 tools/godot.sh --path godot -- --pack=reef --skin=reef
 ```
 
-`--install=` copies a pack (a folder or a `.larissa`) into the game's user folder, `user://packs/` (the pack screen, **P** on the sign-in screen, does the same with
+`pack:install` (`pack_tool --install=`) copies a pack (a folder or a `.larissa`) into the game's user folder, `user://packs/` (the pack screen, **P** on the sign-in screen, does the same with
 a button). The id must not be one the project already has: an installed `reef` and a `godot/packs/reef/` are the same id, and the
 project's folder is used first ([`CONTENT.md`](CONTENT.md), "Where packs are found"), so take your working folder out of the way, or use another id, to see the installed one.
 `--list` shows what is found and which is used; `--uninstall=reef` takes the pack out of `user://packs/` again.

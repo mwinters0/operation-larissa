@@ -407,7 +407,7 @@ all, so the pack you exported from them answers the same data.
    found by id is used, and `legacy` sorts before `reef_school`, so the flag is how you get the pack you installed.
 4. **Reef School** is now a button in the new-player dialog. **Remove** (on the pack screen) deletes the pack. A record of a pack's campaign whose pack is not in use waits, unplayable, until it is back.
 
-The same from a terminal: `--install=/path/reef_school.larissa` (also `--uninstall=`, `--list`, `--check=`). The pack tool runs the options in the order install, uninstall, new, check, export, list.
+The same from a terminal: `mise run pack:install /path/reef_school.larissa` (the pack tool's `--install=`; also `--uninstall=`, `--list`, `--check=`, and `mise run pack:archive <folder>` writes a pack folder you wrote by hand as a `.larissa`). The pack tool runs the options in the order install, uninstall, new, check, export, list.
 The exit code is 1 for an error or a failed step, 2 for a bad option.
 
 **Sharing.** Hand the `.larissa` pack file (or the `reef_school` folder) to a classmate. They need the same game version, the pack your pack is laid over (named above) and the steps above. The things that go wrong:
@@ -499,7 +499,7 @@ All from the repository root; the arguments after `--` belong to the scene.
 | --- | --- |
 | `res://src/debug/new_sector.tscn` | `--template` / `--copy=N`, `--index=N`, `--zone=Z`, `--game=G`, `--dir=DIR` (where to write), `--source-dir=DIR` (where `--copy` reads) |
 | `res://src/checks/check_sector.tscn` | `--sector=3,7` / `--file=PATH` / `--all`, `--changes`, `--checks`, `--no-reach`, `--shared`, `--pack=ID` |
-| `res://src/packs/pack_tool.tscn` | `--list`, `--check=WHERE`, `--no-reach`, `--export-campaign=ID`, `--export-pack=ID`, `--archive-folder=DIR`, `--out=DIR`, `--archive`, `--pack-id= --title= --version= --author= --description= --base=ID`, `--install=WHERE`, `--uninstall=ID`, `--new=ID --from=PACK`, `--pack=ID` |
+| `res://src/packs/pack_tool.tscn` | `--list`, `--check=WHERE`, `--no-reach`, `--export-campaign=ID`, `--export-pack=ID`, `--archive-folder=DIR`, `--out=DIR`, `--archive`, `--pack-id= --title= --version= --author= --description= --base=ID`, `--install=WHERE`, `--uninstall=ID`, `--new=ID --from=PACK`, `--pack=ID` (`mise run pack:archive <folder> [--out <dir>]` is `--archive-folder` and `mise run pack:install <folder-or-file>` is `--install`, with paths relative to where you are) |
 | `res://src/debug/sector_viewer.tscn` | `--sector= --screen= --fly --currents --collisions --level= --skin= --presenter=debug_rects --overlay --ticks= --snapshot=PATH` |
 | `res://src/debug/sector_overview.tscn` | `--sector= --screen= --zoom= --reach --paths --currents --checks --changed --snapshot=PATH` |
 | `res://src/debug/foe_sandbox.tscn` | `--sector= --screen= --foe=N --pause --fly --touch=N --ticks= --snapshot=` |
@@ -547,7 +547,7 @@ supplies wins over every skin.
 ## C3. Try it
 
 - **Run the game in it**: `tools/godot.sh --path godot -- --skin=reef`. The id is the folder name. An unknown id is a loud error and the original is used.
-- **Switch while playing**: in a debug build press **F3**, then **S**: the next skin (original, then every folder of `res://skins/` with a `skin.tres`, then the original again). The game goes on as it was.
+- **Switch while playing**: in a debug build press **F3**, then **S**: the next skin (`SkinChoice.available()`: the original, then every folder of `res://skins/` with a `skin.tres`, then the skins of the pack in use, then the original again). The game goes on as it was.
 - **See what the rules test**: press **O** (after F3 in the game; plain `O` in the sector viewer; or `-- --overlay`) to lay the debug rectangles over your pictures: the walls, the sub's hurt rectangle and wall box,
   each creature's hit rectangle, the pellets, pieces, triggers and the dock. A picture should cover its rectangle. `R` (game, after F3) or `P` (viewer) swaps the picture for the rectangles.
 - **Compare with the original**: `res://src/debug/skin_compare.tscn` runs one sector and shows it twice, the original on the left and your skin on the right (two 640 x 400 viewports bound to the same rules). Open it and press F6, or
@@ -564,7 +564,7 @@ any pack (step 10: `pack_tool --check=<folder>`, `--install=`), it needs the god
 
 **Limits.**
 
-- **A mod skin is not a project skin.** It draws rectangles, lines and pictures (`SKIN_API.md` lists them), not scenes, animation trees, 3D models or fonts, and it keeps the game's HUD, screens and sounds. `skins/creatures/` is a folder of the project and is not shared as a pack; `examples/packs/modern/` is a skin pack with no script.
+- **A mod skin is not a project skin.** Its script draws rectangles, lines, pictures and text (`SKIN_API.md` lists them), not scenes, animation trees or 3D models; its manifest can put a shader on a layer, a font and colours on the HUD and the menus, a theme on the problem screens and its own pictures in place of the game's. The game's layouts (every rectangle), sounds, rules and timings stay as they are. `skins/creatures/` is a folder of the project and is not shared as a pack; `examples/packs/modern/` is a skin pack with no script.
 - **No player menu.** The pack screen does not choose a skin. A player picks it with `--skin=<id>` on the command line; F3-then-S is a debug build feature.
 - **Art you make from the original's art is the original's.** A skin you share should have pictures you drew yourself.
 - **Some things cannot be skinned one by one yet** ([`ROADMAP.md`](../ROADMAP.md)): creature and decoration pictures that the registry has not named share one key; tiles and backgrounds have no 4x path;

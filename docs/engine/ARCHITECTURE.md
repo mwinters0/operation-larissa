@@ -248,6 +248,7 @@ or of compiled scripts. The rule is **derive, don't patch**:
    state").
 5. **A cache names what it derives from.** A cache of content (pictures, compiled scripts, tables) is cleared by the signal of its
    source (`Catalog.packs_changed`, a skin change, the resource's `changed`) or keyed by it.
+   A view that draws what a mod draws never holds the mod: `ModDiagram` asks `ModHost` which mod draws its type each time it is asked and when `ModHost.mods_changed` is emitted.
 6. **Harnesses take the game's paths.** What runs in the game runs in the test: a scenario step makes the call the game makes, and the
    creatures tick wherever they tick in the game. A shortcut that skips a step hides exactly the bugs of this rule.
 
