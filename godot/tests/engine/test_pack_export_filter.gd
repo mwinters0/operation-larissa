@@ -1,6 +1,6 @@
 class_name TestPackExportFilter
 extends GdUnitTestSuite
-## Teaches: what an export carries of `res://packs/`: nothing (`PackExportFilter`, registered by the pack tools plugin). A pack reaches an exported game as a pack file (`<id>.larissa`) next to it.
+## Teaches: what an export carries of `res://packs/` (nothing) and of `res://skins/` (the original skin and no other): `PackExportFilter`, registered by the pack tools plugin. A pack reaches an exported game as a pack file (`<id>.larissa`) next to it.
 ## The filters in `export_presets.cfg` say the same for an export without the plugin, and the tool window's "New pack" job builds the command line of `pack_tool --new`.
 
 
@@ -15,6 +15,16 @@ func test_a_game_export_carries_no_pack() -> void:
 	assert_bool(PackExportFilter.carries("res://data/rules/durations.json")).is_true()
 
 
+func test_a_game_export_carries_the_original_skin_and_no_other() -> void:
+	assert_bool(PackExportFilter.carries(SkinChoice.path_of(SkinChoice.ORIGINAL))).is_true()           # (the game cannot run without it: `SkinChoice.original`)
+	assert_bool(PackExportFilter.carries("res://skins/original/anything.png")).is_true()
+	assert_bool(PackExportFilter.carries(SkinChoice.path_of(&"creatures"))).is_false()
+	assert_bool(PackExportFilter.carries("res://skins/creatures/creature_rig.gd")).is_false()
+	assert_bool(PackExportFilter.carries("res://skins/a_skin_of_tomorrow/skin.tres")).is_false()
+	assert_bool(PackExportFilter.carries("res://skins/originality/skin.tres")).is_false()              # (a skin whose id only starts with "original")
+	assert_bool(PackExportFilter.carries("res://src/skins/game_skin.gd")).is_true()                    # (the code that wears a skin is the game's)
+
+
 func test_the_presets_in_the_file_say_the_same() -> void:
 	var presets := ConfigFile.new()
 	assert_int(presets.load("res://export_presets.cfg")).is_equal(OK)
@@ -24,7 +34,7 @@ func test_the_presets_in_the_file_say_the_same() -> void:
 			continue
 		names.append(presets.get_value(section, "name"))
 		assert_str(presets.get_value(section, "include_filter")).not_contains("packs/")
-		assert_str(presets.get_value(section, "exclude_filter")).contains("packs/dev/*").contains("packs/legacy/*")
+		assert_str(presets.get_value(section, "exclude_filter")).contains("packs/dev/*").contains("packs/legacy/*").contains("skins/creatures/*")
 	assert_array(names).is_equal(["Linux", "Windows Desktop", "Web"])
 
 

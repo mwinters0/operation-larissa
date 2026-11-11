@@ -121,8 +121,8 @@ func show_between_ticks(_fraction: float) -> void:
 
 
 ## The GAME's time as a shader wants it: the ticks so far plus `fraction` of the current one (`view.tick_number` + the `fraction` that `show_between_ticks` is given), 0 with no view. It grows smoothly, 12.17 per second at the
-## speed of play, and stands still while the game clock does (a problem or a message is open, the sub dissolves, a pause): a shader's `TIME` does neither. The one computation of the `phase` uniform, for the modern skin's water
-## and for the layers of a data skin (`OriginalPresenter`).
+## speed of play, and stands still while the game clock does (a problem or a message is open, the sub dissolves, a pause): a shader's `TIME` does neither. The one computation of the `phase` uniform, for the layers of a data skin
+## (`OriginalPresenter`).
 func game_phase(fraction: float) -> float:
 	return view.tick_number + fraction if view != null else 0.0
 

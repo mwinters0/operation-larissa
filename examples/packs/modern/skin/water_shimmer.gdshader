@@ -1,5 +1,5 @@
 shader_type canvas_item;
-// The water of the "modern" skin: a gentle shimmer over the PICTURE BEHIND a screen (the background sprite, nothing else). Two
+// The water of the "modern" example skin: a gentle shimmer over the PICTURE BEHIND a screen (the `background` layer, nothing else). Two
 // things happen to that picture, both slowly and both small:
 //
 //   1. WAVER. Every point of the picture is looked up a little to the side of where it is (sines of position and time), so the
@@ -10,11 +10,11 @@ shader_type canvas_item;
 //      (where the light comes from) and gone by the bottom.
 //
 // IT IS ONLY A PICTURE. The walls are the screen's tile bytes and the rules look at those (`TileGrid`), the creatures, the sub and
-// the decorations are other nodes drawn over this one, and this shader changes none of them. Nothing here reads a rule or is read
+// the decorations are other layers drawn over this one, and this shader changes none of them. Nothing here reads a rule or is read
 // by one; a skin that changes its look cannot change the game (`tests/engine/test_skins_dont_change_the_game.gd`).
 //
-// TIME IS THE GAME'S. `phase` is not `TIME`: the presenter sets it every frame to "ticks so far + the fraction of the current tick"
-// (modern_presenter.gd). The water therefore moves at the speed of the game clock and STANDS STILL when the clock is held (a
+// TIME IS THE GAME'S. `phase` is not `TIME`: the game sets it every frame to "ticks so far + the fraction of the current tick"
+// (`SectorPresenter.game_phase`; a manifest cannot set it). The water therefore moves at the speed of the game clock and STANDS STILL when the clock is held (a
 // message box, a problem, the sub dissolving, a pause) or stepped by hand - which `TIME` cannot do, it never stops. The same scene
 // at the same tick always has the same water, which also makes a screenshot repeatable.
 

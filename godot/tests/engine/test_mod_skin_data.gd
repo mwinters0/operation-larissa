@@ -299,13 +299,13 @@ func test_a_skin_that_maps_a_file_the_pack_lacks_is_refused() -> void:
 
 
 func test_a_skin_with_the_id_of_a_skin_of_the_game_is_refused() -> void:
-	var shelf := PackShelf.new(&"modern")
+	var shelf := PackShelf.new(&"creatures")
 	_shelves.append(shelf)
 	shelf.add_mod_fixture(FIXTURE)
 	ModSkinShelf.add_files(shelf)
 	shelf.mount()
 	Mods.sync()
-	assert_str(ModHost.failure("modern")).contains("id of a skin that comes with the game")
+	assert_str(ModHost.failure("creatures")).contains("id of a skin that comes with the game")
 
 
 # --- what wearing it changes ------------------------------------------------------------------------------------------------

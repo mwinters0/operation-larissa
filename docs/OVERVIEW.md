@@ -100,8 +100,9 @@ Read: [`create/CONTENT.md`](create/CONTENT.md), section 3; the tutorial [`create
 A skin (`GameSkin`) is the presentation layer as data: pictures by name, high-resolution art, fonts, shaders, render settings and
 even a whole presenter scene, with everything it does not map falling back to the original. A presenter sees the rules only
 through `SimView` (copies of the state and 28 events), and every skin in `godot/skins/` is played against the original by the
-tests and must give the same trace. Two proof skins ship: `modern` (a water shader and another font) and `creatures` (an
-animation-tree fish and a 3D puffer).
+tests and must give the same trace. One skin besides the original is in the project: `creatures` (an animation-tree fish and a 3D puffer;
+models and animation trees need real nodes, so only a project skin can do that). `modern` (a water shader and another font, no code) is the
+example of a skin pack, `examples/packs/modern/`, played by the same tests.
 
 A skin from a stranger is a mod pack: a sandboxed script that is given the state as plain data and returns what to draw, so it can change nothing but the picture; it is chosen like any other skin and played by the same tests.
 A mod pack can also add gameplay: a campaign names the mods it uses, and only a run of that campaign asks them, at three points (the judging of the answers of a problem type the mod added, a creature instruction, a sub ability), with plain data in and plain data out that the game validates; the originals declare none and the tests prove they ask nobody ([`create/CONTENT.md`](create/CONTENT.md), "Rule hooks").

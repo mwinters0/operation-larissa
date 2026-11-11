@@ -499,7 +499,7 @@ All from the repository root; the arguments after `--` belong to the scene.
 | --- | --- |
 | `res://src/debug/new_sector.tscn` | `--template` / `--copy=N`, `--index=N`, `--zone=Z`, `--game=G`, `--dir=DIR` (where to write), `--source-dir=DIR` (where `--copy` reads) |
 | `res://src/checks/check_sector.tscn` | `--sector=3,7` / `--file=PATH` / `--all`, `--changes`, `--checks`, `--no-reach`, `--shared`, `--pack=ID` |
-| `res://src/packs/pack_tool.tscn` | `--list`, `--check=WHERE`, `--no-reach`, `--export-campaign=ID`, `--export-pack=ID`, `--out=DIR`, `--archive`, `--pack-id= --title= --version= --author= --description= --base=ID`, `--install=WHERE`, `--uninstall=ID`, `--new=ID --from=PACK`, `--pack=ID` |
+| `res://src/packs/pack_tool.tscn` | `--list`, `--check=WHERE`, `--no-reach`, `--export-campaign=ID`, `--export-pack=ID`, `--archive-folder=DIR`, `--out=DIR`, `--archive`, `--pack-id= --title= --version= --author= --description= --base=ID`, `--install=WHERE`, `--uninstall=ID`, `--new=ID --from=PACK`, `--pack=ID` |
 | `res://src/debug/sector_viewer.tscn` | `--sector= --screen= --fly --currents --collisions --level= --skin= --presenter=debug_rects --overlay --ticks= --snapshot=PATH` |
 | `res://src/debug/sector_overview.tscn` | `--sector= --screen= --zoom= --reach --paths --currents --checks --changed --snapshot=PATH` |
 | `res://src/debug/foe_sandbox.tscn` | `--sector= --screen= --foe=N --pause --fly --touch=N --ticks= --snapshot=` |
@@ -516,7 +516,7 @@ A skin changes how the game *looks*, never how it *plays*: every skin is checked
 
 ## C1. What a skin can contain
 
-A skin is a `GameSkin` resource, `res://skins/<id>/skin.tres`, in a folder of the same name (`godot/skins/original/`, `modern/` and `creatures/` are the three that exist). Its fields
+A skin is a `GameSkin` resource, `res://skins/<id>/skin.tres`, in a folder of the same name (`godot/skins/original/` and `creatures/` are the two that exist). Its fields
 (`godot/src/skins/game_skin.gd` documents them all):
 
 | Field | What it does |
@@ -541,8 +541,7 @@ supplies wins over every skin.
 2. Start with one picture. Add an entry to `pictures` (key `ui_picture/title_sky`, value a PNG you drew), or put PNGs in a folder and point `art_folder` at it (for same-size pictures `art_scale` 1;
    for pictures four times as large 4). Anything you do not map is the original's.
 3. For a change to how a sector is *drawn* (animation, shaders, a different sub), make a presenter: right-click `res://src/gameplay/original_presenter.tscn` > **New Inherited Scene**, save it in
-   your skin's folder, attach a script that extends `OriginalPresenter` and overrides what you need, and set the skin's `presenter_scene`. `skins/modern/modern_presenter.tscn` is the worked example (a water
-   shimmer over the background), `skins/creatures/` the ambitious one. A presenter written only against the skin API (`view`) is guaranteed not to change a trace ([`SKIN_API.md`](SKIN_API.md)).
+   your skin's folder, attach a script that extends `OriginalPresenter` and overrides what you need, and set the skin's `presenter_scene`. `skins/creatures/` is the worked example. (A skin that only dresses the original presenter needs no scene: it is a skin pack, `examples/packs/modern/`, a manifest with a shader and a font.) A presenter written only against the skin API (`view`) is guaranteed not to change a trace ([`SKIN_API.md`](SKIN_API.md)).
 4. For text in your own font, give `hud_labels` a `HudLabels` resource.
 
 ## C3. Try it
@@ -565,7 +564,7 @@ any pack (step 10: `pack_tool --check=<folder>`, `--install=`), it needs the god
 
 **Limits.**
 
-- **A mod skin is not a project skin.** It draws rectangles, lines and pictures (`SKIN_API.md` lists them), not scenes, animation trees, 3D models or fonts, and it keeps the game's HUD, screens and sounds. `skins/modern/` and `skins/creatures/` are folders of the project and are not shared as packs.
+- **A mod skin is not a project skin.** It draws rectangles, lines and pictures (`SKIN_API.md` lists them), not scenes, animation trees, 3D models or fonts, and it keeps the game's HUD, screens and sounds. `skins/creatures/` is a folder of the project and is not shared as a pack; `examples/packs/modern/` is a skin pack with no script.
 - **No player menu.** The pack screen does not choose a skin. A player picks it with `--skin=<id>` on the command line; F3-then-S is a debug build feature.
 - **Art you make from the original's art is the original's.** A skin you share should have pictures you drew yourself.
 - **Some things cannot be skinned one by one yet** ([`ROADMAP.md`](../ROADMAP.md)): creature and decoration pictures that the registry has not named share one key; tiles and backgrounds have no 4x path;
@@ -599,7 +598,7 @@ Collected from [`EDITORS.md`](../engine/EDITORS.md), the open items of [`ROADMAP
 
 - **Never used by hand in a windowed editor:** the screen editor (buttons, dialogs, dragging, Ctrl+S ordering, undo with the real `EditorUndoRedoManager`, the debugger channel), the Sector panel, "New sector...", "Check sector...",
   "Export pack..." and "Check pack...", the pack screen. They are covered by tests that call the same code and by command-line processes.
-- **Never played by eye:** a campaign of your own, a skin mod, the debug-rectangles presenter through a whole real-time session, the `modern` and `creatures` skins through a whole session.
+- **Never played by eye:** a campaign of your own, a skin mod, the debug-rectangles presenter through a whole real-time session, the example skin pack `modern` and the `creatures` skin through a whole session.
 - **Things with no editor tool, only files or the Inspector on a `.tres`:** a campaign (step 7); the pack source folder (step 9); a finale sector from the template; names for your own sector's creatures, flags and screens; a
   song of your own in a sector's `music_name`; a replacement math problem type; a skin (C2).
 - **Existing creatures only:** a new creature is a copy of an existing one (or a blank record in a sector with none).

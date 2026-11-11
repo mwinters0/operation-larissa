@@ -504,7 +504,7 @@ other pictures cannot move a button or change a random draw.
 | `src/packs/` | the pack tools: `PackCheck` / `PackReport`, `PackExport`, `PackInstall`, `PackCopy`, `PackChoice`, `PackFiles`, `pack_tool.tscn` ([`PACKS.md`](PACKS.md)) |
 | `src/debug/` | scenes for looking and tuning, each runnable with F6, and `GameDebug`; nothing in the game depends on them (below) |
 | `addons/` | the editor plugins ([`EDITORS.md`](EDITORS.md)), gdUnit4, `midi/` (the MIDI player), `godot_ai/` (editor integration) |
-| `skins/` | the skins: `original`, `modern`, `creatures` |
+| `skins/` | the project's skins: `original`, `creatures` (a skin pack, `examples/packs/modern/`, lives outside the project) |
 | `packs/` | `dev/` (committed) and `legacy/` (made by the importer, git-ignored); any other pack folder there is git-ignored |
 | `data/` | project-level data (above) |
 | `names/` | the hand-made name registry `original.json` ([`../create/NAMES.md`](../create/NAMES.md)) |

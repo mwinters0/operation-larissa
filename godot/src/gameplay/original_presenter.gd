@@ -194,7 +194,7 @@ func _dress_layers() -> void:
 			_layer_materials.erase(layer)
 
 
-## The `phase` of every material a layer wears: the game's time (`SectorPresenter.game_phase`), the same one the modern skin's water has.
+## The `phase` of every material a layer wears: the game's time (`SectorPresenter.game_phase`), the one a layer's shader reads as `phase`.
 func _show_phase(fraction: float) -> void:
 	var phase := game_phase(fraction)
 	for material in _layer_materials.values():

@@ -1,0 +1,61 @@
+{
+ "id": "modern",
+ "title": "Modern (example skin)",
+ "version": "1.0",
+ "author": "Operation Larissa",
+ "description": "The example skin pack: a water shimmer behind the screen, Exo 2 on the HUD, smooth filtering, and the HUD's pictures as flat templates to draw over. Laid over the legacy pack.",
+ "base": "legacy",
+ "mod": {
+  "requires_api": 5,
+  "skin": {
+   "render": {
+    "texture_filter": "linear",
+    "snap_transforms": false,
+    "snap_vertices": false
+   },
+   "hud_font": {
+    "file": "skin/fonts/Exo2.ttf",
+    "size": 14,
+    "color": "#dbf7ff"
+   },
+   "shaders": [
+    "skin/water_shimmer.gdshader",
+    "skin/sharp_walls.gdshader"
+   ],
+   "layers": {
+    "background": {
+     "shader": "skin/water_shimmer.gdshader"
+    },
+    "walls": {
+     "shader": "skin/sharp_walls.gdshader"
+    }
+   },
+   "pictures": {
+    "ui_picture/ui_1189": "skin/ui_picture/ui_1189.png",
+    "ui_picture/ui_1190": "skin/ui_picture/ui_1190.png",
+    "ui_picture/ui_1191": "skin/ui_picture/ui_1191.png",
+    "ui_picture/ui_1192": "skin/ui_picture/ui_1192.png",
+    "ui_picture/ui_1193": "skin/ui_picture/ui_1193.png",
+    "ui_picture/ui_1194": "skin/ui_picture/ui_1194.png",
+    "ui_picture/ui_1195": "skin/ui_picture/ui_1195.png",
+    "ui_picture/ui_1196": "skin/ui_picture/ui_1196.png",
+    "ui_picture/ui_1197": "skin/ui_picture/ui_1197.png",
+    "ui_picture/ui_1198": "skin/ui_picture/ui_1198.png",
+    "ui_picture/ui_1199": "skin/ui_picture/ui_1199.png",
+    "ui_picture/ui_1200": "skin/ui_picture/ui_1200.png",
+    "ui_picture/ui_1201": "skin/ui_picture/ui_1201.png",
+    "ui_picture/ui_1202": "skin/ui_picture/ui_1202.png",
+    "ui_picture/ui_1203": "skin/ui_picture/ui_1203.png",
+    "ui_picture/ui_1204": "skin/ui_picture/ui_1204.png",
+    "ui_picture/ui_1205": "skin/ui_picture/ui_1205.png",
+    "ui_picture/ui_1206": "skin/ui_picture/ui_1206.png",
+    "ui_picture/ui_1207": "skin/ui_picture/ui_1207.png",
+    "ui_picture/ui_1208": "skin/ui_picture/ui_1208.png",
+    "ui_picture/ui_1210": "skin/ui_picture/ui_1210.png",
+    "ui_picture/ui_1211": "skin/ui_picture/ui_1211.png",
+    "ui_picture/ui_1212": "skin/ui_picture/ui_1212.png",
+    "ui_picture/ui_1213": "skin/ui_picture/ui_1213.png"
+   }
+  }
+ }
+}

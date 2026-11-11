@@ -52,7 +52,7 @@ and the window gets the skin's render settings; screens made later (a problem, a
 pause, `,` `.` or the drop-down for the right-hand skin, `O` rectangles over both halves, `L` level, `F1` help.
 
 ```
-tools/godot.sh --path godot res://src/debug/skin_compare.tscn -- --skin=modern --sector=3 --screen=5 --fly --overlay
+tools/godot.sh --path godot res://src/debug/skin_compare.tscn -- --skin=creatures --sector=0 --screen=5 --fly --overlay
 tools/godot.sh --path godot res://src/debug/skin_compare.tscn -- --skin=res://tests/skins/tiny/skin.tres      # a skin file anywhere
 tools/godot.sh --path godot res://src/debug/skin_compare.tscn -- --ticks=40 --snapshot=/path/shot.png          # a PNG, then quit
 ```
@@ -62,12 +62,9 @@ The seam that makes it possible: `SkinChoice.current()` is one global, so a pres
 built, in an event (`_listen` wraps the handlers), in a frame (`run_in_skin`) - comes from that skin (`SkinChoice.within`, which selects
 nothing and tells nobody). Tested in `tests/engine/test_skin_compare.gd`; the game itself never sets it.
 
-## The shipped skins
+## The project's skins
 
-- **`modern`** (`skins/modern/`): a water shimmer over the background (`water_shimmer.gdshader` on the `Background` sprite of
-  `modern_presenter.tscn`, an inherited copy of the original presenter's scene; `modern_presenter.gd` gives the shader the game's time,
-  ticks plus the tick fraction, so the water stops when the clock is held), the Exo 2 font (SIL OFL 1.1, `skins/modern/fonts/OFL.txt`)
-  for the HUD's words, linear filtering and no pixel snap. Test: `tests/engine/test_skin_modern.gd`.
+- **`original`** (`skins/original/`): maps nothing; the look of the game, and the one skin an exported game carries (`SkinChoice.original`; `PackExportFilter`).
 - **`creatures`** (`skins/creatures/`): two species drawn in new ways by `CreaturesPresenter` (extends `OriginalPresenter`), whose own
   code uses only the skin API (`view`; `test_skin_creatures.gd` scans its source for `sim` and the rule objects). The rainbow fish
   (sector 0, screens 3 and 5) is moved by an `AnimationTree` (`RainbowFishRig`: `swim` / `chomp` / `turn` / `inked`, `swim` a blend of
@@ -75,7 +72,8 @@ nothing and tells nobody). Tested in `tests/engine/test_skin_compare.gd`; the ga
   primitive meshes (`PufferModel`) in a transparent `SubViewport` shown by a `Sprite2D` (`PufferRig3D`). Both draw inside the creature's
   original picture rectangle. Run on legacy: `tools/godot.sh --path godot res://src/debug/sector_viewer.tscn -- --pack=legacy
   --skin=creatures --sector=0 --screen=0 --fly` (on dev the fish are in sector 122, `tests/engine/dev_creatures.gd`). Tests: `test_skin_creatures.gd`, and in a window `test_skin_creatures_render.gd`.
-- **`tests/skins/tiny/`** is a test skin, not a shipped one (one square in place of three pictures, linear filtering, HUD words as text).
+- A skin that needs no node of its own is a skin pack, not a folder of `res://skins/`; the example of one, `modern`, is `examples/packs/modern/` (below, "Skin mods"). An export carries `original` and not `creatures` (`docs/engine/DEVELOPING.md`, "Exporting builds").
+- **`tests/skins/tiny/`** is a test skin, not one of the project's (one square in place of three pictures, linear filtering, HUD words as text).
 
 ## Skins do not change the game
 
@@ -85,17 +83,19 @@ mission through the real `Game` scene with each skin; `tests/engine/test_skins_d
 ordered pair) and runs a hostile skin (`tests/engine/skin_roster.gd`: a presenter that scribbles over everything, `resources` that try
 to replace the tuning, tables, hit rectangles, problems and sectors) and shows the rules' data is the same objects and numbers whichever
 skin is chosen. The skins compared are asked for, not listed: `SkinChoice.available()`, the tiny skin, the hostile one and the skin mods
-(`SkinRoster.mount_mod_skins`: a good one that draws and one that faults on every frame), so a new skin is covered the moment it is in `res://skins/`.
+(`SkinRoster.mount_mod_skins`: the example pack `modern`, a data skin, a good one that draws and one that faults on every frame), so a new skin is covered the moment it is in `res://skins/`.
 
 ```
 tools/run_tests.sh tests/engine/test_plays_identically.gd tests/engine/test_skins_dont_change_the_game.gd     # about 15 s
 ```
 
 Other skin tests: `test_skin.gd` (fallback, mapping, the original unchanged), `test_skin_render.gd`, `test_skin_hud.gd`,
-`test_skin_switch.gd`, `test_skin_rules_blind.gd`, `test_skin_api.gd`, `test_skin_compare.gd`, `test_mod_skin.gd` (skin mods).
+`test_skin_switch.gd`, `test_skin_rules_blind.gd`, `test_skin_api.gd`, `test_skin_compare.gd`, `test_mod_skin.gd` (skin mods), `test_example_pack_modern.gd` (the example pack).
 
 ## Skin mods
 
 A skin from a stranger is not a folder of `res://skins/` but a mod pack ([`PACKS.md`](PACKS.md), "Mod packs"): a sandboxed script that returns what to draw. `ModSkin` (`src/mods/mod_skin.gd`) is its `GameSkin`: the pack's id, no resources of its own and only the `render`, `pictures`, `hud_font` (its `hud_labels`: a `HudLabels` with the pack's font, `Pack.font`, and the size and colour the manifest says) and `layers` (its `layer_materials`: a `ShaderMaterial` per layer name of `SkinLayers.NODES`, from a shader `ModShader` checked and the values of the manifest's uniforms, `ModSkin._make_layer`) its manifest maps
 (the HUD's layout, the screens and the sounds stay the base game's), and `presenter_scene` = `ModPresenter` (`src/mods/mod_presenter.tscn`). A skin with no script (a manifest with no `entry`) has the same object with no `presenter_scene`, so the original presenter shows the sector, and needs no Sandbox. `ModHost` makes it when the mod loads and `SkinChoice` offers it with the others, so every path that wears a skin (the command line, F3 then S, `SectorWorld`,
-`skin_compare`) wears it the same way (`OriginalPresenter._dress_layers` asks the skin in use for `GameSkin.layer_material(layer)`, a fresh copy, puts it on the layer's node and `_show_phase` sets its `phase` from `SectorPresenter.game_phase`, as `skins/modern/modern_presenter.gd` does for its water; every node inside a layer scene has `use_parent_material` on, so the layer's material reaches the pictures made later, and `Sub` turns it off for the pictures while its dissolve material is on), and `leave_dead_mod_skins` puts the original on when the mod stops. How to write one is [`../create/SKIN_API.md`](../create/SKIN_API.md), "Writing a skin mod".
+`skin_compare`) wears it the same way (`OriginalPresenter._dress_layers` asks the skin in use for `GameSkin.layer_material(layer)`, a fresh copy, puts it on the layer's node and `_show_phase` sets its `phase` from `SectorPresenter.game_phase`; every node inside a layer scene has `use_parent_material` on, so the layer's material reaches the pictures made later, and `Sub` turns it off for the pictures while its dissolve material is on), and `leave_dead_mod_skins` puts the original on when the mod stops. How to write one is [`../create/SKIN_API.md`](../create/SKIN_API.md), "Writing a skin mod".
+
+**The example pack** (`examples/packs/modern/`, a folder outside the project laid over `legacy`): a data skin. Its `skin/` holds `water_shimmer.gdshader` on the `background` layer (the game sets its `phase`), `sharp_walls.gdshader` on `walls` (looks every point up at the centre of its atlas pixel, which is the nearest filter by hand, so the smooth filter of `render` leaves no hairline between the wall tiles), `fonts/Exo2.ttf` with its licence `OFL.txt` as `hud_font`, and the HUD's pictures as flat templates (`skin/ui_picture/`, made by `SkinTemplates` from the legacy pack's layouts, the original's sizes) that `pictures` maps. `mise run examples:pack modern` writes `modern.larissa` (`PackExport.archive_folder`, `pack_tool --archive-folder=`: `PackCheck` first, then `PackFiles.zip_folder`, the zipper every pack file goes through; the legacy pack must be found, for it is the pack's `base`), and `mise run examples:install modern` copies the folder into `user://packs/` (`PackInstall`), so that `tools/godot.sh --path godot -- --pack=modern --skin=modern` plays it. `tests/engine/test_example_pack_modern.gd` mounts the very folder as a scratch pack (`ModSkinShelf.EXAMPLE_MODERN`, over dev, under the id `modern_test` so that an installed copy is not the one found), has `PackCheck` judge it and wears it; `SkinRoster.mount_mod_skins` adds it to every suite that plays the skins.

@@ -1,7 +1,7 @@
 class_name TestPackExport
 extends GdUnitTestSuite
 ## Teaches: making a pack out of what a designer built. A campaign becomes a pack laid over another (a folder or one `.larissa` pack file of JSON, `.foe` text and PNGs)
-## from the game's own reader, so a campaign that is a `.tres` of the project and one that came from another pack export the same way.
+## from the game's own reader, so a campaign that is a `.tres` of the project and one that came from another pack export the same way. A pack folder that was written by hand (an example pack) is checked and zipped as it is.
 
 const ID := &"orchard_pack"
 const BOX := &"orchard_box"
@@ -200,6 +200,35 @@ func test_a_pack_file_holds_the_same_pack_and_installs_like_a_folder() -> void:
 	assert_array(in_place.errors).is_empty()
 	assert_array(in_place.sector_ids()).is_equal([40, 41, 42])
 	assert_array(in_place.all_files()).is_equal(result.files)
+
+
+# --- a pack folder written by hand ----------------------------------------------------------------------------------------------
+
+func test_a_pack_folder_written_by_hand_becomes_a_pack_file_as_it_is() -> void:
+	var shelf := PackShelf.new()
+	_shelves.append(shelf)
+	shelf.add_mod_fixture("res://tests/mods/skin_data")
+	ModSkinShelf.add_files(shelf)
+	var result := PackExport.archive_folder(shelf.root, EXPORTS, _quick())
+	assert_bool(result.ok()).override_failure_message(result.text()).is_true()
+	assert_str(result.path).is_equal("%s/%s.larissa" % [EXPORTS, shelf.id])
+	assert_str(PackArchive.open(result.path).folder).is_equal(String(shelf.id))
+	var in_place := Pack.open(result.path)
+	assert_array(in_place.errors).is_empty()
+	assert_bool(in_place.mod.is_skin).is_true()
+	assert_array(in_place.all_files()).is_equal(PackFiles.files_under(shelf.root))              # (the folder's files, none added and none changed)
+	assert_array(result.files).is_equal(PackFiles.files_under(shelf.root))
+
+
+func test_a_pack_folder_with_an_error_leaves_no_pack_file() -> void:
+	var shelf := PackShelf.new()
+	_shelves.append(shelf)
+	shelf.add_mod_fixture("res://tests/mods/skin_data")                                          # (the pictures its manifest maps are not there)
+	var result := PackExport.archive_folder(shelf.root, EXPORTS, _quick())
+	assert_bool(result.ok()).is_false()
+	assert_bool(result.report.passes()).is_false()
+	assert_bool(FileAccess.file_exists("%s/%s.larissa" % [EXPORTS, shelf.id])).is_false()
+	assert_str(PackExport.archive_folder("user://no_such_folder", EXPORTS, _quick()).error).contains("is not a pack")
 
 
 # --- a campaign of the project ----------------------------------------------------------------------------------------------------

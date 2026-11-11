@@ -137,7 +137,32 @@ static func campaign(campaign_id: StringName, out_dir: String, options: Options 
 	return _export_data_pack(result, out_dir, pack_id, options, func(stage: String) -> String: return _write_campaign(source, stage, pack_id, options))
 
 
-## The id of the pack a campaign is laid over: `options.base`, else the complete pack at the bottom of the chain in use ("" when there is no chain).
+## A pack FOLDER you wrote by hand (the example packs of `examples/packs/`, a skin) as the pack file `<out_dir>/<pack id>.larissa`: the folder is checked by `PackCheck` (with the chain its `base` makes,
+## so the pack it is laid over must be found) and zipped as it is by the same `PackFiles.zip_folder` the exports use; a folder with errors leaves no file. Nothing is converted: the folder already holds the data form.
+static func archive_folder(source: String, out_dir: String, options: Options = null) -> Result:
+	var result := Result.new()
+	if options == null:
+		options = Options.new()
+	var pack := Pack.open(source)
+	if not pack.is_valid():
+		result.error = "%s is not a pack: %s" % [source, "; ".join(pack.errors)]
+		return result
+	var check_options := PackCheck.Options.new()
+	check_options.reach = options.reach
+	result.report = PackCheck.run(pack, check_options)
+	if not result.report.passes():
+		return result
+	var file_path := "%s/%s.%s" % [out_dir.trim_suffix("/"), pack.id, Pack.FILE_EXTENSION]
+	var error := PackFiles.zip_folder(source, file_path, String(pack.id))
+	if error != OK:
+		result.error = "cannot write %s: %s" % [file_path, error_string(error)]
+		return result
+	result.files = PackFiles.files_under(source)
+	result.path = file_path
+	return result
+
+
+## The id of the pack a campaign is laid over:`options.base`, else the complete pack at the bottom of the chain in use ("" when there is no chain).
 static func _base_of(options: Options) -> String:
 	if options.base != &"":
 		return String(options.base)

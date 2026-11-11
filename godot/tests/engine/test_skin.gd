@@ -235,7 +235,7 @@ func test_a_forced_choice_wins_and_a_skin_is_found_by_its_id() -> void:
 	SkinChoice.forced = &"original"
 	assert_str(String(SkinChoice.requested())).is_equal("original")
 	assert_object(SkinChoice.load_skin(&"original")).is_same(SkinChoice.original())
-	assert_str(SkinChoice.path_of(&"modern")).is_equal("res://skins/modern/skin.tres")
+	assert_str(SkinChoice.path_of(&"creatures")).is_equal("res://skins/creatures/skin.tres")
 	SkinChoice.forced = &"anything"
 	assert_str(String(SkinChoice.requested())).is_equal("anything")
 
@@ -254,3 +254,36 @@ func test_a_skin_may_replace_presentation_data_and_nothing_else() -> void:
 	assert_object(skin.resource_for("ui/hud_layout")).is_not_null()
 	assert_object(skin.resource_for("zones")).is_null()
 	assert_array(skin.refused_resources()).contains_exactly(["zones"])
+
+
+# --- a picture drawn at a fraction of its size --------------------------------------------------------------------
+
+func test_a_scaled_texture_reports_the_size_it_is_drawn_at() -> void:
+	var big := ImageTexture.create_from_image(Image.create_empty(384, 216, false, Image.FORMAT_RGBA8))
+	var texture := ScaledTexture.of(big, 4)
+	assert_object(texture.get_size()).is_equal(Vector2(96, 54))
+	assert_int(texture.get_width()).is_equal(96)
+	assert_int(texture.get_height()).is_equal(54)
+	assert_bool(texture.has_alpha()).is_true()
+	assert_object(ScaledTexture.of(big, 1).get_size()).is_equal(Vector2(384, 216))        # (a factor of 1 is the file as it is)
+
+
+func test_a_scaled_texture_asks_the_middle_of_the_block() -> void:
+	var image := Image.create_empty(8, 8, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0, 0, 0, 0))
+	image.fill_rect(Rect2i(4, 4, 4, 4), Color.WHITE)                    # the 2 x 2 block at (1, 1) of the reported size
+	var texture := ScaledTexture.of(ImageTexture.create_from_image(image), 4)
+	assert_bool(texture._is_pixel_opaque(1, 1)).is_true()
+	assert_bool(texture._is_pixel_opaque(0, 0)).is_false()
+	assert_bool(texture._is_pixel_opaque(1, 0)).is_false()
+
+
+func test_without_the_art_folder_the_originals_pictures_answer() -> void:
+	var skin := GameSkin.new()
+	skin.id = &"no_art"
+	skin.art_folder = "res://skins/original/no_such_folder"
+	skin.art_scale = 4
+	assert_object(skin.picture("frame/sub_00")).is_null()
+	SkinChoice.select(skin)
+	var original := load(DevPack.ROOT + "assets/sprites/sub/sub_00.png") as Texture2D
+	assert_object(Catalog.sub_frames().get_frame_texture(&"all", 0)).is_same(original)

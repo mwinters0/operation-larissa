@@ -625,7 +625,7 @@ A skin gets copies of the rules' state, not the rules, through a small API (`Sim
 write state or read the keyboard. [`SKIN_API.md`](SKIN_API.md) lists exactly what it is given; how skins work in code is
 [`SKINS.md`](../engine/SKINS.md).
 
-Because this is tested, you do not have to take it on trust. Every skin in `res://skins/` is played against the original skin over
+Because this is tested, you do not have to take it on trust. Every skin in `res://skins/` (and the example skin pack, below) is played against the original skin over
 several sectors of the dev pack, switched at run time, and played through a whole mission, and must give the same event trace. A new skin is in
 those tests the moment it exists; there is nothing to register.
 
@@ -633,24 +633,26 @@ those tests the moment it exists; there is nothing to register.
 
 | Skin | Folder | What it shows |
 | --- | --- | --- |
-| `original` | `res://skins/original/` | maps nothing; the original look. |
-| `modern` | `res://skins/modern/` | water shimmer shader, the Exo 2 font. |
-| `creatures` | `res://skins/creatures/` | two species of creature redrawn: a rainbow fish with an animation tree, a 3D puffer fish. |
+| `original` | `res://skins/original/` | maps nothing; the original look. The game cannot run without it, so an export carries it. |
+| `creatures` | `res://skins/creatures/` | two species of creature redrawn: a rainbow fish with an animation tree, a 3D puffer fish. A demonstration of what only a project skin can do (3D models and animation trees need real nodes), so an export does not carry it. |
+| `modern` | `examples/packs/modern/` | the example skin pack, not a folder of `res://skins/`: water shimmer shader, the Exo 2 font, smooth filtering, the HUD's templates; no script (below). |
 
 ### Choosing a skin
 
-- **On the command line**, after `--`: `tools/godot.sh --path godot -- --skin=modern`. The id is the folder name, or the pack id of a skin mod of the pack in use (`--pack=`). An unknown id is a
+- **On the command line**, after `--`: `tools/godot.sh --path godot -- --skin=creatures`. The id is the folder name, or the pack id of a skin mod of the pack in use (`--pack=`). An unknown id is a
   loud error and gives the original.
 - **While playing**, press **F3** (the debug overlay), then **S**: it puts on the next skin. This works only in a debug build; an
   exported release game deletes the overlay. The choice is not saved.
-- **In a scene or test**: `SkinChoice.select_id(&"modern")`.
+- **In a scene or test**: `SkinChoice.select_id(&"creatures")`.
 
 There is no skin menu for players yet.
 
 ### Skins and packs
 
 A skin you give to other people is a **mod pack** (section 3, "Mod packs"): a pack with a script, its pictures in `skin/` and, if it wants, shaders as text. It is code of a stranger in a sandbox, so it can only say what to draw and can change no rule; installing one asks no trust question and it needs the godot-sandbox extension (a skin with no script, only `render`, `pictures`, `hud_font` and `layers` of `skin/`, needs none). `--pack=<id>`
-chooses it (it is laid over the game pack it names as its `base`), and then its skin appears in the list of skins with its pack id and works with `--skin=<id>` and F3 + S like a shipped one. It lasts as long as its pack is in use. How to write one is [`SKIN_API.md`](SKIN_API.md), "Writing a skin mod". The skins of the project itself (`modern`, `creatures`) are folders of `res://skins/` and are not exported. A mod skin draws the sector itself (or leaves it to the original presenter, with no script) and keeps the game's HUD layout, screens and sounds; the pictures its `pictures` map and the font its `hud_font` letters the HUD's boxes in are worn only while it is.
+chooses it (it is laid over the game pack it names as its `base`), and then its skin appears in the list of skins with its pack id and works with `--skin=<id>` and F3 + S like a shipped one. It lasts as long as its pack is in use. How to write one is [`SKIN_API.md`](SKIN_API.md), "Writing a skin mod". The skins of the project itself (`original`, `creatures`) are folders of `res://skins/`; an export carries `original` and not `creatures` ("Shipping", section 6). A mod skin draws the sector itself (or leaves it to the original presenter, with no script) and keeps the game's HUD layout, screens and sounds; the pictures its `pictures` map and the font its `hud_font` letters the HUD's boxes in are worn only while it is.
+
+**The example pack** is `examples/packs/modern/`: a skin with no script, laid over `legacy`, that you can copy. Its `pack.json` has the `skin` entry of [`SKIN_API.md`](SKIN_API.md) ("A skin with no script"): `render` (linear filter, no snapping), `hud_font` (Exo 2, with its licence `OFL.txt` next to it in `skin/fonts/`), two `shaders` put on the layers `background` (the water) and `walls` (kept sharp under the smooth filter) and `pictures`, the console's templates. Those are flat colour at the original's sizes with their key and size written on them, made by `mise run skin:templates --pack legacy`; draw your art over them and keep their sizes. `mise run examples:pack modern [--out <dir>]` writes `modern.larissa` (the legacy pack must be found: it is the pack's `base`), and `mise run examples:install modern` installs the folder into `user://packs/`, so that `tools/godot.sh --path godot -- --pack=modern --skin=modern` plays it (`--pack=` chooses the pack, and its skin is then offered).
 
 Remember the order in section 4: a pack's picture beats the skin's. If a content pack and a skin both supply a picture, the
 content pack's is what you see.
@@ -674,7 +676,8 @@ content pack's is what you see.
 | `godot/data/rules/durations.json` | the durations (the base layer; the packs' `rules/durations.json` go over it) | yes |
 | `godot/data/rules/tuning.json` | the rule values (the base layer; the packs' `rules/tuning.json` go over it) | yes |
 | `godot/names/original.json` | the name registry | yes |
-| `godot/skins/{original,modern,creatures}/` | skins | yes |
+| `godot/skins/{original,creatures}/` | the project's skins | yes |
+| `examples/packs/modern/` | the example skin pack (a pack folder outside the project; `pack_tool --check` and `--archive-folder` read it) | yes |
 | `res://packs/<id>/` | packs that are part of the project, or links to packs that live elsewhere | up to you (`dev`: yes; legacy and links: no) |
 | `godot/src/` | all the code | yes |
 | `godot/tests/` | tests; `tests/fixtures/*.json` are hashes, `tests/fixtures/original/` is bytes | hashes yes, bytes no |
@@ -757,7 +760,7 @@ of the game.**
   sector or campaign of your own (sector 32 and up) and keep that. Editing sector 5 in `godot/packs/legacy/data/sectors/sector_05/` changes only your
   machine, and a full re-import will overwrite it (use `tools/import/reset_screens.py` and its siblings to go back deliberately; see
   [`LEGACY.md`](../play/LEGACY.md) and [`SCREEN_EDITOR.md`](SCREEN_EDITOR.md)).
-- **Shipping.** An exported game carries no pack: `godot/export_presets.cfg` excludes `packs/dev/*` and `packs/legacy/*` from the Linux, Windows
+- **Shipping.** An exported game carries the original skin and no other of `res://skins/` (`PackExportFilter`, and `skins/creatures/*` in the presets' exclude filter; a skin for players is a skin pack), and no pack: `godot/export_presets.cfg` excludes `packs/dev/*` and `packs/legacy/*` from the Linux, Windows
   Desktop and Web presets, and the pack tools' export plugin skips every other folder of `res://packs/` too, so a build never carries your copy of
   the game or a pack you are working on. A pack reaches a game as a pack file next to the executable (`legacy.larissa`, `dev.larissa`: `pack_tool --export-pack=<id> --archive`
   makes one in the data form), which the game reads where it lies (an installed folder of the same id is used instead, "Where packs are found"). Two downloads follow from it:

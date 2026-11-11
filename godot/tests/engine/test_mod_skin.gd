@@ -254,14 +254,14 @@ func test_a_skin_with_a_bad_shader_is_refused_before_it_runs_and_the_check_says_
 
 
 func test_a_skin_that_takes_the_id_of_a_skin_of_the_game_is_refused() -> void:
-	var shelf := PackShelf.new(&"modern")
+	var shelf := PackShelf.new(&"creatures")
 	_shelves.append(shelf)
 	shelf.add_mod_fixture("res://tests/mods/skinny")
 	ModSkinShelf.add_files(shelf)
 	shelf.mount()
 	Mods.sync()
-	assert_str(ModHost.failure("modern")).contains("id of a skin that comes with the game")
-	assert_object(SkinChoice.load_skin(&"modern").get("pack_id")).is_null()                          # (the game's `modern`, not a mod's)
+	assert_str(ModHost.failure("creatures")).contains("id of a skin that comes with the game")
+	assert_object(SkinChoice.load_skin(&"creatures").get("pack_id")).is_null()                       # (the game's `creatures`, not a mod's)
 
 
 func test_a_skin_without_skin_frame_is_refused() -> void:

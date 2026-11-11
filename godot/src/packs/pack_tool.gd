@@ -9,6 +9,7 @@ extends Node
 ##   --no-reach                (with --check, --export-*) skip the reachability search
 ##   --export-campaign=<id>    export the campaign <id> in the data form into --out (a folder; with --archive one .larissa pack file)
 ##   --export-pack=<id>        export the complete pack <id> (dev, legacy, a copy of dev) in the data form into --out (a folder; with --archive one .larissa pack file)
+##   --archive-folder=<folder> write a pack folder you made by hand (an example pack) as the pack file <id>.larissa in --out, checked first, with the pack it is laid over found as usual (repeatable)
 ##   --out=<dir>               where exports go (default user://pack_exports)
 ##   --pack-id= --title= --version= --author= --description=   what goes in the manifest (the campaign's or source pack's own by default)
 ##   --install=<where>         copy a pack (a folder or a .larissa pack file) into user://packs/ (dev included, unless the project has its own)
@@ -17,7 +18,7 @@ extends Node
 ##   --new=<id>                start a pack of your own: copy the pack --from (default dev) to res://packs/<id>, with new paths and UIDs and a new pack.json
 ##                             (--title= names it); refuses an id that is taken or reserved (dev). Import it afterwards (`godot --headless --path godot --import`).
 ##   --from=<pack>             (with --new) the pack to copy, a folder of res://packs/ (default dev)
-## Several may be given and run in the order: install, uninstall, new, check, export. Examples:
+## Several may be given and run in the order: install, uninstall, new, check, export, archive-folder. Examples:
 ##   tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --export-campaign=orchard --out=/tmp/packs --archive
 ##   tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --export-pack=legacy --out=/tmp/packs --archive
 ##   tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --check=/tmp/packs/orchard
@@ -37,6 +38,7 @@ func _ready() -> void:
 	var to_make: Array[String] = []
 	var campaigns: Array[String] = []
 	var packs: Array[String] = []
+	var folders: Array[String] = []
 	var listing := false
 	var reach := true
 	var archive := false
@@ -57,6 +59,7 @@ func _ready() -> void:
 				"check": to_check.append(value)
 				"export-campaign": campaigns.append(value)
 				"export-pack": packs.append(value)
+				"archive-folder": folders.append(value)
 				"out", "pack-id", "title", "version", "author", "description", "base", "pack", "from": values[key] = value
 				_:
 					_bad(arg)
@@ -92,6 +95,8 @@ func _ready() -> void:
 		_print_export(PackExport.campaign(StringName(id), out, options))
 	for id in packs:
 		_print_export(PackExport.complete(StringName(id), out, options))
+	for folder in folders:
+		_print_export(PackExport.archive_folder(folder, out, options))
 	if listing:
 		_list()
 	get_tree().quit(1 if _failed > 0 else 0)

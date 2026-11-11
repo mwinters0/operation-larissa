@@ -10,7 +10,7 @@ Known gaps of the existing systems, by area. The engine's remaining assumptions 
 [`engine/HARD_CODED.md`](engine/HARD_CODED.md); differences from the original in [`port/PORT_GAPS.md`](port/PORT_GAPS.md).
 
 **Not yet exercised by hand.** The editor tools (screen editor, Sector panel, New sector, Check sector, the pack tools window), the
-pack screen, a skin mod, a mod with rule hooks in a campaign, a student campaign, the debug-rectangles presenter and the `modern` / `creatures` skins
+pack screen, a skin mod, a mod with rule hooks in a campaign, a student campaign, the debug-rectangles presenter and the example skin pack `modern` / the `creatures` skin
 through a whole real-time session, and the runtime MIDI music have been driven only by tests and command-line processes, not used by
 hand in a window.
 
@@ -76,10 +76,6 @@ not from the original's pixels, so the templates carry no original content and a
 real art from them. The tool is `SkinTemplates` (`docs/create/SKIN_API.md` "Art templates"); the original's exact sizes are those of the legacy pack's layouts (`--pack=legacy` reads sizes only), the dev pack's pictures having sizes of their own; each later phase's last item adds the layouts that hold its keys to `SkinTemplates.SOURCES`.
 
 **K1: skins as data.** A skin pack needs no script.
-- **K1e: `modern` as the example pack.** `examples/packs/modern/`, its `.larissa` built by a mise task: the water shimmer on
-  `background`, Exo 2 on the HUD, linear filtering, and the HUD art from the templates. `res://skins/modern/` and
-  `test_skin_modern.gd` go; the example's tests take their place. Settle the export: `create/CONTENT.md` says the project's skins are
-  not exported, and the export filter does not exclude `skins/*`; make the two agree.
 - **K1f: "Your first skin".** A creator tutorial in `create/` that walks through the example pack.
 
 **K2: layers drawn by a script.**

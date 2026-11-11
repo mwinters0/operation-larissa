@@ -48,6 +48,7 @@ Agents: [`AGENTS.md`](AGENTS.md) and [`docs/CODEMAP.md`](docs/CODEMAP.md).
 | Path | What it holds |
 | --- | --- |
 | `godot/` | the Godot project: `src/` (code), `addons/` (editor tools), `skins/`, `data/` (project-level data), `names/` (the name registry), `packs/dev/` (the dev pack, committed), `packs/legacy/` (the legacy pack, made by the importer, git-ignored), `tests/` (gdUnit4: `engine/` on dev, `legacy/` on legacy) |
+| `examples/` | example packs to copy (`packs/modern/`: a skin pack with no script) |
 | `tools/` | `import/` (the importer and reset tools), `extract/` (extractors), `analysis/` (parsers and Ghidra scripts), `dev_pack/` (the dev pack's generator), `gamefiles.py` (reads the ISO), `godot.sh`, `run_tests.sh` |
 | `docs/` | the documentation above; `data/` (facts read from the program's code, committed, and the game's tables dumped from your ISO, not committed) |
 | `mise.toml` | the pinned tools (`mise install`) and the shortcut tasks (`mise tasks`; [`docs/SETUP.md`](docs/SETUP.md)) |
