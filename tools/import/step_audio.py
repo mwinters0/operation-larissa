@@ -169,7 +169,9 @@ def run(soundfont: str = DEFAULT_SOUNDFONT, adlib_soundfont: str = ADLIB_SOUNDFO
     out_text(PACK_DATA / "sfx_catalog.tres", t.render())
 
     # --- speech: 371 WAVs with their transcripts, and the cue lists (which clips are spoken when) -----------
-    transcripts = load_json(EXTRACTED / "sounds" / "voice_transcripts.json")
+    # The texts come from the optional transcripts step (import_all.py OPTIONAL_STEPS); without it the clips have none.
+    transcripts_file = EXTRACTED / "sounds" / "voice_transcripts.json"
+    transcripts = load_json(transcripts_file) if transcripts_file.exists() else {}
     ids, paths, texts, durations = [], [], [], []
     for vid in range(4000, 4371):
         dest = voice_file(vid)

@@ -10,13 +10,14 @@ run only does what is missing.
   1. Your CD image: -Iso, else a file dialog. It is checked against the reference release (tools/import/source_files.py)
      before anything is installed, and remembered as the user variable NEP_ISO.
   2. mise (winget jdx.mise), then uv (mise install uv).
-  3. FFmpeg (winget Gyan.FFmpeg: its builds have the libvorbis encoder).
+  3. FFmpeg (winget Gyan.FFmpeg.Essentials, the smaller of Gyan's builds, which has the libvorbis encoder).
   4. FluidSynth: the win10-x64 zip of its latest GitHub release, checked against the SHA-256 GitHub publishes for it,
      unpacked into %LOCALAPPDATA%\Programs\FluidSynth and put on your user PATH.
   5. Godot: mise's install of the pinned version; when mise cannot install it, the official Windows build of that version
      from GitHub (checked the same way) into %LOCALAPPDATA%\Programs\Godot, named by the user variable GODOT_BIN.
   6. mise run setup: the Python environment, the godot-sandbox extension and the General MIDI soundfont.
-  7. mise run legacy:checktools, then mise run legacy:import (about 10 minutes, plus a 480 MB speech model the first time).
+  7. mise run legacy:checktools, then mise run legacy:import (a minute or two). The optional voice transcripts, which need a
+     speech engine and a 480 MB model, are left out (docs/play/LEGACY.md, "Voice transcripts").
   8. mise run godot:play legacy, unless -NoPlay.
 
 Windows PowerShell 5.1 and PowerShell 7 both run it. Windows keeps a downloaded script from running; start it with:
@@ -186,6 +187,8 @@ Invoke-Checked "mise" @("install", "uv")
 # ---- 1b. Check the copy before installing anything else -----------------------------------------------------------------------
 Write-Step "Checking your copy against the reference release"
 $env:NEP_ISO = $Iso
+# The JDK mise.toml pins is for the Ghidra workflow only: leave it out of this run's `mise exec` and `mise run` (they install the tools first).
+$env:MISE_DISABLE_TOOLS = (@($env:MISE_DISABLE_TOOLS, "java") | Where-Object { $_ }) -join ","
 # Only uv (`mise exec uv`), in a throw-away environment with the one package the check reads the image with: nothing else is installed yet.
 $code = Invoke-Native "mise" @("exec", "uv", "--", "uv", "run", "--no-project", "--with", "pycdlib>=1.22.0", "tools/import/source_files.py")
 if ($code -ne 0) {
@@ -196,7 +199,7 @@ Write-Done "NEP_ISO = $Iso (kept for later runs)"
 
 # ---- 3. FFmpeg ----------------------------------------------------------------------------------------------------------------
 Write-Step "FFmpeg (encodes the music)"
-if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) { Install-Winget "Gyan.FFmpeg" }
+if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) { Install-Winget "Gyan.FFmpeg.Essentials" }
 if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) { Stop-Setup "FFmpeg was installed but is not on the PATH. Open a new PowerShell window and run this script again." }
 Write-Done (Get-Command ffmpeg).Source
 
@@ -243,6 +246,7 @@ if ($env:GODOT_BIN -and (Test-Path -LiteralPath $env:GODOT_BIN)) {
         if (-not $console) { Stop-Setup "the Godot zip $($asset.Name) holds no _console.exe." }
         Set-UserVariable "GODOT_BIN" $console.FullName
         Set-UserVariable "MISE_DISABLE_TOOLS" "godot"     # so `mise run` does not try to install it again
+        $env:MISE_DISABLE_TOOLS = "godot,java"
         Write-Done "GODOT_BIN = $($console.FullName)"
     }
 }
@@ -254,9 +258,7 @@ Invoke-Checked "mise" @("run", "setup")
 # ---- 7. Build the legacy pack -------------------------------------------------------------------------------------------------
 Write-Step "Checking the importer's tools"
 Invoke-Checked "mise" @("run", "legacy:checktools")
-Write-Step "Building the legacy pack from your copy (about 10 minutes; the first run also downloads a 480 MB speech model)"
-# The speech model is public: Hugging Face's hint to set a token (only for higher rate limits) is noise here.
-$env:HF_HUB_VERBOSITY = "error"
+Write-Step "Building the legacy pack from your copy (a minute or two)"
 Invoke-Checked "mise" @("run", "legacy:import")
 Write-Done "the legacy pack is in godot\packs\legacy"
 

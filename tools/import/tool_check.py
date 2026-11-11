@@ -31,7 +31,7 @@ LAUNCHER = "tools/godot.py" if WINDOWS else "tools/godot.sh"      # what runs Go
 DNF_MUSIC = "sudo dnf install ffmpeg-free fluidsynth fluid-soundfont-common fluid-soundfont-gm"
 # How to get each music tool on Windows (docs/SETUP.md, "On Windows"); on Linux the one dnf line installs all three.
 WINDOWS_HINTS = {
-    "ffmpeg": "tools\\setup_windows.ps1 installs it (or: winget install --id Gyan.FFmpeg -e)",
+    "ffmpeg": "tools\\setup_windows.ps1 installs it (or: winget install --id Gyan.FFmpeg.Essentials -e)",
     "fluidsynth": "tools\\setup_windows.ps1 installs it (or: the win10-x64 zip of a release from "
                   "github.com/FluidSynth/fluidsynth/releases, its bin folder on the PATH)",
     "soundfont": "uv run tools/fetch_soundfont.py (mise run setup and tools\\setup_windows.ps1 run it)",
@@ -92,7 +92,7 @@ def check_audio(soundfont: str) -> list[str]:
         encoders = subprocess.run([ffmpeg, "-hide_banner", "-encoders"], capture_output=True, text=True, check=False).stdout
         if " libvorbis " not in encoders:
             problems.append("ffmpeg (step audio): %s has no libvorbis encoder: %s" % (
-                ffmpeg, "install Gyan.FFmpeg (its builds have it)" if WINDOWS else "on Fedora install ffmpeg-free (or RPM Fusion's ffmpeg)"))
+                ffmpeg, "install Gyan.FFmpeg.Essentials (Gyan's builds have it)" if WINDOWS else "on Fedora install ffmpeg-free (or RPM Fusion's ffmpeg)"))
     if not shutil.which("fluidsynth"):
         problems.append("fluidsynth (step audio): not found: " + music_hint("fluidsynth"))
     if not Path(soundfont).is_file():

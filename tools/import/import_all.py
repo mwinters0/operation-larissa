@@ -2,7 +2,7 @@
 
     uv run tools/import/import_all.py [--only extract,tables,images,tiles,sprites,sectors,problems,console,story,campaigns,transcripts,audio,godot]
                                       [--clean] [--validate] [--soundfont PATH]
-                                      [--compute-type int8|float32]
+                                      [--transcripts] [--compute-type int8|float32]
 
 Before it reads anything it checks that your NEPTUNE.ISO is the reference release (source_files.py) and refuses with "your copy is
 a different version or patched" if not, and that the programs the chosen steps need are here (tool_check.py: Godot, ffmpeg with
@@ -17,9 +17,11 @@ committed) and a stub `.import` file with a stable uid beside every picture and 
 the pack's folder: none of it is in git. The last step, "godot", has Godot import the project (it completes the .import files)
 through tools/godot.sh (on Windows, the Godot tools/godot.py finds).
 Running the importer twice produces identical files.
-The "transcripts" step (transcripts.py) turns the voice clips into text with a pinned speech model, the same on every machine,
-and reports each clip whose text differs from godot/tests/fixtures/voice_transcripts.json; your hand corrections are read from
-godot/data/legacy/voice_corrections.json (common.LEGACY_AREA). A run that leaves out the "godot" step ends by printing the command
+The "transcripts" step (transcripts.py) is optional, run only with --transcripts or when --only names it: it turns the voice clips into
+text with a pinned speech model (`uv sync --group transcribe`, and a 480 MB model on first use), the same on every machine, and reports
+each clip whose text differs from godot/tests/fixtures/voice_transcripts.json; your hand corrections are read from
+godot/data/legacy/voice_corrections.json (common.LEGACY_AREA). Without it the voice index has no texts (the sound test's list shows none)
+and the tests that compare clips with their words skip. A run that leaves out the "godot" step ends by printing the command
 that does it by hand:
 
     tools/godot.sh --headless --path godot --import          # on Windows: uv run tools/godot.py --headless --path godot --import
@@ -106,11 +108,17 @@ OWNED_FILES = {
 }
 
 
-def steps_to_run(only: str | None) -> list[str]:
-    """The steps `--only` names (all of them without it), in PIPELINE ORDER (the order of STEPS) whatever order they were typed in, each once:
-    a step reads files an earlier one writes, so `--only audio,sectors` runs "sectors" first. ValueError for a name that is no step."""
+# Steps a run leaves out unless they are asked for (`--only` or `--transcripts`): the voice transcripts need a speech engine and a
+# 480 MB model, and nothing the game plays reads them (docs/play/LEGACY.md, "Voice transcripts").
+OPTIONAL_STEPS = ("transcripts",)
+
+
+def steps_to_run(only: str | None, optional: tuple[str, ...] = ()) -> list[str]:
+    """The steps `--only` names (without it every step but the OPTIONAL_STEPS not in `optional`), in PIPELINE ORDER (the order of STEPS)
+    whatever order they were typed in, each once: a step reads files an earlier one writes, so `--only audio,sectors` runs "sectors" first.
+    ValueError for a name that is no step."""
     if not only:
-        return list(STEPS)
+        return [name for name in STEPS if name not in OPTIONAL_STEPS or name in optional]
     asked = [name.strip() for name in only.split(",") if name.strip()]
     for name in asked:
         if name not in STEPS:
@@ -125,11 +133,13 @@ def main() -> int:
     ap.add_argument("--validate", action="store_true", help="run cross-checks on the generated tree")
     ap.add_argument("--soundfont", default=step_audio.DEFAULT_SOUNDFONT, help="General MIDI soundfont for the E*.MID set")
     ap.add_argument("--adlib-soundfont", default=step_audio.ADLIB_SOUNDFONT, help="OPL soundfont for the B*.MID (AdLib) set; optional")
+    ap.add_argument("--transcripts", action="store_true",
+                    help="also run the optional transcripts step (needs `uv sync --group transcribe` and a 480 MB model)")
     ap.add_argument("--compute-type", choices=transcripts.COMPUTE_TYPES, help="transcripts step: int8 (default) or float32")
     args = ap.parse_args()
 
     try:
-        names = steps_to_run(args.only)
+        names = steps_to_run(args.only, ("transcripts",) if args.transcripts else ())
     except ValueError as error:
         ap.error(str(error))
     try:                                  # first of all: is this the release the committed hashes are of?
@@ -163,7 +173,7 @@ def main() -> int:
             step_audio.run(args.soundfont, args.adlib_soundfont)
         else:
             STEPS[n]()
-    full = set(names) == set(STEPS)
+    full = set(names) >= set(STEPS) - set(OPTIONAL_STEPS)
     asset_dirs = [d for n in names for d in OWNED_DIRS[n] if common.ASSETS in d.parents or d == common.ASSETS]
     owned = None if full else asset_dirs
     stale, carried = asset_manifest.prune(asset_dirs)          # files a renamed asset used to have (asset_names.py)
