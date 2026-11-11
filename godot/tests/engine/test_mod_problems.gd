@@ -382,7 +382,6 @@ func test_the_plain_picture_is_what_a_screen_shows_before_the_mod_has_drawn_and_
 	assert_int(_count(_lines(screen), "picture fish.png")).is_equal(12)
 	ModProblemShelf.release(_shelves)                                                               # (the pack leaves the chain in the middle of the problem)
 	assert_bool(Mods.loaded_ids().has(String(tides.id))).is_false()
-	diagram.entry_changed("5")
 	assert_array(_lines(screen)).is_equal(["plain 1 items"])
 	assert_int(diagram.layers().size()).is_equal(0)
 	screen.free()
@@ -836,9 +835,10 @@ func test_a_mod_that_arrives_in_the_middle_of_an_original_problem_draws_from_the
 	screen.advance_ticks(diagram.intro_length())
 	assert_bool(_lines(screen)[0].begins_with("plain ")).is_true()
 	_mount(["tides"] as Array[String])                                                             # (the pack joins the chain while the problem is up)
-	diagram.entry_changed("5")
-	assert_int(_count(_lines(screen), "text Typed: 5")).override_failure_message("the mod draws what one there from the start draws: %s" % [_lines(screen)]).is_equal(1)
+	assert_int(_count(_lines(screen), "text Type 3")).override_failure_message("the mod draws at once what one there from the start draws: %s" % [_lines(screen)]).is_equal(1)
 	assert_bool(diagram.plain().visible).is_false()
+	diagram.entry_changed("5")
+	assert_int(_count(_lines(screen), "text Typed: 5")).is_equal(1)
 	screen.free()
 
 
@@ -848,8 +848,7 @@ func test_a_mod_that_is_gone_in_the_middle_of_an_original_problem_leaves_the_ori
 	var diagram := screen.diagram as ModDiagram
 	assert_int(_count(_lines(screen), "text Type 3")).is_equal(1)
 	assert_bool(diagram.plain().visible).is_false()
-	ModProblemShelf.release(_shelves)
-	diagram.entry_changed("5")
+	ModProblemShelf.release(_shelves)                                                               # (nothing is typed, nothing changes in the problem: the screen hears of the mod's leaving itself)
 	assert_array(_lines(screen)).is_equal(["plain %d items" % diagram.plain().items.size()])
 	assert_bool(diagram.plain().visible).is_true()
 	assert_int(diagram.layers().size()).is_equal(0)

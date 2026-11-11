@@ -1,34 +1,12 @@
 class_name ModDiagram
 extends DiagramBase
-## The diagram of EVERY problem type but the lock and the ballast panels (`DiagramFactory.create`), and the one node that asks whether a mod draws a screen (`ModHost.problem_screen`): a type a pack adds (diagram family `mod`) or an original type a mod
-## opted in to draw by number (`ModProblems`) has its picture drawn by the mod when one runs, any other type, or one whose mod is not there (yet, any more), shows the plain picture below. The type is plain data like the
-## original's 34 (words, records, how an answer is judged); this node only shows the picture on the left monitor, by asking the mod's sandboxed script what to draw: `problem_frame(state)` gets the problem's values and the
-## screen's state as plain data (`ProblemState.build`) and returns a draw list that the game checks (`ModDraw.validate`) and draws in the `ModLayer` nodes of a `ModLayerStack` of its own. The script is asked again only when
-## what it was told changes (the entry the player has typed so far, the step, and, for a script that `ModSpec.tells_problem_state`, the clock of the build-up or the replay), never per frame, and it decides nothing: the calculator or the answer box, `AnswerChecker`, `ProblemSession` and `ProblemFlow` are the game's,
-## so the answer, the tries, the oxygen and every duration are what they are for any type whatever the script returns.
+## The diagram of EVERY problem type but the lock and the ballast panels (`DiagramFactory.create`), and the one node that asks whether a mod draws a screen (`ModHost.problem_screen`). It holds the plain picture of the type's data
+## (`DiagramFactory.plain`), which plays the build-up and the replay and shows whenever no mod has drawn the type, and over it the layers of the mod that draws the type now: it asks `problem_frame(state, events)` with `ProblemState.build` and
+## `ProblemEvents`, checks the draw list (`ModDraw.validate`) and shows it in a `ModLayerStack`. It decides nothing: the answer, the tries, the oxygen and every duration are the game's whatever the script returns.
+## The mod is asked again, never kept: each time this node is asked something, and when the running mods change (`ModHost.listen`), it looks at the mod that draws the type now, so one that arrives or leaves in the middle of a problem
+## is the one that draws from then on. Events come on the frame after they happened, the state is the truth; the mechanism (state and events, the plain picture, the clock, the sounds, the skin) is `docs/engine/PACKS.md`, "Mod packs".
 ##
-## STATE AND EVENTS. The state (`ProblemState.build`) is the channel of what IS: the step (`step_changed`), the entry (`entry_changed`), the try and the clock; a script builds its picture from it, so one bound at any moment draws what one bound from the start draws. The events are the channel of what CHANGED. The screen tells each
-## presentation event (`ProblemEvents`: started, step, verdict, damage, success, timeout, decided by `ProblemFlow` before this node hears of it) to `told`. A script that is told them (`ModSpec.tells_problem_state`) is
-## handed the ones since its last call as the second argument of `problem_frame(state, events)`, on the FRAME AFTER they happened (`_process`), the newest `ProblemEvents.MAX_EVENTS`; the state it is given is as of that call. An event
-## of a call that faults, or that comes while no mod runs, is not told again; a script that is bound later is told what happens after it. The plain diagram under the layers hears none: its picture and its build-up come from the data and the flow's steps.
-##
-## THE PLAIN PICTURE. Under the mod's layers this node holds the diagram the type's data names, made by `DiagramFactory.plain` (the original's `SonarDiagram`, `PieDiagram` ... for an original type, the generic `items` of
-## the diagram spec for a `mod` family): it is what shows when the mod is absent (the chain has no such mod, it was refused or unloaded, or it arrives after the problem began: each time this node is asked it looks again), quarantined, or has not yet returned a good list, so the problem is always shown and
-## always completes. A frame the script spoils (an error, a result that is not a list) leaves the last good one on. The plain diagram is also what plays the build-up and the replay after a right answer: the lengths, the
-## ticks and the sounds are the original's whether it is seen or the mod's layers are, and a mod cannot add a tick to a problem.
-##
-## THE CLOCK (for a script that `ModSpec.tells_problem_state`). While the plain diagram plays the build-up or the replay, the script is asked again as each tick of it goes by and the state's `clock` (`ProblemState.clock`) says which animation, how many
-## of its ticks are over, how long it is and the tick the script was last told: all of it the plain diagram's (`animation_name`, `animation_tick`, `animation_length`, from the `animate_to` the step machine's count drives), so a mod draws frame N of a
-## length the engine owns, stands still when the machine's time does (a held clock feeds no tick) and cannot lengthen or shorten anything: the flow waits for the plain diagram's timeline, whatever is drawn over it. A script of an older API (before `ModSpec.DRAWS_THE_GAME_API_VERSION`) is told
-## the idle clock and asked as before. The animation's last call carries the end tick, so a sound due at the end is not missed; the call after it carries the idle clock. The screen shows the last tick of an animation before the flow ends the step (`ProblemFlow.presented`), so the end tick is told with the step still the animation's, then the idle clock, then the step that follows.
-## SOUNDS. A script of the API that has the clock may return `{"draw": [...], "sounds": ["diagram_pop"]}` instead of a draw list (a `draw` that is missing leaves what is on screen, a `sounds` that is missing asks for none): `ModSounds` keeps the names of the chain's sounds
-## within its bounds and this node asks for each as the plain diagram does (`sfx_requested`). A mod whose manifest says `own_sounds` has the plain diagram's own sounds (the build-up's, the replay's) left unplayed for as long as it runs and is not quarantined; the lengths are
-## the same, since a sound holds nothing up.
-##
-## A picture the mod names by key is resolved under the skin in use (`ModDraw`); when the skin changes the last good answer is checked and resolved again (and the plain diagram looks its pictures up again, `DiagramBase`), so the screen shows what one opened under that skin shows.
-##
-## Teaches: one builder for every way a problem is opened (`DiagramFactory.create`, reached by `ProblemScreen.start` from the game, the practice set, the debug menu and the tests), a view that is derived from its
-## owners each time (the problem, the entry, the mod chain, the skin) so that it is the same whichever way it came about, and a wrapper that forwards what it does not change.
+## Teaches: one builder for every way a problem is opened (`DiagramFactory.create`), a view derived from its owners each time (the problem, the entry, the mod chain, the skin) so that it is the same whichever way it came about, and a wrapper that forwards what it does not change.
 
 var _entry := ""
 var _step := ProblemFlow.Step.ANSWERING
@@ -52,6 +30,16 @@ func _init() -> void:
 	clip_contents = true
 	_stack.name = "Drawn"
 	add_child(_stack)
+
+
+func _enter_tree() -> void:
+	super()
+	ModHost.listen(_on_mods_changed)
+
+
+func _exit_tree() -> void:
+	super()
+	ModHost.stop_listening(_on_mods_changed)
 
 
 func setup(new_problem: ProblemInstance) -> void:
@@ -91,6 +79,14 @@ func told(event: Array) -> void:
 func _process(_delta: float) -> void:
 	set_process(false)
 	_refresh(true)
+
+
+## The running mods changed (one arrived, left or was loaded again): the mod that draws this type now is asked, whatever the state was when the last one was.
+func _on_mods_changed() -> void:
+	if problem == null:
+		return
+	_asked_hash = 0
+	_refresh()
 
 
 ## The entry the player has typed so far changed (the calculator's display or the answer box's text).

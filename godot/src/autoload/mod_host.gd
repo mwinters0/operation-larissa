@@ -72,6 +72,17 @@ static func wanted() -> Array[Pack]:
 	return found
 
 
+## Calls `listener` when the loaded mods change (`mods_changed`), for a node that draws what a mod draws and must not keep a mod that is gone: the static door, like `mod`, for code that does not name the autoload.
+static func listen(listener: Callable) -> void:
+	if _instance != null and not _instance.mods_changed.is_connected(listener):
+		_instance.mods_changed.connect(listener)
+
+
+static func stop_listening(listener: Callable) -> void:
+	if _instance != null and _instance.mods_changed.is_connected(listener):
+		_instance.mods_changed.disconnect(listener)
+
+
 ## What identifies a mod as the disk has it: the pack's folder or file, and the file that makes it the mod it is with its time (`Pack.modified_time`): the script, or the manifest of a data skin.
 static func key_of(pack: Pack) -> String:
 	var file := pack.mod.entry if pack.mod.has_entry() else Pack.MANIFEST
