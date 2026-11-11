@@ -19,11 +19,11 @@ extends RefCounted
 ## `entry` is a plain file name (no folder) ending `.sgd`, in the pack's root; only a skin whose script draws nothing may leave it out (a DATA skin: no script, so no Sandbox is needed to wear it). `requires_api` (default 1) is the lowest API version the script needs; a game that provides less
 ## refuses the pack. `limits` is optional, and so is every key in it. `skin` makes the mod a SKIN (`ModSkin`: the mod draws the sector, `docs/create/SKIN_API.md`); it needs API version 2,
 ## and lists the shaders the skin may use, text files `skin/<name>.gdshader` of the pack (`ModShader`), at most `MAX_SHADERS`; `render` (`texture_filter`, `snap_transforms`, `snap_vertices`: the `RenderSettings` the skin puts on the window)
-## and `pictures` (skin key `ui_picture/<name>` to a PNG `skin/<name>.png` of the pack, at most `MAX_PICTURES`, worn only while the skin is) and `hud_font` (`file`: a `.ttf` of the pack's `skin/` folder, read from its bytes,
+## and `pictures` (skin key `ui_picture/<name>`, or from API version 13 `problem_art/<name>`, to a PNG `skin/<name>.png` of the pack, at most `MAX_PICTURES`, worn only while the skin is) and `hud_font` (`file`: a `.ttf` of the pack's `skin/` folder, read from its bytes,
 ## at most `Pack.MAX_FONT_BYTES`; `size` from `MIN_HUD_FONT_SIZE` to `MAX_HUD_FONT_SIZE`; `color`: `#rrggbb` or `#rrggbbaa`; `weight` (API version 12, `FontSpec`): the lettering of the HUD's boxes, `HudLabels`; from API version 12 `file` may be left out, and the boxes are lettered in the theme's font) and `layers` (a layer of the original presenter by name, `SkinLayers.NODES`, to one of the listed `shaders` and the values of its uniforms: a number, `true` / `false`, a list of 2 to 4 numbers or a colour string, at most `MAX_LAYER_UNIFORMS`, each number within
 ## `MAX_UNIFORM_VALUE`; the game sets `phase`) are API version 5, which a skin without `entry` needs too. `script_layers` (API version 7; needs an `entry`) lists the layers of the original presenter (`SkinLayers.NODES`) and, from API version 8, the parts of the console (`SkinLayers.HUD_NODES`, or the whole console, `SkinLayers.HUD`)
 ## whose picture the script draws, one call of `skin_layer(name, state, fraction, events)` for each; the others stay the original's, and the layers of `layers` are dressed by their shader on those the script does not draw. A skin with an `entry` and no `script_layers` draws the whole
-## screen with `skin_frame(state, fraction, events)`: every layer at once. `theme` (API version 12, a skin with a script may have it too: it is data) is the look of the menus as `SkinTheme` says it: `font` (a `FontSpec`: `file`, `weight`, `size` from `MIN_THEME_FONT_SIZE` to `MAX_THEME_FONT_SIZE`), `colors` (`SkinTheme.COLORS`), and the styles `panel`, `console`, `button` and `input` (`SkinTheme.STYLES`) as the fields of `STYLE_KEYS`, each within its bound. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from 0 to
+## screen with `skin_frame(state, fraction, events)`: every layer at once. `theme` (API version 12, a skin with a script may have it too: it is data) is the look of the menus as `SkinTheme` says it: `font` (a `FontSpec`: `file`, `weight`, `size` from `MIN_THEME_FONT_SIZE` to `MAX_THEME_FONT_SIZE`), `colors` (`SkinTheme.COLORS`), and the styles `panel`, `console`, `button`, `input` and `key` (`SkinTheme.STYLES`; the colour `display` and the style `key` are API version 13, `FRAME_API_VERSION`) as the fields of `STYLE_KEYS`, each within its bound. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from 0 to
 ## `Catalog.LAST_PROBLEM_TYPE`, at most `MAX_PROBLEM_TYPES`: a number below `Catalog.PROBLEM_TYPE_COUNT` is an ORIGINAL type, drawn by number in place of the original diagram (API version 9; the lock and the ballast panels are the engine's and cannot be listed), a number from it up
 ## is a type the pack adds and holds as data); it needs API version 3 and lists its shaders like a skin, in the pack's `problems/` folder. `own_sounds` (true or false, API version 11) says the script asks for the sounds of the build-up and the replay itself, so the original diagram's own are not played while the mod runs. `rules` makes the mod
 ## add GAMEPLAY inside the rules (`RuleHooks`), for a campaign that declares the mod: `answers` lists problem types it judges instead of their `compare_mode` (numbers as for `problems.types`, the pack holds each as data),
@@ -34,8 +34,8 @@ extends RefCounted
 ## Teaches: validating an untrusted description by naming each rule in one place, and clamping a request to a ceiling instead of refusing it (a limit is a request; the host decides).
 
 ## The version of the API a mod is given (`ModApi.build`). A mod that requires a higher one is refused. The version goes up when the API gains something a mod can ask for (2: the skin API, 3: the problem
-## screens, 4: the rule hooks, 5: the data skin, 6: a picture of the game by key in the draw list, 7: the skin's script draws chosen layers, 8: the console's parts are layers too, 9: a problem-screen mod draws the original's types by number, 10: a problem-screen mod is told what happened, 11: a problem-screen mod is told where the animation is and may ask for sounds, 12: a skin's theme for the menus, and the weight of a skin's font), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
-const API_VERSION := 12
+## screens, 4: the rule hooks, 5: the data skin, 6: a picture of the game by key in the draw list, 7: the skin's script draws chosen layers, 8: the console's parts are layers too, 9: a problem-screen mod draws the original's types by number, 10: a problem-screen mod is told what happened, 11: a problem-screen mod is told where the animation is and may ask for sounds, 12: a skin's theme for the menus, and the weight of a skin's font, 13: the theme reaches the problem screen's frame: its pictures may be replaced, the keys and the display have a look), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
+const API_VERSION := 13
 ## The first version with the skin API: a skin mod requires it.
 const SKIN_API_VERSION := 2
 ## The first version with data skins: `render` and `pictures` in `skin`, and a skin with no `entry`.
@@ -55,6 +55,8 @@ const PROBLEM_EVENTS_API_VERSION := 10
 const PROBLEM_CLOCK_API_VERSION := 11
 ## The first version with the menus' theme (`skin.theme`) and the weight of a font (`weight` in `hud_font` and in the theme's font), and with a `hud_font` that has no `file` (the lettering is then in the theme's font): a manifest that has any of them requires it.
 const THEME_API_VERSION := 12
+## The first version with the problem screen's frame in the theme: the `key` style and the `display` colour, and the pictures of the kind `problem_art` in a skin's `pictures` (the screen's picture, the calculator's and the "Ans:" panel's and the calculator's digits): a manifest that has any of them requires it.
+const FRAME_API_VERSION := 13
 ## The first version with rule hooks: a mod with `rules` requires it.
 const RULE_API_VERSION := 4
 ## The game's ceilings. A manifest can lower these, never raise them (the same numbers as the godot-sandbox example's loader).
@@ -90,7 +92,7 @@ const MIN_HUD_FONT_SIZE := 6
 const MAX_HUD_FONT_SIZE := 32
 ## The keys of a skin's `theme`, and the bounds of what it may say. The menus' controls keep their rectangles (the layouts are the engine's), and a control grows when its text or margins do not fit its rectangle, so the font
 ## stays near the engine's (17 pixels) and the spaces small: `MIN_THEME_FONT_SIZE` to `MAX_THEME_FONT_SIZE` for the default font, a border of `MAX_BORDER_WIDTH`, corners of `MAX_RADIUS`, a margin of `MAX_MARGIN` and a picture's slice of `MAX_SLICE` at most.
-const THEME_KEYS: Array[String] = ["font", "colors", "panel", "console", "button", "input"]
+const THEME_KEYS: Array[String] = ["font", "colors", "panel", "console", "button", "input", "key"]
 const THEME_FONT_KEYS: Array[String] = ["file", "weight", "size"]
 const MIN_THEME_FONT_SIZE := 10
 const MAX_THEME_FONT_SIZE := 20
@@ -103,7 +105,7 @@ const MAX_SLICE := 64
 const RENDER_KEYS: Array[String] = ["texture_filter", "snap_transforms", "snap_vertices"]
 ## The kinds of picture key (`<kind>/<name>`, as `GameSkin.pictures` has them) a skin's `pictures` may REPLACE. A draw list may NAME a picture of more kinds (`GameSkin.KEY_KINDS`, `is_drawable_key`): it only shows
 ## what the game would show, where a replaced picture changes what the game shows everywhere.
-const PICTURE_KINDS: Array[String] = ["ui_picture"]
+const PICTURE_KINDS: Array[String] = ["ui_picture", "problem_art"]
 ## The longest a picture key a draw list names may be (a file's name under a kind: the registry's names are shorter, `NameRegistry.MAX_NAME_LENGTH`, but a stem the importer keeps is not).
 const MAX_KEY := 96
 ## The most pictures a skin lists.
@@ -309,6 +311,8 @@ static func _parse_pictures(value: Variant, spec: ModSpec, found: Array[String])
 			found.append("the picture key \"%s\" must be <kind>/<name> with a kind of %s and a name of lowercase letters, digits and underscores" % [key, ", ".join(PICTURE_KINDS)])
 		elif not path is String or not is_picture_path(path):
 			found.append("the picture of \"%s\", %s, must be a file of the pack's %s folder ending .png" % [key, JSON.stringify(path), SKIN_FOLDER])
+		elif key.begins_with("problem_art/") and spec.requires_api < FRAME_API_VERSION:
+			found.append("a skin that replaces the problem screen's picture \"%s\" needs \"requires_api\": %d (the problem screen's frame came with that version)" % [key, FRAME_API_VERSION])
 		else:
 			spec.pictures[key] = path
 
@@ -371,6 +375,8 @@ static func _parse_theme(value: Variant, spec: ModSpec, found: Array[String]) ->
 					found.append("the theme's \"%s\" has no \"%s\" (it has %s)" % [style, state, ", ".join(SkinTheme.STYLES[style])])
 				else:
 					_parse_style("%s/%s" % [style, state], value[style][state], made, found)
+	if spec.requires_api < FRAME_API_VERSION and (made.colors.has("display") or made.styles.keys().any(func(style: String) -> bool: return style.begins_with("key/"))):
+		found.append("a theme with the colour \"display\" or the style \"key\" needs \"requires_api\": %d (the problem screen's frame came with that version)" % FRAME_API_VERSION)
 	if found.size() == before:
 		spec.theme = made
 		spec.theme_font = font

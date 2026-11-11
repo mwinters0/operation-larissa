@@ -44,7 +44,6 @@ const SUCCESS_REPLAY_TYPES := ProblemFlow.SUCCESS_REPLAY_TYPES
 const STRING_GO_ON := &"click_to_go_on"
 const LOG_SCREEN := preload("res://src/ui/log_screen.tscn")
 const CALC_NOTICE_DIALOG := preload("res://src/problems/calc_notice_dialog.tscn")
-const COLOR_WRONG := Color(1.0, 0.45, 0.4)
 
 ## Set to false to make the calculator unavailable (the player's option).
 @export var calculator_allowed: bool = true
@@ -89,7 +88,8 @@ var _text_top: float = 0.0                   # where the message text starts whe
 
 
 func _ready() -> void:
-	_apply_layout(Catalog.screen_layout())
+	_dress()
+	SkinChoice.events.changed.connect(_on_skin_changed)
 	calculator.submitted.connect(_on_number_submitted)
 	answer_box.submitted.connect(_on_text_submitted)
 	answer_box.sfx_requested.connect(func(sfx: StringName) -> void: sfx_requested.emit(sfx))
@@ -123,7 +123,7 @@ func _connect_flow() -> void:
 	_flow.prompt_shown.connect(func() -> void: _write_prompt(_flow.problem))
 	_flow.message_shown.connect(_write_message)
 	_flow.feedback_shown.connect(func(message: String, is_error: bool) -> void:
-		_say(message, COLOR_WRONG if is_error else Catalog.screen_layout().color(15)))
+		_say(message, is_error))
 	_flow.go_on_changed.connect(_show_go_on)
 	_flow.sfx_requested.connect(func(sfx: StringName) -> void: sfx_requested.emit(sfx))
 	_flow.reacted.connect(func(kind: StringName) -> void: animations.play(kind))
@@ -134,15 +134,28 @@ func _connect_flow() -> void:
 	_flow.happened.connect(_on_event)
 
 
+## The skin in use is another: the frame is dressed again (`_dress`). The calculator and the "Ans:" panel hear of it themselves.
+func _on_skin_changed(_skin: GameSkin) -> void:
+	_dress()
+
+
+## Puts the screen's frame on as the skin in use shows it: the screen's picture and the sender's, in the rectangles of the layout (`_apply_layout`). The one builder of the frame: `_ready` and a skin put on in the middle of a problem both call it, and what it
+## reads is the skin and the problem now (the sender's picture of the prompt shown), never what it was when the screen was made. Colours, fonts and styles are not set here: every label, the text box and the calculator's keys look them up in the project theme
+## (`ThemeBuilder`, `SkinTheme`), which the skin puts on when it is selected.
+func _dress() -> void:
+	_apply_layout(Catalog.screen_layout())
+	if sender_icon.visible and _flow.problem != null:
+		sender_icon.texture = PromptSender.texture(_flow.problem.trigger_slot)
+
+
 ## Puts the shared parts where the original has them (`ProblemScreenLayout`, DESIGN 5.5): the screen
-## picture, the title box and the prompt's text box. The font comes from the project Theme.
+## picture, the title box and the prompt's text box. The font and the colours come from the project Theme.
 func _apply_layout(layout: ProblemScreenLayout) -> void:
 	background.texture = layout.background
 	background.position = Vector2(layout.background_position)
+	background.size = Vector2(layout.background_size)                                 # (the layout's data, not the picture's: a skin's picture of another size is stretched to it)
 	title_label.position = Vector2(layout.title_box_x, layout.title_y)
 	title_label.size = Vector2(layout.title_box_width, layout.line_height)
-	title_label.add_theme_color_override("font_color", layout.color(15))
-	sender_header.add_theme_color_override("font_color", layout.color(15))
 	var box := Rect2(layout.message_box)
 	# The monitor holds ten lines of the original's text. Prompts, hints and solutions of all stored problems are
 	# at most nine lines long, so the tenth line is ours: it says what just happened (right / wrong, oxygen).
@@ -288,7 +301,7 @@ func _on_lock_finished() -> void:
 ## The worked solution asks for Enter with the original's bottom line (string 11003, centred under the text).
 func _show_go_on(shown: bool) -> void:
 	if shown:
-		_say(Catalog.text(STRING_GO_ON), Catalog.screen_layout().color(15))
+		_say(Catalog.text(STRING_GO_ON), false)
 		feedback.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	else:
 		feedback.text = ""
@@ -336,9 +349,10 @@ func _show_log_screen(sector: int) -> void:
 	log_screen.start(sector)
 
 
-func _say(message: String, color: Color) -> void:
+## The tenth line: what just happened. A wrong answer's line wears the theme's `ProblemWrong` look, any other line the plain label's (`text`): the colours are the theme's, so a skin put on while a line is up changes it.
+func _say(message: String, is_error: bool) -> void:
 	feedback.text = message
-	feedback.add_theme_color_override("font_color", color)
+	feedback.theme_type_variation = &"ProblemWrong" if is_error else &""
 
 
 # --- messages -------------------------------------------------------------------------

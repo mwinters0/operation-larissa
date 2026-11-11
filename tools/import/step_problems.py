@@ -227,8 +227,10 @@ def build_screen_layout(diagrams: dict) -> str:
     screen = diagrams["screen"]
     t = tres.Tres("Resource", "ProblemScreenLayout", SCRIPTS + "problem_screen_layout.gd")
     bg = screen["background"]
-    t.set("background", t.ext_ref("Texture2D", res_path(problem_art_file("single", bg["single_pic_id"]))))
+    background = res_path(problem_art_file("single", bg["single_pic_id"]))
+    t.set("background", t.ext_ref("Texture2D", background))
     t.set("background_position", tres.vec2i(*bg["pos"]))
+    t.set("background_size", tres.vec2i(*png_size(background)))
     t.set("title_box_x", str(screen["title"]["box"][0]))
     t.set("title_box_width", str(screen["title"]["box"][1]))
     t.set("title_y", str(screen["title"]["y"]))

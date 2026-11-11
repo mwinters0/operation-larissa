@@ -14,6 +14,11 @@ func test_the_calculator_and_answer_box_sizes_are_the_pictures_sizes() -> void:
 	assert_object(layout.answer_size).is_equal(Vector2i(layout.answer_panel.get_size()))
 
 
+func test_the_problem_screens_size_is_the_pictures_size() -> void:
+	var layout := Catalog.screen_layout()
+	assert_object(layout.background_size).is_equal(Vector2i(layout.background.get_size()))
+
+
 func test_the_consoles_sizes_are_the_pictures_sizes_and_each_gauges_area_holds_its_icons() -> void:
 	var layout: HudLayout = Catalog.hud_layout()
 	assert_object(layout.bezel_size).is_equal(Vector2i(layout.bezel.get_size()))

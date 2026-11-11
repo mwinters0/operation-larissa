@@ -82,15 +82,20 @@ func glyph_placements() -> Array:
 	return placements
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_THEME_CHANGED:
+		queue_redraw()
+
+
 func _draw() -> void:
 	if layout == null:
 		return
 	var local_origin := Vector2(origin - frame_origin)
-	# the black field is wiped first, as the original does
+	# the field is wiped first, as the original does (black, or the theme's `display` colour: `ThemeBuilder`, `LcdDisplay` / `field`)
 	var field := Rect2(local_origin + Vector2(layout.display_clear_rect.position), Vector2(layout.display_clear_rect.size))
-	draw_rect(field, Color.BLACK)
+	draw_rect(field, get_theme_color(&"field", &"LcdDisplay"))
 	for placement in glyph_placements():
-		draw_texture((placement[1] as Texture2D), (placement[0] as Rect2).position)
+		draw_texture_rect((placement[1] as Texture2D), (placement[0] as Rect2), false)          # (in the rectangle of the layout's data: a picture of another size is stretched to it)
 	if fraction_flag:
 		draw_texture(layout.fraction_flag_texture, local_origin + Vector2(layout.fraction_flag_offset))
 	if show_markers:

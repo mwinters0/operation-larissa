@@ -24,6 +24,8 @@ const SFX_BACKSPACE := &"calc_backspace"
 
 @export var layout: CalculatorLayout
 
+var _scene_layout: CalculatorLayout        ## the pack's layout (or the one the scene was given): what the skin's version is made from, again and again
+
 var text: String = "":
 	set(value):
 		text = value
@@ -41,16 +43,30 @@ var keyboard_enabled: bool = true:
 
 
 func _ready() -> void:
-	layout = Catalog.skinned(layout if layout != null else Catalog.pack_resource("data/ui/calculator_layout.tres")) as CalculatorLayout         # (the pack's; the skin in use may show another)
+	_scene_layout = layout if layout != null else Catalog.pack_resource("data/ui/calculator_layout.tres") as CalculatorLayout        # (the pack's; the skin in use may show another)
+	display.show_markers = false
+	display.text = "0"
+	_dress()
+	SkinChoice.events.changed.connect(_on_skin_changed)
+
+
+## The skin in use is another: the panel is dressed again.
+func _on_skin_changed(_skin: GameSkin) -> void:
+	_dress()
+
+
+## Puts the panel on as the skin in use shows it: the layout and its picture, stretched to the rectangle the layout gives it (a skin's picture of another size moves nothing), and the display's layout. `_ready` and a skin put on in the middle of a
+## problem both call it. The display's field is the theme's `display` colour: looked up, not set here.
+func _dress() -> void:
+	layout = Catalog.skinned(_scene_layout) as CalculatorLayout
 	position = Vector2(layout.answer_position)
 	picture.texture = layout.answer_panel
+	picture.size = Vector2(layout.answer_size)
 	size = Vector2(layout.answer_size)                      # (from the layout's data, not from the texture that happens to be loaded)
 	custom_minimum_size = size
 	display.layout = layout
 	display.frame_origin = layout.answer_position
 	display.origin = layout.display_origin_answer
-	display.show_markers = false
-	display.text = "0"
 
 
 ## Empties the box for a new problem.

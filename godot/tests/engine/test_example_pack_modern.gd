@@ -222,3 +222,39 @@ func test_the_menus_are_in_exo_2_at_weight_600_in_a_theme_of_cool_blues() -> voi
 	assert_float((project.get_stylebox("normal", "Button") as StyleBoxFlat).content_margin_left).is_equal(ThemeBuilder.engine().get_stylebox("normal", "Button").content_margin_left)   # (it says no margin: the controls keep their sizes)
 	SkinChoice.select(SkinChoice.original())
 	assert_object(project.default_font).is_same(ThemeBuilder.engine().default_font)
+
+
+func test_the_problem_screens_frame_wears_the_theme() -> void:
+	var shelf := _mount()
+	SkinChoice.select_id(shelf.id)
+	var screen: ProblemScreen = ProblemRunner.SCREEN_SCENE.instantiate()
+	add_child(screen)
+	screen.start(ProblemFactory.make(1, 0, null, 0))
+	assert_str(screen.title_label.get_theme_color(&"font_color").to_html(false)).is_equal("dbf7ff")                  # (`text`)
+	assert_str(screen.text_label.get_theme_color(&"default_color").to_html(false)).is_equal("dbf7ff")
+	assert_str(screen.calculator.display.get_theme_color(&"field", &"LcdDisplay").to_html(false)).is_equal("041018")   # (`display`)
+	var key := screen.calculator.keys.get_child(0) as Button
+	assert_str((key.get_theme_stylebox(&"hover") as StyleBoxFlat).border_color.to_html(false)).is_equal("7fe0ff")      # (`key`)
+	assert_str((key.get_theme_stylebox(&"pressed") as StyleBoxFlat).bg_color.to_html()).is_equal("ffe27a60")
+	assert_object(screen.title_label.get_theme_font(&"font")).is_same(ThemeDB.get_project_theme().default_font)
+	assert_object(screen.title_label.get_theme_font(&"font")).is_not_same(ThemeBuilder.engine_font())              # (the diagrams' text keeps the engine's font: `DiagramBase.font`)
+	assert_object(screen.diagram.font).is_same(ThemeBuilder.engine_font())
+	screen.free()
+
+
+## The templates of the problem screen's frame ship in `skin/problem_art/` and the sender's two in `skin/ui_picture/`, unmapped: a flat calculator would hide its keys, so the author maps the ones drawn over.
+func test_the_templates_of_the_problem_screens_frame_are_in_the_folder_and_not_mapped() -> void:
+	var pack := Pack.open(_folder())
+	var found := DirAccess.get_files_at("%s/skin/problem_art" % _folder())
+	assert_array(found).is_not_empty()
+	for file in found:
+		var name := file.get_basename()
+		assert_bool(NameRegistry.original().index_of(&"problem_art", name) >= 0).override_failure_message(file).is_true()
+		assert_bool(pack.mod.pictures.has("problem_art/%s" % name)).override_failure_message(file).is_false()
+		var image := Image.load_from_file("%s/skin/problem_art/%s" % [_folder(), file])
+		assert_int(image.get_pixel(0, 0).a8).is_equal(255)
+	for sender in [PromptSender.PICTURE_SHIP, PromptSender.PICTURE_CONTROL_ROOM]:
+		var image := Image.load_from_file("%s/skin/ui_picture/%s.png" % [_folder(), sender])
+		assert_object(Vector2i(image.get_size())).is_equal(PromptSender.PICTURE_SIZE)
+		assert_bool(pack.mod.pictures.has("ui_picture/%s" % sender)).is_false()
+	assert_bool(FileAccess.file_exists("%s/problems/problem_layer/window.png" % _folder())).is_true()

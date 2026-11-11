@@ -1,8 +1,8 @@
 # Roadmap
 
 Future work only. What exists is described in the permanent docs ([`OVERVIEW.md`](OVERVIEW.md), [`CODEMAP.md`](CODEMAP.md)); when an
-item here is done, delete it and describe the result in the doc that owns the topic. Work items are numbered so commits
-can name them; the ids are not used outside this file.
+item here is done, delete it and describe the result in the doc that owns the topic. A work item added here is numbered so
+commits can name it; the ids are not used outside this file.
 
 ## Open items
 
@@ -29,6 +29,7 @@ hand in a window.
 - Unnamed creature and decoration pictures share one skin key (`frame/foe`), so they cannot be skinned one by one; there is no
   supported "this skin draws creature N" hook (`creatures` hides `Foe.sprite`); `SimView` events reach a skin before
   `OriginalPresenter`'s handlers.
+- The theme of a skin mod (`create/SKIN_API.md` "The menus' theme") reaches the sign-in screen, the dialogs, the message box and the problem screen, but not the screens that colour their text by hand from the original's palette: the canister's log screen (`LogScreen`), the surface-ship message (`SurfaceShipScreen`) and the story pages. A diagram's text is the engine's font by design (the original puts each word at a pixel and a width).
 - The supply station's door x positions are literals in the views.
 - `Campaign.text()` shows the original's string for a sentence that is exactly a text name; a generic finale has no voice or music of
   its own. `SectorData.game` is read only by the importer and the sector checks.
@@ -56,26 +57,6 @@ hand in a window.
 **Documentation**
 - Walkthroughs for students: one game tick from input to picture, a creature's life (script, VM, contact, ink), a trigger to a solved
   problem.
-
-## K: mods draw the game
-
-Mods take over drawing step by step, from data alone up to the problem screens and the menus' style. Every step keeps the promises
-of skins (`create/SKIN_API.md`): no rule, timing or hit rectangle changes, a skin bound mid-anything shows what one bound from the
-start shows, and `test_plays_identically` / `test_skins_dont_change_the_game` cover each new form. The engine keeps every menu's
-function and every duration; a mod changes only what they look like. 3D models and animation trees need real nodes, which a sandbox
-cannot grant: they stay what a project skin can do (`creatures`), and the docs say so.
-
-Each item below is one session's work: it ends with its tests, docs and `CODEMAP.md` lines, and is committed on its own. Items
-of a phase are done in order.
-
-**Art templates.** Each phase that lets a skin replace pictures ends with templates for them: for every picture key it opens up
-(the HUD's bezel, gauges, lights and label boxes for the first phase; later phases their own keys), a PNG of the original's exact size in one flat
-colour with the key and the size written on it, made by a committed tool (one line in `CODEMAP.md`; the sizes come from the layouts,
-not from the original's pixels, so the templates carry no original content and are committed in the example pack). The user draws the
-real art from them. The tool is `SkinTemplates` (`docs/create/SKIN_API.md` "Art templates"); the original's exact sizes are those of the legacy pack's layouts (`--pack=legacy` reads sizes only), the dev pack's pictures having sizes of their own; each later phase's last item adds the layouts that hold its keys to `SkinTemplates.SOURCES`.
-
-**K5: the menus' style.** The controls, their order and what they do stay the engine's.
-- **K5b: the problem screen's frame.** The theme reaches the problem screen's frame; templates for each picture the theme may replace.
 
 ## After this: the remake
 

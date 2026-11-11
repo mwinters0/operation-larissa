@@ -188,10 +188,10 @@ static func _mod(live: Pack, report: PackReport) -> void:
 		for message in ModParts.problems(live):
 			report.error("mod", message)
 		for key in live.mod.pictures:
-			if NameRegistry.original().index_of(&"ui_picture", key.get_slice("/", 1)) < 0:
+			if NameRegistry.original().index_of(StringName(key.get_slice("/", 0)), key.get_slice("/", 1)) < 0:
 				report.warn("mod", "the skin's picture %s names no picture of the game: it is never asked for" % key)
 		for key in live.mod.theme_pictures():
-			if key.begins_with("ui_picture/") and not live.mod.pictures.has(key) and NameRegistry.original().index_of(&"ui_picture", key.get_slice("/", 1)) < 0:
+			if (key.begins_with("ui_picture/") or key.begins_with("problem_art/")) and not live.mod.pictures.has(key) and NameRegistry.original().index_of(StringName(key.get_slice("/", 0)), key.get_slice("/", 1)) < 0:
 				report.warn("mod", "the theme's picture %s is neither one the skin maps nor one of the game's: the style is drawn flat" % key)
 		scripts.erase(live.mod.entry)
 	for rel in live.all_files():

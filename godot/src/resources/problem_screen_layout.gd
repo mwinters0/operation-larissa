@@ -10,6 +10,8 @@ extends Resource
 ## The screen picture: a title bar, the diagram monitor (left) and the text monitor (right).
 @export var background: Texture2D
 @export var background_position: Vector2i = Vector2i.ZERO
+## The size of that picture, written from the picture file (a screen takes its rectangle from data, and stretches a skin's picture of another size to it).
+@export var background_size: Vector2i = Vector2i.ZERO
 ## The title is centred in the box [title_box_x, title_box_x + title_box_width) at height `title_y`.
 @export var title_box_x: int = 0
 @export var title_box_width: int = 0

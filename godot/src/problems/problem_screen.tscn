@@ -89,6 +89,7 @@ offset_bottom = 400.0
 unique_name_in_owner = true
 layout_mode = 0
 mouse_filter = 2
+expand_mode = 1
 
 [node name="TitleLabel" type="Label" parent="Content"]
 unique_name_in_owner = true
@@ -116,7 +117,6 @@ offset_top = 48.0
 offset_right = 602.0
 offset_bottom = 232.0
 mouse_filter = 2
-theme_override_colors/default_color = Color(1, 1, 1, 1)
 theme_override_constants/line_separation = 0
 bbcode_enabled = true
 
@@ -129,6 +129,7 @@ offset_top = 48.0
 offset_right = 416.0
 offset_bottom = 68.0
 mouse_filter = 2
+expand_mode = 1
 
 [node name="SenderHeader" type="Label" parent="Content"]
 unique_name_in_owner = true

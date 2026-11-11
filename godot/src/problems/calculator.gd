@@ -53,6 +53,7 @@ var keyboard_enabled: bool = true:
 @onready var display: LcdDisplay = %Display
 @onready var keys: Control = %Keys
 
+var _scene_layout: CalculatorLayout        ## the pack's layout (or the one the scene was given): what the skin's version is made from, again and again
 var _buttons: Dictionary = {}     # key name -> Button
 var _flash_timer: Timer
 var _flashing_key: String = ""    # the lit key while the flash lasts, else ""
@@ -61,32 +62,49 @@ var _deferred_key: String = ""            # a command key that acts when the fla
 
 
 func _ready() -> void:
-	layout = Catalog.skinned(layout if layout != null else Catalog.pack_resource("data/ui/calculator_layout.tres")) as CalculatorLayout         # (the pack's; the skin in use may show another)
-	position = Vector2(layout.picture_position)
-	picture.texture = layout.picture
-	size = Vector2(layout.picture_size)                       # (from the layout's data, not from the texture that happens to be loaded)
-	custom_minimum_size = size
-	display.layout = layout
-	display.frame_origin = layout.picture_position
-	display.origin = layout.display_origin_calculator
+	_scene_layout = layout if layout != null else Catalog.pack_resource("data/ui/calculator_layout.tres") as CalculatorLayout       # (the pack's; the skin in use may show another)
 	_flash_timer = Timer.new()
 	_flash_timer.one_shot = true
 	_flash_timer.wait_time = TickMeter.seconds(CalculatorModel.key_flash_ticks())
 	_flash_timer.timeout.connect(end_flash)
 	add_child(_flash_timer)
-	for i in layout.key_names.size():
+	for key_name in _scene_layout.key_names:                 # (one button per key; where each goes is `_dress`'s)
 		var button := Button.new()
 		button.theme_type_variation = &"CalcKey"
 		button.focus_mode = Control.FOCUS_NONE               # the keyboard goes to the widget, not to a focused button
-		var rect := layout.key_rects[i]
-		button.position = Vector2(rect.position - layout.picture_position)
-		button.size = Vector2(rect.size)
-		button.tooltip_text = layout.key_names[i]
+		button.tooltip_text = key_name
 		button.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS     # `pressed` on the mouse DOWN: the original clicks on the press
-		button.pressed.connect(input_key.bind(layout.key_names[i]))  # bind: same handler, a different key each time
+		button.pressed.connect(input_key.bind(key_name))     # bind: same handler, a different key each time
 		keys.add_child(button)
-		_buttons[layout.key_names[i]] = button
+		_buttons[key_name] = button
+	_dress()
+	SkinChoice.events.changed.connect(_on_skin_changed)
 	_refresh()
+
+
+## The skin in use is another: the calculator is dressed again.
+func _on_skin_changed(_skin: GameSkin) -> void:
+	_dress()
+
+
+## Puts the calculator on as the skin in use shows it: the layout and its picture, the rectangle the layout gives it and the one of each key, and the display's layout. The one builder of the calculator's looks (`_ready` and a skin put on in the middle of a
+## problem both call it): the picture is stretched to the layout's size, so a skin's picture of another size moves nothing. The keys' looks and the display's field are the theme's (`key` and `display`): they are looked up, not set here.
+func _dress() -> void:
+	layout = Catalog.skinned(_scene_layout) as CalculatorLayout
+	position = Vector2(layout.picture_position)
+	picture.texture = layout.picture
+	picture.size = Vector2(layout.picture_size)
+	size = Vector2(layout.picture_size)                       # (from the layout's data, not from the texture that happens to be loaded)
+	custom_minimum_size = size
+	display.layout = layout
+	display.frame_origin = layout.picture_position
+	display.origin = layout.display_origin_calculator
+	for i in layout.key_names.size():
+		var button := _buttons.get(layout.key_names[i]) as Button
+		if button != null:
+			var rect := layout.key_rects[i]
+			button.position = Vector2(rect.position - layout.picture_position)
+			button.size = Vector2(rect.size)
 
 
 ## A key from the mouse or the keyboard: `press` it and light it for `FLASH_TICKS`. While a key is lit the new one waits.
@@ -141,10 +159,26 @@ func _start_flash(key: String) -> void:
 	if button == null:
 		return
 	_flashing_key = key
-	var lit := button.get_theme_stylebox("pressed")        # the "pressed" look, also under the mouse (hover)
+	_light(button)
+	_flash_timer.start()
+
+
+## The lit key wears the theme's "pressed" look, also under the mouse (hover). It is made from the theme in force, so it is made again when the theme changes under it (`_notification`: a skin put on during the 12 ticks).
+func _light(button: Button) -> void:
+	var lit := button.get_theme_stylebox("pressed")
 	button.add_theme_stylebox_override("normal", lit)
 	button.add_theme_stylebox_override("hover", lit)
-	_flash_timer.start()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_THEME_CHANGED and not _flashing_key.is_empty():
+		_light_again.call_deferred()                          # (at the end of the frame: the button has been told of the new theme too, and a lookup answers from what it was told)
+
+
+func _light_again() -> void:
+	var button := _buttons.get(_flashing_key) as Button
+	if button != null:
+		_light(button)
 
 
 ## The 12 ticks are over (or a test does not want to wait): the key goes dark and the next waiting key is taken.

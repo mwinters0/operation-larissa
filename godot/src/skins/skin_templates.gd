@@ -10,10 +10,10 @@ extends RefCounted
 ## THE LAYERS OF THE CONSOLE. A skin's script may draw a part of the console, or all of it (`SkinLayers.HUD_NODES`), in the part's rectangle (`ConsoleState.rects`): the HUD layout in `SOURCES` also gives one template for each such layer, key `hud_layer/<layer>`
 ## (`hud_layer/hud_oxygen`), the size of the layer's rectangle in the layout's own data, for a picture of the whole part that the script draws (`skin/<name>.png`, a path in a draw list) at the size it will show.
 ##
-## THE PROBLEM SCREEN. A mod that draws the screen of a problem type (`ModDiagram`, `docs/create/CONTENT.md` "Problem screens") draws in the window's 640 x 400 pixels and may name the pictures of the screen's frame and panels by key (`problem_art/pa_1780`, the
-## screen picture the layout holds, `pa_1781` the calculator, `pa_1802` the "Ans:" panel, the calculator's digits ...): the layouts of the screen and of the calculator in `SOURCES` give one template for each, `problem_art/<name>`, at the size the layout has, and
-## the screen's layout also gives one for the whole window a mod draws, key `problem_layer/window`, for a picture of the whole screen of a type. They are not pictures a skin's `pictures` replaces (that is the `ui_picture` kind): they are drawn over and put in the
-## `problems/` folder of a problem mod, named in its draw list.
+## THE PROBLEM SCREEN. The frame of the problem screen is pictures a skin replaces (`pictures` takes the kind `problem_art` too, `ModSpec.PICTURE_KINDS`): the screen picture the layout holds (`problem_art/pa_1780`), the calculator (`pa_1781`), the "Ans:" panel (`pa_1802`)
+## and the calculator's digits and signs, all in the layouts of the screen and of the calculator in `SOURCES`, and the sender's two pictures beside the first line of a prompt (`ui_picture/prompt_sender_ship`, `PromptSender.PICTURE_SIZE`, which the screen stretches
+## to); each has a template at its size. A mod that draws the screen of a problem type (`ModDiagram`, `docs/create/CONTENT.md` "Problem screens") draws in the window's 640 x 400 pixels and may name the same pictures by key: the screen's layout also gives one template for the whole window a
+## mod draws, key `problem_layer/window`, for a picture of the whole screen of a type. It is not a picture a skin replaces: it is drawn over and put in the `problems/` folder of a problem mod, named in its draw list.
 ##
 ## THE SIZES ARE THE PACK'S. The dev pack's console has the sizes the dev pack made for itself; the original's are those of the legacy pack (`--pack=legacy` reads only the sizes, and writes none of the
 ## original's pixels).
@@ -82,6 +82,8 @@ static func entries() -> Array[Entry]:
 			for layer in SkinLayers.hud_layers():
 				found.append(Entry.new("%s/%s" % [LAYER_KIND, layer], Vector2i((rects[String(layer)] as Rect2).size)))
 		if layout is ProblemScreenLayout:
+			for sender in [PromptSender.PICTURE_SHIP, PromptSender.PICTURE_CONTROL_ROOM]:
+				found.append(Entry.new("ui_picture/%s" % sender, PromptSender.PICTURE_SIZE))
 			found.append(Entry.new("%s/%s" % [PROBLEM_LAYER_KIND, PROBLEM_WINDOW], ProblemState.WINDOW_SIZE))
 	return found
 

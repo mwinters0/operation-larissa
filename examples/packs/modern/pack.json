@@ -3,10 +3,10 @@
  "title": "Modern (example skin)",
  "version": "1.0",
  "author": "Operation Larissa",
- "description": "The example skin pack: a water shimmer behind the screen, Exo 2 on the HUD and in the menus (a theme of cool blues), smooth filtering, and the HUD's pictures as flat templates to draw over. Laid over the legacy pack.",
+ "description": "The example skin pack: a water shimmer behind the screen, Exo 2 on the HUD and in the menus (a theme of cool blues that reaches the problem screen's text, calculator keys and display), smooth filtering, and the HUD's pictures as flat templates to draw over, with templates for the problem screen's frame beside them. Laid over the legacy pack.",
  "base": "legacy",
  "mod": {
-  "requires_api": 12,
+  "requires_api": 13,
   "skin": {
    "render": {
     "texture_filter": "linear",
@@ -34,7 +34,8 @@
      "button_disabled": "#5d7b88",
      "good": "#6dffb0",
      "bad": "#ff7a8a",
-     "caret": "#7fe0ff"
+     "caret": "#7fe0ff",
+     "display": "#041018"
     },
     "panel": {
      "fill": "#0d2233",
@@ -84,6 +85,16 @@
       "fill": "#04101a",
       "border": "#ffe27a",
       "radius": 4
+     }
+    },
+    "key": {
+     "hover": {
+      "fill": "#5fd0f038",
+      "border": "#7fe0ff"
+     },
+     "pressed": {
+      "fill": "#ffe27a60",
+      "border": "#ffe27a"
      }
     }
    },

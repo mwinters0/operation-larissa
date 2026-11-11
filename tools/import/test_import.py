@@ -205,6 +205,7 @@ def test_layout_sizes_are_written_from_the_pictures():
     assert '"answer_wheel": {"first_pic": 12, "pos": [40, 60], "size": [268, 228]}' in (common.PACK_DATA / "problems" / "problem_type_00.tres").read_text()
     layout = (common.PACK_DATA / "problems" / "screen_layout.tres").read_text()
     assert "line_height = 20" in layout and "line_separation = 0" in layout     # GetFontLineHeight: 20 px for every text
+    assert "background_size = Vector2i(616, 296)" in layout
     assert "title_x = PackedInt32Array(0, 36, 96)" in (common.PROJECT_DATA / "ui" / "menu_layout.tres").read_text()
 
 

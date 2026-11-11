@@ -26,7 +26,7 @@ func test_the_font_is_the_project_font_and_the_packs_layout_describes_it() -> vo
 
 func test_every_look_the_ui_asks_for_exists() -> void:
 	var theme: Theme = load(THEME_PATH)
-	for variation in ["CalcKey", "ConsolePanel", "ConsoleTitle", "HudLabel", "DebugLabel", "SmallLabel", "Good", "Bad", "Hint"]:
+	for variation in ["CalcKey", "ConsolePanel", "ConsoleTitle", "HudLabel", "DebugLabel", "SmallLabel", "Good", "Bad", "Hint", "ProblemWrong"]:
 		assert_bool(theme.is_type_variation(variation, "Label") or theme.is_type_variation(variation, "Button")
 				or theme.is_type_variation(variation, "PanelContainer")).override_failure_message(variation).is_true()
 	for type in ["Button", "Panel", "PanelContainer", "MenuBar", "PopupMenu", "LineEdit"]:

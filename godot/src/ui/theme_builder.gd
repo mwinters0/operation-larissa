@@ -36,6 +36,9 @@ const RED := Color("ff5555")
 const GREEN := Color("55ff55")
 const PANEL := Color("2b2b2b")             # the console's metal, a little darker than DARK_GREY
 
+## The problem screen's message when an answer is wrong (the `ProblemWrong` look): the tenth line of the message box, the one the engine adds to say what just happened.
+const WRONG := Color(1.0, 0.45, 0.4)
+
 const MENU_FONT_SIZE := 13
 const SMALL_FONT_SIZE := 13
 
@@ -48,8 +51,9 @@ const COLOR_ITEMS: Dictionary[String, Array] = {
 	"button_pressed": [["Button", "font_pressed_color"], ["Button", "font_focus_color"]],
 	"button_disabled": [["Button", "font_disabled_color"]],
 	"good": [["Good", "font_color"]],
-	"bad": [["Bad", "font_color"]],
+	"bad": [["Bad", "font_color"], ["ProblemWrong", "font_color"]],
 	"caret": [["LineEdit", "caret_color"]],
+	"display": [["LcdDisplay", "field"]],
 }
 ## What each style a skin may name (`SkinTheme.style_names`) sets in a theme: theme type, item.
 const STYLE_ITEMS: Dictionary[String, Array] = {
@@ -63,6 +67,9 @@ const STYLE_ITEMS: Dictionary[String, Array] = {
 	"input/normal": [["LineEdit", "normal"]],
 	"input/focus": [["LineEdit", "focus"]],
 	"input/read_only": [["LineEdit", "read_only"]],
+	"key/normal": [["CalcKey", "normal"]],
+	"key/hover": [["CalcKey", "hover"]],
+	"key/pressed": [["CalcKey", "pressed"]],
 }
 
 ## The engine's own theme (the project theme without a skin's theme on it), made once; null until a skin's theme is first worn. Never changed: every theme derived from it is a copy.
@@ -289,6 +296,10 @@ static func _variations(theme: Theme) -> void:
 	theme.set_color("font_color", "Bad", RED)
 	theme.set_type_variation("Hint", "Label")
 	theme.set_color("font_color", "Hint", YELLOW)
+	theme.set_type_variation("ProblemWrong", "Label")
+	theme.set_color("font_color", "ProblemWrong", WRONG)
+	# The field behind the digits of the calculator and of the "Ans:" panel (`LcdDisplay` reads it by this type name).
+	theme.set_color("field", "LcdDisplay", BLACK)
 
 
 ## A StyleBoxFlat: fill, border, and the space between border and content.

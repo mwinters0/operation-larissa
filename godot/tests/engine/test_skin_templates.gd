@@ -17,7 +17,7 @@ func after_test() -> void:
 func _sizes() -> Dictionary:
 	var sizes := {}
 	for entry in SkinTemplates.entries():
-		if entry.key.begins_with("ui_picture/"):
+		if entry.key.begins_with("ui_picture/") and not entry.key.contains("prompt_sender"):       # (the console's: the sender's are the problem screen's)
 			sizes[entry.key] = entry.size
 	return sizes
 
@@ -121,6 +121,19 @@ func test_the_frame_and_the_panels_of_the_problem_screen_have_entries_at_the_lay
 	assert_bool(written.has("%s/problem_layer/window.png" % OUT)).is_true()
 	assert_bool(written.has("%s/%s.png" % [OUT, _key_of(screen.background)])).is_true()
 	assert_object(_read("%s/problem_layer/window.png" % OUT).get_size()).is_equal(Vector2i(640, 400))
+
+
+func test_the_senders_pictures_have_entries_at_the_size_the_screen_stretches_them_to() -> void:
+	var sizes := {}
+	for entry in SkinTemplates.entries():
+		sizes[entry.key] = entry.size
+	for sender in [PromptSender.PICTURE_SHIP, PromptSender.PICTURE_CONTROL_ROOM]:
+		var key := "ui_picture/%s" % sender
+		assert_bool(ModSpec.is_picture_key(key)).is_true()                                              # (a skin's `pictures` may name it)
+		assert_object(sizes[key]).is_equal(PromptSender.PICTURE_SIZE)
+	var icon := (load("res://src/problems/problem_screen.tscn") as PackedScene).instantiate() as ProblemScreen
+	assert_object(Vector2i(icon.get_node("%SenderIcon").size)).is_equal(PromptSender.PICTURE_SIZE)   # (the scene's rectangle is the same number)
+	icon.free()
 
 
 # --- the pictures ------------------------------------------------------------------------------------------------------------

@@ -252,7 +252,7 @@ func test_the_host_makes_the_skin_and_needs_no_extension_for_it() -> void:
 		assert_bool(skin is ModSkin).is_true()
 		assert_object(skin.presenter_scene_or_null()).override_failure_message("the presenter of a data skin is the original's").is_null()
 		assert_bool(auto_free(PresenterChoice.make_presenter_for(skin)) is OriginalPresenter).is_true()
-		assert_array(skin.pictures.keys()).contains_exactly_in_any_order([KEY, "ui_picture/title_sky"])
+		assert_array(skin.pictures.keys()).contains_exactly_in_any_order([KEY, "ui_picture/title_sky", "problem_art/pa_1780", "problem_art/pa_1781", "problem_art/pa_1802", "ui_picture/prompt_sender_ship"])
 		assert_float(skin.pictures[KEY].get_size().x).is_equal(32.0)
 		var labels := skin.labels()
 		assert_object(labels).is_not_null()

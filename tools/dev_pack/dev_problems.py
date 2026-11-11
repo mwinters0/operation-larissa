@@ -14,6 +14,7 @@ import math
 import devlib
 from devlib import DEV, SCRIPTS, write_text, tres
 
+import dev_pictures as dp
 import problem_tables
 import step_problems
 
@@ -229,6 +230,7 @@ def screen_layout_tres() -> str:
     t = tres.Tres("Resource", "ProblemScreenLayout", SCRIPTS + "problem_screen_layout.gd")
     t.set("background", devlib.tex(t, "assets/problem_art/single/pa_1780.png"))
     t.set("background_position", tres.vec2i(12, 30))
+    t.set("background_size", tres.vec2i(*dp.PROBLEM_BACKGROUND))
     t.set("title_box_x", "20")
     t.set("title_box_width", "600")
     t.set("title_y", "36")
