@@ -31,6 +31,7 @@ something to test.
 | **play the original game**: build it from your CD image, run it, put it in an exported build | [`docs/play/LEGACY.md`](docs/play/LEGACY.md) |
 | **make content**: understand how content works | [`docs/create/CONTENT.md`](docs/create/CONTENT.md) |
 | ... make sectors, creatures, a campaign, a pack or a skin (tutorial and reference) | [`docs/create/MAKING_CONTENT.md`](docs/create/MAKING_CONTENT.md) |
+| ... make a skin with no code, from the example pack to a file you can share (tutorial) | [`docs/create/FIRST_SKIN.md`](docs/create/FIRST_SKIN.md) |
 | ... use one tool in depth | [`SCREEN_EDITOR`](docs/create/SCREEN_EDITOR.md), [`SECTOR_INSPECTOR`](docs/create/SECTOR_INSPECTOR.md), [`FOE_SCRIPTING`](docs/create/FOE_SCRIPTING.md), [`NAMES`](docs/create/NAMES.md), [`SKIN_API`](docs/create/SKIN_API.md) |
 | **understand the engine**: what is built and why, in one tour | [`docs/OVERVIEW.md`](docs/OVERVIEW.md) |
 | ... how the Godot project works | [`ARCHITECTURE`](docs/engine/ARCHITECTURE.md), [`PACKS`](docs/engine/PACKS.md), [`SKINS`](docs/engine/SKINS.md), [`AUDIO`](docs/engine/AUDIO.md), [`EDITORS`](docs/engine/EDITORS.md), [`HARD_CODED`](docs/engine/HARD_CODED.md) |

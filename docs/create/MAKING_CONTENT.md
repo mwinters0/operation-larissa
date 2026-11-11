@@ -541,7 +541,7 @@ supplies wins over every skin.
 2. Start with one picture. Add an entry to `pictures` (key `ui_picture/title_sky`, value a PNG you drew), or put PNGs in a folder and point `art_folder` at it (for same-size pictures `art_scale` 1;
    for pictures four times as large 4). Anything you do not map is the original's.
 3. For a change to how a sector is *drawn* (animation, shaders, a different sub), make a presenter: right-click `res://src/gameplay/original_presenter.tscn` > **New Inherited Scene**, save it in
-   your skin's folder, attach a script that extends `OriginalPresenter` and overrides what you need, and set the skin's `presenter_scene`. `skins/creatures/` is the worked example. (A skin that only dresses the original presenter needs no scene: it is a skin pack, `examples/packs/modern/`, a manifest with a shader and a font.) A presenter written only against the skin API (`view`) is guaranteed not to change a trace ([`SKIN_API.md`](SKIN_API.md)).
+   your skin's folder, attach a script that extends `OriginalPresenter` and overrides what you need, and set the skin's `presenter_scene`. `skins/creatures/` is the worked example. (A skin that only dresses the original presenter needs no scene: it is a skin pack, `examples/packs/modern/`, a manifest with a shader and a font; [`FIRST_SKIN.md`](FIRST_SKIN.md) walks through it.) A presenter written only against the skin API (`view`) is guaranteed not to change a trace ([`SKIN_API.md`](SKIN_API.md)).
 4. For text in your own font, give `hud_labels` a `HudLabels` resource.
 
 ## C3. Try it

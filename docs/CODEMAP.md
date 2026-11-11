@@ -68,6 +68,7 @@ update it in the same change.
 | `docs/play/LEGACY.md` | ISO, importer steps and options, transcripts, soundfonts, playing, `legacy.larissa` next to an exported game, where files go, troubleshooting |
 | `docs/create/CONTENT.md` | content model, campaigns, packs and skins at user level, where things live, what is committed, glossary |
 | `docs/create/MAKING_CONTENT.md` | tutorial; command-line options of every tool scene (B5) |
+| `docs/create/FIRST_SKIN.md` | tutorial: a skin with no script from a copy of `examples/packs/modern/` (manifest, templates, font, shader with `phase`, check, install, `.larissa`) |
 | `docs/create/{SCREEN_EDITOR,SECTOR_INSPECTOR,FOE_SCRIPTING,NAMES,SKIN_API}.md` | tool manuals; the script language; the registry; the presenter API |
 | `docs/engine/{ARCHITECTURE,PACKS,SKINS,AUDIO,EDITORS}.md` | the code of each system |
 | `docs/engine/DEVELOPING.md` | test suites, rules of an engine test, helpers, screenshots, exports |

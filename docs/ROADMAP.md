@@ -70,13 +70,10 @@ Each item below is one session's work: it ends with its tests, docs and `CODEMAP
 of a phase are done in order.
 
 **Art templates.** Each phase that lets a skin replace pictures ends with templates for them: for every picture key it opens up
-(K1: the HUD's bezel, gauges, lights and label boxes; later phases their own keys), a PNG of the original's exact size in one flat
+(the HUD's bezel, gauges, lights and label boxes for the first phase; later phases their own keys), a PNG of the original's exact size in one flat
 colour with the key and the size written on it, made by a committed tool (one line in `CODEMAP.md`; the sizes come from the layouts,
 not from the original's pixels, so the templates carry no original content and are committed in the example pack). The user draws the
 real art from them. The tool is `SkinTemplates` (`docs/create/SKIN_API.md` "Art templates"); the original's exact sizes are those of the legacy pack's layouts (`--pack=legacy` reads sizes only), the dev pack's pictures having sizes of their own; each later phase's last item adds the layouts that hold its keys to `SkinTemplates.SOURCES`.
-
-**K1: skins as data.** A skin pack needs no script.
-- **K1f: "Your first skin".** A creator tutorial in `create/` that walks through the example pack.
 
 **K2: layers drawn by a script.**
 - **K2a: the screen in the state.** The state gains the screen's background, decorations and station (closing the Open item of a skin

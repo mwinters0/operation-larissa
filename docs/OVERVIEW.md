@@ -107,7 +107,8 @@ example of a skin pack, `examples/packs/modern/`, played by the same tests.
 A skin from a stranger is a mod pack: a sandboxed script that is given the state as plain data and returns what to draw, so it can change nothing but the picture; it is chosen like any other skin and played by the same tests.
 A mod pack can also add gameplay: a campaign names the mods it uses, and only a run of that campaign asks them, at three points (the judging of the answers of a problem type the mod added, a creature instruction, a sub ability), with plain data in and plain data out that the game validates; the originals declare none and the tests prove they ask nobody ([`create/CONTENT.md`](create/CONTENT.md), "Rule hooks").
 
-Read: what a skin author is given, [`create/SKIN_API.md`](create/SKIN_API.md); making one,
+Read: what a skin author is given, [`create/SKIN_API.md`](create/SKIN_API.md); a first skin step by step,
+[`create/FIRST_SKIN.md`](create/FIRST_SKIN.md); making one,
 [`create/MAKING_CONTENT.md`](create/MAKING_CONTENT.md) Part C; the code, [`engine/SKINS.md`](engine/SKINS.md).
 
 ## Packs, the dev pack and the chain

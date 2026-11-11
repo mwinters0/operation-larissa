@@ -3,7 +3,7 @@
 What a skin is given by the rules, and what it must not do. A skin is a `SectorPresenter` (`godot/src/gameplay/sector_presenter.gd`):
 a node that draws a sector from what the rules say. `OriginalPresenter` is the original look and the model to read; `DebugRectPresenter` is the
 smallest one. Everything below is pinned by `godot/tests/engine/test_skin_api.gd`, which fails when this page and the code stop agreeing. A skin that is a stranger's code, a mod pack that
-draws the sector from a sandbox, is given the same state and events as plain data and returns a draw list: the last section, "Writing a skin mod" (pinned by `test_mod_skin.gd`).
+draws the sector from a sandbox, is given the same state and events as plain data and returns a draw list: the last section, "Writing a skin mod" (pinned by `test_mod_skin.gd`). A skin with no script, made from the example pack step by step: the tutorial [`FIRST_SKIN.md`](FIRST_SKIN.md).
 
 ## The rules a skin keeps
 
