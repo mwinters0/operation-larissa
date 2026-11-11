@@ -80,8 +80,6 @@ var _show_currents := false
 var _show_collisions := false
 ## The nodes of the pellets in flight, by `PelletModel.id`.
 var _pellet_nodes := {}
-## The materials this presenter put on its layers (`_dress_layers`), by layer name: the ones whose `phase` it sets.
-var _layer_materials: Dictionary[StringName, ShaderMaterial] = {}
 ## The host of the layers a skin mod's script draws (`ModLayerHost`), or null when the skin worn has none.
 var _mod_layers: ModLayerHost
 
@@ -115,7 +113,7 @@ func _ready() -> void:
 ## start shows (`tests/engine/test_presenter_binds_late.gd`).
 func bind(sim_world: SimWorld) -> void:
 	super.bind(sim_world)
-	_mod_layers = ModLayerHost.make(self, skin if skin != null else SkinChoice.current())
+	_mod_layers = ModLayerHost.make(self, SkinChoice.worn(skin))
 	if _mod_layers != null:
 		for event_name in SimView.EVENTS:
 			_listen(Signal(view, event_name), func(...args: Array) -> void: _mod_layers.heard(event_name, args))
@@ -221,27 +219,26 @@ func layer_node(layer: StringName) -> CanvasItem:
 	return get_node("%" + SkinLayers.NODES[layer]) as CanvasItem
 
 
-## The shader of each layer the skin in use dresses (the presenter's own `skin`, else the one in use: `GameSkin.layer_material`), put on the layer's node, and nothing on the others: built from the skin each time it is asked, so a
-## presenter made in the middle of anything wears what one made at the start wears. A layer's node needs `use_parent_material` off for its own material to count (a `TileMapLayer` has it on).
+## The shader of each layer the skin worn dresses (`GameSkin.layer_material`: the presenter's own `skin`, else the one in use), put on the layer's node, and nothing on the others: built from the skin when the presenter is made (`_ready`, once, on
+## nodes the scene has just made; another skin is another presenter, `SectorWorld`), so a presenter made in the middle of anything wears what one made at the start wears. A layer's node needs `use_parent_material` off for its own material to count
+## (a `TileMapLayer` has it on).
 func _dress_layers() -> void:
-	var worn := skin if skin != null else SkinChoice.current()
+	var worn := SkinChoice.worn(skin)
 	for layer in SkinLayers.NODES:
-		var node := layer_node(layer)
 		var material := worn.layer_material(layer)
 		if material != null:
+			var node := layer_node(layer)
 			node.use_parent_material = false
 			node.material = material
-			_layer_materials[layer] = material
-		elif _layer_materials.has(layer):
-			node.material = null
-			_layer_materials.erase(layer)
 
 
-## The `phase` of every material a layer wears: the game's time (`SectorPresenter.game_phase`), the one a layer's shader reads as `phase`.
+## The `phase` of every material a layer wears (`ModShader.PHASE_UNIFORM`): the game's time (`SectorPresenter.game_phase`), the one a layer's shader reads as `phase`. The materials are the nodes' own, asked each time.
 func _show_phase(fraction: float) -> void:
 	var phase := game_phase(fraction)
-	for material in _layer_materials.values():
-		material.set_shader_parameter(&"phase", phase)
+	for layer in SkinLayers.NODES:
+		var material := layer_node(layer).material as ShaderMaterial
+		if material != null:
+			material.set_shader_parameter(ModShader.PHASE_UNIFORM, phase)
 
 
 # --- what takes time (told by the rules) ------------------------------------------------

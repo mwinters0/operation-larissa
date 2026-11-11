@@ -93,7 +93,7 @@ func _on_skin_changed(_skin: GameSkin) -> void:
 
 ## Takes the layout and the lettering of the skin in use and puts them on.
 func _apply_skin() -> void:
-	var wearing := skin if skin != null else SkinChoice.current()
+	var wearing := SkinChoice.worn(skin)
 	layout = wearing.skinned(_scene_layout) as HudLayout
 	_labels = wearing.labels()
 	_apply_layout()
@@ -253,6 +253,16 @@ func layer_nodes(layer: StringName) -> Array[CanvasItem]:
 ## The rectangle the script's picture of the layer `layer` is cut to (`ConsoleState.rects`, from the layout in use).
 func layer_clip(layer: StringName) -> Rect2:
 	return ConsoleState.rects(layout)[String(layer)]
+
+
+## The game's time as a shader wants it (`ModShader.PHASE_UNIFORM`): the ticks the clock has run plus `fraction` of the current one. It grows smoothly at the speed of play and stands still while the clock does, as the sector's does (`SectorPresenter.game_phase`, which counts from the sector's first tick).
+func game_phase(fraction: float) -> float:
+	return GameClock.tick_count + fraction
+
+
+## Runs `action` as this HUD's skin (`SkinChoice.within`; just runs it when `skin` is null): a picture a script names by key is the one this HUD's skin shows.
+func run_in_skin(action: Callable) -> Variant:
+	return SkinChoice.within(skin, action)
 
 
 ## Does a skin mod's script draw parts of this console?

@@ -23,6 +23,9 @@ const NODES: Dictionary[StringName, String] = {
 	&"bubbles": "Bubbles",
 }
 
+## The layers of `NODES` that hold the screen's still decorations, back to front (`SimView.decorations`, `SkinState`'s `decos`).
+const DECOS: Array[StringName] = [&"back_decos", &"mid_decos", &"front_decos"]
+
 ## The parts of the console a script may draw: the layer's name -> the unique names of the HUD's nodes that are the original's part.
 const HUD_NODES: Dictionary[StringName, Array] = {
 	&"hud_bezel": ["Bezel"],

@@ -20,8 +20,8 @@ extends RefCounted
 ## refuses the pack. `limits` is optional, and so is every key in it. `skin` makes the mod a SKIN (`ModSkin`: the mod draws the sector, `docs/create/SKIN_API.md`); it needs API version 2,
 ## and lists the shaders the skin may use, text files `skin/<name>.gdshader` of the pack (`ModShader`), at most `MAX_SHADERS`; `render` (`texture_filter`, `snap_transforms`, `snap_vertices`: the `RenderSettings` the skin puts on the window)
 ## and `pictures` (skin key `ui_picture/<name>` or `problem_art/<name>`, to a PNG `skin/<name>.png` of the pack, at most `MAX_PICTURES`, worn only while the skin is) and `hud_font` (`file`: a `.ttf` of the pack's `skin/` folder, read from its bytes,
-## at most `Pack.MAX_FONT_BYTES`; `size` from `MIN_HUD_FONT_SIZE` to `MAX_HUD_FONT_SIZE`; `color`: `#rrggbb` or `#rrggbbaa`; `weight` (`FontSpec`): the lettering of the HUD's boxes, `HudLabels`; `file` may be left out, and the boxes are lettered in the theme's font) and `layers` (a layer of the original presenter by name, `SkinLayers.NODES`, to one of the listed `shaders` and the values of its uniforms: a number, `true` / `false`, a list of 2 to 4 numbers or a colour string, at most `MAX_LAYER_UNIFORMS`, each number within
-## `MAX_UNIFORM_VALUE`; the game sets `phase`) are API version 5 (`DRAWS_THE_GAME_API_VERSION`), which a skin without `entry` needs too. `script_layers` (needs an `entry`) lists the layers of the original presenter (`SkinLayers.NODES`) and the parts of the console (`SkinLayers.HUD_NODES`, or the whole console, `SkinLayers.HUD`)
+## at most `Pack.MAX_FONT_BYTES`; `size` from `MIN_HUD_FONT_SIZE` to `MAX_HUD_FONT_SIZE`; `color`: `#rrggbb` or `#rrggbbaa`; `weight` (`FontSpec`): the lettering of the HUD's boxes, `HudLabels`; `file` may be left out, and the boxes are lettered in the theme's font) and `layers` (a layer of the original presenter by name, `SkinLayers.NODES`, to one of the listed `shaders` and the values of its uniforms: a number, `true` / `false`, a list of 2 to 4 numbers or a colour string, at most `ModShader.MAX_UNIFORMS`, each number within
+## `ModShader.MAX_VALUE`; the game sets `phase`) are API version 5 (`DRAWS_THE_GAME_API_VERSION`), which a skin without `entry` needs too. `script_layers` (needs an `entry`) lists the layers of the original presenter (`SkinLayers.NODES`) and the parts of the console (`SkinLayers.HUD_NODES`, or the whole console, `SkinLayers.HUD`)
 ## whose picture the script draws, one call of `skin_layer(name, state, fraction, events)` for each; the others stay the original's, and the layers of `layers` are dressed by their shader on those the script does not draw. A skin with an `entry` and no `script_layers` draws the whole
 ## screen with `skin_frame(state, fraction, events)`: every layer at once. `theme` (a skin with a script may have it too: it is data) is the look of the menus as `SkinTheme` says it: `font` (a `FontSpec`: `file`, `weight`, `size` from `MIN_THEME_FONT_SIZE` to `MAX_THEME_FONT_SIZE`), `colors` (`SkinTheme.COLORS`), and the styles `panel`, `console`, `button`, `input` and `key` (`SkinTheme.STYLES`) as the fields of `STYLE_KEYS`, each within its bound. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from 0 to
 ## `Catalog.LAST_PROBLEM_TYPE`, at most `MAX_PROBLEM_TYPES`: a number below `Catalog.PROBLEM_TYPE_COUNT` is an ORIGINAL type, drawn by number in place of the original diagram (the lock and the ballast panels are the engine's and cannot be listed), a number from it up
@@ -70,11 +70,8 @@ const KNOWN_KEYS: Array[String] = ["entry", "requires_api", "limits", "skin", "p
 const SKIN_KEYS: Array[String] = ["shaders", "render", "pictures", "hud_font", "layers", "script_layers", "theme"]
 ## The keys of `skin` that need `DRAWS_THE_GAME_API_VERSION` (every key but `shaders`).
 const DRAWING_SKIN_KEYS: Array[String] = ["render", "pictures", "hud_font", "layers", "script_layers", "theme"]
-## The keys of a layer's entry in `layers`, the uniform the game sets itself (the game's time, `SectorPresenter.game_phase`: a manifest cannot give it a value), and the limits of a layer's uniforms.
+## The keys of a layer's entry in `layers`. Its uniforms are judged by `ModShader.check_uniforms`, the one judgement of a mod's uniforms (the limits, the reserved `phase`).
 const LAYER_KEYS: Array[String] = ["shader", "uniforms"]
-const PHASE_UNIFORM := "phase"
-const MAX_LAYER_UNIFORMS := 16
-const MAX_UNIFORM_VALUE := 1000.0
 ## The keys of the `hud_font` entry of a skin, and the sizes (in pixels) its `size` may be: the boxes of the HUD keep their size, so what a larger font does not fit in a box is cut off.
 const HUD_FONT_KEYS: Array[String] = ["file", "weight", "size", "color"]
 const MIN_HUD_FONT_SIZE := 6
@@ -108,7 +105,6 @@ const MAX_PROBLEM_TYPES := 64
 ## The most shaders a skin, or the problem screens of a mod, list.
 const MAX_SHADERS := 8
 const SHADER_EXTENSION := "gdshader"
-static var _uniform_name := RegEx.create_from_string("^[A-Za-z_][A-Za-z0-9_]{0,31}$")
 static var _key_name := RegEx.create_from_string("^[a-z][a-z0-9_]*$")
 ## Where a skin keeps its pictures and shaders in its pack: `skin/`; the problem screens of a mod keep theirs in `problems/`.
 const SKIN_FOLDER := "skin/"
@@ -465,55 +461,15 @@ static func _parse_layers(value: Variant, spec: ModSpec, found: Array[String]) -
 			spec.layers[layer] = {"shader": entry["shader"], "uniforms": uniforms}
 
 
-## The values of the uniforms of the layer `layer` (name -> float, bool, vector or colour), or {} with every mistake appended to `found`.
+## The values of the uniforms of the layer `layer` (name -> float, bool, vector or colour), or {} with every mistake appended to `found` (`ModShader.check_uniforms`; the shader's text, and so the uniforms it declares, is judged by `ModSkin.make`).
 static func _parse_uniforms(layer: String, value: Variant, found: Array[String]) -> Dictionary:
 	var uniforms := {}
 	if not value is Dictionary:
 		found.append("the \"uniforms\" of the layer \"%s\" must be an object like {\"glint\": 0.25}" % layer)
 		return uniforms
-	if (value as Dictionary).size() > MAX_LAYER_UNIFORMS:
-		found.append("a layer sets at most %d uniforms (\"%s\" sets %d)" % [MAX_LAYER_UNIFORMS, layer, (value as Dictionary).size()])
-		return uniforms
-	for uniform: String in value:
-		if not is_uniform_name(uniform):
-			found.append("the uniform name \"%s\" of the layer \"%s\" must be letters, digits and underscores, not starting with a digit" % [uniform, layer])
-		elif uniform == PHASE_UNIFORM:
-			found.append("the layer \"%s\" sets \"%s\": the game sets it (its time), a manifest cannot" % [layer, PHASE_UNIFORM])
-		else:
-			var parsed: Variant = _uniform_value(value[uniform])
-			if parsed == null:
-				found.append("the uniform \"%s\" of the layer \"%s\" must be a number, true or false, a list of 2 to 4 numbers or a colour string like \"#ff8800\" (numbers from %d to %d)" % [uniform, layer, -MAX_UNIFORM_VALUE, MAX_UNIFORM_VALUE])
-			else:
-				uniforms[uniform] = parsed
+	for problem in ModShader.check_uniforms(value, null, uniforms):
+		found.append("the layer \"%s\" %s" % [layer, problem])
 	return uniforms
-
-
-## A uniform's value as the shader gets it: a number (a float), a bool, a list of 2 to 4 numbers (a `Vector2` .. `Vector4`) or a `#rrggbb` / `#rrggbbaa` string (a `Color`). Null for anything else, and for a number out of bounds.
-static func _uniform_value(value: Variant) -> Variant:
-	if value is bool:
-		return value
-	if _is_bounded_number(value):
-		return float(value)
-	if value is String:
-		return Color.html(value) if (value as String).begins_with("#") and Color.html_is_valid(value) else null
-	if value is Array and (value as Array).size() >= 2 and (value as Array).size() <= 4 and (value as Array).all(_is_bounded_number):
-		var numbers: Array = value
-		match numbers.size():
-			2:
-				return Vector2(numbers[0], numbers[1])
-			3:
-				return Vector3(numbers[0], numbers[1], numbers[2])
-		return Vector4(numbers[0], numbers[1], numbers[2], numbers[3])
-	return null
-
-
-static func _is_bounded_number(value: Variant) -> bool:
-	return (value is int or value is float) and absf(float(value)) <= MAX_UNIFORM_VALUE
-
-
-## Is `name` a name a shader's uniform may have: letters, digits and underscores, not starting with a digit, at most 32 long?
-static func is_uniform_name(uniform: String) -> bool:
-	return _uniform_name.search(uniform) != null
 
 
 static func _parse_problems(value: Variant, spec: ModSpec, found: Array[String]) -> void:

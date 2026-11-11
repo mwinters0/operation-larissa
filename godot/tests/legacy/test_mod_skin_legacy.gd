@@ -48,3 +48,12 @@ func test_the_example_skin_draws_every_screen_of_every_sector_of_the_original_wi
 	assert_int(backgrounds).override_failure_message("screens with a background to compare").is_greater(100)
 	assert_int(most).is_greater(20)
 	assert_int(most_decos).override_failure_message("a screen with a hundred decorations to walk").is_greater(100)
+
+
+func test_the_example_skins_pictures_are_the_sizes_of_the_originals_they_replace() -> void:
+	var shelves := ModSkinShelf.mount([ModSkinShelf.EXAMPLE_MODERN] as Array[String])
+	var options := PackCheck.Options.new()
+	options.reach = false
+	var report := PackCheck.run(Pack.open(shelves[0].root), options)
+	ModSkinShelf.release(shelves)
+	assert_bool(report.warnings().any(func(f: PackReport.Finding) -> bool: return f.message.contains("stretched"))).override_failure_message(report.text()).is_false()

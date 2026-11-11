@@ -71,6 +71,37 @@ extends Resource
 @export var frame_colors: PackedColorArray = PackedColorArray()
 
 
+## The area of the console's part `layer` (a key of `SkinLayers.HUD_NODES`), in window pixels: the bezel's rectangle, a gauge's area, a lettering box, a light. The one mapping from a part's name to its numbers in this layout.
+func rect_of(layer: StringName) -> Rect2:
+	match layer:
+		&"hud_bezel":
+			return _box(bezel_position, bezel_size)
+		&"hud_tanks":
+			return Rect2(tank_rect)
+		&"hud_oxygen":
+			return Rect2(oxygen_rect)
+		&"hud_ink":
+			return Rect2(ink_rect)
+		&"hud_game":
+			return _box(game_position, game_size)
+		&"hud_custom":
+			return _box(custom_position, custom_size)
+		&"hud_zone":
+			return _box(zone_position, zone_size)
+		&"hud_sector":
+			return _box(sector_position, sector_size)
+		&"hud_ship":
+			return _box(ship_position, ship_size)
+		&"hud_computer":
+			return _box(computer_position, computer_size)
+	push_error("HudLayout: no part '%s' (the parts are %s)" % [layer, ", ".join(PackedStringArray(SkinLayers.HUD_NODES.keys()))])
+	return Rect2()
+
+
+static func _box(position: Vector2i, size: Vector2i) -> Rect2:
+	return Rect2(Vector2(position), Vector2(size))
+
+
 ## The number of the zone picture a sector shows: the finale zones (5, 6) reuse the last picture.
 func zone_picture(zone: int) -> int:
 	return clampi(zone, 0, zone_textures.size() - 1)

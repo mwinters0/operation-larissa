@@ -86,7 +86,7 @@ func test_the_pack_check_passes_it_and_has_nothing_to_say() -> void:
 	options.reach = false
 	var report := PackCheck.run(Pack.open(shelf.root), options)
 	assert_bool(report.passes()).override_failure_message(report.text()).is_true()
-	assert_array(report.warnings().filter(func(f: PackReport.Finding) -> bool: return f.area == "mod")).override_failure_message(report.text()).is_empty()
+	assert_array(report.warnings().filter(func(f: PackReport.Finding) -> bool: return f.area == "mod" and not f.message.contains("stretched"))).override_failure_message(report.text()).is_empty()      # (its templates are the original's sizes, the dev pack's pictures have their own: the legacy suite checks the sizes, `test_mod_skin_legacy.gd`)
 
 
 func test_it_is_a_skin_of_the_game_while_its_pack_runs_and_not_after() -> void:

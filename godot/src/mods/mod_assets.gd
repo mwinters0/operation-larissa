@@ -10,6 +10,8 @@ extends RefCounted
 var folder := ""
 ## The shaders of the manifest, by the path it lists: path -> Shader.
 var shaders: Dictionary[String, Shader] = {}
+## The uniforms each of those shaders declares, by the same path: path -> (name -> type, `ModShader.uniform_types`). Read once, with the text, so that judging a draw list's uniforms every frame reads no text.
+var declared: Dictionary[String, Dictionary] = {}
 
 
 ## The assets of `pack` under `folder` with the shaders `listed`, or null with every reason in `reasons`: a shader that is not what `ModShader` accepts, a picture of the folder that is not a PNG the engine can decode.
@@ -21,6 +23,7 @@ static func make(pack: Pack, folder_name: String, listed: Array[String], reasons
 		var shader := ModShader.make(pack, rel, folder_name, reasons)
 		if shader != null:
 			assets.shaders[rel] = shader
+			assets.declared[rel] = ModShader.uniform_types(shader.code)
 	for rel in pack.all_files():
 		if rel.begins_with(folder_name) and rel.get_extension() == "png" and pack.texture(rel) == null:
 			reasons.append("%s is not a PNG picture the engine can decode" % rel)

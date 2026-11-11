@@ -52,7 +52,7 @@ static func make_presenter(which: StringName) -> SectorPresenter:
 
 ## The scene of the original kind: the presenter of `skin` (null: the skin in use), else `ORIGINAL_SCENE`.
 static func original_scene(skin: GameSkin = null) -> PackedScene:
-	var from_skin := (skin if skin != null else SkinChoice.current()).presenter_scene_or_null()
+	var from_skin := SkinChoice.worn(skin).presenter_scene_or_null()
 	return from_skin if from_skin != null else load(ORIGINAL_SCENE) as PackedScene
 
 

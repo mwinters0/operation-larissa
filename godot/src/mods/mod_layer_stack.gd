@@ -7,6 +7,7 @@ extends Node2D
 
 var _layers: Array[ModLayer] = []
 var _drawn: ModDraw.Drawn
+var _phase := 0.0
 
 
 ## Shows `drawn`: one `ModLayer` for each of its layers, with the compiled shader of `assets` the layer names.
@@ -15,6 +16,7 @@ func show_drawn(drawn: ModDraw.Drawn, assets: ModAssets) -> void:
 	while _layers.size() < drawn.layers.size():
 		var layer := ModLayer.new()
 		layer.name = "Layer%d" % _layers.size()
+		layer.set_phase(_phase)
 		add_child(layer)
 		_layers.append(layer)
 	while _layers.size() > drawn.layers.size():
@@ -22,6 +24,13 @@ func show_drawn(drawn: ModDraw.Drawn, assets: ModAssets) -> void:
 	for i in drawn.layers.size():
 		var wanted := drawn.layers[i]
 		_layers[i].show_layer(wanted, assets.shaders.get(wanted.shader) if assets != null else null)
+
+
+## The game's time for the shaders of every layer (`ModShader.PHASE_UNIFORM`): the screen that shows the list tells it each time it shows, a mod never does.
+func set_phase(phase: float) -> void:
+	_phase = phase
+	for layer in _layers:
+		layer.set_phase(phase)
 
 
 ## Shows nothing: no node is left.

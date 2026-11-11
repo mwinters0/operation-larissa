@@ -4,7 +4,7 @@ extends RefCounted
 ## `property_allowed` / `method_allowed` are the policies for the objects the game hands over. To give mods a new ability, add its key to `build` and its function below;
 ## to let a mod touch an object, grant the object (`_grant`) and allow the property or method in the policy. Nothing else in the game is reachable from a mod.
 ##
-## The API (`ModSpec.API_VERSION` 5; the first four keys are version 1, `skin` is version 2, `problems` is version 3, `rules` is version 4; version 5 adds to the manifest of a skin, to the draw list (`ModDraw`: a picture of the game by key), the layers a skin's script draws (`skin_layer`) and the console's parts among them, the original's problem types by number, the events a problem screen is told and its clock and its sounds, not to this table):
+## The API (`ModSpec.API_VERSION`, 5): the first four keys are version 1, `skin` is version 2, `problems` is version 3, `rules` is version 4. Version 5 (`ModSpec.DRAWS_THE_GAME_API_VERSION`) adds no key: it widens what a manifest may say (a skin's `render`, `pictures`, `hud_font`, `layers`, `script_layers`, `theme`), what a draw list may name (`ModDraw`: a picture of the game by key) and what a callback is told (a problem screen's events, clock and sounds):
 ##
 ##     api_version  int       the version of this API
 ##     id           String    the mod's id (= its pack's id)
@@ -71,7 +71,7 @@ func method_allowed(_id: String, _object: Object, _method: String) -> bool:
 func _skin_facts(spec: ModSpec) -> Dictionary:
 	return {
 		"columns": SkinState.COLUMNS, "rows": SkinState.ROWS, "tile": TileGrid.TILE_SIZE, "playfield": Vector2(TileGrid.PLAYFIELD_SIZE),
-		"max_commands": ModDraw.MAX_COMMANDS, "max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModDraw.MAX_UNIFORMS,
+		"max_commands": ModDraw.MAX_COMMANDS, "max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModShader.MAX_UNIFORMS,
 		"max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT, "min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE, "shaders": spec.shaders.duplicate(),
 	}
 
@@ -80,7 +80,7 @@ func _skin_facts(spec: ModSpec) -> Dictionary:
 func _problem_facts(spec: ModSpec) -> Dictionary:
 	return {
 		"types": spec.problem_types.duplicate(), "window": Vector2(ProblemState.WINDOW_SIZE),
-		"max_commands": ModDraw.MAX_COMMANDS, "max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModDraw.MAX_UNIFORMS,
+		"max_commands": ModDraw.MAX_COMMANDS, "max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModShader.MAX_UNIFORMS,
 		"max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT, "min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE,
 		"shaders": spec.problem_shaders.duplicate(),
 		"events": ProblemEvents.NAMES.map(func(each: StringName) -> String: return String(each)),

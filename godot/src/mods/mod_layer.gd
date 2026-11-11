@@ -9,6 +9,7 @@ extends Node2D
 var commands: Array = []
 var _shader: Shader
 var _material: ShaderMaterial
+var _phase := 0.0
 
 
 ## Shows `layer` from now on: its commands, and its shader with its uniforms (the material is kept while the shader stays the same).
@@ -20,6 +21,7 @@ func show_layer(layer: ModDraw.Layer, shader: Shader) -> void:
 		if shader != null:
 			_material = ShaderMaterial.new()
 			_material.shader = shader
+			_material.set_shader_parameter(ModShader.PHASE_UNIFORM, _phase)
 		material = _material
 	if _material != null:
 		for key: String in layer.uniforms:
@@ -27,12 +29,20 @@ func show_layer(layer: ModDraw.Layer, shader: Shader) -> void:
 	queue_redraw()
 
 
-## The font of every text a mod draws: the game's (the project Theme's default font, the one the problem screen and the HUD use). A mod names none.
-static func game_font() -> Font:
+## The font of every text a mod draws: the default font of the theme in use (the project Theme: the engine's font, or the one the skin worn gives its `theme`, `ThemeBuilder.apply`), the font the menus' controls and the problem screen's title and prompt are lettered in. A mod names none.
+## The diagrams' own text is not this font: it is always the engine's (`ThemeBuilder.engine_font`), because the data puts each of its words at a pixel.
+static func theme_font() -> Font:
 	var project_theme := ThemeDB.get_project_theme()
 	if project_theme != null and project_theme.has_default_font():
 		return project_theme.default_font
 	return ThemeDB.fallback_font
+
+
+## The game's time for the layer's shader (`ModShader.PHASE_UNIFORM`), from now on: the one place a mod's shader gets its `phase`, whoever shows the layer.
+func set_phase(phase: float) -> void:
+	_phase = phase
+	if _material != null:
+		_material.set_shader_parameter(ModShader.PHASE_UNIFORM, phase)
 
 
 func _draw() -> void:
@@ -50,7 +60,7 @@ func _draw() -> void:
 			"region":
 				draw_texture_rect_region(command[1], _flipped(command[2], command[4]), command[3], command[5])
 			"text":
-				var font := game_font()
+				var font := theme_font()
 				draw_string(font, command[2] + Vector2(0.0, font.get_ascent(command[3])), command[1], command[6], command[5], command[3], command[4])
 
 

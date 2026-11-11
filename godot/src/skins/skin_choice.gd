@@ -17,9 +17,9 @@ extends RefCounted
 ## (`SectorPresenter.run_in_skin`, and the handlers `_listen` connects), so a presenter dressed for skin X keeps resolving through X
 ## whatever the rest of the game wears. Nothing that is not asked for in the call changes, and nothing about the rules does.
 ##
-## SKIN MODS. A mod pack whose manifest says `skin` (`ModSpec`) is a skin too: `ModHost` makes its `ModSkin` (a `GameSkin` whose presenter draws what the sandboxed script says) when the mod runs, and `available`
+## SKIN MODS. A mod pack whose manifest says `skin` (`ModSpec`) is a skin too: `ModHost` makes its `ModSkin` (a `GameSkin` that the original presenter wears, with the layers the sandboxed script draws put over the original's) when the mod runs, and `available`
 ## and `load_skin` offer it beside the skins that ship, so the command line, F3 then S, the compare tool and the tests choose it like any other. It lives as long as the mod: when the mod is unloaded or
-## quarantined, `leave_dead_mod_skins` puts the original on (until then its presenter draws nothing).
+## quarantined, `leave_dead_mod_skins` puts the original on (until then a presenter bound to the gone mod shows the original's layers and asks nobody).
 ##
 ## Teaches: shared state without a node. A `static var` is a global with a name; the one thing a class cannot hold statically is a
 ## signal, so `events` is a small object that owns it. Connecting a signal to a node's method is undone by itself when the node is freed.
@@ -110,6 +110,11 @@ static func current() -> GameSkin:
 	if _current == null:
 		select(load_skin(requested()))
 	return _current
+
+
+## The skin something wears: `skin` when it has one of its own (a presenter or a HUD of the side-by-side tool), else the skin in use. The one place that says so.
+static func worn(skin: GameSkin) -> GameSkin:
+	return skin if skin != null else current()
 
 
 ## Puts `skin` on: it becomes the current one, its render settings go on the window (`RenderSettings.apply_to`), and everybody

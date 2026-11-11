@@ -3,17 +3,13 @@ extends RefCounted
 ## The art templates of a skin: for every picture a skin may replace, a PNG of the picture's size in one flat colour with the picture's skin key and its size written on it,
 ## for a person to draw the real art over (`docs/create/SKIN_API.md` "Art templates"; the command line is `skin_templates_tool.tscn`).
 ##
-## WHICH PICTURES. `SOURCES` is the one table: the layout files (of the pack in use, as the pack holds them, no skin) whose pictures a skin may replace. Each texture a layout holds is a picture
-## of its own, whose key and size are read off the texture: the key is the one `GameSkin.key_of` makes, which is the key a skin's `pictures` names (`ModSpec.REPLACEABLE_KINDS`), and the size is the
-## texture's. The sizes come from the layout, so a template has nothing of any picture in it, only its key and its size. A phase that lets a skin replace more pictures adds the layout that holds them
-## to `SOURCES`; nothing else changes.
-## THE LAYERS OF THE CONSOLE. A skin's script may draw a part of the console, or all of it (`SkinLayers.HUD_NODES`), in the part's rectangle (`ConsoleState.rects`): the HUD layout in `SOURCES` also gives one template for each such layer, key `hud_layer/<layer>`
-## (`hud_layer/hud_oxygen`), the size of the layer's rectangle in the layout's own data, for a picture of the whole part that the script draws (`skin/<name>.png`, a path in a draw list) at the size it will show.
-##
-## THE PROBLEM SCREEN. The frame of the problem screen is pictures a skin replaces (`pictures` takes the kind `problem_art` too, `ModSpec.REPLACEABLE_KINDS`): the screen picture the layout holds (`problem_art/pa_1780`), the calculator (`pa_1781`), the "Ans:" panel (`pa_1802`)
-## and the calculator's digits and signs, all in the layouts of the screen and of the calculator in `SOURCES`, and the sender's two pictures beside the first line of a prompt (`ui_picture/prompt_sender_ship`, `PromptSender.PICTURE_SIZE`, which the screen stretches
-## to); each has a template at its size. A mod that draws the screen of a problem type (`ModDiagram`, `docs/create/CONTENT.md` "Problem screens") draws in the window's 640 x 400 pixels and may name the same pictures by key: the screen's layout also gives one template for the whole window a
-## mod draws, key `problem_layer/window`, for a picture of the whole screen of a type. It is not a picture a skin replaces: it is drawn over and put in the `problems/` folder of a problem mod, named in its draw list.
+## TWO LISTS, never mixed. THE PICTURES A SKIN MAY REPLACE (`pictures`, `ModSpec.is_picture_key`): `SOURCES` is the table of the layout files (of the pack in use, as the pack holds them, no skin) whose pictures they are. Each texture a layout holds is a
+## picture of its own, whose key and size are read off the texture: the key is the one `GameSkin.key_of` makes, which is the key a skin's `pictures` names (`ModSpec.REPLACEABLE_KINDS`), and the size is the texture's. The sizes come from the layout, so a
+## template has nothing of any picture in it, only its key and its size. `PromptSender.picture_keys` adds the two pictures beside the first line of a prompt, which no layout holds (their size is `PromptSender.PICTURE_SIZE`, which the screen stretches to).
+## The frame of the problem screen is among them: the screen picture (`problem_art/pa_1780`), the calculator (`pa_1781`), the "Ans:" panel (`pa_1802`) and the calculator's digits and signs are in the layouts of the screen and of the calculator.
+## THE PICTURES A SCRIPT DRAWS, whole-part pictures of a screen (`layers`), not pictures a skin replaces (no `pictures` entry names them; they are drawn over and put in the skin's `skin/` folder, or in the `problems/` folder of a problem mod, named in a draw list):
+## one for each layer of the console (`SkinLayers.hud_layers`, key `hud_layer/<layer>`, `hud_layer/hud_oxygen`), the size of the layer's rectangle in the HUD layout (`ConsoleState.rects`), and one for the whole 640 x 400 window of a problem screen
+## (`problem_layer/window`, `ProblemState.WINDOW_SIZE`; `ModDiagram`, `docs/create/CONTENT.md` "Problem screens").
 ##
 ## THE SIZES ARE THE PACK'S. The dev pack's console has the sizes the dev pack made for itself; the original's are those of the legacy pack (`--pack=legacy` reads only the sizes, and writes none of the
 ## original's pixels).
@@ -22,7 +18,8 @@ extends RefCounted
 ## `Resource`'s stored properties to find every texture in it, arrays included, the way `GameSkin` does to dress a layout.
 
 ## The layouts, as a path in a pack's `data/`, whose textures are the pictures a skin may replace.
-const SOURCES: Array[String] = ["data/ui/hud_layout.tres", "data/problems/screen_layout.tres", "data/ui/calculator_layout.tres"]
+const HUD_LAYOUT := "data/ui/hud_layout.tres"
+const SOURCES: Array[String] = [HUD_LAYOUT, "data/problems/screen_layout.tres", "data/ui/calculator_layout.tres"]
 
 ## The glyphs: 3 pixels wide and 5 high, a row to an int (the left pixel is the 4s bit). Only what a key and a size are written with.
 const GLYPHS := {
@@ -63,8 +60,15 @@ class Entry extends RefCounted:
 		return key + ".png"
 
 
-## Every picture of `SOURCES` in the pack in use, once, in the layouts' order: the key and the size.
+## Every picture to make a template of, in the pack in use: those a skin may replace (`pictures`), then those a script draws (`layers`).
 static func entries() -> Array[Entry]:
+	var found := pictures()
+	found.append_array(layers())
+	return found
+
+
+## The pictures a skin may replace (`ModSpec.is_picture_key`), once each: those of the layouts of `SOURCES` in their order, then the prompt sender's. The key and the size.
+static func pictures() -> Array[Entry]:
 	var found: Array[Entry] = []
 	var seen := {}
 	for rel in SOURCES:
@@ -73,18 +77,31 @@ static func entries() -> Array[Entry]:
 			continue
 		for texture in _textures_in(layout):
 			var key := GameSkin.key_of(Packs.source_of(texture))
-			if key.is_empty() or seen.has(key) or not ModSpec.is_drawable_key(key):
-				continue
-			seen[key] = true
-			found.append(Entry.new(key, Vector2i(texture.get_size())))
-		if layout is HudLayout:
-			var rects := ConsoleState.rects(layout)
-			for layer in SkinLayers.hud_layers():
-				found.append(Entry.new("%s/%s" % [LAYER_KIND, layer], Vector2i((rects[String(layer)] as Rect2).size)))
-		if layout is ProblemScreenLayout:
-			for sender in [PromptSender.PICTURE_SHIP, PromptSender.PICTURE_CONTROL_ROOM]:
-				found.append(Entry.new("ui_picture/%s" % sender, PromptSender.PICTURE_SIZE))
-			found.append(Entry.new("%s/%s" % [PROBLEM_LAYER_KIND, PROBLEM_WINDOW], ProblemState.WINDOW_SIZE))
+			if not key.is_empty() and not seen.has(key) and ModSpec.is_picture_key(key):
+				seen[key] = true
+				found.append(Entry.new(key, Vector2i(texture.get_size())))
+	for key in PromptSender.picture_keys():
+		found.append(Entry.new(key, PromptSender.PICTURE_SIZE))
+	return found
+
+
+## The size of each picture a skin may replace in the pack in use, by key (`pictures`). What `PackCheck` compares a skin's PNG with.
+static func sizes() -> Dictionary[String, Vector2i]:
+	var found: Dictionary[String, Vector2i] = {}
+	for entry in pictures():
+		found[entry.key] = entry.size
+	return found
+
+
+## The pictures a script draws: a layer of the console for each of `SkinLayers.hud_layers()` (the size of its rectangle, from the HUD layout), and the problem screen's window.
+static func layers() -> Array[Entry]:
+	var found: Array[Entry] = []
+	var hud := Catalog.pack_resource(HUD_LAYOUT) as HudLayout
+	if hud != null:
+		var rects := ConsoleState.rects(hud)
+		for layer in SkinLayers.hud_layers():
+			found.append(Entry.new("%s/%s" % [LAYER_KIND, layer], Vector2i((rects[String(layer)] as Rect2).size)))
+	found.append(Entry.new("%s/%s" % [PROBLEM_LAYER_KIND, PROBLEM_WINDOW], ProblemState.WINDOW_SIZE))
 	return found
 
 

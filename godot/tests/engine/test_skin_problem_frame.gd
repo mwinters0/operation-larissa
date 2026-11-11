@@ -119,7 +119,7 @@ func test_the_check_passes_a_skin_that_dresses_the_frame() -> void:
 	options.reach = false
 	var report := PackCheck.run(Pack.open(_shelves[0].root), options)
 	assert_bool(report.passes()).override_failure_message(report.text()).is_true()
-	assert_array(report.warnings().filter(func(f: PackReport.Finding) -> bool: return f.area == "mod")).override_failure_message(report.text()).is_empty()
+	assert_array(report.warnings().filter(func(f: PackReport.Finding) -> bool: return f.area == "mod" and not f.message.contains("stretched"))).override_failure_message(report.text()).is_empty()
 	var other := PackShelf.new()                                                                      # (a frame picture the game never asks for is a warning, as for the console's)
 	_shelves.append(other)
 	other.add_mod_fixture(FIXTURE, _fixture_skin({"pictures": {"problem_art/no_such_picture": SKY}}))

@@ -73,10 +73,10 @@ static func labels(layout: HudLayout, words: HudLabels) -> Dictionary:
 	var campaign := campaign_of(GameState.sector) if GameState.sector >= 0 else null
 	var known := campaign != null
 	var found := {
-		"custom": {"visible": known and GameState.customized, "word": lettering.custom_word, "rect": _box(layout.custom_position, layout.custom_size)},
-		"game": {"visible": known, "word": "", "picture": -1, "rect": _box(layout.game_position, layout.game_size)},
-		"zone": {"visible": known, "word": "", "picture": -1, "rect": _box(layout.zone_position, layout.zone_size)},
-		"sector": {"visible": known, "word": "", "picture": -1, "final": false, "rect": _box(layout.sector_position, layout.sector_size)},
+		"custom": {"visible": known and GameState.customized, "word": lettering.custom_word, "rect": layout.rect_of(&"hud_custom")},
+		"game": {"visible": known, "word": "", "picture": -1, "rect": layout.rect_of(&"hud_game")},
+		"zone": {"visible": known, "word": "", "picture": -1, "rect": layout.rect_of(&"hud_zone")},
+		"sector": {"visible": known, "word": "", "picture": -1, "final": false, "rect": layout.rect_of(&"hud_sector")},
 	}
 	if not known:
 		return found
@@ -112,21 +112,12 @@ static func lights(layout: HudLayout, blink := 0.0) -> Dictionary:
 ## The area of every layer of the console (`SkinLayers.hud_layers()`, by the name as a String), in window pixels: the bezel's rectangle, the three gauges' areas, the four lettering boxes, the two lights, and for the whole console (`SkinLayers.HUD`) the rectangle that holds them all.
 ## What a script draws in a layer is cut off at its rectangle (`Hud.layer_clip`), which is always one of these.
 static func rects(layout: HudLayout) -> Dictionary:   # (names are Strings: what a script indexes with)
-	var found := {
-		"hud_bezel": _box(layout.bezel_position, layout.bezel_size),
-		"hud_tanks": Rect2(layout.tank_rect),
-		"hud_oxygen": Rect2(layout.oxygen_rect),
-		"hud_ink": Rect2(layout.ink_rect),
-		"hud_game": _box(layout.game_position, layout.game_size),
-		"hud_custom": _box(layout.custom_position, layout.custom_size),
-		"hud_zone": _box(layout.zone_position, layout.zone_size),
-		"hud_sector": _box(layout.sector_position, layout.sector_size),
-		"hud_ship": _box(layout.ship_position, layout.ship_size),
-		"hud_computer": _box(layout.computer_position, layout.computer_size),
-	}
-	var whole: Rect2 = found["hud_bezel"]
-	for part: Rect2 in found.values():
-		whole = whole.merge(part)
+	var found := {}
+	var whole := Rect2()
+	for layer in SkinLayers.HUD_NODES:
+		var area := layout.rect_of(layer)
+		found[String(layer)] = area
+		whole = area if found.size() == 1 else whole.merge(area)
 	found[String(SkinLayers.HUD)] = whole
 	return found
 
@@ -140,8 +131,3 @@ static func campaign_of(sector_index: int) -> Campaign:
 
 static func _gauge(value: int, positions: PackedVector2Array) -> Dictionary:
 	return {"value": clampi(value, 0, positions.size()), "slots": positions.size(), "positions": Array(positions)}
-
-
-static func _box(position: Vector2i, size: Vector2i) -> Rect2:
-	return Rect2(Vector2(position), Vector2(size))
-

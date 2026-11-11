@@ -28,6 +28,11 @@ const HEADER_X := 0x168 + (55 & ~1)
 const BODY_Y := 0x44
 
 
+## The skin keys (`ui_picture/<name>`, `GameSkin.key_of`) of the two loose pictures: no layout holds them (their size is `PICTURE_SIZE`), so `SkinTemplates` asks for them here.
+static func picture_keys() -> Array[String]:
+	return ["ui_picture/%s" % PICTURE_SHIP, "ui_picture/%s" % PICTURE_CONTROL_ROOM]
+
+
 ## `LoadPromptSenderPicture` (0x423378): the research ship for the trigger slots 2 to 19 and 60 up (the ones that light the
 ## ship's message light, `DoAction` 0x417ffc), the control room for slot 1 (the data canister), 20 to 59 (the on-board
 ## computer) and the lock's 0. The compare is signed in the original, so a negative slot is the control room too.

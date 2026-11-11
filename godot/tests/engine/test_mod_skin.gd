@@ -152,7 +152,7 @@ func test_a_skin_mod_is_given_the_skin_facts_and_other_mods_are_not() -> void:
 	var api: Dictionary = ModApi.new(Mods.loader()).build("x", skinny.pack)
 	assert_int(api["api_version"]).is_equal(ModSpec.API_VERSION)
 	assert_dict(api["skin"]).is_equal({"columns": 38, "rows": 18, "tile": 16, "playfield": Vector2(608, 288), "max_commands": ModDraw.MAX_COMMANDS,
-			"max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModDraw.MAX_UNIFORMS, "max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT,
+			"max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModShader.MAX_UNIFORMS, "max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT,
 			"min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE, "shaders": ["skin/glow.gdshader"]})
 	for value: Variant in api["skin"].values():
 		assert_bool(value is Object).is_false()                                                      # (numbers and names: nothing to reach through)
@@ -218,7 +218,7 @@ func test_the_document_names_every_key_of_the_state_every_command_and_every_cap(
 		assert_bool(doc.contains("`%s`" % fact)).override_failure_message("SKIN_API.md does not mention api[\"skin\"][\"%s\"]" % fact).is_true()
 	assert_bool(doc.contains("%d) commands" % ModDraw.MAX_COMMANDS)).is_true()
 	assert_bool(doc.contains("`max_layers` (%d)" % ModDraw.MAX_LAYERS)).is_true()
-	assert_bool(doc.contains("`max_uniforms` (%d)" % ModDraw.MAX_UNIFORMS)).is_true()
+	assert_bool(doc.contains("`max_uniforms` (%d)" % ModShader.MAX_UNIFORMS)).is_true()
 	assert_bool(doc.contains("`max_texts` (%d)" % ModDraw.MAX_TEXTS) and doc.contains("`max_text` (%d)" % ModDraw.MAX_TEXT)).is_true()
 	assert_bool(doc.contains("%d to %d" % [ModDraw.MIN_FONT_SIZE, ModDraw.MAX_FONT_SIZE])).is_true()
 	assert_bool(doc.contains("%d bytes" % ModShader.MAX_BYTES)).is_true()
@@ -340,7 +340,7 @@ func test_a_draw_list_is_checked_command_by_command() -> void:
 		["picture", "skin/dot.png", Rect2(0, 0, 8, 8), true, Color(1, 1, 1, 0.5)],
 		["picture", "skin/dot.png", Vector2(10, 10), Color.RED],
 		["region", "skin/sub.png", Rect2(0, 0, 16, 16), Rect2(0, 0, 8, 8)],
-		["layer", "skin/glow.gdshader", {"strength": 0.5, "tint": Color.RED, "offset": Vector2(1, 2), "on": true}],
+		["layer", "skin/glow.gdshader", {"strength": 0.5, "tint": Color.RED}],
 		["rect", Rect2(0, 0, 1, 1), Color.GREEN],
 	], pack, skin.assets)
 	assert_int(drawn.dropped).is_equal(0)
@@ -350,11 +350,55 @@ func test_a_draw_list_is_checked_command_by_command() -> void:
 	assert_array(drawn.layers[0].commands[3]).is_equal(["picture", pack.texture("skin/dot.png"), Rect2(0, 0, 8, 8), true, Color(1, 1, 1, 0.5)])
 	assert_array(drawn.layers[0].commands[4]).is_equal(["picture", pack.texture("skin/dot.png"), Vector2(10, 10), false, Color.RED])
 	assert_str(drawn.layers[1].shader).is_equal("skin/glow.gdshader")
-	assert_dict(drawn.layers[1].uniforms).is_equal({"strength": 0.5, "tint": Color.RED, "offset": Vector2(1, 2), "on": true})
+	assert_dict(drawn.layers[1].uniforms).is_equal({"strength": 0.5, "tint": Color.RED})
 	assert_int(drawn.layers[1].commands.size()).is_equal(1)
 	assert_object(ModDraw.validate("a string", pack, skin.assets)).is_null()                             # (not a list: no frame at all, the last one stays)
 	assert_object(ModDraw.validate(null, pack, skin.assets)).is_null()
 	assert_bool(ModDraw.is_empty(ModDraw.validate([], pack, skin.assets))).is_true()
+
+
+func test_a_draw_lists_uniforms_are_judged_as_a_manifests_are() -> void:
+	var skinny := _mount(["skinny"] as Array[String])
+	var skin := SkinChoice.load_skin(skinny.id) as ModSkin
+	var good := {"strength": 0.5, "tint": "#ff8800"}                                                   # (a colour string, as a manifest says it)
+	var layer := func(uniforms: Dictionary) -> ModDraw.Drawn:
+		return ModDraw.validate([["layer", "skin/glow.gdshader", uniforms], ["rect", Rect2(0, 0, 1, 1), Color.RED]], skinny.pack, skin.assets)
+	var drawn: ModDraw.Drawn = layer.call(good)
+	assert_int(drawn.dropped).is_equal(0)
+	assert_that(drawn.layers[1].uniforms["tint"]).is_equal(Color("#ff8800"))
+	assert_dict(layer.call({"strength": 1}).layers[1].uniforms).is_equal({"strength": 1.0})
+	var refused := {
+		"phase, which the game sets": {"phase": 1.0},
+		"a uniform the shader does not declare": {"glint": 1.0},
+		"a value of another type": {"strength": Vector2(1, 2)},
+		"a number a manifest would refuse": {"strength": ModShader.MAX_VALUE + 1.0},
+		"a name that is no name": {"two words": 1.0},
+		"a vector part out of bounds": {"tint": Color(ModShader.MAX_VALUE * 2.0, 0, 0, 1)},
+	}
+	for what: String in refused:
+		var got: ModDraw.Drawn = layer.call(refused[what])
+		assert_int(got.dropped).override_failure_message("%s was drawn" % what).is_greater(0)
+		var values := {}
+		assert_array(ModShader.check_uniforms(refused[what], skin.assets.declared["skin/glow.gdshader"], values)).override_failure_message("%s was not named" % what).is_not_empty()
+	var many := {}
+	for i in ModShader.MAX_UNIFORMS + 1:
+		many["u%d" % i] = 1.0
+	assert_array(ModShader.check_uniforms(many, null, {})).is_not_empty()
+
+
+func test_the_game_sets_phase_on_every_layer_of_a_stack_and_a_mod_never_does() -> void:
+	var skinny := _mount(["skinny"] as Array[String])
+	var skin := SkinChoice.load_skin(skinny.id) as ModSkin
+	var stack := ModLayerStack.new()
+	auto_free(stack)
+	stack.set_phase(3.5)                                                                               # (before the layers: they start with it)
+	var drawn := ModDraw.validate([["layer", "skin/glow.gdshader", {"strength": 0.2}], ["rect", Rect2(0, 0, 1, 1), Color.RED]], skinny.pack, skin.assets)
+	stack.show_drawn(drawn, skin.assets)
+	var shaded := stack.layers()[1]
+	assert_float((shaded.material as ShaderMaterial).get_shader_parameter("phase")).is_equal(3.5)
+	stack.set_phase(4.25)
+	assert_float((shaded.material as ShaderMaterial).get_shader_parameter("phase")).is_equal(4.25)
+	assert_object(stack.layers()[0].material).is_null()
 
 
 func test_garbage_in_a_draw_list_is_dropped_and_the_good_commands_around_it_are_drawn() -> void:
@@ -818,6 +862,9 @@ func test_the_skins_shader_is_the_one_the_game_compiled_with_the_uniforms_the_sc
 	assert_object(material.shader).is_same(skin.assets.shaders["skin/glow.gdshader"])
 	assert_that(material.get_shader_parameter("tint")).is_equal(Color(1.0, 0.9, 0.3))
 	assert_float(material.get_shader_parameter("strength")).is_equal(0.0)
+	assert_float(material.get_shader_parameter("phase")).override_failure_message("the game sets `phase` on the shader of a layer the script draws").is_equal_approx(presenter.view.tick_number + 0.5, 0.0001)
+	presenter.show_between_ticks(0.75)
+	assert_float(material.get_shader_parameter("phase")).is_equal_approx(presenter.view.tick_number + 0.75, 0.0001)
 	assert_str(material.shader.code).is_equal(shelf.pack.read_text("skin/glow.gdshader"))
 	for layer: Array in _layers(presenter):                                                           # (only the layer that named the shader has a material)
 		if layer[0] != shaded:

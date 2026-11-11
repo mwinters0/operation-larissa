@@ -75,12 +75,12 @@ static func walls(view: SimView) -> String:
 	return bytes.get_string_from_ascii()
 
 
-## The still decorations of the screen (`SimView.decorations`), one entry for each of the layers `back_decos`, `mid_decos` and `front_decos` (each in the order of the screen's list, the order they are drawn), and in each COLUMNS: parallel Arrays
+## The still decorations of the screen (`SimView.decorations`), one entry for each of the layers of `SkinLayers.DECOS` (`back_decos`, `mid_decos` and `front_decos`; each in the order of the screen's list, the order they are drawn), and in each COLUMNS: parallel Arrays
 ## `slot`, `key`, `position` (the top-left corner), `size` (the picture's) and `mirrored`, the picture at index i being the i-th of each. A screen has up to a hundred and fifty of them, and a script may hold only so many host objects at once
 ## (`references_max`): an Array of Dictionaries costs one for each decoration, a few Arrays of values cost nothing more (`tests/legacy/test_mod_skin_legacy.gd` walks the biggest screens there are).
 static func _decos(view: SimView) -> Dictionary:
 	var layers := {}
-	for layer in [&"back_decos", &"mid_decos", &"front_decos"]:
+	for layer in SkinLayers.DECOS:
 		layers[String(layer)] = {"slot": [], "key": [], "position": [], "size": [], "mirrored": []}
 	if view.zone < 0:
 		return layers

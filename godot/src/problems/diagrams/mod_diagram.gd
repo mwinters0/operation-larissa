@@ -204,6 +204,7 @@ func _show_answer(screens: ModProblems) -> void:
 	if drawn != null:
 		_showing_mod = true
 		_plain.visible = false
+		_stack.set_phase(float(maxi(_told_tick, 0)))              # (the tick of the animation the script was told; drawn when something changes, not every frame: a shader that moves by itself uses `TIME`)
 		_stack.show_drawn(drawn, screens.assets)
 
 

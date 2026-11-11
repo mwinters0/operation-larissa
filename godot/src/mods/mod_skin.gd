@@ -95,24 +95,18 @@ static func _font_problem(pack: Pack, spec: FontSpec) -> String:
 
 
 ## The material the layer `layer` of a data skin wears (`GameSkin.layer_materials`): its shader, already compiled for the skin (`ModAssets`), with the values of the manifest in the uniforms the shader declares. A uniform the shader has not,
-## or of a kind the value does not fill (`ModShader.uniform_problem`), is a reason: the author is told, the game does not run on a guess.
+## or of a kind the value does not fill (`ModShader.check_uniforms`), is a reason: the author is told, the game does not run on a guess. The presenter sets `phase` on the material it wears.
 static func _make_layer(skin: ModSkin, layer: String, entry: Dictionary, reasons: Array[String]) -> void:
 	var shader := skin.assets.shaders.get(entry["shader"]) as Shader
 	if shader == null:
 		return                                                   # (`ModAssets.make` said why)
-	var declared := ModShader.uniform_types(shader.code)
 	var material := ShaderMaterial.new()
 	material.shader = shader
 	var before := reasons.size()
-	var uniforms: Dictionary = entry["uniforms"]
-	for uniform: String in uniforms:
-		if not declared.has(uniform):
-			reasons.append("the layer \"%s\" sets \"%s\", which %s does not declare (it declares %s)" % [layer, uniform, entry["shader"], ", ".join(declared.keys()) if not declared.is_empty() else "no uniform"])
-			continue
-		var problem := ModShader.uniform_problem(declared[uniform], uniforms[uniform])
-		if problem.is_empty():
-			material.set_shader_parameter(uniform, ModShader.uniform_value(declared[uniform], uniforms[uniform]))
-		else:
-			reasons.append("the layer \"%s\" sets \"%s\", which %s %s" % [layer, uniform, entry["shader"], problem])
+	var values := {}
+	for problem in ModShader.check_uniforms(entry["uniforms"], skin.assets.declared[entry["shader"]], values):
+		reasons.append("the layer \"%s\" (%s) %s" % [layer, entry["shader"], problem])
+	for uniform: String in values:
+		material.set_shader_parameter(uniform, values[uniform])
 	if reasons.size() == before:
 		skin.layer_materials[StringName(layer)] = material

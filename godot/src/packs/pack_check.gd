@@ -185,9 +185,12 @@ static func _mod(live: Pack, report: PackReport) -> void:
 			_entry_script(live, report)
 		for message in ModParts.problems(live):
 			report.error("mod", message)
+		var sizes: Dictionary = SkinTemplates.sizes() if not live.mod.pictures.is_empty() else {}
 		for key in live.mod.pictures:
 			if not _game_names_picture(key):
 				report.warn("mod", "the skin's picture %s names no picture of the game: it is never asked for" % key)
+			else:
+				_picture_size(live, key, sizes, report)
 		for key in live.mod.theme_pictures():
 			if ModSpec.is_picture_key(key) and not live.mod.pictures.has(key) and not _game_names_picture(key):
 				report.warn("mod", "the theme's picture %s is neither one the skin maps nor one of the game's: the style is drawn flat" % key)
@@ -197,6 +200,14 @@ static func _mod(live: Pack, report: PackReport) -> void:
 			report.warn("mod", "%s is never used: %s" % [rel, "a skin names its font in \"skin\": {\"hud_font\": {\"file\": ...}} or {\"theme\": {\"font\": {\"file\": ...}}}" if live.mod != null and live.mod.is_skin else "a font is read by a skin mod only"])
 	for rel in scripts:
 		report.warn("mod", "%s is never run: %s" % [rel, "a mod pack's manifest names one entry script (\"mod\": {\"entry\": ...})" if live.mod != null else "the manifest has no \"mod\" entry"])
+
+
+## A warning when the skin's PNG for `key` is not the size of the picture it replaces (the game draws it stretched to the place of the original's). `sizes` are the ones the art templates have (`SkinTemplates.sizes`, from the layouts of the pack in use), so the two cannot disagree; a picture no layout holds is not judged.
+static func _picture_size(live: Pack, key: String, sizes: Dictionary, report: PackReport) -> void:
+	var texture := live.texture(live.mod.pictures[key])
+	var wanted: Vector2i = sizes.get(key, Vector2i.ZERO)
+	if texture != null and wanted != Vector2i.ZERO and Vector2i(texture.get_size()) != wanted:
+		report.warn("mod", "the skin's picture %s is %dx%d, and the picture it replaces is %dx%d: it is drawn stretched to that place" % [key, texture.get_width(), texture.get_height(), wanted.x, wanted.y])
 
 
 ## Does the game's own registry name the picture a skin key (`<kind>/<name>`) says? A skin that replaces a picture the game never asks for changes nothing.

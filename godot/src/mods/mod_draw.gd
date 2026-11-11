@@ -9,15 +9,15 @@ extends RefCounted
 ##     ["line", Vector2 from, Vector2 to, Color, float width]
 ##     ["picture", "skin/x.png" or "frame/sub_00", Vector2 or Rect2 where, mirrored?, Color?]  a picture of the mod's own pack, or of the game by its skin key; a Vector2 puts its top-left corner there at its own size, a Rect2 stretches it
 ##     ["region", "skin/x.png" or "deco/coral_fan_cyan", Rect2 where, Rect2 source, mirrored?, Color?]   part of a picture (a tile of a sheet), source in pixels of the picture
-##     ["text", "words", Vector2 where, int size, Color, float width?, "left" or "center" or "right"?]   one line in the game's font, its top-left corner at `where`
-##     ["layer", "skin/x.gdshader" or "", {"uniform": number, bool, Vector2 or Color, ...}?]   starts a layer drawn through that shader (one the manifest lists); "" is no shader
+##     ["text", "words", Vector2 where, int size, Color, float width?, "left" or "center" or "right"?]   one line in the theme's font, its top-left corner at `where`
+##     ["layer", "skin/x.gdshader" or "", {"uniform": number, bool, vector or Color, ...}?]   starts a layer drawn through that shader (one the manifest lists); "" is no shader
 ##
-## `mirrored` is a bool, the Color after it a modulate. The list starts in an unshaded layer. At most `MAX_LAYERS` layers, `MAX_UNIFORMS` uniforms each, numbers finite and within `LIMIT`. A picture is a PNG under the
+## `mirrored` is a bool, the Color after it a modulate. The list starts in an unshaded layer. At most `MAX_LAYERS` layers, places and sizes finite and within `LIMIT`, and the uniforms of a layer as `ModShader.check_uniforms` judges them (the shader must declare each, a value of its type, `phase` is the game's). A picture is a PNG under the
 ## folder of `ModAssets` (`skin/` or `problems/`) of THE MOD'S OWN PACK (`Pack.texture`, never the chain's lookup), so a path that names another pack, a folder above, or a file the pack lacks draws nothing. A name that is not under that folder but
 ## is a SKIN KEY (`<kind>/<name>`, a kind of `GameSkin.KEY_KINDS`: `ModSpec.is_drawable_key`) names a picture of the game: the game resolves it (`Assets.picture_by_key`, the lookup `OriginalPresenter` makes: a pack's picture for the key, else the
 ## skin in use's, else the chain's file), the mod never holds it, and a key nothing holds draws nothing. A layer
 ## whose shader the manifest does not list draws nothing (it is never drawn unshaded). A text is cut to `MAX_TEXT` characters (a control character becomes a space), its size held to `MIN_FONT_SIZE`..`MAX_FONT_SIZE`, at
-## most `MAX_TEXTS` of them in a list; there is one font, the game's, so a mod names none. With a `width` the line is aligned in that width and clipped to it. Nothing here asks the script anything or runs its code.
+## most `MAX_TEXTS` of them in a list; there is one font, the theme in use's (`ModLayer.theme_font`), so a mod names none. With a `width` the line is aligned in that width and clipped to it. Nothing here asks the script anything or runs its code.
 ##
 ## Teaches: validating what an untrusted program hands back as a whole language of its own: a table of commands with exact shapes, copied element by element (so what the game keeps shares nothing
 ## with the script and cannot be changed after the check), and caps on every dimension of the input.
@@ -29,17 +29,14 @@ extends RefCounted
 const OPS: Array[String] = ["rect", "line", "picture", "region", "text", "layer"]
 const MAX_COMMANDS := 4000
 const MAX_LAYERS := 8
-const MAX_UNIFORMS := 16
 ## A text: the most characters, the most texts in a list, and the sizes of the font (pixels).
 const MAX_TEXT := 200
 const MAX_TEXTS := 200
 const MIN_FONT_SIZE := 6
 const MAX_FONT_SIZE := 64
-## Numbers beyond this (a place, a size, a uniform) are refused: far past anything on a 640 x 400 window, and nowhere near float limits.
+## Numbers beyond this (a place, a size) are refused: far past anything on a 640 x 400 window, and nowhere near float limits.
 const LIMIT := 100000.0
 const MAX_PATH := 96
-
-static var _uniform_name := RegEx.create_from_string("^[a-z_][a-z0-9_]{0,31}$")
 
 
 ## One layer of a list: the shader it is drawn through (a path the manifest lists, "" for none), its uniforms, its commands in the form `ModLayer` draws, and whether its shader is unusable (then nothing of it is drawn).
@@ -220,26 +217,12 @@ static func _layer(command: Array, assets: ModAssets) -> Layer:
 	if not layer.shader.is_empty() and (assets == null or not assets.shaders.has(layer.shader)):
 		return null
 	if command.size() == 3:
-		if not command[2] is Dictionary or (command[2] as Dictionary).size() > MAX_UNIFORMS:
+		if not command[2] is Dictionary:
 			return null
-		for key: Variant in command[2]:
-			var value: Variant = command[2][key]
-			if not key is String or _uniform_name.search(key) == null or not _uniform_value(value):
-				return null
-			layer.uniforms[key] = value
+		var declared: Variant = assets.declared.get(layer.shader, {}) if assets != null else {}     # (a layer with no shader has nothing to set)
+		if not ModShader.check_uniforms(command[2], declared, layer.uniforms).is_empty():
+			return null
 	return layer
-
-
-static func _uniform_value(value: Variant) -> bool:
-	if value is bool:
-		return true
-	if value is int or value is float:
-		return _number(value)
-	if value is Vector2:
-		return _point(value)
-	if value is Color:
-		return _color(value)
-	return false
 
 
 static func _number(value: Variant) -> bool:

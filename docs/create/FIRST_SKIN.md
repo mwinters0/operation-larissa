@@ -130,7 +130,7 @@ gave a name; `pictures` takes them as they stand.) While `hud_font` is set, the 
 ([`SKIN_API.md`](SKIN_API.md), "A skin with no script"): their pictures `ui_1190` to `ui_1203` matter when you take `hud_font` out.
 
 **Draw one.** Start with the bezel: open `godot/packs/reef/skin/ui_picture/ui_1189.png` in your editor and paint over it. Keep the file's name and its size. A picture of another size is
-drawn into the place the original's had (stretched to it, so a drawing at twice the size fills the same place); keep the proportions. Save as PNG, in the same place under the same name. Start the game again (step 2): the new bezel is there.
+drawn into the place the original's had (stretched to it, so a drawing at twice the size fills the same place); keep the proportions. The pack check (step 7) warns of a picture whose size is not the template's, so a stretched picture is not a surprise. Save as PNG, in the same place under the same name. Start the game again (step 2): the new bezel is there.
 
 **Keep only what you drew.** The example maps all 24 templates, so every picture you have not drawn yet shows its flat colour with its
 key on it. Open `pictures` and remove the keys you have not drawn: a picture the skin does not map is the original's. Add a key as

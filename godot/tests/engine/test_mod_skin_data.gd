@@ -191,7 +191,7 @@ func test_the_check_passes_a_sound_data_skin_and_names_what_is_wrong() -> void:
 	ModSkinShelf.add_files(sound)
 	var report := _report(sound)
 	assert_bool(report.passes()).override_failure_message(report.text()).is_true()
-	assert_array(report.warnings().filter(func(f: PackReport.Finding) -> bool: return f.area == "mod")).override_failure_message(report.text()).is_empty()
+	assert_array(report.warnings().filter(func(f: PackReport.Finding) -> bool: return f.area == "mod" and not f.message.contains("stretched"))).override_failure_message(report.text()).is_empty()      # (the fixture's one small picture stands in for six: see the next test)
 	var missing := PackShelf.new()                                                                       # (the manifest maps a file the pack does not hold)
 	_shelves.append(missing)
 	missing.add_mod_fixture(FIXTURE)
@@ -210,6 +210,25 @@ func test_the_check_passes_a_sound_data_skin_and_names_what_is_wrong() -> void:
 	var warned := _report(unnamed)
 	assert_bool(warned.passes()).is_true()
 	assert_bool(warned.warnings().any(func(f: PackReport.Finding) -> bool: return f.message.contains("ui_picture/no_such_picture") and f.message.contains("never asked for"))).override_failure_message(warned.text()).is_true()
+
+
+func test_the_check_warns_of_a_picture_that_is_not_the_size_of_the_one_it_replaces() -> void:
+	var odd := PackShelf.new()
+	_shelves.append(odd)
+	odd.add_mod_fixture(FIXTURE, {"skin": {"pictures": {KEY: FILE, "ui_picture/prompt_sender_ship": FILE}}})
+	ModSkinShelf.add_files(odd)                                                                          # (32x18 for the two pictures: 96x16 and 55x20 in the layouts)
+	var stretched := _report(odd).warnings().filter(func(f: PackReport.Finding) -> bool: return f.message.contains("stretched"))
+	assert_int(stretched.size()).is_equal(2)
+	assert_bool(stretched.any(func(f: PackReport.Finding) -> bool: return f.message.contains(KEY) and f.message.contains("32x18") and f.message.contains("96x16"))).is_true()
+	assert_bool(SkinTemplates.sizes().has("ui_picture/prompt_sender_ship")).is_true()                    # (the sizes are the templates')
+	var right := PackShelf.new()
+	_shelves.append(right)
+	right.add_mod_fixture(FIXTURE, {"skin": {"pictures": {KEY: FILE}}})
+	ModSkinShelf.add_files(right)
+	var size: Vector2i = SkinTemplates.sizes()[KEY]
+	right.add_picture(FILE, Color.CYAN, size)
+	var report := _report(right)
+	assert_bool(report.warnings().any(func(f: PackReport.Finding) -> bool: return f.message.contains("stretched"))).override_failure_message(report.text()).is_false()
 
 
 func test_the_check_says_what_is_wrong_with_a_font() -> void:
@@ -461,7 +480,7 @@ func test_a_layer_has_a_shader_and_the_values_of_its_uniforms() -> void:
 
 func test_every_mistake_in_a_layer_is_a_sentence() -> void:
 	var many := {}
-	for i in ModSpec.MAX_LAYER_UNIFORMS + 1:
+	for i in ModShader.MAX_UNIFORMS + 1:
 		many["u%d" % i] = 1.0
 	var bad := {
 		"layers not an object": [{"requires_api": 5, "skin": {"shaders": [SHADER], "layers": [SHADER]}}, "\"layers\" must be an object"],
@@ -477,8 +496,8 @@ func test_every_mistake_in_a_layer_is_a_sentence() -> void:
 		"a name with a space": [_layers({"background": {"shader": SHADER, "uniforms": {"two words": 1.0}}}), "uniform name"],
 		"a name starting with a digit": [_layers({"background": {"shader": SHADER, "uniforms": {"2d": 1.0}}}), "uniform name"],
 		"phase, which the game sets": [_layers({"background": {"shader": SHADER, "uniforms": {"phase": 1.0}}}), "the game sets it"],
-		"a number too large": [_layers({"background": {"shader": SHADER, "uniforms": {"glint": ModSpec.MAX_UNIFORM_VALUE + 1.0}}}), "\"glint\""],
-		"a number too small": [_layers({"background": {"shader": SHADER, "uniforms": {"glint": -ModSpec.MAX_UNIFORM_VALUE - 1.0}}}), "\"glint\""],
+		"a number too large": [_layers({"background": {"shader": SHADER, "uniforms": {"glint": ModShader.MAX_VALUE + 1.0}}}), "\"glint\""],
+		"a number too small": [_layers({"background": {"shader": SHADER, "uniforms": {"glint": -ModShader.MAX_VALUE - 1.0}}}), "\"glint\""],
 		"a vector with one number": [_layers({"background": {"shader": SHADER, "uniforms": {"size": [1.0]}}}), "\"size\""],
 		"a vector with five": [_layers({"background": {"shader": SHADER, "uniforms": {"size": [1.0, 2.0, 3.0, 4.0, 5.0]}}}), "\"size\""],
 		"a vector with a word": [_layers({"background": {"shader": SHADER, "uniforms": {"size": [1.0, "2"]}}}), "\"size\""],
@@ -541,7 +560,9 @@ func test_a_shader_declares_its_uniforms_in_its_text() -> void:
 	assert_str(ModShader.uniform_problem("sampler2D", 1.0)).contains("cannot set")
 	assert_str(ModShader.uniform_problem("int", 2.5)).contains("whole number")
 	assert_str(ModShader.uniform_problem("int", 2.0)).is_empty()
-	assert_int(ModShader.uniform_value("int", 2.0)).is_equal(2)
+	var values := {}
+	assert_array(ModShader.check_uniforms({"bands": 2.0}, {"bands": "int"}, values)).is_empty()
+	assert_int(values["bands"]).is_equal(2)
 	assert_str(ModShader.uniform_problem("bool", 1.0)).contains("true or false")
 	assert_str(ModShader.uniform_problem("vec3", Color.RED)).is_empty()
 	assert_str(ModShader.uniform_problem("vec2", Color.RED)).contains("2 numbers")
