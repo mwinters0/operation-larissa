@@ -69,8 +69,7 @@ manual writes `tools/godot.sh <arguments>`, Windows runs `uv run tools/godot.py 
    mise run legacy:import
    ```
 
-   The first time this runs it will need to download a 480 MB speech model, which is needed to convert some of the original
-   audio dialogue to text. Aside from the download, the actual import takes about 10 minutes.
+   It takes a minute or two. The voice transcripts are an optional extra step ("Voice transcripts").
 
 6. Build the game:
 
@@ -203,8 +202,8 @@ Then it makes the legacy pack's folder and its `pack.json` (below, "Where the le
 | `console` | The pack's `data/ui/` (HUD, calculator and story layouts); the menu layout is the project's `godot/data/ui/menu_layout.tres` (committed). |
 | `story` | The pack's `data/story/news_cartoon.tres`; the other cutscene timelines are the project's `godot/data/story/` (committed). |
 | `campaigns` | The pack's `data/campaigns/voyager.tres` and `expert.tres`. |
-| `transcripts` | Turns the 423 voice clips into text: see "Voice transcripts". Writes `extracted/sounds/voice_transcripts.json` and `voice_transcripts_machine.json`. |
-| `audio` | The 52 sound effects and 371 speech clips (`assets/audio/`), the music rendered from MIDI (both sets), the catalogs (`sfx_catalog`, `music_catalog`, `voice_index`, `voice_cues`), and a copy of the MIDI files in the pack's `midi/`. The speech text in `voice_index.tres` comes from the transcripts. |
+| `transcripts` | Optional: runs only with `--transcripts` or when `--only` names it. Turns the 423 voice clips into text: see "Voice transcripts". Writes `extracted/sounds/voice_transcripts.json` and `voice_transcripts_machine.json`. |
+| `audio` | The 52 sound effects and 371 speech clips (`assets/audio/`), the music rendered from MIDI (both sets), the catalogs (`sfx_catalog`, `music_catalog`, `voice_index`, `voice_cues`), and a copy of the MIDI files in the pack's `midi/`. The speech text in `voice_index.tres` comes from the transcripts, when that step has run; without it the clips have no text. |
 | `godot` | Always last. Has Godot import the project (below, "The Godot import"). Needs Godot. |
 
 Between the `audio` step and `godot`, the importer also removes asset files that an earlier run wrote under an old name
@@ -224,7 +223,7 @@ unchanged.
 ```
 uv run tools/import/import_all.py [--only STEPS] [--clean] [--validate]
                                   [--soundfont PATH] [--adlib-soundfont PATH]
-                                  [--compute-type int8|float32]
+                                  [--transcripts] [--compute-type int8|float32]
 ```
 
 | Option | What it does |
@@ -232,8 +231,9 @@ uv run tools/import/import_all.py [--only STEPS] [--clean] [--validate]
 | `--only a,b,c` | Runs only those steps, always in the order of the table above (the pipeline order), whatever order you write them in, because later steps read what earlier ones wrote. A step named twice runs once. An unknown name is an error. `godot` runs last. |
 | `--clean` | Before each selected step runs, deletes the files and folders that step owns (for example the `tiles` step's `assets/tiles/` in the legacy pack). `extract`, `tables`, `transcripts` and `godot` own nothing and are never cleaned. For `sectors` and `campaigns` it deletes only the original's files (`sector_00..31`, `voyager.tres`, `expert.tres`), never a sector or campaign of your own. |
 | `--validate` | After the run, cross-checks the generated tree and prints `validation OK`, or `VALIDATION FAILED:` with what is wrong. Needs no Godot. |
-| `--soundfont PATH` | General MIDI soundfont for the `E*.MID` songs. Default `/usr/share/soundfonts/FluidR3_GM.sf2`. |
+| `--soundfont PATH` | General MIDI soundfont for the `E*.MID` songs. Default `/usr/share/soundfonts/FluidR3_GM.sf2` (on Windows `soundfonts\FluidR3_GM.sf2`). |
 | `--adlib-soundfont PATH` | Soundfont for the AdLib `B*.MID` songs. Default `soundfonts/opl.sf2`; falls back to the General MIDI soundfont when that file is missing. |
+| `--transcripts` | Also runs the optional `transcripts` step ("Voice transcripts"). |
 | `--compute-type int8\|float32` | For the `transcripts` step. `int8` is the default; the environment variable `NEP_WHISPER_COMPUTE` does the same. |
 
 The importer returns 1 when the ISO is missing or is not the reference release, when a program a step needs is missing, or when a
@@ -261,8 +261,8 @@ Everything else is already made; run that command when Godot works.
 
 The importer is deterministic: the same ISO gives the same bytes. A second full run on the same ISO changes nothing: the
 importer only writes a file whose content differs, the summary line (`files written: N, unchanged: M`) counts the files that
-did, and `git status` stays clean. Do not run it just to check: it costs the full 10 minutes, because the transcripts are
-made again.
+did, and `git status` stays clean. Do not run it with `--transcripts` just to check: the transcripts are made again, which takes
+about 10 minutes.
 
 For a partial run, name the steps (`extract`, `tables`, `images`, `tiles`, `sprites`, `sectors`, `problems`, `console`, `story`,
 `campaigns`, `transcripts`, `audio`, `godot`). Examples:
@@ -290,9 +290,21 @@ After any partial run, let Godot import the changes: `tools/godot.sh --headless 
 
 ## Voice transcripts
 
-The `transcripts` step turns the 423 sound clips (371 speech, 52 effects) into text with a speech model (Whisper `small.en`,
-run by `faster-whisper`). The text is the game's speech, so it is not committed. It feeds the subtitles and the tests that check
-which clip says what. It takes most of the 10 minutes.
+The `transcripts` step is optional: nothing the game plays reads its text, and it needs a speech engine (`uv sync --group transcribe`)
+and a 480 MB model, so a run leaves it out unless you ask for it:
+
+```sh
+uv sync --group transcribe
+mise run legacy:import -- --transcripts          # or: uv run tools/import/import_all.py --only transcripts,audio
+```
+
+(`mise run setup` and a plain `uv sync` install only the default groups, so they take the speech engine out again.) Without the step the
+voice clips have no text: the sound test's list (`src/debug/sound_test.gd`) shows none, and the tests that compare clips with their words
+(`godot/tests/legacy/test_voice_cues_legacy.gd`, `tools/import/test_audio.py`) skip.
+
+The step turns the 423 sound clips (371 speech, 52 effects) into text with a speech model (Whisper `small.en`,
+run by `faster-whisper`). The text is the game's speech, so it is not committed. It feeds the sound test and the tests that check
+which clip says what. It takes about 10 minutes.
 
 **It is meant to give the same text on every machine.** Everything that could change it is pinned: the `faster-whisper` and
 `ctranslate2` versions (`uv.lock`), the model by Hugging Face revision, with the SHA-256 of every model file (the weights
@@ -608,8 +620,7 @@ that needs it and how to get it, and nothing was written. `uv run tools/import/t
   `GODOT_BIN` ([SETUP.md](../SETUP.md), "Godot").
 - `ffmpeg`, `fluidsynth` or `General MIDI soundfont (step audio)`: install the packages the line names ([SETUP.md](../SETUP.md)), or give `--soundfont` the path of another General MIDI `.sf2`. An `ffmpeg` without the libvorbis encoder is refused too.
 - `speech engine (step transcripts): faster-whisper is not installed ...`: run
-  `uv sync --group transcribe` (or a plain `uv sync`). To build everything but the speech text, leave the step out (`--only` with the
-  other steps); the `audio` step then has no transcripts to read, so this is only for a partial pack.
+  `uv sync --group transcribe`, or leave the step out (a run without `--transcripts` or `--only transcripts` does).
 
 **`!!! WARNING: not the version the project pins, tests and supports`**
 A program is there but at another version than the pinned one; the importer goes on. Nothing to do if you chose that version on
