@@ -32,7 +32,10 @@ static func for_trigger_slot(slot: int, level: int, rng: RandomNumberGenerator =
 	if not _has_problems(type_id, level):                       # that type is absent at this level (or from this chain): use the other one
 		type_id = table.type_for(slot, level, 1 - pick)
 	var instance := make(type_id, level, rng)
-	if instance != null:
+	if instance == null:
+		TroubleLog.session.tell("[problems] the trigger table (of the chain in use) names problem types %d and %d for slot %d at level %d, and the chain has no problem of either there; no problem opens" % [
+				table.type_for(slot, level, 0), table.type_for(slot, level, 1), slot, level])
+	else:
 		instance.trigger_slot = slot
 	return instance
 

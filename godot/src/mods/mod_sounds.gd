@@ -21,6 +21,9 @@ const PER_SECOND := 8.0
 var dropped := 0
 ## The sounds accepted so far on this screen.
 var accepted := 0
+## What the last `accept` left out, for the warning `ModDiagram` gives: the names that are no sound of the chain (as text), and whether sounds were left out for want of a token or for the limit of a call.
+var refused: Array[String] = []
+var too_many := false
 ## The time in milliseconds: the engine's by default, a test's own to make the bucket refill without waiting.
 var now: Callable = func() -> int: return Time.get_ticks_msec()
 
@@ -32,6 +35,8 @@ var _last := -1
 ## that is not an Array gives none.
 func accept(raw: Variant) -> Array[StringName]:
 	var heard: Array[StringName] = []
+	refused = []
+	too_many = false
 	if not raw is Array:
 		return heard
 	_refill()
@@ -39,10 +44,16 @@ func accept(raw: Variant) -> Array[StringName]:
 	for i in list.size():
 		if i >= MAX_PER_CALL:
 			dropped += list.size() - i
+			too_many = true
 			break
 		var name: Variant = list[i]
-		if not (name is String or name is StringName) or not NameRegistry.is_valid_name(String(name)) or _tokens < 1.0:
+		if not (name is String or name is StringName) or not NameRegistry.is_valid_name(String(name)):
 			dropped += 1
+			refused.append(str(name).left(48))
+			continue
+		if _tokens < 1.0:
+			dropped += 1
+			too_many = true
 			continue
 		_tokens -= 1.0                                           # (a made-up name costs a token too: the chain is asked for it only now)
 		if Catalog.sfx_catalog().can_play(StringName(name)):
@@ -50,6 +61,7 @@ func accept(raw: Variant) -> Array[StringName]:
 			accepted += 1
 		else:
 			dropped += 1
+			refused.append(String(name))
 	return heard
 
 

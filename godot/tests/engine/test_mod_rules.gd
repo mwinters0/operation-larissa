@@ -213,6 +213,10 @@ func test_a_campaign_that_does_not_declare_the_mod_never_reaches_it() -> void:
 	assert_int(int(_mod().call("times_asked"))).is_equal(0)                      # (no hook of it was called, by anything)
 	# the creature that would run the instruction is a creature with an unknown opcode, as in the original
 	assert_str(sim.foes[ModRuleShelf.CREATURE].vm.fault).contains("unknown opcode")
+	# and the player is told once, with the sector and the creature, however many ticks it takes
+	var told := sim.foe_context.trouble.told.filter(func(line: String) -> bool: return line.contains("foe %d" % ModRuleShelf.CREATURE))
+	assert_array(told).has_size(1)
+	assert_str(told[0]).starts_with("[creatures] sector %d: foe %d: unknown opcode" % [ModRuleShelf.BYSTANDER_SECTOR, ModRuleShelf.CREATURE]).contains("Mod_Instruction 0")
 	# and the answer to a problem of its type is the type's own
 	GameState.begin_run(ModRuleShelf.player(ModRuleShelf.BYSTANDER))
 	assert_object(GameState.hooks.judge_answer(ProblemFactory.make(TYPE, 0, null, 0), NumberValue.parse("6"))).is_null()
@@ -231,6 +235,10 @@ func test_a_declared_mod_that_is_not_there_is_recorded_and_the_run_plays_on_with
 		assert_bool(hooks.is_empty()).override_failure_message(name).is_true()
 		assert_array(hooks.declared).is_equal([cases[name][0]])
 		assert_str(hooks.unresolved.get(cases[name][0], "")).override_failure_message(name).contains(cases[name][1])
+		# the player is told once: the campaign, the mod, the reason, what plays instead
+		assert_array(hooks.trouble.told).override_failure_message(name).has_size(1)
+		assert_str(hooks.trouble.told[0]).override_failure_message(name).starts_with("[rules] campaign '%s' declares the mod '%s'" % [campaign.id, cases[name][0]]) \
+				.contains(cases[name][1]).contains("original's behaviour")
 	# a mod pack of the chain with no rule hooks (a plain mod) is no hook either
 	var plain := PackShelf.new(&"plain_mod_box", PACK)
 	plain.add_mod_fixture("res://tests/mods/hello")
@@ -239,6 +247,7 @@ func test_a_declared_mod_that_is_not_there_is_recorded_and_the_run_plays_on_with
 	var hooks2 := ModHooks.resolve(ModRuleShelf.campaign(&"x_plain", 194, [&"plain_mod_box"]))
 	assert_bool(hooks2.is_empty()).is_true()
 	assert_str(hooks2.unresolved[&"plain_mod_box"]).contains("no mod with rule hooks")
+	assert_array(hooks2.trouble.told).has_size(1)
 	plain.remove()
 	_shelf.mount()
 	Mods.sync()
@@ -259,6 +268,8 @@ func test_a_mod_that_loses_a_number_to_another_mod_is_told_so() -> void:
 	assert_bool(hooks.judges(TYPE)).is_true()
 	var notes: String = hooks.unresolved[&"rules_box_2"]
 	assert_str(notes).contains("problem type %d is judged by another mod" % TYPE).contains("instruction 0 is defined by another mod").contains("the sub ability is another mod's")
+	assert_array(hooks.trouble.told).has_size(1)                                 # (only the mod that lost something is told of, once)
+	assert_str(hooks.trouble.told[0]).contains("campaign 'x_two'").contains("'rules_box_2'").contains("does not run in full").contains(notes)
 	second.remove()
 	_shelf.mount()
 	Mods.sync()

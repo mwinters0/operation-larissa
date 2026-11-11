@@ -193,7 +193,7 @@ How a creator writes one is [`../create/CONTENT.md`](../create/CONTENT.md), "Rul
 
 * **One owner, one builder, once per run.** `GameState.hooks` is a `RuleHooks` (`src/core/rule_hooks.gd`, a plain object). `GameState.use_campaign_hooks(campaign)` makes it with `ModHooks.resolve` (`src/mods/mod_hooks.gd`):
   each pack the campaign names must be in the chain in use, be a mod with rule hooks and run (`ModHost.rule_mod`), and what its manifest lists is claimed in the table (the first mod to list an instruction number, a problem type or
-  the sub ability keeps it); a declared mod that is missing, was refused or lost a claim is recorded in `RuleHooks.unresolved` and the campaign plays on without that hook. `begin_run` calls it for the player's campaign (the
+  the sub ability keeps it); a declared mod that is missing, was refused or lost a claim is recorded in `RuleHooks.unresolved`, warned about once (`RuleHooks.trouble`, `[rules]`) and the campaign plays on without that hook. `begin_run` calls it for the player's campaign (the
   sign-in screen), `GameFlow.enter` for the campaign of a sector played in free play; Math Practice and the tools use none, and the empty table (`RuleHooks.none()`) is what every other run has. The table
   holds the nodes it resolved, so a mod unloaded later is a fault, never a call into something else.
 * **The rules hold the table, not the mods.** `RuleHooks` and `HookState` are in `src/core/` and name no node and no autoload (`test_rules_are_plain_objects`); the table's only way to a mod is one `Callable` that `ModHooks` sets over `ModLoader.call_mod`, which
@@ -591,7 +591,13 @@ Non-obvious choices that the code embodies; the original's side of each is in [`
 - **Contacts** are tested once per tick with inclusive edges; only the first touching hostile creature counts, and not again if it was
   the first last tick (`SimWorld`, `FoeModel.rects_touch`). A creature with damage 0 still runs its contact script (the finale's treasure
   sets flag bit 15 that way).
-- **`FoeVM`**: a creature faults and stands still after 512 instructions without a yield or on bad code; the game does not crash. All
+- **A pack's trouble is told once** (`src/core/trouble_log.gd`, `TroubleLog`). Wherever the game falls back because of what a pack, a campaign or a mod holds or lacks, it says so with `push_warning` and the system's prefix (`[rules]`, `[mods]`, `[creatures]`,
+  `[problems]`, `Packs:`), naming the pack, campaign, sector or creature and what the player sees instead, once for each cause and run, never per tick or frame. The warning goes through a `TroubleLog`, which keeps the lines it gave (`told`) so that a test can read them:
+  `RuleHooks.trouble` (a declared mod that does not resolve, `ModHooks.unresolved_line`; a judged type that takes no number), `FoeVM.Context.trouble` (a creature that faults, `FoeVM._tell_fault`; a `Mod_Instruction` no mod defines), and `TroubleLog.session`
+  (code with no owner of a run: what a mod's draw list has dropped or answered that is no list, `ModDraw.report`; the sounds a problem mod asked for that nothing plays; the file a mod loads that its pack lacks, `ModApi`; a type laid over by another pack,
+  `ModHost.problem_screen`; a trigger slot with no problem, `ProblemFactory.for_trigger_slot`), which every run (`GameState.begin_run`) starts over. `test_pack_trouble` pins the log and the lookups with no mod behind them; the other lines are pinned where the
+  system is tested. What is warned about already (a refused mod, a mod that faults or is quarantined, a file of a pack that does not read) is not told twice.
+- **`FoeVM`**: a creature faults and stands still after 512 instructions without a yield or on bad code, and says so in the log (`[creatures]`); the game does not crash. All
   creatures of a sector exist from load; only those on the shown screen run.
 - **Decorations**: bit 7 of a placement is the mirror; animated decorations store the original's 1-based frame lists 0-based and start at
   `start_cursor % frames.size()`.

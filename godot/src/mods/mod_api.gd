@@ -110,9 +110,13 @@ func _load(file: Variant, id: String) -> Resource:
 	var mod := _loader.get_mod(id)
 	var pack := Packs.pack(StringName(id))                   # (the chain's own pack of that id: the mod's)
 	if mod == null or pack == null or not file is String or not Pack.is_safe(file):
+		if mod != null and pack != null:
+			TroubleLog.session.tell("[mods] mod '%s' asks to load %s, which is no path inside its pack; the script gets null" % [id, str(file).left(64)])
 		return null
 	var made := pack.file(file)
-	if made != null:
+	if made == null:
+		TroubleLog.session.tell("[mods] mod '%s' asks to load '%s', which its pack does not hold or the engine cannot read (only .png, .ogg, .wav, fonts and .tres are loaded); the script gets null" % [id, file])
+	else:
 		_grant(mod, made)
 	return made
 

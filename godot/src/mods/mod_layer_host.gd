@@ -180,7 +180,10 @@ func show(fraction: float) -> void:
 			continue
 		var checked: Variant = answer["value"]
 		var drawn := _site.in_skin.call(func() -> ModDraw.Drawn: return ModDraw.validate(checked, pack, _skin.assets)) as ModDraw.Drawn      # (a picture named by key is the one this screen's skin shows)
-		if drawn != null:                          # (not a list: likewise)
+		if drawn == null:                          # (not a list: likewise)
+			ModDraw.report_not_a_list(_skin.pack_id, "skin", "the last picture it drew stays, and the original's layer shows if it drew none")
+		else:
+			ModDraw.report(drawn, _skin.pack_id, "skin")
 			slot.stack.set_phase(_site.phase.call(fraction))
 			slot.stack.show_drawn(drawn, _skin.assets)
 			slot.answered = true

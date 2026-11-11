@@ -50,6 +50,11 @@ read it only when you need the why.
   a cache) is made by one builder that reads every field from the owner's live state, and every path (first load, reload, respawn, a
   presenter bound mid-sector, a skin or pack change, a debug key, a test harness) calls that builder or the game's own entry point,
   never a subset of its steps. `docs/engine/ARCHITECTURE.md` ("Derived state is built from its owner") states the parts and the tests.
+- **A pack's trouble is never silent.** Wherever the game falls back because of what a pack holds or lacks (a declared mod that does
+  not resolve, a `Mod_Instruction` no mod defines, a creature that faults, a refused mod, a file or key a pack names that is not there),
+  it logs a warning that names the pack (or campaign, sector, creature) and says what the player will see instead, so a player can
+  tell why the game does not play as expected. One warning per cause and run, not per tick, through a `TroubleLog`; a test pins each
+  warning. `docs/engine/ARCHITECTURE.md` ("A pack's trouble is told once") states the mechanism.
 - **Code is teaching material.** A script starts with a header comment saying what it is and, for most files, a `## Teaches:` line
   (`docs/engine/TEACHING.md` indexes them); give a new file one.
 

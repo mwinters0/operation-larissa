@@ -71,7 +71,10 @@ var pc: int = 0
 var interrupted: bool = false
 ## Non-empty if the script did something impossible; the creature then freezes.
 var fault: String = ""
+## The sector the creature belongs to (its number, for the words of a warning); -1 for a VM made outside `from_data`.
+var sector_index: int = -1
 
+var _fault_told := false
 var _script: PackedByteArray
 var _base: int = 0                 ## buffer offset of _script[0]
 var _return_pc: int = 0            ## where RET goes when not interrupted (set by HANDLER)
@@ -101,6 +104,7 @@ class Context extends RefCounted:
 	const KEPT_FIELDS: Dictionary[StringName, String] = {
 		&"max_instructions": "configuration: the run's limit (`Tuning.max_instructions_per_tick`), handed over by the owner (`SimWorld.load_sector`)",
 		&"hooks": "configuration: the run's rule hooks (`RuleHooks`, null for none), handed over by the owner (`SimWorld.load_sector`); what they keep has lifetimes of its own",
+		&"trouble": "the warnings given for this context's creatures (a creature that faults, a `Mod_Instruction` no mod defines), each once for the life of the context, so a respawn does not say it again",
 	}
 
 	## The sub's SubX / SubY: window pixels of its picture's top-left corner.
@@ -119,6 +123,8 @@ class Context extends RefCounted:
 	var max_instructions: int = 0
 	## The run's rule hooks (`RuleHooks`): the creature instructions the campaign's mods define. Null (a tool, a test of the VM alone) or empty: `MOD_INSTRUCTION` is no opcode.
 	var hooks: RuleHooks = null
+	## The warnings about a pack's scripts given so far (`TroubleLog`).
+	var trouble := TroubleLog.new()
 
 	## Does a mod give `MOD_INSTRUCTION` a meaning in this run?
 	func runs_mod_instructions() -> bool:
@@ -160,6 +166,7 @@ static func from_data(data: FoeData, foe_index: int, sector: SectorData) -> FoeV
 	sector.ensure_compiled()
 	var vm := FoeVM.new()
 	vm.index = foe_index
+	vm.sector_index = sector.index
 	vm.setup(data, sector.foe_bytecode, sector.foe_script_base)
 	if not sector.compile_errors.is_empty():
 		vm.fault = "the script of %s did not compile (%d problems), first: %s" % [
@@ -186,6 +193,7 @@ func setup(data: FoeData, script: PackedByteArray, base: int) -> void:
 	_return_pc = data.pc
 	interrupted = false
 	fault = ""
+	_fault_told = false
 
 
 ## May this creature execute a script now? Dormant ones never do; others only while
@@ -219,11 +227,23 @@ func interrupt(entry: int) -> void:
 func tick(ctx: Context) -> void:
 	jumped = false
 	if not can_run(ctx.current_screen):
+		_tell_fault(ctx)
 		return
 	for _step in ctx.max_instructions:
 		if not _execute_one(ctx):
+			_tell_fault(ctx)
 			return
 	_fail("more than %d instructions without a YIELD (endless loop?)" % ctx.max_instructions)
+	_tell_fault(ctx)
+
+
+## A creature that has faulted stands still for good, which a player sees as a creature that does not do what the sector's script says: the fault is warned about once (a creature that was made with a fault, a script that did not compile, says so
+## in its first tick, on whatever screen it is, and the one line says it for every creature of the sector). Once per context as well: the respawn that makes the creature again says nothing new.
+func _tell_fault(ctx: Context) -> void:
+	if fault.is_empty() or _fault_told:
+		return
+	_fault_told = true
+	ctx.trouble.tell("[creatures] %s%s; the creature stays where it is and does nothing more (until the sector is loaded again)" % [_where(), fault])
 
 
 ## Executes the instruction at `pc`. Returns true to keep going, false when the
@@ -232,7 +252,7 @@ func _execute_one(ctx: Context) -> bool:
 	var at := pc
 	var opcode := _byte(at)
 	if not FoeOps.is_valid(opcode) or (opcode == FoeOps.Op.MOD_INSTRUCTION and not ctx.runs_mod_instructions()):
-		_fail("unknown opcode %d at %d" % [opcode, at])
+		_fail("unknown opcode %d at %d%s" % [opcode, at, _no_mod_instruction(opcode, at)])
 		return false
 	# `next` is the address right after this instruction's operand bytes. Jumps are
 	# measured from here, and so is the "skip the next instruction" of the IF_ ops.
@@ -352,9 +372,21 @@ func _if(ctx: Context, next: int, condition: bool) -> void:
 		return
 	var following := _byte(next)
 	if not FoeOps.is_valid(following) or (following == FoeOps.Op.MOD_INSTRUCTION and not ctx.runs_mod_instructions()):
-		_fail("unknown opcode %d after a condition at %d" % [following, next])
+		_fail("unknown opcode %d after a condition at %d%s" % [following, next, _no_mod_instruction(following, next)])
 		return
 	pc = next + 1 + FoeOps.OPERAND_COUNT[following]
+
+
+## "sector 7: " for a creature made from a sector's data, "" for one made by hand (a tool, a test).
+func _where() -> String:
+	return "sector %d: " % sector_index if sector_index >= 0 else ""
+
+
+## What a fault at `at` says more when the opcode is `Mod_Instruction` with no mod to give it a meaning: which number, and why it is unknown.
+func _no_mod_instruction(opcode: int, at: int) -> String:
+	if opcode != FoeOps.Op.MOD_INSTRUCTION:
+		return ""
+	return " (Mod_Instruction %d: no mod of this run defines creature instructions, so it is no instruction)" % _byte(at + 1)
 
 
 ## MOD_INSTRUCTION: the campaign's mod says what instruction `number` does with `value` (`RuleHooks.creature_instruction`: the effect is plain data the game has
@@ -363,6 +395,8 @@ func _if(ctx: Context, next: int, condition: bool) -> void:
 ## steps like `Move_Foe_Relative_XY`, which ends the turn), `end_turn` (ends the turn). Returns false when the creature's turn is over.
 func _mod_instruction(ctx: Context, next: int, number: int, value: int) -> bool:
 	if not ctx.hooks.has_instruction(number):
+		ctx.trouble.tell("[rules] %sfoe %d runs Mod_Instruction %d, which no mod of this run defines (campaign '%s'); the instruction does nothing and the script goes on" % [
+				_where(), index, number, ctx.hooks.campaign_id])
 		return true
 	var effect := ctx.hooks.creature_instruction(number, value, self, ctx)
 	if effect.has("condition"):

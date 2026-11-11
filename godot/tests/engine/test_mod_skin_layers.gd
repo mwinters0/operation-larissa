@@ -282,6 +282,26 @@ func test_a_layer_that_faults_is_the_originals_and_the_other_layers_of_the_scrip
 	Mods.loader().forgive(String(shelf.id))
 
 
+## A skin that draws what the game does not, and answers what is no list: the player is told once each (`ModDraw.report`), and the commands the game does draw are drawn.
+func test_a_skin_that_draws_what_the_game_does_not_is_warned_about_once() -> void:
+	var shelf := PackShelf.new()
+	_shelves.append(shelf)
+	shelf.add_mod_fixture("res://tests/mods/skin_layers")
+	ModSkinShelf.add_files(shelf)
+	shelf.write_text("skin_layers.sgd", "var api : Dictionary = {}\nfunc mod_init(granted : Dictionary) -> void:\n\tapi = granted\nfunc skin_layer(name : String, state : Dictionary, fraction : float, events : Array) -> Variant:\n\tif name == \"walls\":\n\t\treturn \"not a list\"\n\treturn [[\"picture\", \"skin/not_there.png\", Vector2(0, 0)], [\"rect\", Rect2(0, 0, 8, 8), Color.RED]]\n")
+	shelf.mount()
+	Mods.sync()
+	var presenter := _presenter(_sim(), SkinChoice.load_skin(shelf.id))
+	for i in 3:
+		presenter.show_between_ticks(0.5)
+	var told := TroubleLog.session.told.filter(func(line: String) -> bool: return line.contains("mod '%s'" % shelf.id))
+	assert_array(told).has_size(2)
+	assert_str(told[0]).starts_with("[mods] mod '%s': its skin draw list has commands the game does not draw, the first is picture \"skin/not_there.png\"" % shelf.id)
+	assert_str(told[1]).starts_with("[mods] mod '%s': its skin answered something that is not a list of draw commands" % shelf.id).contains("original's layer")
+	assert_array(presenter.mod_answered_layers()).is_equal([&"background", &"bubbles"])      # (the rectangle of each is drawn; the walls were never answered for)
+	Mods.loader().forgive(String(shelf.id))
+
+
 func test_a_quarantined_skin_leaves_every_layer_the_originals() -> void:
 	var shelf := PackShelf.new()
 	_shelves.append(shelf)

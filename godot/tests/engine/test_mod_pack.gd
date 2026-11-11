@@ -71,6 +71,13 @@ func test_a_mod_loads_a_file_of_its_own_pack_through_the_door() -> void:
 	assert_object(got).is_instanceof(Texture2D)
 	assert_object(got).is_same(shelf.pack.texture(DOT))                    # (the object the door made, not a second copy)
 	assert_object(mod.call("picture", "pictures/ui_picture/none.png")).is_null()
+	for i in 2:                                                              # (a file the pack lacks, and a path that is none: told once each)
+		mod.call("picture", "pictures/ui_picture/none.png")
+		mod.call("picture", "../outside.png")
+	var told := TroubleLog.session.told.filter(func(line: String) -> bool: return line.contains("mod '%s'" % shelf.id))
+	assert_array(told).has_size(2)
+	assert_str(told[0]).contains("asks to load 'pictures/ui_picture/none.png', which its pack does not hold")
+	assert_str(told[1]).contains("asks to load ../outside.png, which is no path inside its pack")
 
 
 func test_the_limits_of_a_manifest_are_clamped_to_the_ceilings() -> void:

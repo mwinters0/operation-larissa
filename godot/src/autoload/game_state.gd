@@ -129,6 +129,7 @@ func begin_sector() -> void:
 ## the game scene exists, so that the console of the new game reads no light, sector or piece count of the game before.
 func begin_run(player: PlayerProfile = null) -> void:
 	profile = player
+	TroubleLog.new_run()
 	tuning = Tuning.resolve()
 	use_campaign_hooks(player.campaign() if player != null else null)
 	oxygen_model = OxygenModel.new(tuning)

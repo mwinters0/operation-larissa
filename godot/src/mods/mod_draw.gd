@@ -2,7 +2,7 @@ class_name ModDraw
 extends RefCounted
 ## What a mod draws: a DRAW LIST the script returns (a skin from `skin_layer` or `skin_frame`, the screen of a problem type from `problem_frame`), which the game checks command by command and draws itself. The script holds no
 ## node, no texture, no material and no canvas: it returns an Array of Arrays (strings, numbers, places, colours, names of its own files), and `validate` makes of it what the game is willing to draw, dropping
-## every command that is not exactly one of those below. A dropped command costs nothing and is counted (`Drawn.dropped`); a list is cut at `MAX_COMMANDS`. ONE validator for every kind of mod: what differs
+## every command that is not exactly one of those below. A dropped command costs nothing and is counted (`Drawn.dropped`), and the first of them is warned about once per run (`report`: the mod, and the picture or shader it names); a list is cut at `MAX_COMMANDS`. ONE validator for every kind of mod: what differs
 ## between a skin and a problem screen is only where the pictures and shaders come from (`ModAssets`) and the canvas it is drawn on (`ModLayer`).
 ##
 ##     ["rect", Rect2 area, Color]                                       a filled rectangle
@@ -48,12 +48,13 @@ class Layer:
 	var blocked := false
 
 
-## A checked list: its layers and how many commands were dropped (malformed, over the caps, or in a blocked layer).
+## A checked list: its layers and how many commands were dropped (malformed, over the caps, or in a blocked layer), and the first of them in words (`first_dropped`, for the warning `report` gives).
 class Drawn:
 	extends RefCounted
 	var layers: Array[Layer] = []
 	var dropped := 0
 	var texts := 0
+	var first_dropped := ""
 
 
 ## The list `raw` (what the mod's function returned) as what the game draws, or null when `raw` is not even an Array. `pack` is the mod's own pack, `assets` the folder its pictures are in and the shaders it may name.
@@ -70,12 +71,12 @@ static func validate(raw: Variant, pack: Pack, assets: ModAssets) -> Drawn:
 	for i in count:
 		var command: Variant = list[i]
 		if not command is Array or (command as Array).is_empty() or not (command[0] is String or command[0] is StringName):
-			drawn.dropped += 1
+			_drop(drawn, command)
 			continue
 		if String(command[0]) == "layer":
 			var next := _layer(command, assets)
 			if next == null or drawn.layers.size() >= MAX_LAYERS:
-				drawn.dropped += 1
+				_drop(drawn, command)
 				layer = Layer.new()
 				layer.blocked = true                       # (what follows a layer that was refused is not drawn at all)
 			else:
@@ -89,10 +90,44 @@ static func validate(raw: Variant, pack: Pack, assets: ModAssets) -> Drawn:
 			else:
 				drawn.texts += 1
 		if made == null:
-			drawn.dropped += 1
+			_drop(drawn, command)
 		else:
 			layer.commands.append(made)
+	if drawn.first_dropped.is_empty() and drawn.dropped > 0:
+		drawn.first_dropped = "an entry past the %d the game reads" % MAX_COMMANDS
 	return drawn
+
+
+## Counts a dropped command and keeps the first one's words.
+static func _drop(drawn: Drawn, command: Variant) -> void:
+	drawn.dropped += 1
+	if drawn.first_dropped.is_empty():
+		drawn.first_dropped = _words_of(command)
+
+
+## A command that was dropped, for a warning: its name, and the name of the picture or shader it asks for (the usual cause), never its numbers (the warning must be the same every frame).
+static func _words_of(command: Variant) -> String:
+	if not command is Array or (command as Array).is_empty() or not (command[0] is String or command[0] is StringName):
+		return "an entry that is no command"
+	var op := String(command[0])
+	if (op == "picture" or op == "region" or op == "layer") and (command as Array).size() > 1 and command[1] is String:
+		return "%s \"%s\"" % [op, (command[1] as String).left(MAX_PATH)]
+	if OPS.has(op):
+		return "a \"%s\" with values the game does not accept" % op
+	return "a command named \"%s\", which the game does not know" % op.left(16)
+
+
+## Tells the player, once per run, that the mod `pack_id` drew less than its list says (`what`: "skin" or "problem screen"): `drawn` dropped commands. The first is named, with the reason the usual causes give. A list the game cut short is told as well.
+static func report(drawn: Drawn, pack_id: StringName, what: String) -> void:
+	if drawn == null or drawn.dropped == 0:
+		return
+	TroubleLog.session.tell("[mods] mod '%s': its %s draw list has commands the game does not draw, the first is %s; commands like that are left out (a name its pack does not hold, a shader its manifest does not list, a value out of range, or more than the limits allow) and the rest is drawn" % [
+			pack_id, what, drawn.first_dropped])
+
+
+## Tells the player, once per run, that the mod `pack_id` answered something that is no draw list (`what`: "skin" or "problem screen"), and what shows instead (`instead`).
+static func report_not_a_list(pack_id: StringName, what: String, instead: String) -> void:
+	TroubleLog.session.tell("[mods] mod '%s': its %s answered something that is not a list of draw commands; %s" % [pack_id, what, instead])
 
 
 ## Does `drawn` show nothing at all? (Every layer without a command.)

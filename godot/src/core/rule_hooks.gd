@@ -71,6 +71,7 @@ const KEPT_FIELDS: Dictionary[StringName, String] = {
 	&"calls": "a counter over the life of the table, for whoever watches (a run of an original campaign: 0)",
 	&"fault_log": "a bounded diary of the faults of the run, for whoever watches",
 	&"_reported": "the mods already warned about in this run (one warning each)",
+	&"trouble": "the warnings of the run about what a pack holds or lacks (a declared mod that does not resolve), each given once, by the resolver",
 }
 
 ## The campaign and the mod packs it declares, and those of them that do not run (id -> why).
@@ -82,6 +83,8 @@ var verify_pure := false
 ## How many calls were made into mods, and the faults that were recorded.
 var calls := 0
 var fault_log: Array[String] = []
+## The warnings the resolver gave for this run (`ModHooks.resolve`: a declared mod that is not there, or lost a number) and `FoeVM` gives for its `Mod_Instruction` that no mod defines; `TroubleLog.told` is what a test reads.
+var trouble := TroubleLog.new()
 
 var _instructions: Dictionary = {}
 var _judges: Dictionary = {}
@@ -199,7 +202,12 @@ func is_switched_off(mod_id: StringName) -> bool:
 ## The verdict of the mod on `typed` for `problem`: true or false, or null when the mod has no say (no mod judges the type, the input is not a number) or its hook faulted: the game then judges as the type's data says.
 func judge_answer(problem: ProblemInstance, typed: Variant) -> Variant:
 	var mod_id: Variant = _judges.get(problem.type.id)
-	if mod_id == null or problem.input_kind != ProblemInstance.InputKind.NUMBER or not typed is NumberValue:
+	if mod_id == null:
+		return null
+	if problem.input_kind != ProblemInstance.InputKind.NUMBER:
+		trouble.tell("[rules] mod '%s' judges problem type %d, but that type is not answered with a number (it takes the player's own panel); the type's own data judges it" % [mod_id, problem.type.id])
+		return null
+	if not typed is NumberValue:
 		return null
 	var answer := _ask(mod_id, FUNCTION_JUDGE, HookState.answer(problem, typed), false)
 	if not answer["ok"]:

@@ -2,7 +2,7 @@ class_name ModHooks
 extends RefCounted
 ## Resolves the mods a campaign declares into the `RuleHooks` table of a run: the ONE builder, called once by `GameState.begin_run`. The campaign names mod packs by pack id (`Campaign.mods`); each must be a pack of the chain in
 ## use whose manifest has `rules` and whose mod runs (`ModHost.rule_mod`), and what its manifest lists (`ModSpec.rule_answers`, `rule_instructions`, `rule_sub`) is claimed in the table, the first mod of the list keeping a number or a
-## type another also lists. A declared mod that is not there, was refused, has no rule hooks or lost a number to another is recorded in `RuleHooks.unresolved` with the reason (the table has no hook of it), never an error: the
+## type another also lists. A declared mod that is not there, was refused, has no rule hooks or lost a number to another is recorded in `RuleHooks.unresolved` with the reason (the table has no hook of it) and warned about once (`RuleHooks.trouble`, `[rules]`: the campaign, the mod, the reason, what plays instead), never an error: the
 ## campaign plays on, with the original's behaviour wherever a hook is missing. A mod of the chain that no campaign declares is never reached: the table holds only what was resolved here. A campaign that declares none, free play and
 ## every tool get the empty table without asking the mods anything.
 ##
@@ -26,8 +26,16 @@ static func resolve(campaign: Campaign) -> RuleHooks:
 		var notes := _claim(hooks, id, nodes)
 		if not notes.is_empty():
 			hooks.unresolved[id] = "; ".join(notes)
+			hooks.trouble.tell(unresolved_line(campaign.id, id, hooks.unresolved[id], nodes.has(id)))
 	hooks.set_caller(func(mod_id: StringName, function: String, state: Dictionary) -> Dictionary: return ModLoader.call_mod(nodes.get(mod_id), function, [state]))
 	return hooks
+
+
+## The warning for a declared mod that did not resolve (`why`: `unresolved[id]`): the campaign, the mod, the reason and what plays instead. `partly`: the mod runs, but lost a number or a type to another mod.
+static func unresolved_line(campaign_id: StringName, id: StringName, why: String, partly: bool) -> String:
+	var instead := "what the mod would have done at that hook is the original's behaviour (an instruction does nothing, a problem is judged by its own data, the sub has no ability)" if partly \
+			else "none of its rule hooks run, so every hook it would have answered has the original's behaviour (a Mod_Instruction faults its creature or does nothing, a problem is judged by its own data, the sub has no ability)"
+	return "[rules] campaign '%s' declares the mod '%s', which %s: %s; %s" % [campaign_id, id, "does not run in full" if partly else "does not run", why, instead]
 
 
 ## Claims what the mod `id` lists in `hooks` and puts its node in `nodes`; returns why it could not (all of it, or a number or type that another mod has).

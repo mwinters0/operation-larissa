@@ -385,6 +385,72 @@ func test_without_a_mod_the_instruction_is_an_unknown_opcode_as_for_any_byte() -
 	assert_str(vm3.fault).contains("after a condition")
 
 
+## The player is told, once, about every way a pack's creature stops or a mod's instruction is missing (`TroubleLog`; the warning is `push_warning`, which a test reads through `told`).
+func test_a_creature_that_faults_is_warned_about_once() -> void:
+	var ctx := _ctx(null)
+	var vm := _vm([Op.MOD_INSTRUCTION, 5, 0, Op.YIELD])
+	vm.index = 2
+	vm.sector_index = 77
+	for tick in 5:
+		vm.tick(ctx)
+	assert_array(ctx.trouble.told).has_size(1)
+	assert_str(ctx.trouble.told[0]).starts_with("[creatures] sector 77: foe 2: unknown opcode %d at 0" % Op.MOD_INSTRUCTION) \
+			.contains("Mod_Instruction 5").contains("no mod of this run defines creature instructions").contains("stays where it is")
+	# the same cause met again by a creature made again (a respawn) says nothing new; another creature says its own
+	var again := _vm([Op.MOD_INSTRUCTION, 5, 0, Op.YIELD])
+	again.index = 2
+	again.sector_index = 77
+	again.tick(ctx)
+	assert_array(ctx.trouble.told).has_size(1)
+	var other := _vm([Op.IF_SEM, 0, Op.MOD_INSTRUCTION, 6, 0, Op.YIELD])
+	other.index = 3
+	other.sector_index = 77
+	other.tick(ctx)
+	assert_array(ctx.trouble.told).has_size(2)
+	assert_str(ctx.trouble.told[1]).contains("sector 77: foe 3: unknown opcode").contains("after a condition").contains("Mod_Instruction 6")
+	# any other fault is told as well: the script reads outside itself
+	var lost := _vm([Op.JMP, 100, 0])
+	lost.index = 4
+	lost.sector_index = 77
+	lost.tick(ctx)
+	assert_array(ctx.trouble.told).has_size(3)
+	assert_str(ctx.trouble.told[2]).contains("foe 4: script read outside the buffer")
+
+
+## A creature made with a fault (the sector's script did not compile) is told of in its first tick, on whatever screen it is, in ONE line for the sector.
+func test_a_script_that_did_not_compile_is_warned_about_once_for_the_sector() -> void:
+	var ctx := _ctx(null)
+	for index in 3:
+		var vm := _vm([Op.YIELD])
+		vm.index = index
+		vm.sector_index = 12
+		vm.fault = "the script of SectorData x (sector 12) did not compile (1 problems), first: line 3"
+		vm.screen = 9                                                           # (not the shown screen)
+		vm.tick(ctx)
+	assert_array(ctx.trouble.told).has_size(1)
+	assert_str(ctx.trouble.told[0]).starts_with("[creatures] sector 12: the script of SectorData x (sector 12) did not compile").contains("does nothing")
+
+
+func test_a_mod_instruction_no_mod_defines_is_warned_about_once() -> void:
+	var hooks := _table(func(_f: String, _s: Dictionary) -> Dictionary: return _ok({}))
+	hooks.campaign_id = &"the_campaign"
+	var ctx := _ctx(hooks)
+	var vm := _vm([Op.MOD_INSTRUCTION, 5, 0, Op.YIELD])
+	vm.index = 1
+	vm.sector_index = 40
+	for tick in 4:
+		hooks.begin_tick()
+		vm.pc = 0
+		vm.tick(ctx)
+	assert_str(vm.fault).is_empty()                                             # (it does nothing, as the table says)
+	assert_array(ctx.trouble.told).has_size(1)
+	assert_str(ctx.trouble.told[0]).is_equal("[rules] sector 40: foe 1 runs Mod_Instruction 5, which no mod of this run defines (campaign 'the_campaign'); the instruction does nothing and the script goes on")
+	# a number the mod defines says nothing
+	vm = _vm([Op.MOD_INSTRUCTION, 0, 0, Op.YIELD])
+	vm.tick(ctx)
+	assert_array(ctx.trouble.told).has_size(1)
+
+
 func test_the_instruction_applies_what_the_game_accepted() -> void:
 	var cases := {
 		"flags": [{"set_flags": 0b110, "clear_flags": 0b010}, 0b001, 0b101],

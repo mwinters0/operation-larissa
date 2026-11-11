@@ -641,6 +641,33 @@ func test_a_hostile_problem_mod_that_draws_garbage_has_only_the_good_commands_dr
 	Mods.loader().forgive(String(shelf.id))
 
 
+## The player is told what the game leaves out (`ModDraw.report`: once per run, whatever the number of frames), and why the plain picture shows where a mod's type is shadowed.
+func test_a_problem_mod_that_draws_what_the_game_does_not_is_warned_about_once() -> void:
+	var shelf := _mount(["tides_hostile"] as Array[String])
+	var screen := _screen()
+	for i in 3:
+		(screen.diagram as ModDiagram).entry_changed(str(i))
+	var lines := TroubleLog.session.told.filter(func(line: String) -> bool: return line.contains("mod '%s'" % shelf.id) and line.contains("draw list"))
+	assert_array(lines).has_size(1)
+	assert_str(lines[0]).starts_with("[mods] mod '%s': its problem screen draw list has commands the game does not draw, the first is a command named \"answer\"" % shelf.id).contains("the rest is drawn")
+	screen.free()
+	Mods.loader().forgive(String(shelf.id))
+
+
+func test_a_mod_whose_type_is_laid_over_by_another_pack_is_told_so() -> void:
+	var tides := _mount(["tides"] as Array[String])
+	var over := PackShelf.new(&"", tides.id)
+	_shelves.append(over)
+	over.write_json("data/problems/problem_type_%02d.json" % TYPE, ResourceJson.new().data_of(ModProblemShelf.problem_type()))
+	over.mount()
+	Mods.sync()
+	assert_object(ModHost.problem_screen(TYPE)).override_failure_message("the data of the type is another pack's: nobody draws it").is_null()
+	assert_object(ModHost.problem_screen(TYPE)).is_null()
+	var lines := TroubleLog.session.told.filter(func(line: String) -> bool: return line.contains("mod '%s' draws problem type %d" % [tides.id, TYPE]))
+	assert_array(lines).has_size(1)
+	assert_str(lines[0]).contains("the pack '%s', laid over it, holds the data of the type" % over.id).contains("plain picture")
+
+
 # --- refusals ----------------------------------------------------------------------------------------------------------------
 
 ## A scratch pack of the fixture `tides` whose problem type 40 is `type` (null: no type file) and whose script is `script` (null: the fixture's).

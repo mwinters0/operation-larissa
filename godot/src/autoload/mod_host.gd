@@ -199,11 +199,21 @@ static func problem_screen(type_id: int) -> ModProblems:
 		var holder := Packs.holder(Catalog.problem_type_rel(type_id))
 		if holder != null:
 			candidates.append(holder)
+		_instance._tell_shadowed_type(type_id, holder)
 	for each in candidates:
 		var parts: ModParts = _instance._parts.get(String(each.id))
 		if parts != null and parts.screens != null and parts.screens.types.has(type_id) and not _instance._loader.is_quarantined(String(each.id)):
 			return parts.screens
 	return null
+
+
+## A running mod that lists problem type `type_id` (a type a pack adds) while the data of the type comes from another pack `holder` of the chain (one laid over the mod's): the mod draws nothing of it and the plain picture shows. Told once per run.
+func _tell_shadowed_type(type_id: int, holder: Pack) -> void:
+	for id: String in _parts:
+		var parts: ModParts = _parts[id]
+		if parts.screens != null and parts.screens.types.has(type_id) and (holder == null or String(holder.id) != id):
+			TroubleLog.session.tell("[mods] mod '%s' draws problem type %d, but %s; the type shows the plain picture its data describes" % [
+					id, type_id, "no pack of the chain holds the type" if holder == null else "the pack '%s', laid over it, holds the data of the type" % holder.id])
 
 
 ## The node of the running mod `id` whose manifest has `rules`, or null (it is not in the chain, was refused, or has no rule hooks): what a campaign's run resolves its declared mods with (`ModHooks.resolve`).

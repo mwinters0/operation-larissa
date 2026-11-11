@@ -128,12 +128,30 @@ func _refresh(with_events := false) -> void:
 		var parts: Dictionary = value
 		if parts.has("draw"):
 			_answer = parts["draw"]
+			_check_answer(screens)
 		if is_inside_tree():                              # (the call that builds the screen has nobody to hear it: a sound is for the frames after, the `started` event)
 			for sound in _sounds.accept(parts.get("sounds")):
 				sfx_requested.emit(sound)
+			_tell_refused_sounds(screens)
 	else:
 		_answer = value
+		_check_answer(screens)
 	_show_answer(screens)
+
+
+## The sounds the script asked for that the game does not play are warned about once per run: a name no pack of the chain holds, and too many at once.
+func _tell_refused_sounds(screens: ModProblems) -> void:
+	for refused in _sounds.refused:
+		TroubleLog.session.tell("[mods] mod '%s': its problem screen asks for the sound '%s', which is no sound of the chain (an original effect by its name, or an audio/sound/<name>.ogg of a pack); it is not played" % [screens.pack_id, refused])
+	if _sounds.too_many:
+		TroubleLog.session.tell("[mods] mod '%s': its problem screen asks for more sounds than the game plays (at most %d in a call, %d in a burst, then %d a second); the rest are not played" % [
+				screens.pack_id, ModSounds.MAX_PER_CALL, ModSounds.BURST, int(ModSounds.PER_SECOND)])
+
+
+## An answer of the script that is no list is warned about once (`ModDraw.report_not_a_list`); the game leaves what is on.
+func _check_answer(screens: ModProblems) -> void:
+	if not _answer is Array:
+		ModDraw.report_not_a_list(screens.pack_id, "problem screen", "what it drew last stays, and the type's own picture shows if it drew none")
 
 
 ## Where the animation is, for a script that is told (`ProblemState.clock`): the plain diagram's, which the step machine's ticks drive; the idle clock for one that is not.
@@ -188,6 +206,7 @@ func _attempt() -> int:
 func _show_answer(screens: ModProblems) -> void:
 	var drawn := ModDraw.validate(_answer, Packs.pack(screens.pack_id), screens.assets)
 	if drawn != null:
+		ModDraw.report(drawn, screens.pack_id, "problem screen")
 		_showing_mod = true
 		_plain.visible = false
 		_stack.set_phase(float(maxi(_told_tick, 0)))              # (the tick of the animation the script was told: the game clock is held while a problem is up, so the sector's phase, `GameClock.tick_count`, would stand still here; drawn when something changes, not every frame: a shader that moves by itself uses `TIME`)

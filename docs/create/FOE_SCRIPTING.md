@@ -115,7 +115,8 @@ The game runs the foes once per game tick, in list order (foe 0 first). For each
 A **fault** stops the foe for good: it never runs again and stays where it is. The faults the VM
 can raise are: an unknown opcode, reading outside the script, more than 512 instructions in a
 tick, `Put_Foe_To_Sleep` / `Wake_Foe` naming a creature that does not exist, and an `If_`
-instruction followed by an unknown opcode. (`Mod_Instruction` is an unknown opcode where no mod gives it a meaning.) (A sector whose script text does not compile, section 2,
+instruction followed by an unknown opcode. (`Mod_Instruction` is an unknown opcode where no mod gives it a meaning.) Every creature that faults is written to the log, once for each cause and run: `[creatures] sector 7: foe 2: unknown opcode 31 at 12; the creature
+stays where it is and does nothing more (until the sector is loaded again)` (a sector whose script does not compile says it once for the sector, not for each of its foes). (A sector whose script text does not compile, section 2,
 gives *every* foe of that sector a fault, so nothing runs on garbage.) The fault text is kept in `FoeVM.fault`. The foe
 sandbox shows it. A correct script never faults, and `test_foe_vm_real_data.gd` checks that the
 scripts of the chain's sectors do not.
@@ -711,8 +712,8 @@ The port's own instruction; the original has none, and **only a campaign that de
 instruction of the campaign's mods this is. `value`: 0 to 255, the operand the mod is given. The game asks the mod, with the number, the value and a snapshot of the creature, the sub and the flags,
 what to do, and does only what it answers, held to the limits listed there: skip the next instruction like an `If_` (so it can be used as a condition), raise or lower flags, show a picture, move the creature
 (which ends the tick like `Move_Foe_Relative_XY`) or end the tick. A number no mod of the campaign defines does nothing, and so does a call that failed (a mod that raised, ran too long or answered
-something the game does not accept). Everywhere else, in a sector of a campaign that declares no such mod and in the original's, a foe that reaches it faults as for an unknown opcode, which is
-also what a foe does when an `If_` is followed by it. The assembler, the disassembler and the editor know it in every sector.
+something the game does not accept); the first is written to the log, once for each sector, creature and number (`[rules] sector 7: foe 2 runs Mod_Instruction 5, which no mod of this run defines ...`), the second is a fault of the mod (`[rules] mod ... faulted`, once per mod). Everywhere else, in a sector of a campaign that declares no such mod and in the original's, a foe that reaches it faults as for an unknown opcode, which is
+also what a foe does when an `If_` is followed by it (the log says which `Mod_Instruction` and that no mod of the run defines instructions: `[creatures] ...`). The assembler, the disassembler and the editor know it in every sector.
 
 ### How the `If_` instructions work
 An `If_` instruction never jumps. If its condition is **true**, the script just carries on with
