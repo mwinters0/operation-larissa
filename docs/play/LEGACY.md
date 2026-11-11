@@ -228,7 +228,7 @@ uv run tools/import/import_all.py [--only STEPS] [--clean] [--validate]
 | `--only a,b,c` | Runs only those steps, always in the order of the table above (the pipeline order), whatever order you write them in, because later steps read what earlier ones wrote. A step named twice runs once. An unknown name is an error. `godot` runs last. |
 | `--clean` | Before each selected step runs, deletes the files and folders that step owns (for example the `tiles` step's `assets/tiles/` in the legacy pack). `extract`, `tables`, `transcripts` and `godot` own nothing and are never cleaned. For `sectors` and `campaigns` it deletes only the original's files (`sector_00..31`, `voyager.tres`, `expert.tres`), never a sector or campaign of your own. |
 | `--validate` | After the run, cross-checks the generated tree and prints `validation OK`, or `VALIDATION FAILED:` with what is wrong. Needs no Godot. |
-| `--soundfont PATH` | General MIDI soundfont for the `E*.MID` songs. Default `/usr/share/soundfonts/FluidR3_GM.sf2`. |
+| `--soundfont PATH` | General MIDI soundfont for the `E*.MID` songs. Default `/usr/share/soundfonts/FluidR3_GM.sf2` (on Windows `soundfonts\FluidR3_GM.sf2`). |
 | `--adlib-soundfont PATH` | Soundfont for the AdLib `B*.MID` songs. Default `soundfonts/opl.sf2`; falls back to the General MIDI soundfont when that file is missing. |
 | `--no-transcripts` | Leaves out the `transcripts` step: no speech engine needed, no model download, and the run takes a minute or two instead of about 10. The voice clips then have no text ("Voice transcripts"). |
 | `--compute-type int8\|float32` | For the `transcripts` step. `int8` is the default; the environment variable `NEP_WHISPER_COMPUTE` does the same. |

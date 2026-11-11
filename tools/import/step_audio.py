@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -16,7 +17,9 @@ from common import ASSETS, MIDI, PACK_DATA, DOCS_DATA, EXTRACTED, ROOT, load_jso
 import tres
 
 SCRIPTS = "res://src/resources/"
-DEFAULT_SOUNDFONT = "/usr/share/soundfonts/FluidR3_GM.sf2"
+# The General MIDI soundfont: where Fedora's fluid-soundfont-gm puts it; on Windows, which has no such package, in the git-ignored
+# soundfonts/ folder of the repository, where tools/fetch_soundfont.py puts it (docs/SETUP.md, "On Windows").
+DEFAULT_SOUNDFONT = str(ROOT / "soundfonts" / "FluidR3_GM.sf2") if os.name == "nt" else "/usr/share/soundfonts/FluidR3_GM.sf2"
 ADLIB_SOUNDFONT = str(ROOT / "soundfonts" / "opl.sf2")   # optional; not in the repository (135 MB)
 # The friendly names of the effects are not written here: `SfxCatalog` asks the name registry (godot/names/original.json).
 

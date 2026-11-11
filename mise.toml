@@ -17,6 +17,8 @@ java = "temurin-25"
 [tasks.setup]
 description = "Create or refresh the Python environment (.venv) from pyproject.toml and uv.lock, and fetch the godot-sandbox extension (mod packs)"
 run = ["uv sync", "uv run tools/fetch_sandbox.py"]
+# Windows has no package for the General MIDI soundfont, so setup fetches it there (docs/SETUP.md, "On Windows").
+run_windows = ["uv sync", "uv run tools/fetch_sandbox.py", "uv run tools/fetch_soundfont.py"]
 
 [tasks."sandbox:fetch"]
 description = "Fetch the pinned godot-sandbox extension into godot/addons/godot_sandbox (git-ignored); --force fetches again"
