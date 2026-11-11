@@ -84,8 +84,12 @@ func test_the_keys_are_keys_a_skin_may_name_and_the_game_asks_for() -> void:
 		if entry.key.begins_with(SkinTemplates.LAYER_KIND + "/"):
 			assert_bool(SkinLayers.is_hud_layer(StringName(entry.key.get_slice("/", 1)))).is_true()
 			continue
-		assert_bool(ModSpec.is_picture_key(entry.key)).is_true()
-		assert_bool(NameRegistry.original().index_of(&"ui_picture", entry.key.get_slice("/", 1)) >= 0).is_true()
+		if entry.key == "%s/%s" % [SkinTemplates.PROBLEM_LAYER_KIND, SkinTemplates.PROBLEM_WINDOW]:
+			continue
+		var kind := entry.key.get_slice("/", 0)
+		assert_bool(ModSpec.is_picture_key(entry.key) if kind == "ui_picture" else ModSpec.is_drawable_key(entry.key)).is_true()
+		assert_bool(kind == "ui_picture" or kind == "problem_art").override_failure_message(entry.key).is_true()
+		assert_bool(NameRegistry.original().index_of(StringName(kind), entry.key.get_slice("/", 1)) >= 0).is_true()
 		assert_bool(seen.has(entry.key)).is_false()
 		seen[entry.key] = true
 		assert_bool(entry.size.x > 0 and entry.size.y > 0).is_true()
@@ -100,6 +104,23 @@ func test_the_sizes_of_the_label_boxes_are_the_layouts() -> void:
 	for texture in _layout.sector_textures:
 		assert_object(sizes[_key_of(texture)]).is_equal(_layout.sector_size)
 	assert_object(sizes[_key_of(_layout.custom_texture)]).is_equal(_layout.custom_size)
+
+
+func test_the_frame_and_the_panels_of_the_problem_screen_have_entries_at_the_layouts_sizes() -> void:
+	var screen := Catalog.pack_resource("data/problems/screen_layout.tres") as ProblemScreenLayout
+	var calculator := Catalog.pack_resource("data/ui/calculator_layout.tres") as CalculatorLayout
+	var sizes := {}
+	for entry in SkinTemplates.entries():
+		sizes[entry.key] = entry.size
+	assert_object(sizes[_key_of(screen.background)]).is_equal(Vector2i(screen.background.get_size()))
+	assert_object(sizes[_key_of(calculator.picture)]).is_equal(calculator.picture_size)
+	assert_object(sizes[_key_of(calculator.answer_panel)]).is_equal(calculator.answer_size)
+	assert_bool(_key_of(screen.background).begins_with("problem_art/")).is_true()
+	assert_object(sizes["problem_layer/window"]).is_equal(ProblemState.WINDOW_SIZE)
+	var written := SkinTemplates.write(OUT)
+	assert_bool(written.has("%s/problem_layer/window.png" % OUT)).is_true()
+	assert_bool(written.has("%s/%s.png" % [OUT, _key_of(screen.background)])).is_true()
+	assert_object(_read("%s/problem_layer/window.png" % OUT).get_size()).is_equal(Vector2i(640, 400))
 
 
 # --- the pictures ------------------------------------------------------------------------------------------------------------

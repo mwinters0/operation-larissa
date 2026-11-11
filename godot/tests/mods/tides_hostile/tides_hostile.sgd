@@ -1,11 +1,42 @@
 # A hostile problem-screen mod. Every try_* attempts something a mod that draws a problem must not do (a refused call raises, which the game counts); every bad_* returns a draw list full of what the game must drop; the
 # plain problem_frame draws a good rectangle and then CLAIMS to have judged the answer, in every way a list could: the game draws none of the claims, and what it draws changes no answer.
+#
+# From API version 11 it can also FLOOD the sounds: once the test calls `flood_on()` every answer carries a hundred names, some of them sounds of the game, some made up, some not names at all, some far too long, some that try to reach
+# a file of the game, beside the claims above. Until then it is silent, so the plays of a problem are the same under it as under no mod (`return` is the same list as before).
 var api : Dictionary = {}
+var flooding := false
+var calls := 0
 
 func mod_init(granted : Dictionary) -> void:
 	api = granted
 
-func problem_frame(state : Dictionary, events : Array) -> Array:
+func flood_on() -> void:
+	flooding = true
+
+func calls_made() -> int:
+	return calls
+
+func the_flood() -> Array:
+	var names := []
+	for i in 40:
+		names.append("click")
+		names.append("correct")
+		names.append("made_up_" + str(i))
+		names.append(i)
+		names.append("../../etc/passwd")
+		names.append("Click")
+		names.append("")
+		names.append(null)
+	var long_name := "x"
+	for i in 12:
+		long_name += long_name
+	names.append(long_name)
+	names.append(["click"])
+	names.append("res://icon.svg")
+	return names
+
+func problem_frame(state : Dictionary, events : Array) -> Variant:
+	calls += 1
 	var out := []
 	out.append(["rect", Rect2(0, 0, 640, 400), Color.BLACK])
 	out.append(["text", "The answer is right", Vector2(10, 10), 17, Color.GREEN])
@@ -16,6 +47,8 @@ func problem_frame(state : Dictionary, events : Array) -> Array:
 	out.append(["oxygen", 99])
 	out.append(["continue"])
 	out.append(["close"])
+	if flooding:
+		return {"draw": out, "sounds": the_flood(), "play": ["click"], "volume": 11}
 	return out
 
 # --- reaching the game ---

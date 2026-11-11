@@ -69,9 +69,15 @@ func has_intro() -> bool:
 	return true
 
 
+## The position of the sweep for whoever draws on the same time (`DiagramBase.animation_tick`): the length is the sweep's.
+func animation_length() -> int:
+	return sweep_ticks() if _playing else 0
+
+
 func begin_intro() -> void:
 	_end_animation_clock()
 	_playing = true
+	_animation_tick = 0
 	_next_step = 0                                   # here: the number of beam pictures shown so far
 	animate_to(0)
 
@@ -95,9 +101,11 @@ func animate_to(tick: int) -> void:
 	var steps: int = sweep["pics"].size()
 	var per_step: int = sweep["ticks_per_step"]
 	var total := int(sweep["revolutions"]) * steps
+	_animation_tick = mini(tick, total * per_step)
 	while _next_step < total and _next_step * per_step <= tick:
 		_show_beam(_next_step % steps)
 		_next_step += 1
+	animation_advanced.emit()
 	if tick >= total * per_step:
 		_show_beam(0)
 		_finish()

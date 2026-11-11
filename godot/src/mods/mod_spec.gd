@@ -12,6 +12,7 @@ extends RefCounted
 ##     "mod": {"entry": "reef.sgd", "requires_api": 8, "skin": {"script_layers": ["background", "hud_oxygen", "hud_ship"]}}
 ##     "mod": {"entry": "tides.sgd", "requires_api": 3, "problems": {"types": [40], "shaders": ["problems/wave.gdshader"]}}
 ##     "mod": {"entry": "tides.sgd", "requires_api": 9, "problems": {"types": [5, 9, 40]}}
+##     "mod": {"entry": "tides.sgd", "requires_api": 11, "problems": {"types": [3, 23], "own_sounds": true}}
 ##     "mod": {"entry": "rules.sgd", "requires_api": 4, "rules": {"answers": [41], "instructions": [0, 1], "sub": true}}
 ##
 ## `entry` is a plain file name (no folder) ending `.sgd`, in the pack's root; only a skin whose script draws nothing may leave it out (a DATA skin: no script, so no Sandbox is needed to wear it). `requires_api` (default 1) is the lowest API version the script needs; a game that provides less
@@ -23,7 +24,7 @@ extends RefCounted
 ## whose picture the script draws, one call of `skin_layer(name, state, fraction, events)` for each; the others stay the original's, and the layers of `layers` are dressed by their shader on those the script does not draw. A skin with an `entry` and no `script_layers` draws the whole
 ## screen with `skin_frame(state, fraction, events)`: every layer at once. `problems` makes the mod DRAW the screens of the problem types it lists (`types`, whole numbers from 0 to
 ## `Catalog.LAST_PROBLEM_TYPE`, at most `MAX_PROBLEM_TYPES`: a number below `Catalog.PROBLEM_TYPE_COUNT` is an ORIGINAL type, drawn by number in place of the original diagram (API version 9; the lock and the ballast panels are the engine's and cannot be listed), a number from it up
-## is a type the pack adds and holds as data); it needs API version 3 and lists its shaders like a skin, in the pack's `problems/` folder. `rules` makes the mod
+## is a type the pack adds and holds as data); it needs API version 3 and lists its shaders like a skin, in the pack's `problems/` folder. `own_sounds` (true or false, API version 11) says the script asks for the sounds of the build-up and the replay itself, so the original diagram's own are not played while the mod runs. `rules` makes the mod
 ## add GAMEPLAY inside the rules (`RuleHooks`), for a campaign that declares the mod: `answers` lists problem types it judges instead of their `compare_mode` (numbers as for `problems.types`, the pack holds each as data),
 ## `instructions` the numbers 0 to `RuleHooks.MAX_INSTRUCTIONS - 1` of the creature instruction `Mod_Instruction` it defines, `sub` (true) a sub ability; it needs API version 4, at least one of the three, and a mod with `rules`
 ## runs under an instruction limit of 1 to `MAX_RULE_EXECUTION_TIMEOUT` million per call. The instruction limit of every mod is at least 1: counting is never off. `Pack` reads this entry (`Pack.mod`), `PackCheck` judges what it names,
@@ -32,8 +33,8 @@ extends RefCounted
 ## Teaches: validating an untrusted description by naming each rule in one place, and clamping a request to a ceiling instead of refusing it (a limit is a request; the host decides).
 
 ## The version of the API a mod is given (`ModApi.build`). A mod that requires a higher one is refused. The version goes up when the API gains something a mod can ask for (2: the skin API, 3: the problem
-## screens, 4: the rule hooks, 5: the data skin, 6: a picture of the game by key in the draw list, 7: the skin's script draws chosen layers, 8: the console's parts are layers too, 9: a problem-screen mod draws the original's types by number, 10: a problem-screen mod is told what happened), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
-const API_VERSION := 10
+## screens, 4: the rule hooks, 5: the data skin, 6: a picture of the game by key in the draw list, 7: the skin's script draws chosen layers, 8: the console's parts are layers too, 9: a problem-screen mod draws the original's types by number, 10: a problem-screen mod is told what happened, 11: a problem-screen mod is told where the animation is and may ask for sounds), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
+const API_VERSION := 11
 ## The first version with the skin API: a skin mod requires it.
 const SKIN_API_VERSION := 2
 ## The first version with data skins: `render` and `pictures` in `skin`, and a skin with no `entry`.
@@ -48,6 +49,9 @@ const PROBLEM_API_VERSION := 3
 const ORIGINAL_PROBLEM_API_VERSION := 9
 ## The first version with the presentation events of a problem (`ProblemEvents`): a mod that requires it defines `problem_frame(state, events)`, an older one `problem_frame(state)` and is told none.
 const PROBLEM_EVENTS_API_VERSION := 10
+## The first version with the animation's clock in the state of a problem screen and the sounds it may ask for (`ModSounds`): a mod that requires it is told where the build-up and the replay are, may return `{"draw": ..., "sounds": [...]}` and may
+## say `own_sounds`.
+const PROBLEM_CLOCK_API_VERSION := 11
 ## The first version with rule hooks: a mod with `rules` requires it.
 const RULE_API_VERSION := 4
 ## The game's ceilings. A manifest can lower these, never raise them (the same numbers as the godot-sandbox example's loader).
@@ -91,7 +95,7 @@ const MAX_KEY := 96
 ## The most pictures a skin lists.
 const MAX_PICTURES := 128
 ## The keys of the `problems` entry.
-const PROBLEM_KEYS: Array[String] = ["types", "shaders"]
+const PROBLEM_KEYS: Array[String] = ["types", "shaders", "own_sounds"]
 ## The keys of the `rules` entry.
 const RULE_KEYS: Array[String] = ["answers", "instructions", "sub"]
 ## The most problem types one mod draws.
@@ -130,6 +134,8 @@ var script_layers: Array[StringName] = []
 var has_problems := false
 var problem_types: Array[int] = []
 var problem_shaders: Array[String] = []
+## Does the mod make the sounds of the build-up and the replay itself (`problems.own_sounds`)? The original diagram's own then stay silent while the mod runs (`ModDiagram`); the lengths are the same.
+var problem_own_sounds := false
 ## Does the mod add rule hooks (`rules`, which lists at least one of the three)? The problem types whose answers it judges, the creature instruction numbers it defines, and whether it has the sub ability.
 var has_rules := false
 var rule_answers: Array[int] = []
@@ -423,6 +429,13 @@ static func _parse_problems(value: Variant, spec: ModSpec, found: Array[String])
 				if int(number) < Catalog.PROBLEM_TYPE_COUNT and spec.requires_api < ORIGINAL_PROBLEM_API_VERSION:
 					found.append("a mod that draws the original's problem type %d needs \"requires_api\": %d (the original's types came with that version)" % [int(number), ORIGINAL_PROBLEM_API_VERSION])
 	spec.problem_shaders = _parse_shaders(value, PROBLEM_FOLDER, found)
+	if value.has("own_sounds"):
+		if not value["own_sounds"] is bool:
+			found.append("\"own_sounds\" must be true or false")
+		elif spec.requires_api < PROBLEM_CLOCK_API_VERSION:
+			found.append("a mod with \"own_sounds\" needs \"requires_api\": %d (the sounds of a problem screen came with that version)" % PROBLEM_CLOCK_API_VERSION)
+		else:
+			spec.problem_own_sounds = value["own_sounds"]
 
 
 static func _parse_rules(value: Variant, spec: ModSpec, found: Array[String]) -> void:
@@ -541,6 +554,11 @@ func problem_events() -> bool:
 	return requires_api >= PROBLEM_EVENTS_API_VERSION
 
 
+## Is the mod's `problem_frame` told where the animation is (`ProblemState.clock`) and may it return sounds (`ModSounds`)? It is when the mod requires the API version that has them.
+func problem_clock() -> bool:
+	return requires_api >= PROBLEM_CLOCK_API_VERSION
+
+
 ## Does the mod draw anything (a skin, or the screens of problem types)?
 func draws() -> bool:
 	return is_skin or has_problems
@@ -612,6 +630,8 @@ func to_dict() -> Dictionary:
 		data["problems"] = {"types": problem_types.duplicate()}
 		if not problem_shaders.is_empty():
 			data["problems"]["shaders"] = problem_shaders.duplicate()
+		if problem_own_sounds:
+			data["problems"]["own_sounds"] = true
 	if has_rules:
 		data["rules"] = {}
 		if not rule_answers.is_empty():

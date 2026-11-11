@@ -401,6 +401,10 @@ The flow also says what HAPPENED, once, in its `happened` signal (`ProblemEvents
 with (`_settle_step`), and the screen passes each to the diagram (`DiagramBase.told`), where a `ModDiagram` keeps them for the script's next frame. No view infers
 a moment of its own; `tests/engine/test_problem_flow_machine.gd` pins the sequences without a scene.
 
+The position of a build-up or a replay has one owner as well: the diagram that plays it (`DiagramBase.animation_name` / `animation_tick` / `animation_length`), moved only by `animate_to` with the tick the flow counts
+(`presentation_elapsed`), so it stands still when the flow's time does and its length is the timeline's data. A `ModDiagram` reports it to a mod as the state's `clock` and asks for no length: the flow waits for the plain
+diagram's timeline, whatever the mod draws or asks for (`tests/engine/test_mod_problem_animation.gd` counts the ticks with and without each mod).
+
 ## Campaigns in code
 
 A campaign is a `Campaign` resource (`src/resources/campaign.gd`): the ordered `sectors`, the `finales`, `default_edu_levels` per zone,

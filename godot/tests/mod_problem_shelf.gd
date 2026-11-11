@@ -38,10 +38,49 @@ static func mount(names: Array[String]) -> Array[PackShelf]:
 	return shelves
 
 
+## The original type with a replay after a right answer that the packs of a test have: type 6 as the suite's pack holds it, with the replay of two pictures (the diagram spec's "pictures" mode: the second and the third of its art, 88 ticks).
+const REPLAY := 6
+const REPLAY_TICKS := 88
+
+
+## One scratch pack of the fixture `name` (`mod` overrides keys of its manifest's mod entry), laid over the suite's pack, chosen and synced; with `replay`, the pack also holds type 6 with a replay (`replay_type`) and the manifest lists it among the types the mod draws.
+static func mount_one(name: String, mod: Dictionary = {}, replay := false) -> PackShelf:
+	var shelf := PackShelf.new()
+	var overrides := mod.duplicate(true)
+	if replay:
+		var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("%s/%s/pack.json" % [FIXTURES, name]))
+		var problems: Dictionary = (overrides.get("problems", fixture["mod"]["problems"]) as Dictionary).duplicate(true)
+		problems["types"] = (problems["types"] as Array) + [REPLAY]
+		overrides["problems"] = problems
+	shelf.add_mod_fixture("%s/%s" % [FIXTURES, name], overrides)
+	add_files(shelf)
+	if replay:
+		shelf.write_json("data/problems/problem_type_%02d.json" % REPLAY, ResourceJson.new().data_of(replay_type()))
+	shelf.mount()
+	Mods.sync()
+	return shelf
+
+
+## Type 6 of the suite's pack with the replay of two pictures after a right answer.
+static func replay_type() -> ProblemType:
+	var type: ProblemType = Catalog.problem_type_unskinned(REPLAY).duplicate(true)
+	type.diagram["success"] = {"mode": "pictures", "pos": [100, 100], "flip_field": 0, "sfx": 41, "end": REPLAY_TICKS, "frames": [{"tick": 22, "pic": 1}, {"tick": 44, "pic": 2}]}
+	return type
+
+
 ## A pack with the type and no mod: what a problem of the type is without anybody drawing it.
 static func plain() -> PackShelf:
 	var shelf := PackShelf.new()
 	shelf.write_json("data/problems/problem_type_%02d.json" % TYPE, ResourceJson.new().data_of(problem_type()))
+	shelf.mount()
+	Mods.sync()
+	return shelf
+
+
+## A pack with type 6 and its replay and no mod: what the replay is without anybody drawing it.
+static func plain_replay() -> PackShelf:
+	var shelf := PackShelf.new()
+	shelf.write_json("data/problems/problem_type_%02d.json" % REPLAY, ResourceJson.new().data_of(replay_type()))
 	shelf.mount()
 	Mods.sync()
 	return shelf

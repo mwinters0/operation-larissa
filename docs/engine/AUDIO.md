@@ -6,6 +6,7 @@ Everything that makes noise goes through the `Audio` autoload (`src/autoload/aud
 `music_changed`, and the `sfx_requested` of the world, the problem screen and the diagrams) carry names too. Which number the original
 plays when is [`../port/DESIGN.md`](../port/DESIGN.md) section 7 (from `docs/data/audio_map.json`). Paths are relative to `godot/`.
 
+- **A mod asks by name too.** A problem-screen mod (API version 11) names a `sound` and the diagram that holds its script emits it as any diagram's `sfx_requested`, which the problem screen sends to `Audio.play_sfx`; `ModSounds` keeps only names the chain can play (`SfxCatalog.can_play`: the original's effects and any pack's `audio/sound/<name>.ogg`) and bounds the rate ([`../create/CONTENT.md`](../create/CONTENT.md), "Problem screens", "Sounds"). A mod holds no stream and no player.
 - **Buses** `Music`, `SFX`, `Voice`. One effect player and one voice player cut each other off, as the original's single wave device does.
 - **Options.** Sound Effects / Music / Voice are per player (the Options menu); Options > Audio Settings holds the volumes and the music
   set, per machine, in `user://audio_settings.cfg`.

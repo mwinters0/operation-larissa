@@ -130,7 +130,7 @@ func test_a_problem_mod_is_given_the_problem_facts_and_other_mods_are_not() -> v
 	assert_int(api["api_version"]).is_equal(ModSpec.API_VERSION)
 	assert_dict(api["problems"]).is_equal({"types": [TYPE] + ModProblemShelf.ORIGINALS, "window": Vector2(640, 400), "max_commands": ModDraw.MAX_COMMANDS, "max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModDraw.MAX_UNIFORMS,
 			"max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT, "min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE, "shaders": ["problems/glow.gdshader"],
-			"events": ["started", "step", "verdict", "damage", "success", "timeout"]})
+			"events": ["started", "step", "verdict", "damage", "success", "timeout"], "max_sounds": ModSounds.MAX_PER_CALL, "sound_burst": ModSounds.BURST, "sounds_per_second": ModSounds.PER_SECOND})
 	assert_bool(api.has("skin")).is_false()
 	for value: Variant in api["problems"].values():
 		assert_bool(value is Object).is_false()                                                      # (numbers and names: nothing to reach through)
@@ -322,7 +322,8 @@ func test_the_state_a_problem_mod_gets_is_plain_data_without_a_verdict() -> void
 	_mount(["tides"] as Array[String])
 	var problem := ProblemFactory.make(TYPE, 0, null, 0)
 	var state := ProblemState.build(problem, "12", ProblemFlow.Step.ANSWERING)
-	assert_array(state.keys()).contains_exactly_in_any_order(["type", "level", "title", "prompt", "fields", "family", "diagram", "art", "entry", "step", "attempt", "window"])
+	assert_array(state.keys()).contains_exactly_in_any_order(["type", "level", "title", "prompt", "fields", "family", "diagram", "art", "entry", "step", "attempt", "clock", "window"])
+	assert_dict(state["clock"]).is_equal({"animation": "", "tick": 0, "length": 0, "since": -1})
 	assert_str(state["family"]).is_equal(ModProblems.FAMILY)
 	assert_int(state["type"]).is_equal(TYPE)
 	assert_str(state["entry"]).is_equal("12")
@@ -936,7 +937,7 @@ func test_a_skin_changed_in_the_middle_of_a_problem_is_what_the_pictures_by_key_
 
 func test_the_manifest_form_and_the_docs_agree() -> void:
 	var doc := FileAccess.get_file_as_string("res://../docs/create/CONTENT.md")
-	for key in ["type", "level", "title", "prompt", "fields", "family", "diagram", "art", "entry", "step", "attempt", "window"]:
+	for key in ["type", "level", "title", "prompt", "fields", "family", "diagram", "art", "entry", "step", "attempt", "clock", "window"]:
 		assert_bool(doc.contains("`%s`" % key)).override_failure_message("CONTENT.md does not mention the key `%s` of the state of a problem screen" % key).is_true()
 	for fact in ["types", "window", "max_commands", "max_texts", "max_text", "min_font_size", "max_font_size", "shaders", "events"]:
 		assert_bool(doc.contains("`%s`" % fact)).override_failure_message("CONTENT.md does not mention api[\"problems\"][\"%s\"]" % fact).is_true()

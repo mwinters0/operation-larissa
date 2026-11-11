@@ -26,6 +26,11 @@ func stream_named(effect_name: StringName) -> AudioStream:
 	return from_pack.stream if from_pack != null else stream(id_of(effect_name))
 
 
+## Is there an effect called `effect_name` that `stream_named` would play: a mounted pack's `audio/sound/<name>.ogg`, or one of the original's with a stream?
+func can_play(effect_name: StringName) -> bool:
+	return Packs.clip(&"sound", effect_name) != null or stream(id_of(effect_name)) != null
+
+
 ## The effect index for a friendly name (or a made-up one like "sfx_28"), or -1.
 func id_of(effect_name: StringName) -> int:
 	return NameRegistry.original().index_of(&"sound", String(effect_name))

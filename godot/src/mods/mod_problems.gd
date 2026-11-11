@@ -10,7 +10,7 @@ extends RefCounted
 
 ## The family a mod's problem type names in its diagram data: `DiagramFactory` makes a `ModDiagram` for it.
 const FAMILY := "mod"
-## The function a problem-screen mod defines, called by `ModDiagram` when the problem, the entry or the step changes, and when something happened (`ProblemEvents`). From API version `ModSpec.PROBLEM_EVENTS_API_VERSION` it takes
+## The function a problem-screen mod defines, called by `ModDiagram` when the problem, the entry or the step changes, when something happened (`ProblemEvents`) and, from API version `ModSpec.PROBLEM_CLOCK_API_VERSION`, as the build-up or the replay moves a tick. From API version `ModSpec.PROBLEM_EVENTS_API_VERSION` it takes
 ## `(state, events)`; a mod that requires less takes `(state)` and is told no events (`ModSpec.functions`).
 const FUNCTION := "problem_frame"
 
@@ -22,6 +22,10 @@ var types: Array[int] = []
 var assets: ModAssets
 ## Is the script told what happened (`ProblemEvents`)? It is when the mod requires the API version that has them: its `problem_frame` then takes the events as a second argument.
 var tells_events := false
+## Is the script told where the animation is (`ProblemState.clock`) and may it return sounds (`ModSounds`)? It is when the mod requires the API version that has them (`ModSpec.PROBLEM_CLOCK_API_VERSION`).
+var tells_clock := false
+## Does the mod make the sounds of the build-up and the replay itself (`problems.own_sounds`)? The original diagram's are then not played while the mod runs.
+var own_sounds := false
 
 
 ## The problem screens of the mod pack `pack`, or null with every reason in `reasons`: a type the pack adds that it does not hold as data, that is not the type it is called, that names no `mod` diagram family or that has no
@@ -33,6 +37,8 @@ static func make(pack: Pack, reasons: Array[String]) -> ModProblems:
 	screens.pack_id = pack.id
 	screens.types = pack.mod.problem_types.duplicate()
 	screens.tells_events = pack.mod.problem_events()
+	screens.tells_clock = pack.mod.problem_clock()
+	screens.own_sounds = pack.mod.problem_own_sounds
 	for type_id in screens.types:
 		if type_id < Catalog.PROBLEM_TYPE_COUNT:
 			check_original(pack, type_id, reasons)

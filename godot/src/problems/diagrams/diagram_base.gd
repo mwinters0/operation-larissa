@@ -50,6 +50,8 @@ signal sfx_requested(sfx: StringName)
 signal sfx_stop_requested
 ## An animation started by `play_intro()` / `play_success_replay()` reached its end (or was skipped).
 signal animation_finished
+## The running animation began or reached a later tick (`animation_tick`): told once for each `animate_to` that moved it, the last time with the tick that ends it, before `animation_finished`.
+signal animation_advanced
 
 ## The window the original draws into.
 const WINDOW_SIZE := Vector2(640, 400)
@@ -79,6 +81,7 @@ var _keeps_last_step: bool = false
 var _next_step: int = 0                       # the first step of the playing timeline that has not been shown yet
 var _own_clock: TickMeter                       # only while `play_intro()` / `play_success_replay()` count the ticks themselves
 var _own_tick: int = 0
+var _animation_tick: int = 0                    # how many ticks of the running animation are over (the owner's count: `animate_to`)
 
 
 func _init() -> void:
@@ -271,6 +274,7 @@ func begin_animation(timeline: DiagramTimeline, keeps_last_step: bool) -> void:
 	_playing_timeline = timeline
 	_keeps_last_step = keeps_last_step
 	_next_step = 0
+	_animation_tick = 0
 	animate_to(0)
 
 
@@ -280,9 +284,11 @@ func animate_to(tick: int) -> void:
 	if not _playing:
 		return
 	var steps := _playing_timeline.steps
+	_animation_tick = mini(tick, _playing_timeline.end_tick)
 	while _next_step < steps.size() and steps[_next_step].tick <= tick:
 		_apply_step(steps[_next_step])
 		_next_step += 1
+	animation_advanced.emit()
 	if tick >= _playing_timeline.end_tick:
 		_finish(_keeps_last_step)
 
@@ -310,6 +316,22 @@ func has_success_replay() -> bool:
 
 func is_playing() -> bool:
 	return _playing
+
+
+## WHERE THE ANIMATION IS, for whoever draws something of its own on the same time (`ModDiagram` tells a mod): the ONE owner of the position is `animate_to`, whose `tick` the step machine counts (`ProblemFlow.presentation_elapsed`), so these stand still
+## when the machine's time does. `animation_name` is `&"intro"` (the build-up), `&"replay"` (after a right answer) or `&""` when none runs; `animation_tick` the ticks over (0 to `animation_length`) and `animation_length` the ticks the timeline lasts (data).
+func animation_name() -> StringName:
+	if not _playing:
+		return &""
+	return &"replay" if _keeps_last_step else &"intro"
+
+
+func animation_tick() -> int:
+	return _animation_tick if _playing else 0
+
+
+func animation_length() -> int:
+	return _playing_timeline.end_tick if _playing and _playing_timeline != null else 0
 
 
 ## Jumps to the end of the running animation (silently): the debug screenshots and the tests use it. The step machine hears

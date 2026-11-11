@@ -10,6 +10,11 @@ extends RefCounted
 ## THE LAYERS OF THE CONSOLE. A skin's script may draw a part of the console, or all of it (`SkinLayers.HUD_NODES`), in the part's rectangle (`ConsoleState.rects`): the HUD layout in `SOURCES` also gives one template for each such layer, key `hud_layer/<layer>`
 ## (`hud_layer/hud_oxygen`), the size of the layer's rectangle in the layout's own data, for a picture of the whole part that the script draws (`skin/<name>.png`, a path in a draw list) at the size it will show.
 ##
+## THE PROBLEM SCREEN. A mod that draws the screen of a problem type (`ModDiagram`, `docs/create/CONTENT.md` "Problem screens") draws in the window's 640 x 400 pixels and may name the pictures of the screen's frame and panels by key (`problem_art/pa_1780`, the
+## screen picture the layout holds, `pa_1781` the calculator, `pa_1802` the "Ans:" panel, the calculator's digits ...): the layouts of the screen and of the calculator in `SOURCES` give one template for each, `problem_art/<name>`, at the size the layout has, and
+## the screen's layout also gives one for the whole window a mod draws, key `problem_layer/window`, for a picture of the whole screen of a type. They are not pictures a skin's `pictures` replaces (that is the `ui_picture` kind): they are drawn over and put in the
+## `problems/` folder of a problem mod, named in its draw list.
+##
 ## THE SIZES ARE THE PACK'S. The dev pack's console has the sizes the dev pack made for itself; the original's are those of the legacy pack (`--pack=legacy` reads only the sizes, and writes none of the
 ## original's pixels).
 ##
@@ -17,7 +22,7 @@ extends RefCounted
 ## `Resource`'s stored properties to find every texture in it, arrays included, the way `GameSkin` does to dress a layout.
 
 ## The layouts, as a path in a pack's `data/`, whose textures are the pictures a skin may replace.
-const SOURCES: Array[String] = ["data/ui/hud_layout.tres"]
+const SOURCES: Array[String] = ["data/ui/hud_layout.tres", "data/problems/screen_layout.tres", "data/ui/calculator_layout.tres"]
 
 ## The glyphs: 3 pixels wide and 5 high, a row to an int (the left pixel is the 4s bit). Only what a key and a size are written with.
 const GLYPHS := {
@@ -40,8 +45,11 @@ const TEXT_COLOR := Color8(26, 26, 31)
 
 ## The kind of key a layer's template has: not a picture a skin replaces (no `pictures` entry names it) but the picture of a layer a script draws.
 const LAYER_KIND := "hud_layer"
+## The kind of key the whole window of a problem screen has (`problem_layer/window`), and its key.
+const PROBLEM_LAYER_KIND := "problem_layer"
+const PROBLEM_WINDOW := "window"
 
-## One picture to draw: its skin key (`ui_picture/ui_1195`, or `hud_layer/hud_oxygen` for a layer's) and its size.
+## One picture to draw: its skin key (`ui_picture/ui_1195`, `problem_art/pa_1780`, or `hud_layer/hud_oxygen` for a layer's) and its size.
 class Entry extends RefCounted:
 	var key := ""
 	var size := Vector2i.ZERO
@@ -65,7 +73,7 @@ static func entries() -> Array[Entry]:
 			continue
 		for texture in _textures_in(layout):
 			var key := GameSkin.key_of(Packs.source_of(texture))
-			if key.is_empty() or seen.has(key) or not ModSpec.is_picture_key(key):
+			if key.is_empty() or seen.has(key) or not ModSpec.is_drawable_key(key):
 				continue
 			seen[key] = true
 			found.append(Entry.new(key, Vector2i(texture.get_size())))
@@ -73,6 +81,8 @@ static func entries() -> Array[Entry]:
 			var rects := ConsoleState.rects(layout)
 			for layer in SkinLayers.hud_layers():
 				found.append(Entry.new("%s/%s" % [LAYER_KIND, layer], Vector2i((rects[String(layer)] as Rect2).size)))
+		if layout is ProblemScreenLayout:
+			found.append(Entry.new("%s/%s" % [PROBLEM_LAYER_KIND, PROBLEM_WINDOW], ProblemState.WINDOW_SIZE))
 	return found
 
 

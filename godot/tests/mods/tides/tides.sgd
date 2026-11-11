@@ -1,6 +1,9 @@
 # A small problem-screen mod: it draws the screen of problem type 40 ("fish in rows") from the problem it is told: a pool, a row of fish pictures of its own pack (problems/fish.png) for each row of the problem, what the player has
 # typed so far, and the prompt, through the game's font. It also opts in to draw two ORIGINAL types, 3 and 5, by number: for those it draws the pictures of the type's art bundle by their keys (the game's own pictures, under the skin in
 # use), the family the type's data names and what was typed; the other original types stay the original's. Every picture is built from `state`, so a screen shown late is the screen shown early.
+# From API version 11 it also draws a progress bar from the CLOCK of the state (which animation, how many of its ticks are over, how long it is: the bar is `tick / length` of the build-up or of the replay, drawn by what the engine says
+# and never by a timer of its own) and, when the test switches `sound_on()`, asks for the sound `diagram_bar` at every 15th tick the clock passed since it was last asked (`since`), as `{"draw": ..., "sounds": [...]}`; `sound_only_on()` answers
+# the sounds alone. It is silent otherwise, so the plays of a problem are the same under it as under no mod. It keeps what the clock told it (for the tests to ask).
 # It also REACTS to what happened (the `events` of API version 10): a banner under the picture names the last event it was told and a bar changes colour with it (green for a right verdict, red for a wrong one, gold for a success,
 # grey for a time out, a damage bar per oxygen lost). That is memory of events, which a picture should not be built from; here it is what the tests look at. It keeps the count of the times it was asked and every event
 # it was told (for the tests to ask).
@@ -12,6 +15,22 @@ var banner := ""
 var bar := Color(0.3, 0.3, 0.3)
 var damage := 0
 var calls_log : Array = []
+var clocks : Array = []
+var sounding := false
+var sound_only := false
+var asked_sounds : Array = []
+
+func sound_on() -> void:
+	sounding = true
+
+func sound_only_on() -> void:
+	sound_only = true
+
+func clocks_seen() -> Array:
+	return clocks.duplicate(true)
+
+func sounds_asked() -> Array:
+	return asked_sounds.duplicate()
 
 func events_heard() -> Array:
 	return heard.duplicate(true)
@@ -53,13 +72,44 @@ func reaction() -> Array:
 	out.append(["text", "Heard: " + banner, Vector2(24, 320), 14, Color.WHITE])
 	return out
 
-func problem_frame(state : Dictionary, events : Array) -> Array:
+func clock_bar(clock : Dictionary) -> Array:
+	var out := []
+	if clock["animation"] == "":
+		return out
+	clocks.append([clock["animation"], clock["tick"], clock["length"], clock["since"]])
+	var width := 200
+	if clock["length"] > 0:
+		width = 200 * clock["tick"] / clock["length"]
+	var colour := Color.CYAN if clock["animation"] == "intro" else Color.MAGENTA
+	out.append(["rect", Rect2(16, 340, width, 10), colour])
+	out.append(["text", clock["animation"] + " " + str(clock["tick"]) + "/" + str(clock["length"]), Vector2(24, 354), 14, Color.WHITE])
+	return out
+
+func crossings(clock : Dictionary) -> Array:
+	var out := []
+	if clock["animation"] == "":
+		return out
+	var n : int = clock["since"] + 1
+	while n <= clock["tick"]:
+		if n > 0 and n % 15 == 0:
+			out.append("diagram_bar")
+		n += 1
+	return out
+
+func problem_frame(state : Dictionary, events : Array) -> Variant:
 	asked += 1
 	last_step = state["step"]
 	react(events)
 	var out := original_type(state) if state["type"] != 40 else own_type(state)
 	out.append_array(reaction())
-	return out
+	out.append_array(clock_bar(state["clock"]))
+	if not sounding:
+		return out
+	var sounds := crossings(state["clock"])
+	asked_sounds.append_array(sounds)
+	if sound_only:
+		return {"sounds": sounds}
+	return {"draw": out, "sounds": sounds}
 
 func own_type(state : Dictionary) -> Array:
 	var out := []

@@ -505,7 +505,7 @@ All from the repository root; the arguments after `--` belong to the scene.
 | `res://src/debug/foe_sandbox.tscn` | `--sector= --screen= --foe=N --pause --fly --touch=N --ticks= --snapshot=` |
 | `res://src/debug/screen_playtest.tscn` | `--sector= --screen= --oxygen= --ink= --pieces= --flags=` (the rest are in `PlaytestSetup`) |
 | `res://src/debug/skin_compare.tscn` | `--skin= --sector= --screen= --fly --overlay --ticks= --snapshot=PATH` |
-| `res://src/skins/skin_templates_tool.tscn` | `--out=DIR`, `--pack=ID`, `--list` (`mise run skin:templates`; one PNG per replaceable picture, `ui_picture/`, and per console layer a script draws, `hud_layer/`) |
+| `res://src/skins/skin_templates_tool.tscn` | `--out=DIR`, `--pack=ID`, `--list` (`mise run skin:templates`; one PNG per replaceable picture, `ui_picture/`, per console layer a script draws, `hud_layer/`, and for a problem-screen mod the frame and panels, `problem_art/`, and the window, `problem_layer/`) |
 
 ---
 

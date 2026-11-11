@@ -2,7 +2,7 @@ class_name TestModProblemsLegacy
 extends GdUnitTestSuite
 ## A problem-screen mod and the original game's problem types: a mod that opts in to draw every original type it may (all but the lock and the ballast panels) is asked about every stored problem of every type without a fault,
 ## the state it is told fits what a sandboxed script may hold (`references_max`), and the original's diagram it holds underneath is the diagram the game makes without the mod: the same pictures, the same texts, the same build-up
-## and replay lengths, family by family. (The mechanics of problem-screen mods on any pack are in tests/engine/test_mod_problems.gd.)
+## and replay lengths, family by family; and every original build-up and replay lasts exactly the same ticks under a mod that is told the clock and asks for sounds. (The mechanics of problem-screen mods on any pack are in tests/engine/test_mod_problems.gd.)
 ## Teaches: proving a wrapper changes nothing by recording the thing wrapped before it exists and comparing after.
 
 
@@ -96,5 +96,53 @@ func test_a_mod_that_draws_every_original_type_it_may_leaves_the_originals_diagr
 		var diagram := DiagramFactory.create(ProblemInstance.build(Catalog.problem_type(locked), 0, 0, 0))
 		assert_bool(diagram is ModDiagram).is_false()
 		diagram.free()
+	shelf.remove()
+	Mods.sync()
+
+
+func test_the_originals_build_ups_and_replays_last_the_same_ticks_under_a_mod_that_is_told_the_clock_and_asks_for_sounds() -> void:
+	var cases := []                                                                  # [type, level, index, intro ticks, replay ticks] of the plain diagrams
+	var types: Array[int] = []
+	for entry: Array in _problems():
+		if types.has(entry[0]):
+			continue
+		var diagram := DiagramFactory.create(ProblemInstance.build(Catalog.problem_type(entry[0]), entry[1], entry[2], 0))
+		if diagram.has_intro() or (ProblemFlow.SUCCESS_REPLAY_TYPES.has(entry[0]) and diagram.has_success_replay()):
+			cases.append([entry[0], entry[1], entry[2], diagram.intro_length(), diagram.success_replay_length() if ProblemFlow.SUCCESS_REPLAY_TYPES.has(entry[0]) else -1])
+			types.append(entry[0])
+		diagram.free()
+	assert_int(cases.size()).is_greater(10)
+	var shelf := PackShelf.new()
+	shelf.add_mod_fixture("res://tests/mods/tides", {"problems": {"types": types}})
+	ModProblemShelf.add_files(shelf)
+	shelf.mount()
+	Mods.sync()
+	var mod := ModHost.mod(String(shelf.id))
+	assert_object(mod).override_failure_message("the mod did not load: %s" % ModHost.failure(String(shelf.id))).is_not_null()
+	mod.call("sound_on")
+	var faults := int(mod.get("monitor_exceptions"))
+	var replays := 0
+	for entry: Array in cases:
+		var screen: ProblemScreen = ProblemRunner.SCREEN_SCENE.instantiate()
+		add_child(screen)
+		var problem := ProblemInstance.build(Catalog.problem_type(entry[0]), entry[1], entry[2], 0)
+		screen.start(problem)
+		var ticks := 0
+		while not screen.is_answering() and ticks < 5000:
+			screen.advance_ticks(1)
+			ticks += 1
+		assert_int(ticks).override_failure_message("type %d: the build-up under the mod" % entry[0]).is_equal(entry[3])
+		if entry[4] >= 0:
+			screen.submit_answer(problem.expected)
+			var replay := 0
+			while screen.step() == ProblemFlow.Step.REPLAY and replay < 5000:
+				screen.advance_ticks(1)
+				replay += 1
+			assert_int(replay).override_failure_message("type %d: the replay under the mod" % entry[0]).is_equal(entry[4])
+			replays += 1
+		screen.free()
+		GameState.reset()
+	assert_int(replays).is_greater(0)
+	assert_int(int(mod.get("monitor_exceptions")) - faults).override_failure_message("the mod faulted while a build-up or a replay played").is_equal(0)
 	shelf.remove()
 	Mods.sync()
