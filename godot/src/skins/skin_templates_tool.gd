@@ -1,5 +1,5 @@
 extends Node
-## The art templates tool on the command line: writes one flat-colour PNG per picture a skin may replace, with the picture's skin key and size on it (`SkinTemplates`).
+## The art templates tool on the command line: writes one flat-colour PNG per picture a skin may replace and per layer of the console a script may draw, with the key and size on it (`SkinTemplates`).
 ##
 ## Run from the repository root (a scene, not `-s`: it needs the autoloads). Options after `--`:
 ##   --out=<dir>     where the templates go, one folder per kind of key: `<dir>/ui_picture/ui_1195.png` (default user://skin_templates)

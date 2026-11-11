@@ -1,7 +1,7 @@
 class_name ModSkin
 extends GameSkin
 ## The skin a skin MOD is: an ordinary entry of `SkinChoice` (`--skin=<id>`, F3 then S) whose id is the mod pack's id, that maps only what its manifest says (its `render` and `pictures`; the HUD's layout, the screens and the sounds stay the base game's).
-## Its sector is always shown by the original presenter. For a skin with an entry script the presenter hands chosen layers to the sandboxed script (`ModLayerHost`): the layers of `script_layers`, one call of `skin_layer` each, or, for a script that
+## Its sector is always shown by the original presenter, its console by the original HUD. For a skin with an entry script the presenter and the HUD hand chosen layers to the sandboxed script (`ModLayerHost`): the layers of `script_layers`, one call of `skin_layer` each, or, for a script that
 ## draws the whole screen (`draws_frame`), every layer at once from one call of `skin_frame`. `ModHost` makes the skin when it loads a mod whose manifest has `skin` (`make`), keeps it while the mod runs
 ## and lets it go with the mod (`alive` false); `SkinChoice` puts the original skin on again when the one in use stops being alive.
 ##
@@ -26,7 +26,7 @@ var pack_id: StringName = &""
 var assets: ModAssets
 ## False once the mod that made it is unloaded: `SkinChoice` does not offer it and does not keep it.
 var alive := true
-## What the script draws: the layers it draws one by one (`ModSpec.script_layers`), or the whole screen at once (`draws_frame`: `ModSpec.draws_frame`). A data skin has neither.
+## What the script draws: the layers it draws one by one (`ModSpec.script_layers`: layers of the original presenter and parts of the console, `SkinLayers`), or the whole screen of the sector at once (`draws_frame`: `ModSpec.draws_frame`; the console stays the original's). A data skin has neither.
 var script_layers: Array[StringName] = []
 var draws_frame := false
 
@@ -34,6 +34,16 @@ var draws_frame := false
 ## Does a script draw anything of this skin (a layer, or the whole screen)?
 func is_scripted() -> bool:
 	return draws_frame or not script_layers.is_empty()
+
+
+## The layers of `script_layers` that are the original presenter's (`SkinLayers.NODES`): what `ModLayerHost` of the presenter draws.
+func presenter_layers() -> Array[StringName]:
+	return script_layers.filter(SkinLayers.is_presenter_layer)
+
+
+## The layers of `script_layers` that are the console's (`SkinLayers.HUD_NODES`, `SkinLayers.HUD`): what `ModLayerHost` of the HUD draws.
+func hud_layers() -> Array[StringName]:
+	return script_layers.filter(SkinLayers.is_hud_layer)
 
 
 ## The skin of the mod pack `pack`, or null with every reason in `reasons`: its id is the id of a skin that comes with the game, a shader of the manifest is not what `ModShader` accepts, a

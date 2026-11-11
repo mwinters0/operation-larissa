@@ -35,7 +35,7 @@ an editor given `LegacyPack.SECTORS_DIR`) still reads the project's folder: it c
 
 The headless runs use `--headless` (no window, a dummy renderer, a dummy sound card that still advances playback), so working at the
 desktop cannot disturb them. The files that need a window are listed with their reasons in `WINDOWED` at the top of
-`tools/run_tests.sh` (`tests/legacy/test_snapshots.gd` and `tests/engine/test_skin_creatures_render.gd` read viewport pixels); headless
+`tools/run_tests.sh` (`tests/legacy/test_snapshots.gd`, `tests/engine/test_skin_creatures_render.gd` and `tests/engine/test_mod_skin_hud_render.gd` read viewport pixels); headless
 they are skipped. With the editor open the godot-ai MCP `test_run` works too. gdUnit4's command tool stops a file at its first failing
 test, so a broken file hides the rest of itself.
 

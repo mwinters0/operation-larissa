@@ -16,6 +16,10 @@ extends Control
 ## words are pictures of text; a skin with `HudLabels` gets them as `Label` nodes with its own font, put in the very rectangle the
 ## picture had (`HudLayout.game_size` ...), so a font that is larger or smaller moves and resizes nothing.
 ##
+## A SKIN MOD may draw the console: its script is asked for the parts it names (`SkinLayers.HUD_NODES`, or the whole console, `SkinLayers.HUD`) once a frame by a `ModLayerHost` made for this HUD (the host the original presenter's layers use, with the HUD's ground: `layer_nodes`,
+## `layer_clip`, `console_state`), told `console_state` (what the HUD itself shows, `ConsoleState`, built again every frame from `GameState`, with the places of the HUD's two animations in their cycles). What it draws is cut to the part's rectangle and the original's nodes of
+## the part are transparent while it answers; the HUD's own handlers go on, so a script that faults leaves the original's part on show. A HUD with no such skin does nothing in `_process`.
+##
 ## The scene covers the whole 640 x 400 window and ignores the mouse. The playfield sits
 ## ABOVE it at (16, 32) (`Game` puts the HUD before the world): the original paints the frame first and then the
 ## playfield, whose left column covers the last pixel of the frame's 5 px wide black strip (x 12-16).
@@ -60,6 +64,8 @@ var skin: GameSkin
 var _scene_layout: HudLayout
 ## The skin's lettering as text, or null while the labels are the original's pictures.
 var _labels: HudLabels
+## The host of the parts a skin mod's script draws (`ModLayerHost`), or null when the skin worn draws none.
+var _mod_layers: ModLayerHost
 
 
 func _ready() -> void:
@@ -92,6 +98,10 @@ func _apply_skin() -> void:
 	_labels = wearing.labels()
 	_apply_layout()
 	_apply_label_style()
+	if _mod_layers != null:
+		_mod_layers.end()
+	_mod_layers = ModLayerHost.make_hud(self, wearing)
+	set_process(_mod_layers != null)
 
 
 ## Puts every picture and gauge where the original has it (or where the skin's layout has it).
@@ -168,7 +178,7 @@ func _on_oxygen_changed(_tank_count: int, _oxygen_cells: int) -> void:
 		air_animations.play(&"low_oxygen")
 	else:
 		air_animations.stop()
-		oxygen.modulate = Color.WHITE
+		oxygen.self_modulate = Color.WHITE
 
 
 func _on_ink_changed(_pellets: int) -> void:
@@ -206,3 +216,50 @@ func _on_message_light_changed(_ship: bool, _computer: bool) -> void:
 		Audio.play_sfx(SFX_MESSAGE_LIGHT)
 	else:
 		light_animations.stop()
+
+
+# --- a skin mod's script draws parts of the console (`ModLayerHost`) ----------------------------------------------------
+
+func _process(_delta: float) -> void:
+	show_mod_layers(GameClock.tick_fraction())
+
+
+## One frame of the script's parts: it is asked what each draws, from the console's state as it is now (nothing when the skin worn has no script that draws the console).
+func show_mod_layers(fraction: float) -> void:
+	if _mod_layers != null:
+		_mod_layers.show(fraction)
+
+
+## The state a script that draws the console is told: what the HUD shows, built from the owner now (`ConsoleState.build`), with the places of the light's blink and the warning cell's pulse (the HUD's two animations: the one clock the original's own picture is drawn from).
+func console_state() -> Dictionary:
+	return ConsoleState.build(layout, _labels, _phase(light_animations), _phase(air_animations))
+
+
+## How far into its cycle `player`'s animation is (0 to 1), 0 while it does not play.
+func _phase(player: AnimationPlayer) -> float:
+	if not player.is_playing() or player.current_animation_length <= 0.0:
+		return 0.0
+	return player.current_animation_position / player.current_animation_length
+
+
+## The original's nodes of the console layer `layer` (`SkinLayers.HUD_NODES`, or `SkinLayers.HUD`: all of them): what the host makes transparent while the script draws the layer, and behind which it stands.
+func layer_nodes(layer: StringName) -> Array[CanvasItem]:
+	var found: Array[CanvasItem] = []
+	for node_name in SkinLayers.hud_node_names(layer):
+		found.append(get_node("%" + node_name) as CanvasItem)
+	return found
+
+
+## The rectangle the script's picture of the layer `layer` is cut to (`ConsoleState.rects`, from the layout in use).
+func layer_clip(layer: StringName) -> Rect2:
+	return ConsoleState.rects(layout)[String(layer)]
+
+
+## Does a skin mod's script draw parts of this console?
+func hosts_mod_layers() -> bool:
+	return _mod_layers != null
+
+
+## The host of the script's parts (for a test); null with none.
+func mod_host() -> ModLayerHost:
+	return _mod_layers

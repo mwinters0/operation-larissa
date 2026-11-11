@@ -74,10 +74,6 @@ colour with the key and the size written on it, made by a committed tool (one li
 not from the original's pixels, so the templates carry no original content and are committed in the example pack). The user draws the
 real art from them. The tool is `SkinTemplates` (`docs/create/SKIN_API.md` "Art templates"); the original's exact sizes are those of the legacy pack's layouts (`--pack=legacy` reads sizes only), the dev pack's pictures having sizes of their own; each later phase's last item adds the layouts that hold its keys to `SkinTemplates.SOURCES`.
 
-**K3: the HUD as a layer.**
-- **K3b: a script draws the HUD.** The whole HUD or parts of it, inside the layout's rectangles; templates for the HUD's parts at their
-  sizes.
-
 **K4: problem screens.**
 - **K4a: original types by number.** A mod opts in to drawing original types (0 to 33) by number; the original diagram is the fallback
   for the others and for a faulty mod.

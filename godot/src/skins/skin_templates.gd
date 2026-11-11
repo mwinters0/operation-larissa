@@ -7,6 +7,8 @@ extends RefCounted
 ## of its own, whose key and size are read off the texture: the key is the one `GameSkin.key_of` makes, which is the key a skin's `pictures` names (`ModSpec.PICTURE_KINDS`), and the size is the
 ## texture's. The sizes come from the layout, so a template has nothing of any picture in it, only its key and its size. A phase that lets a skin replace more pictures adds the layout that holds them
 ## to `SOURCES`; nothing else changes.
+## THE LAYERS OF THE CONSOLE. A skin's script may draw a part of the console, or all of it (`SkinLayers.HUD_NODES`), in the part's rectangle (`ConsoleState.rects`): the HUD layout in `SOURCES` also gives one template for each such layer, key `hud_layer/<layer>`
+## (`hud_layer/hud_oxygen`), the size of the layer's rectangle in the layout's own data, for a picture of the whole part that the script draws (`skin/<name>.png`, a path in a draw list) at the size it will show.
 ##
 ## THE SIZES ARE THE PACK'S. The dev pack's console has the sizes the dev pack made for itself; the original's are those of the legacy pack (`--pack=legacy` reads only the sizes, and writes none of the
 ## original's pixels).
@@ -36,7 +38,10 @@ const MARGIN := 1
 const TEXT_COLOR := Color8(26, 26, 31)
 
 
-## One picture to draw: its skin key (`ui_picture/ui_1195`) and its size.
+## The kind of key a layer's template has: not a picture a skin replaces (no `pictures` entry names it) but the picture of a layer a script draws.
+const LAYER_KIND := "hud_layer"
+
+## One picture to draw: its skin key (`ui_picture/ui_1195`, or `hud_layer/hud_oxygen` for a layer's) and its size.
 class Entry extends RefCounted:
 	var key := ""
 	var size := Vector2i.ZERO
@@ -64,6 +69,10 @@ static func entries() -> Array[Entry]:
 				continue
 			seen[key] = true
 			found.append(Entry.new(key, Vector2i(texture.get_size())))
+		if layout is HudLayout:
+			var rects := ConsoleState.rects(layout)
+			for layer in SkinLayers.hud_layers():
+				found.append(Entry.new("%s/%s" % [LAYER_KIND, layer], Vector2i((rects[String(layer)] as Rect2).size)))
 	return found
 
 

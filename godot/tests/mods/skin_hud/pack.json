@@ -1,0 +1,1 @@
+{"id": "mod_skin_hud", "title": "Skin console", "version": "1.0", "mod": {"entry": "skin_hud.sgd", "requires_api": 8, "limits": {"execution_timeout": 100, "memory_max": 16}, "skin": {"script_layers": ["bubbles", "hud_bezel", "hud_tanks", "hud_oxygen", "hud_ink", "hud_zone", "hud_ship"]}}}

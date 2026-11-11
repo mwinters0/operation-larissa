@@ -7,7 +7,8 @@ extends RefCounted
 ## heard: a HUD or a script bound in the middle of anything gets what one bound from the start gets (`tests/engine/test_console_state.gd`).
 ##
 ## The values are numbers, bools, Strings, `Vector2`, `Rect2`, Arrays and Dictionaries made fresh per call; `build` makes them read-only (`ModLoader.freeze`) as `SkinState.build` does, and none holds an object. A `rect` is in the
-## 640 x 400 window's pixels, as the layout has it (the playfield sits at (16, 32)); only the boxes of the lettering have a size there, a picture's size is the art's and the state does not tell it. A lit light blinks in the HUD (half a second a cycle); the state says only that it is lit.
+## 640 x 400 window's pixels, as the layout has it (the playfield sits at (16, 32)). `rects` holds the area of every layer a script may draw (`SkinLayers.hud_layers`: `Hud` clips what the script draws to it, and a layer's picture is the size of its rectangle), from the layout's own data and nothing a picture says.
+## A lit light blinks in the HUD (half a second a cycle) and a gauge on its last cell pulses (0.8 s): `phase` is how far into its cycle the HUD's animation is (0 to 1, 0 while the light is off or the air is not low), the one clock the original's own glow is drawn from, so a script that draws a light or a gauge of its own blinks with it. A caller that has no HUD (`build` with no phases) says 0.
 ##
 ## Teaches: one function per fact, shared by the view and the data. The HUD is not given the numbers and left to work out the rest: it asks the same builder the data comes from.
 
@@ -15,19 +16,21 @@ extends RefCounted
 const LOW_OXYGEN := 1
 
 
-## The whole console, read-only: `sector` (-1: none), `customized`, `tanks`, `oxygen`, `ink`, `pieces`, `labels`, `lights`, `bezel` (the place of the console's picture) and `playfield` (the window of the sector, a rectangle).
-static func build(layout: HudLayout, words: HudLabels) -> Dictionary:
+## The whole console, read-only: `sector` (-1: none), `customized`, `tanks`, `oxygen`, `ink`, `pieces`, `labels`, `lights`, `bezel` (the place of the console's picture), `playfield` (the window of the sector, a rectangle) and `rects` (layer name -> its area).
+## `blink` and `pulse` are the HUD's two animations' places in their cycles (`lights`, `oxygen`).
+static func build(layout: HudLayout, words: HudLabels, blink := 0.0, pulse := 0.0) -> Dictionary:
 	var state := {
 		"sector": GameState.sector,
 		"customized": GameState.customized,
 		"tanks": tanks(layout),
-		"oxygen": oxygen(layout),
+		"oxygen": oxygen(layout, pulse),
 		"ink": ink(layout),
 		"pieces": pieces(),
 		"labels": labels(layout, words),
-		"lights": lights(layout),
+		"lights": lights(layout, blink),
 		"bezel": Vector2(layout.bezel_position),
 		"playfield": Rect2(layout.playfield),
+		"rects": rects(layout),
 	}
 	ModLoader.freeze(state)
 	return state
@@ -38,10 +41,11 @@ static func tanks(layout: HudLayout) -> Dictionary:
 	return _gauge(GameState.tanks(), layout.tank_positions)
 
 
-## The oxygen cells, as `tanks`, and `low`: one cell left (`LOW_OXYGEN`).
-static func oxygen(layout: HudLayout) -> Dictionary:
+## The oxygen cells, as `tanks`, and `low`: one cell left (`LOW_OXYGEN`), and `phase`: how far into the pulse of the warning cell the HUD is (`pulse`, 0 to 1) while `low`, else 0.
+static func oxygen(layout: HudLayout, pulse := 0.0) -> Dictionary:
 	var gauge := _gauge(GameState.oxygen(), layout.oxygen_positions)
 	gauge["low"] = gauge["value"] == LOW_OXYGEN
+	gauge["phase"] = pulse if gauge["low"] else 0.0
 	return gauge
 
 
@@ -95,12 +99,36 @@ static func labels(layout: HudLayout, words: HudLabels) -> Dictionary:
 	return found
 
 
-## The two message lights, `ship` and `computer`: `on` (lit) and `position` (the top-left corner of its picture).
-static func lights(layout: HudLayout) -> Dictionary:
+## The two message lights, `ship` and `computer`: `on` (lit), `position` (the top-left corner of its picture), `size` (the picture's, from the layout) and `phase`: how far into its blink the HUD is (`blink`, 0 to 1) while `on`, else 0.
+static func lights(layout: HudLayout, blink := 0.0) -> Dictionary:
+	var ship: bool = GameState.ship_light
+	var computer: bool = GameState.computer_light
 	return {
-		"ship": {"on": GameState.ship_light, "position": Vector2(layout.ship_position)},
-		"computer": {"on": GameState.computer_light, "position": Vector2(layout.computer_position)},
+		"ship": {"on": ship, "position": Vector2(layout.ship_position), "size": Vector2(layout.ship_size), "phase": blink if ship else 0.0},
+		"computer": {"on": computer, "position": Vector2(layout.computer_position), "size": Vector2(layout.computer_size), "phase": blink if computer else 0.0},
 	}
+
+
+## The area of every layer of the console (`SkinLayers.hud_layers()`, by the name as a String), in window pixels: the bezel's rectangle, the three gauges' areas, the four lettering boxes, the two lights, and for the whole console (`SkinLayers.HUD`) the rectangle that holds them all.
+## What a script draws in a layer is cut off at its rectangle (`Hud.layer_clip`), which is always one of these.
+static func rects(layout: HudLayout) -> Dictionary:   # (names are Strings: what a script indexes with)
+	var found := {
+		"hud_bezel": _box(layout.bezel_position, layout.bezel_size),
+		"hud_tanks": Rect2(layout.tank_rect),
+		"hud_oxygen": Rect2(layout.oxygen_rect),
+		"hud_ink": Rect2(layout.ink_rect),
+		"hud_game": _box(layout.game_position, layout.game_size),
+		"hud_custom": _box(layout.custom_position, layout.custom_size),
+		"hud_zone": _box(layout.zone_position, layout.zone_size),
+		"hud_sector": _box(layout.sector_position, layout.sector_size),
+		"hud_ship": _box(layout.ship_position, layout.ship_size),
+		"hud_computer": _box(layout.computer_position, layout.computer_size),
+	}
+	var whole: Rect2 = found["hud_bezel"]
+	for part: Rect2 in found.values():
+		whole = whole.merge(part)
+	found[String(SkinLayers.HUD)] = whole
+	return found
 
 
 ## The campaign the sector being played belongs to: the player's own if it lists the sector, else the one that does (a sector viewed on its own).

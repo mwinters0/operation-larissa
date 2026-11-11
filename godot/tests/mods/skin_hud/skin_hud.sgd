@@ -1,0 +1,72 @@
+# A skin mod that draws the SECTOR's bubbles and SIX parts of the console, and leaves the rest of both as the original draws them: the bezel (a flat panel of the rectangle the console tells), the spare tanks, the oxygen cells (red and fading with the
+# game's own blink while one cell is left), the ink pellets, the zone's word as text and the ship's light (it also tries to paint over the whole window, which the game cuts off at the light's rectangle). It builds every part from `state` alone, so a console
+# made in the middle of anything draws what one made at the start does. A layer's name decides what it is asked for: the same `skin_layer` serves both screens.
+var api : Dictionary = {}
+# (only for the tests to ask: which layers it was asked for, and what the last console state held. It draws from `state`, never from these.)
+var asked := []
+var last_keys := []
+var last_phase := 0.0
+var heard := []
+
+func mod_init(granted : Dictionary) -> void:
+	api = granted
+
+func asked_layers() -> Array:
+	return asked
+
+func console_keys() -> Array:
+	return last_keys
+
+func oxygen_phase() -> float:
+	return last_phase
+
+func heard_events() -> Array:
+	return heard
+
+func skin_layer(name : String, state : Dictionary, fraction : float, events : Array) -> Array:
+	if not asked.has(name):
+		asked.append(name)
+	var out := []
+	if name == "bubbles":
+		if events.size() > 0 and events.size() <= 16:
+			for event in events:
+				heard.append(event[0])
+		elif events.size() > 16:
+			heard.append(events[events.size() - 1][0])
+		if heard.size() > 64:
+			heard = heard.slice(32)
+		for i in 4:
+			out.append(["picture", "skin/dot.png", Vector2(40 + i * 90, 288 - ((int(state["tick"] * 2) + i * 37) % 288))])
+		return out
+	var rects : Dictionary = state["rects"]
+	var area : Rect2 = rects[name]
+	if name == "hud_bezel":
+		last_keys = state.keys()
+		out.append(["rect", area, Color(0.10, 0.12, 0.16)])
+	elif name == "hud_tanks":
+		var tanks : Dictionary = state["tanks"]
+		for i in tanks["slots"]:
+			var colour := Color(0.2, 0.8, 0.3) if i < tanks["value"] else Color(0.1, 0.2, 0.1)
+			out.append(["rect", Rect2(tanks["positions"][i], Vector2(12, 12)), colour])
+	elif name == "hud_oxygen":
+		var air : Dictionary = state["oxygen"]
+		last_phase = air["phase"]
+		for i in air["slots"]:
+			var colour := Color(0.3, 0.7, 1.0) if i < air["value"] else Color(0.1, 0.1, 0.2)
+			if air["low"] and i == 0:
+				colour = Color(1.0, 0.2 + 0.6 * air["phase"], 0.2)
+			out.append(["rect", Rect2(air["positions"][i], Vector2(12, 12)), colour])
+	elif name == "hud_ink":
+		var ink : Dictionary = state["ink"]
+		for i in ink["slots"]:
+			out.append(["rect", Rect2(ink["positions"][i], Vector2(6, 6)), Color.BLACK if i < ink["value"] else Color(0.3, 0.3, 0.3)])
+	elif name == "hud_zone":
+		var zone : Dictionary = state["labels"]["zone"]
+		if zone["visible"]:
+			out.append(["rect", zone["rect"], Color(0.0, 0.25, 0.1)])
+			out.append(["text", zone["word"], zone["rect"].position + Vector2(2, 2), 12, Color.WHITE])
+	elif name == "hud_ship":
+		var ship : Dictionary = state["lights"]["ship"]
+		out.append(["rect", Rect2(0, 0, 640, 400), Color(1, 0, 1, 0.5)])          # (cut off at the light's rectangle)
+		out.append(["rect", Rect2(ship["position"], ship["size"]), Color(1, 1, 0.2, 0.4 + 0.6 * ship["phase"]) if ship["on"] else Color(0.2, 0.2, 0.0)])
+	return out

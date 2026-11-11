@@ -12,23 +12,28 @@ extends Resource
 ## The playfield window (where `SectorWorld` is placed).
 @export var playfield: Rect2i = Rect2i()
 
-## The console background picture (616 x 72).
+## The console background picture (616 x 72) and its size, written from the picture at import (a layout is data: what a script may draw in is the layout's rectangle, `ConsoleState.rects`, never what a picture happens to be).
 @export var bezel: Texture2D
 @export var bezel_position: Vector2i = Vector2i.ZERO
+@export var bezel_size: Vector2i = Vector2i.ZERO
 
+## The area of each gauge, the rectangle the original redraws when the gauge changes (`DisplayBezel` and the functions after it: the `dirty_rect` of `docs/data/hud_gauges.json`); every slot of the gauge lies inside it.
 ## Spare oxygen tanks: one icon per slot, full or empty.
 @export var tank_positions: PackedVector2Array = PackedVector2Array()
+@export var tank_rect: Rect2i = Rect2i()
 @export var tank_full: Texture2D
 @export var tank_empty: Texture2D
 
 ## The oxygen gauge: four cells. With one cell left, the first one shows `oxygen_low` instead.
 @export var oxygen_positions: PackedVector2Array = PackedVector2Array()
+@export var oxygen_rect: Rect2i = Rect2i()
 @export var oxygen_full: Texture2D
 @export var oxygen_empty: Texture2D
 @export var oxygen_low: Texture2D
 
 ## Ink pellets: 21 icons.
 @export var ink_positions: PackedVector2Array = PackedVector2Array()
+@export var ink_rect: Rect2i = Rect2i()
 @export var ink_full: Texture2D
 @export var ink_empty: Texture2D
 
@@ -53,11 +58,13 @@ extends Resource
 @export var sector_final_texture: Texture2D
 @export var sector_size: Vector2i = Vector2i.ZERO
 
-## The two message lights (surface ship, onboard computer): [off, on] pictures each.
+## The two message lights (surface ship, onboard computer): [off, on] pictures each, the same size (written from the pictures at import, like the lettering's).
 @export var ship_position: Vector2i = Vector2i.ZERO
 @export var ship_textures: Array[Texture2D] = []
+@export var ship_size: Vector2i = Vector2i.ZERO
 @export var computer_position: Vector2i = Vector2i.ZERO
 @export var computer_textures: Array[Texture2D] = []
+@export var computer_size: Vector2i = Vector2i.ZERO
 
 ## The frame around playfield and console, drawn last: filled rectangles in drawing order.
 @export var frame_rects: Array[Rect2i] = []

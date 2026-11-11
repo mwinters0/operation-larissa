@@ -19,6 +19,7 @@ extends GdUnitTestSuite
 ## reach (the rules' data) are in `test_skins_dont_change_the_game.gd`.
 
 const WORLD_SCENE := "res://src/gameplay/sector_world.tscn"
+const HUD_SCENE := "res://src/ui/hud.tscn"
 const GAME_STATE_SCRIPT := "res://src/autoload/game_state.gd"
 ## Sectors of the scripted visit: the arena, the fish, a sector of the tour and the closing (a finale screen). Between them they have launch, balloon, dock,
 ## a problem, a lost tank, screen changes and the closing.
@@ -48,7 +49,7 @@ func after_test() -> void:
 ## Plays `SectorScenario` on sector `sector` with the given shell and returns the scenario.
 ## `shell`: &"none" (plain objects), or the presenter of a `SectorWorld`: PresenterChoice.ORIGINAL, PresenterChoice.DEBUG_RECTS, &"blank",
 ## &"vandal" (`SkinVandal`: scribbles over every copy of the skin API), &"overlay" (the original presenter with the debug rectangles laid over it).
-## With `skin`, the skin is in use before the world is made, so the world is built the way the game is with that skin.
+## With `skin`, the skin is in use before the world is made, so the world is built the way the game is with that skin, and the game's console (`Hud`) is beside the world, shown after every tick as the presenter is.
 ## With `player`, a player of a campaign (a campaign that declares a mod, `ModRuleShelf`), the run begins as the sign-in screen begins it, so its rule hooks are the run's, and the visit is that player's.
 func _play(sector: int, shell: StringName, skin: GameSkin = null, player: PlayerProfile = null) -> SectorScenario:
 	GameState.reset()
@@ -75,11 +76,17 @@ func _play(sector: int, shell: StringName, skin: GameSkin = null, player: Player
 			world.replace_presenter(SectorPresenter.new())
 		&"vandal":                              # a skin that overwrites everything the skin API gives it
 			world.replace_presenter(SkinVandal.new())
+	var console: Hud = null                      # (the console of a skin's visit: the game's own HUD, whose parts a skin mod's script may draw)
+	if skin != null:
+		console = (load(HUD_SCENE) as PackedScene).instantiate() as Hud
+		world.add_child(console)
 	# the picture is asked to follow after every tick, as the frames of the game do
 	var fraction := [0.0]
 	world.sim.ticked.connect(func() -> void:
 		fraction[0] = fmod(fraction[0] + 0.37, 1.0)
 		world.presenter.show_between_ticks(fraction[0])
+		if console != null:
+			console.show_mod_layers(fraction[0])
 		if world.presenter is DebugRectPresenter:
 			(world.presenter as DebugRectPresenter).boxes()
 		if world.overlay != null:

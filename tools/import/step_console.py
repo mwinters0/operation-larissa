@@ -28,7 +28,7 @@ def _hud_tex(t: tres.Tres, item: int) -> str:
 
 
 def _label_size(items) -> tuple[int, int]:
-    """The size of the lettering pictures `items` (bezel items): they must all be the same size."""
+    """The size of the pictures `items` (bezel items: a lettering, the console, a light): they must all be the same size."""
     sizes = {png_size(res_path(ui_file("hud", BEZEL_FIRST_ID + item))) for item in items}
     assert len(sizes) == 1, f"the pictures of one HUD label differ in size: {sorted(sizes)}"
     return sizes.pop()
@@ -53,20 +53,24 @@ def build_hud_layout(gauges: dict, console: dict, colors: list) -> str:
     t.set("playfield", tres.rect2i(px, py, pw, ph))
     t.set("bezel", _hud_tex(t, gauges["bezel_background"]["pic"]))
     t.set("bezel_position", tres.vec2i(*gauges["bezel_background"]["xy"]))
+    t.set("bezel_size", tres.vec2i(*_label_size([gauges["bezel_background"]["pic"]])))
 
     tanks = gauges["tanks"]
     t.set("tank_positions", _slots([(x, tanks["y"]) for x in tanks["x"]]))
+    t.set("tank_rect", tres.rect2i(*tanks["dirty_rect"]))             # the area the original redraws when a gauge changes: the rectangle a script may draw a gauge in
     t.set("tank_full", _hud_tex(t, tanks["pic_full"]))
     t.set("tank_empty", _hud_tex(t, tanks["pic_empty"]))
 
     ox = gauges["oxygen"]
     t.set("oxygen_positions", _slots([(ox["x0"] + ox["step_x"] * i, ox["y"]) for i in range(ox["slots"])]))
+    t.set("oxygen_rect", tres.rect2i(*ox["dirty_rect"]))
     t.set("oxygen_full", _hud_tex(t, ox["pic_full"]))
     t.set("oxygen_empty", _hud_tex(t, ox["pic_empty"]))
     t.set("oxygen_low", _hud_tex(t, ox["pic_low_warning"]))
 
     ink = gauges["ink_pellets"]
     t.set("ink_positions", _slots(ink["xy"]))
+    t.set("ink_rect", tres.rect2i(*ink["dirty_rect"]))
     t.set("ink_full", _hud_tex(t, ink["pic_full"]))
     t.set("ink_empty", _hud_tex(t, ink["pic_empty"]))
 
@@ -95,6 +99,7 @@ def build_hud_layout(gauges: dict, console: dict, colors: list) -> str:
         light = lights[name]
         t.set(name + "_position", tres.vec2i(*light["xy"]))
         t.set(name + "_textures", tres.array("Texture2D", [_hud_tex(t, light["pic_off"]), _hud_tex(t, light["pic_on"])]))
+        t.set(name + "_size", tres.vec2i(*_label_size([light["pic_off"], light["pic_on"]])))
 
     rects = [e for e in console["frame"] if e[0] == "rect"]
     t.set("frame_rects", tres.array("Rect2i", [tres.rect2i(*e[2:6]) for e in rects]))

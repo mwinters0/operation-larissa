@@ -310,10 +310,18 @@ tools/godot.sh --path godot res://src/debug/sector_viewer.tscn -- --presenter=de
   pellets, the station's trip and the sub's dissolve from the sim in `bind` and on every load, and a new `Foe` decides "glide or hop" from its model).
 - **The console is derived once.** `ConsoleState` (`src/ui/console_state.gd`) makes the console's state as plain data from `GameState` and the
   layout in use: the gauges' values and slots, the low-air warning, the capsule pieces, each label's picture, word and box, the lights and the
-  rectangles. `Hud` takes each of those from it (its signal handlers call the part they own: `ConsoleState.oxygen`, `labels`, `lights`) and
+  rectangles of every part (`ConsoleState.rects`, from the layout's data). `Hud` takes each of those from it (its signal handlers call the part they own: `ConsoleState.oxygen`, `labels`, `lights`) and
   holds no copy of the logic, so what a script is told of the console and what the HUD shows are one fact. `tests/engine/test_console_state.gd`
   plays a game and finds every field in the HUD's nodes after every step, with the original's pictures and a skin with text, and shows a HUD made
-  in the middle the same.
+  in the middle the same. The blink of a light and the pulse of the warning cell are the HUD's two `AnimationPlayer`s (the one clock the glow is drawn
+  from), and the state carries where they are (`phase`) so a script blinks with them.
+- **The console's layers are the sector's mechanism.** A skin mod's script may draw parts of the console as it draws layers of the sector: the HUD makes a
+  `ModLayerHost` (`ModLayerHost.make_hud`) for the skin it wears, the same class `OriginalPresenter` makes for its layers, with the HUD as its site (`Hud.layer_nodes`,
+  `layer_clip`, `console_state`; the presenter's site is its layer nodes and `SkinState.build`). Each part a script draws has a stack in a clipping `Control` of the
+  part's rectangle behind the part's original nodes, which are made transparent (`modulate`: the HUD's own animations use `self_modulate`) while the script has answered; the
+  state is built again every frame from `GameState` (no copy to go stale), `Hud._process` runs only while a host exists, and the host is made again whenever the HUD puts
+  a skin on (`_apply_skin`), so a skin put on, taken off or quarantined and a HUD made in the middle of anything show what the first shows (`tests/engine/test_mod_skin_hud.gd`;
+  `test_plays_identically.gd` plays every skin of the roster with a `Hud` beside the world).
 
 ## The flow of a mission: `GameFlow`
 

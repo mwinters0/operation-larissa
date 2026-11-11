@@ -22,6 +22,7 @@ godot="$PWD/../tools/godot.sh"
 WINDOWED=(
   tests/legacy/test_snapshots.gd     # reads pixels back from a viewport: the dummy renderer draws nothing (skipped headless)
   tests/engine/test_skin_creatures_render.gd  # the creatures skin's 3D puffer fish in a SubViewport: pixels again (skipped headless)
+  tests/engine/test_mod_skin_hud_render.gd    # a skin mod's picture of the console is cut off at its part's rectangle: pixels again (skipped headless)
 )
 
 # The pack a group runs on.

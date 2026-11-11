@@ -6,7 +6,7 @@ extends GdUnitTestSuite
 
 const HUD_SCENE := "res://src/ui/hud.tscn"
 const TINY := "res://tests/skins/tiny/skin.tres"
-const TOP_KEYS := ["sector", "customized", "tanks", "oxygen", "ink", "pieces", "labels", "lights", "bezel", "playfield"]
+const TOP_KEYS := ["sector", "customized", "tanks", "oxygen", "ink", "pieces", "labels", "lights", "bezel", "playfield", "rects"]
 
 
 func before_test() -> void:
@@ -93,6 +93,44 @@ func test_it_is_made_again_from_the_owner_each_time() -> void:
 	var after := ConsoleState.build(hud.layout, null)
 	assert_int(after["ink"]["value"]).is_equal(before["ink"]["value"] - 1)
 	assert_dict(ConsoleState.build(hud.layout, null)).is_equal(after)                 # (nothing is kept between calls)
+
+
+func test_every_layer_has_a_rectangle_from_the_layouts_own_data() -> void:
+	var layout := _hud().layout
+	var rects: Dictionary = ConsoleState.build(layout, null)["rects"]
+	assert_array(rects.keys()).contains_exactly_in_any_order(SkinLayers.hud_layers().map(func(layer: StringName) -> String: return String(layer)))
+	assert_object(rects["hud_bezel"]).is_equal(Rect2(Vector2(layout.bezel_position), Vector2(layout.bezel_size)))
+	assert_object(rects["hud_tanks"]).is_equal(Rect2(layout.tank_rect))
+	assert_object(rects["hud_oxygen"]).is_equal(Rect2(layout.oxygen_rect))
+	assert_object(rects["hud_ink"]).is_equal(Rect2(layout.ink_rect))
+	assert_object(rects["hud_zone"]).is_equal(ConsoleState.labels(layout, null)["zone"]["rect"])
+	assert_object(rects["hud_ship"]).is_equal(Rect2(Vector2(layout.ship_position), Vector2(layout.ship_size)))
+	for layer: String in rects:
+		assert_bool(rects[layer].has_area()).override_failure_message("the layer %s has no area" % layer).is_true()
+		assert_bool((rects["hud"] as Rect2).encloses(rects[layer])).override_failure_message("the whole console does not hold %s" % layer).is_true()
+	for part: Array in [["tank", layout.tank_positions], ["oxygen", layout.oxygen_positions], ["ink", layout.ink_positions]]:     # (every slot of a gauge starts inside the gauge's area)
+		for position in part[1] as PackedVector2Array:
+			assert_bool((rects["hud_" + ("tanks" if part[0] == "tank" else part[0])] as Rect2).has_point(position)).override_failure_message("a %s slot at %s is outside its area" % [part[0], position]).is_true()
+
+
+func test_the_phases_are_the_huds_animations_and_zero_while_they_do_not_run() -> void:
+	var layout := _hud().layout
+	var still := ConsoleState.build(layout, null)
+	assert_float(still["oxygen"]["phase"]).is_equal(0.0)
+	assert_float(still["lights"]["ship"]["phase"]).is_equal(0.0)
+	GameState.set_message_light(true, false)
+	GameState.update_oxygen(-(GameState.oxygen() - ConsoleState.LOW_OXYGEN))
+	var told := ConsoleState.build(layout, null, 0.25, 0.5)
+	assert_float(told["lights"]["ship"]["phase"]).is_equal(0.25)
+	assert_float(told["lights"]["computer"]["phase"]).override_failure_message("a light that is off has no phase").is_equal(0.0)
+	assert_float(told["oxygen"]["phase"]).is_equal(0.5)
+	GameState.update_oxygen(1)
+	assert_float(ConsoleState.build(layout, null, 0.25, 0.5)["oxygen"]["phase"]).override_failure_message("air that is not low does not pulse").is_equal(0.0)
+	var hud := _hud()                                                                       # (the HUD asks its own animations)
+	GameState.set_message_light(false, true)
+	hud.light_animations.advance(0.125)
+	assert_float(hud.console_state()["lights"]["computer"]["phase"]).is_equal_approx(0.25, 0.001)
+	assert_float(hud.console_state()["lights"]["ship"]["phase"]).is_equal(0.0)
 
 
 func test_the_pieces_are_told_by_index() -> void:

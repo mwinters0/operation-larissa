@@ -14,6 +14,19 @@ func test_the_calculator_and_answer_box_sizes_are_the_pictures_sizes() -> void:
 	assert_object(layout.answer_size).is_equal(Vector2i(layout.answer_panel.get_size()))
 
 
+func test_the_consoles_sizes_are_the_pictures_sizes_and_each_gauges_area_holds_its_icons() -> void:
+	var layout: HudLayout = Catalog.hud_layout()
+	assert_object(layout.bezel_size).is_equal(Vector2i(layout.bezel.get_size()))
+	for pair: Array in [[layout.ship_textures, layout.ship_size], [layout.computer_textures, layout.computer_size]]:
+		for texture: Texture2D in pair[0]:
+			assert_object(pair[1]).is_equal(Vector2i(texture.get_size()))
+	for gauge: Array in [[layout.tank_positions, layout.tank_rect, layout.tank_full, layout.tank_empty], [layout.oxygen_positions, layout.oxygen_rect, layout.oxygen_full, layout.oxygen_empty],
+			[layout.ink_positions, layout.ink_rect, layout.ink_full, layout.ink_empty]]:
+		assert_object((gauge[2] as Texture2D).get_size()).is_equal((gauge[3] as Texture2D).get_size())
+		for position in gauge[0] as PackedVector2Array:
+			assert_bool(Rect2(gauge[1]).encloses(Rect2(position, (gauge[2] as Texture2D).get_size()))).override_failure_message("an icon at %s is not inside %s" % [position, gauge[1]]).is_true()
+
+
 func test_the_lcd_glyph_sizes_are_the_glyph_pictures_sizes() -> void:
 	var layout: CalculatorLayout = Catalog.calculator_layout()
 	assert_int(layout.digit_sizes.size()).is_equal(10)

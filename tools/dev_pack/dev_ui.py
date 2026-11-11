@@ -36,14 +36,18 @@ def hud_layout_tres() -> str:
     t.set("playfield", tres.rect2i(16, 32, 608, 288))      # 38 x 18 tiles of 16 px: the engine's playfield
     t.set("bezel", tx(0))
     t.set("bezel_position", tres.vec2i(12, 324))
+    t.set("bezel_size", tres.vec2i(*dp.BEZEL))
     t.set("tank_positions", vecs([(100 + 28 * i, 336) for i in range(6)]))
+    t.set("tank_rect", tres.rect2i(100, 336, 6 * 28 - 8, 20))                # the slots' icons are 20 x 20 and 28 apart
     t.set("tank_full", tx(15))
     t.set("tank_empty", tx(16))
     t.set("oxygen_positions", vecs([(280 + 24 * i, 338) for i in range(4)]))
+    t.set("oxygen_rect", tres.rect2i(280, 338, 4 * 24 - 8, 16))              # 16 x 16, 24 apart
     t.set("oxygen_full", tx(17))
     t.set("oxygen_empty", tx(18))
     t.set("oxygen_low", tx(19))
     t.set("ink_positions", vecs([(100 + 12 * (i % 7), 362 + 10 * (i // 7)) for i in range(21)]))
+    t.set("ink_rect", tres.rect2i(100, 362, 7 * 12 - 4, 3 * 10 - 2))         # 8 x 8, in 7 columns 12 apart and 3 rows 10 apart
     t.set("ink_full", tx(4))
     t.set("ink_empty", tx(5))
     t.set("game_position", tres.vec2i(512, 370))
@@ -61,8 +65,10 @@ def hud_layout_tres() -> str:
     t.set("sector_size", tres.vec2i(*dp.LABEL))
     t.set("ship_position", tres.vec2i(408, 330))
     t.set("ship_textures", tres.array("Texture2D", [tx(21), tx(22)]))
+    t.set("ship_size", tres.vec2i(*dp.HUD_SIZES[21]))
     t.set("computer_position", tres.vec2i(408, 350))
     t.set("computer_textures", tres.array("Texture2D", [tx(23), tx(24)]))
+    t.set("computer_size", tres.vec2i(*dp.HUD_SIZES[23]))
     rects = [(0, 0, 640, 2), (0, 398, 640, 2), (0, 0, 2, 400), (638, 0, 2, 400), (12, 30, 616, 2), (12, 320, 616, 2)]
     t.set("frame_rects", tres.array("Rect2i", [tres.rect2i(*r) for r in rects]))
     t.set("frame_colors", "PackedColorArray(%s)" % ", ".join("0, 0, 0, 1" if i < 4 else "0.5, 0.5, 0.5, 1" for i in range(len(rects))))

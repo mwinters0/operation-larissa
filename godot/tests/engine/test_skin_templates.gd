@@ -1,8 +1,8 @@
 class_name TestSkinTemplates
 extends GdUnitTestSuite
 ## Teaches: a tool whose answer is a list read off the engine's own data. The art templates (`SkinTemplates`, the command line `skin_templates_tool.tscn`) write one flat-colour PNG per picture of the
-## HUD's layout, named by the skin key a skin's `pictures` uses, at the size of the picture in the layout, with the key and the size written on it: so these tests read the layout, ask for the same
-## keys and sizes, and look at the files. Another phase's pictures are one more layout in `SkinTemplates.SOURCES`, and the same tests cover them.
+## HUD's layout, named by the skin key a skin's `pictures` uses, at the size of the picture in the layout, with the key and the size written on it, and one for each layer of the console a script may draw, at the size of the
+## layer's rectangle in the layout: so these tests read the layout, ask for the same keys and sizes, and look at the files. Another phase's pictures are one more layout in `SkinTemplates.SOURCES`, and the same tests cover them.
 
 const OUT := "user://test_skin_templates"
 
@@ -13,11 +13,21 @@ func after_test() -> void:
 	PackFiles.remove_tree(OUT)
 
 
-## key -> size of the entries.
+## key -> size of the entries that are pictures a skin replaces (`ui_picture/...`).
 func _sizes() -> Dictionary:
 	var sizes := {}
 	for entry in SkinTemplates.entries():
-		sizes[entry.key] = entry.size
+		if entry.key.begins_with("ui_picture/"):
+			sizes[entry.key] = entry.size
+	return sizes
+
+
+## layer -> size of the entries that are layers of the console a script may draw.
+func _layer_sizes() -> Dictionary:
+	var sizes := {}
+	for entry in SkinTemplates.entries():
+		if entry.key.begins_with(SkinTemplates.LAYER_KIND + "/"):
+			sizes[StringName(entry.key.get_slice("/", 1))] = entry.size
 	return sizes
 
 
@@ -57,9 +67,23 @@ func test_every_picture_of_the_hud_layout_has_an_entry_at_its_size() -> void:
 	assert_int(sizes.size()).is_equal(24)
 
 
+func test_every_layer_of_the_console_has_an_entry_at_the_size_of_its_rectangle() -> void:
+	var sizes := _layer_sizes()
+	var rects := ConsoleState.rects(_layout)
+	assert_array(sizes.keys()).is_equal(SkinLayers.hud_layers())
+	for layer in SkinLayers.hud_layers():
+		assert_object(sizes[layer]).override_failure_message(String(layer)).is_equal(Vector2i((rects[String(layer)] as Rect2).size))
+	assert_object(sizes[&"hud_bezel"]).is_equal(_layout.bezel_size)
+	assert_object(sizes[&"hud_ship"]).is_equal(_layout.ship_size)
+	assert_object(sizes[&"hud_oxygen"]).is_equal(_layout.oxygen_rect.size)
+
+
 func test_the_keys_are_keys_a_skin_may_name_and_the_game_asks_for() -> void:
 	var seen := {}
 	for entry in SkinTemplates.entries():
+		if entry.key.begins_with(SkinTemplates.LAYER_KIND + "/"):
+			assert_bool(SkinLayers.is_hud_layer(StringName(entry.key.get_slice("/", 1)))).is_true()
+			continue
 		assert_bool(ModSpec.is_picture_key(entry.key)).is_true()
 		assert_bool(NameRegistry.original().index_of(&"ui_picture", entry.key.get_slice("/", 1)) >= 0).is_true()
 		assert_bool(seen.has(entry.key)).is_false()
@@ -91,6 +115,7 @@ func test_it_writes_one_png_per_key_at_the_layout_size() -> void:
 		assert_bool(written.has(path)).is_true()
 		assert_object(_read(path).get_size()).is_equal(entry.size)
 	assert_bool(FileAccess.file_exists("%s/ui_picture/%s.png" % [OUT, _key_of(_layout.bezel).get_slice("/", 1)])).is_true()
+	assert_bool(FileAccess.file_exists("%s/hud_layer/hud_oxygen.png" % OUT)).is_true()
 
 
 func test_a_template_is_one_flat_colour_with_the_words_in_another() -> void:

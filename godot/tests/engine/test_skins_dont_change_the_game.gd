@@ -93,6 +93,7 @@ func test_switching_from_any_skin_to_any_other_in_the_middle_of_a_visit_changes_
 			# a, then b at tick 40, then a again at tick 80: every ordered pair is a switch both ways
 			var lines := _switching(DevCreatures.ARENA, [skins[a], skins[b], skins[a]], 40)
 			_assert_same(plain, lines, "sector %d, %s then %s" % [DevCreatures.ARENA, skins[a].id, skins[b].id])
+			await await_idle_frame()                                    # (the presenters made and freed by a pair are cleared away before the next: a frame empties the message queue, which a hundred pairs in one go fill)
 
 
 func test_going_through_every_skin_in_turn_changes_nothing() -> void:
