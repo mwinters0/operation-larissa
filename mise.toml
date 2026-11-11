@@ -51,6 +51,20 @@ mkdir -p "$out"
 tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --export-pack=${usage_pack} --archive "--out=$out" ${usage_version:+--version=$usage_version} ${usage_no_reach:+--no-reach}
 '''
 
+[tasks."skin:templates"]
+description = "Write the art templates of a skin (one flat-colour PNG per picture a skin may replace, with its key and size on it) into the folder skin_templates of the current directory or --out; --pack legacy gives the original's sizes: mise run skin:templates [--out <dir>] [--pack <id>]"
+usage = '''
+flag "--out <dir>" help="the folder the templates go into (default skin_templates in the current directory)"
+flag "--pack <id>" help="the pack whose layouts give the sizes (default the pack in use: legacy when there is one, else dev)"
+'''
+run = '''
+set -e
+out="${usage_out:-{{cwd}}/skin_templates}"
+case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
+mkdir -p "$out"
+tools/godot.sh --headless --path godot res://src/skins/skin_templates_tool.tscn -- "--out=$out" ${usage_pack:+--pack=$usage_pack}
+'''
+
 [tasks."test:engine"]
 description = "The engine's gdUnit4 tests, on the dev pack"
 run = "tools/run_tests.sh engine"

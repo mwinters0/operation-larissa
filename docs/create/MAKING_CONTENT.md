@@ -505,6 +505,7 @@ All from the repository root; the arguments after `--` belong to the scene.
 | `res://src/debug/foe_sandbox.tscn` | `--sector= --screen= --foe=N --pause --fly --touch=N --ticks= --snapshot=` |
 | `res://src/debug/screen_playtest.tscn` | `--sector= --screen= --oxygen= --ink= --pieces= --flags=` (the rest are in `PlaytestSetup`) |
 | `res://src/debug/skin_compare.tscn` | `--skin= --sector= --screen= --fly --overlay --ticks= --snapshot=PATH` |
+| `res://src/skins/skin_templates_tool.tscn` | `--out=DIR`, `--pack=ID`, `--list` (`mise run skin:templates`) |
 
 ---
 

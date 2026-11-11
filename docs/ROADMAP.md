@@ -73,10 +73,9 @@ of a phase are done in order.
 (K1: the HUD's bezel, gauges, lights and label boxes; later phases their own keys), a PNG of the original's exact size in one flat
 colour with the key and the size written on it, made by a committed tool (one line in `CODEMAP.md`; the sizes come from the layouts,
 not from the original's pixels, so the templates carry no original content and are committed in the example pack). The user draws the
-real art from them. K1d builds the tool; each later phase's last item adds its keys to it.
+real art from them. The tool is `SkinTemplates` (`docs/create/SKIN_API.md` "Art templates"); the original's exact sizes are those of the legacy pack's layouts (`--pack=legacy` reads sizes only), the dev pack's pictures having sizes of their own; each later phase's last item adds the layouts that hold its keys to `SkinTemplates.SOURCES`.
 
 **K1: skins as data.** A skin pack needs no script.
-- **K1d: the template tool.** The art templates tool, with the HUD's keys (bezel, gauges, lights, label boxes) at their layout sizes.
 - **K1e: `modern` as the example pack.** `examples/packs/modern/`, its `.larissa` built by a mise task: the water shimmer on
   `background`, Exo 2 on the HUD, linear filtering, and the HUD art from the templates. `res://skins/modern/` and
   `test_skin_modern.gd` go; the example's tests take their place. Settle the export: `create/CONTENT.md` says the project's skins are
