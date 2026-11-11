@@ -93,6 +93,12 @@ func _moments() -> Dictionary:
 			sim.start_balloon()
 			for t in 6:
 				sim.tick(),
+		"a screen with animated decorations, some ticks on": func(sim: SimWorld) -> void:
+			sim.load_sector(100, 6)                                 # (the dev pack's sector with decorations in every layer)
+			sim.foe_context.rng.seed = 4242
+			sim.start_flight(200, 150, 6)
+			for t in 5:
+				sim.tick(),
 		"the creatures reloaded with ink in flight": func(sim: SimWorld) -> void:
 			_fly(sim, 0)
 			sim.tick(InputSnapshot.firing())
@@ -164,6 +170,10 @@ func test_the_moments_hold_what_they_are_named_for() -> void:
 		moments[name].call(sim)
 		assert_object(sim.sequence).override_failure_message(name).is_not_null()
 		assert_bool(sim.sequence.is_done()).override_failure_message(name).is_false()
+	sim = SimWorld.new(GameState)
+	moments["a screen with animated decorations, some ticks on"].call(sim)
+	assert_int(sim.sector.screens[sim.screen_index].anim_decos.size()).is_greater(0)
+	assert_int(SimView.new(sim).screen_ticks()).is_equal(5)
 	sim = SimWorld.new(GameState)
 	moments["the creatures reloaded with ink in flight"].call(sim)
 	assert_int(sim.pellets.size()).is_greater(0)

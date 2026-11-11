@@ -38,31 +38,25 @@ func _ready() -> void:
 	var frames := Catalog.station_frames()
 	for sprite in [body_a, body_b, body_c, door, balloon]:
 		(sprite as Sprite2D).centered = false
-	body_a.texture = frames.get_frame_texture(&"all", 0)
-	body_b.texture = frames.get_frame_texture(&"all", 1)
-	body_c.texture = frames.get_frame_texture(&"all", 1)
-	balloon.texture = frames.get_frame_texture(&"all", 6)
+	body_a.texture = frames.get_frame_texture(&"all", StationLayout.BODY)
+	body_b.texture = frames.get_frame_texture(&"all", StationLayout.BODY_END)
+	body_c.texture = frames.get_frame_texture(&"all", StationLayout.BODY_END)
+	balloon.texture = frames.get_frame_texture(&"all", StationLayout.BALLOON)
 	balloon.hide()
 	set_side(side)
 
 
-## Chooses which station to show: LEFT (start of the sector) or RIGHT (the dock at the end).
+## Chooses which station to show: LEFT (start of the sector) or RIGHT (the dock at the end). The parts and their places are `StationLayout`'s.
 func set_side(new_side: int) -> void:
 	side = new_side
-	var origin := Vector2(Sub.PLAYFIELD_ORIGIN)
-	var left := side == Side.LEFT
-	body_a.flip_h = left
-	body_a.position = Vector2(16, 144) - origin if left else Vector2(448, 144) - origin
-	body_b.visible = not left
-	body_c.visible = not left
-	body_b.position = Vector2(528, 144) - origin
-	body_c.position = Vector2(576, 144) - origin
-	body_c.flip_h = true
-	door.flip_h = left
-	door.position = Vector2(84, DRIVE_Y) - origin if left else Vector2(448, DRIVE_Y) - origin
-	set_door_picture(2)
-	var path := StationSequence.balloon()                       # (the balloon waits where its path starts)
-	balloon.position = Vector2(path.balloon_x, path.balloon_from_y) - origin
+	var nodes := {&"balloon": balloon, &"body_a": body_a, &"body_b": body_b, &"body_c": body_c, &"door": door}
+	body_b.visible = side == Side.RIGHT
+	body_c.visible = side == Side.RIGHT
+	for part in StationLayout.parts(side == Side.LEFT):
+		var node: Sprite2D = nodes[part["name"]]
+		node.position = part["position"]
+		node.flip_h = part["mirrored"]
+	set_door_picture(StationLayout.DOOR_CLOSED)
 	balloon.hide()
 
 

@@ -16,6 +16,7 @@ func test_the_example_skin_draws_every_screen_of_every_sector_of_the_original_wi
 	var faults := int(mod.get("monitor_exceptions"))
 	var screens := 0
 	var most := 0
+	var most_decos := 0
 	for index in Catalog.sector_ids():
 		GameState.reset()
 		var sim := SimWorld.new(GameState)
@@ -28,6 +29,7 @@ func test_the_example_skin_draws_every_screen_of_every_sector_of_the_original_wi
 			sim.load_screen(screen)
 			presenter.refresh()
 			screens += 1
+			most_decos = maxi(most_decos, presenter.view.decorations().size())
 			for child in presenter.get_children():
 				if child is ModLayer:
 					most = maxi(most, (child as ModLayer).commands.size())
@@ -39,3 +41,4 @@ func test_the_example_skin_draws_every_screen_of_every_sector_of_the_original_wi
 	assert_int(screens).is_greater(100)
 	assert_int(faulted).override_failure_message("the example skin faulted on a screen of the original").is_equal(0)
 	assert_int(most).is_greater(20)
+	assert_int(most_decos).override_failure_message("a screen with a hundred decorations to walk").is_greater(100)

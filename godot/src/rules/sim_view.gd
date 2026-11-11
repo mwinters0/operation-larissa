@@ -22,9 +22,10 @@ extends RefCounted
 ## told how far into it a drawn frame is by `SectorPresenter.show_between_ticks(fraction)`, and the state copies are meant for that:
 ## `motion.at(fraction)` for places, `SequenceState.progress(fraction)` for the supply trips.
 ##
-## WHAT THIS DOES NOT HAVE. The player's game (oxygen, ink, pieces) belongs to the console, which has its own events. The content
-## (`SectorData`, the screens' decorations and pictures) is read from `Catalog`, which anyone may do; it is data and is not changed by
-## playing. The creature scripts' internals (`pc`, registers) are not part of the API: a skin follows what a creature LOOKS like.
+## WHAT THIS DOES NOT HAVE. The player's game (oxygen, ink, pieces) belongs to the console, which has its own events. The pictures
+## (the background, the decorations' and the station's) are read from `Catalog` and `Assets`, which anyone may do; they are data and are not
+## changed by playing. What is ON the shown screen is here: `decorations()`, `anim_decorations()` (at the entry `screen_ticks()` ticks have
+## stepped them to) and `station()`. The creature scripts' internals (`pc`, registers) are not part of the API: a skin follows what a creature LOOKS like.
 
 # --- the copies --------------------------------------------------------------------------------
 
@@ -248,6 +249,52 @@ class SequenceState:
 		return state
 
 
+## A still decoration of the shown screen (seaweed, rock, coral ...): the `layer` it is drawn in (`back_decos`, `mid_decos` or `front_decos`, the names of `SkinLayers.NODES`), its `slot` in the zone's decoration pictures, the
+## top-left corner of the picture (playfield pixels) and whether it is mirrored.
+class DecoState:
+	extends RefCounted
+	var layer: StringName = &"back_decos"
+	var slot := 0
+	var position := Vector2.ZERO
+	var mirrored := false
+
+	static func of(layer_name: StringName, placement: DecoPlacement) -> DecoState:
+		var state := DecoState.new()
+		state.layer = layer_name
+		state.slot = placement.slot
+		state.position = Vector2(placement.pos) - SubModel.PLAYFIELD_ORIGIN
+		state.mirrored = placement.flag
+		return state
+
+
+## An animated decoration of the shown screen (the `anim_decos` layer): the list of decoration slots it shows one after another (`frames`, one entry per tick, looping), the entry it shows now (`cursor`, an index into `frames`) and
+## so the slot (`frame`, `-1` for an empty list), and the top-left corner of its pictures (playfield pixels). `cursor` is where the screen's start cursor has got to after the ticks the screen has run (`screen_ticks`).
+class AnimDecoState:
+	extends RefCounted
+	var position := Vector2.ZERO
+	var frames := PackedInt32Array()
+	var cursor := 0
+	var frame := -1
+
+	static func of(record: AnimDecoData, ticks: int) -> AnimDecoState:
+		var state := AnimDecoState.new()
+		state.position = Vector2(record.pos) - SubModel.PLAYFIELD_ORIGIN
+		state.frames = record.frames.duplicate()
+		if not record.frames.is_empty():
+			state.cursor = (record.start_cursor + ticks) % record.frames.size()
+			state.frame = record.frames[state.cursor]
+		return state
+
+
+## The supply station of the shown screen (screen 0 on the left, the dock on the right): which `left`, the picture of the door now (2 closed, 3 and 4 moving, -1 open) and whether the balloon is up. The door and the balloon are those
+## of the supply trip the rules hold (`sequence()`: one that runs, or the last one's final picture); where the pictures go is `StationLayout`.
+class StationState:
+	extends RefCounted
+	var left := true
+	var door_picture := StationLayout.DOOR_CLOSED
+	var balloon_shown := false
+
+
 # --- the events --------------------------------------------------------------------------------
 # The events of `SimWorld`, one for one, with copies instead of models. WHEN each one comes within a tick is in the table of
 # `docs/create/SKIN_API.md`; `ticked` is always the last. `EVENTS` below lists them all (a test keeps the list, the signals and the
@@ -434,6 +481,51 @@ func triggers() -> Array[TriggerState]:
 	for trigger in _sim.triggers_on_screen(_sim.screen_index):
 		found.append(TriggerState.of(trigger))
 	return found
+
+
+## The decorations of the shown screen that stand still, back layer first, then the middle and the front ones, each in the order of the screen's list.
+func decorations() -> Array[DecoState]:
+	var found: Array[DecoState] = []
+	if _sim.sector == null or _sim.screen_index < 0:
+		return found
+	var screen := _sim.sector.screens[_sim.screen_index]
+	for placement in screen.bg_decos:
+		found.append(DecoState.of(&"back_decos", placement))
+	for placement in screen.mid_decos:
+		found.append(DecoState.of(&"mid_decos", placement))
+	for placement in screen.fg_decos:
+		found.append(DecoState.of(&"front_decos", placement))
+	return found
+
+
+## The animated decorations of the shown screen, as they are after `screen_ticks()` ticks.
+func anim_decorations() -> Array[AnimDecoState]:
+	var found: Array[AnimDecoState] = []
+	if _sim.sector == null or _sim.screen_index < 0:
+		return found
+	for record in _sim.sector.screens[_sim.screen_index].anim_decos:
+		found.append(AnimDecoState.of(record, screen_ticks()))
+	return found
+
+
+## How many ticks the shown screen has run: what its animated decorations have stepped (0 when the screen was laid out in this tick or between ticks, and no tick has finished since).
+func screen_ticks() -> int:
+	return maxi(_sim.tick_number - _sim.screen_started_tick, 0)
+
+
+## The station of the shown screen, or null when it has none.
+func station() -> StationState:
+	if _sim.screen_index != 0 and _sim.screen_index != SimWorld.DOCK_SCREEN:
+		return null
+	var state := StationState.new()
+	state.left = _sim.screen_index == 0
+	var trip := _sim.sequence
+	if trip != null:
+		if trip.is_drive():
+			state.door_picture = trip.door_picture()
+		else:
+			state.balloon_shown = not trip.is_done()
+	return state
 
 
 ## The trip at a supply station that is running, or the last one that ran (`done`); null before the first.

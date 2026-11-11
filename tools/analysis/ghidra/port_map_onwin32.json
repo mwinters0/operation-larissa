@@ -1427,7 +1427,7 @@
  },
  "0x0041e943": {
   "status": "ported",
-  "where": "godot/src/gameplay/anim_deco.gd (AnimDeco: one frame-list entry per game tick, loops, start cursor) + original_presenter.gd:_build_anim_decos; drawn above the sub as in DoAction; tests/engine/test_anim_decos.gd"
+  "where": "godot/src/gameplay/anim_deco.gd (AnimDeco: one frame-list entry per game tick, loops, start cursor) + original_presenter.gd:_build_anim_decos; drawn above the sub as in DoAction; the entry a skin mod is told is derived by sim_view.gd AnimDecoState.of from SimWorld.screen_started_tick; tests/engine/test_anim_decos.gd"
  },
  "0x0041ea08": {
   "status": "n/a",

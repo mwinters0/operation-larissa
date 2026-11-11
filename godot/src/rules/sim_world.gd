@@ -184,8 +184,9 @@ const TICK_ORDER: Array[StringName] = [
 	&"fire", &"pending_problem", &"dock", &"pieces", &"sub", &"finale", &"triggers", &"creatures", &"contacts", &"pellets"]
 
 ## Cleared by `load_screen` (`DoAction` (0x417ffc) on a screen change zeroes `LastHitFoe` (0x44868c) and `StunGunFlag` (0x44b048)
-## and redraws the screen with its pieces; `RefreshMathTriggers` (0x427829) re-arms the triggers that ask for it).
-const SCREEN_FIELDS: Array[StringName] = [&"screen_index", &"tile_grid", &"pellets", &"pieces", &"_last_culprit"]
+## and redraws the screen with its pieces; `RefreshMathTriggers` (0x427829) re-arms the triggers that ask for it). `screen_started_tick`: `DrawScreen`
+## (0x433f1c) lays the screen out and `DrawAnimatedDecos` (0x41e943) steps the animated decorations from there, one entry per frame of `DoAction`.
+const SCREEN_FIELDS: Array[StringName] = [&"screen_index", &"tile_grid", &"pellets", &"pieces", &"_last_culprit", &"screen_started_tick"]
 ## Cleared by `load_sector`, which is the entry of `DoAction` (a sector start or a respawn), see `_reset_triggers`. The station trip
 ## and the dissolve are here too: in the original each is one blocking call inside `DoAction`, so none is ever running when the next
 ## `DoAction` begins; a load in the middle of one (a debug key, a respawn during the launch) ends it (`abandon_damage`).
@@ -217,6 +218,10 @@ var run: Object
 var sector: SectorData
 var sector_index: int = -1
 var screen_index: int = -1
+## The game tick (`tick_number`) in which the shown screen began to run: the animated decorations of a screen start from their start cursors there and step once per tick from then on
+## (`DrawAnimatedDecos` (0x41e943) steps its cursors once per frame of `DoAction`). A screen laid out between two ticks begins with the next tick; one the sub flew into, in the middle of a tick, with the tick after it
+## (the tick that loaded it has drawn nothing of it yet). `SimView.screen_ticks` is how many ticks it has run.
+var screen_started_tick: int = 0
 
 var sub: SubModel
 ## All creatures of the sector (also those on other screens) and what their scripts share.
@@ -354,13 +359,20 @@ func reload_creatures() -> void:
 	_refuse_inside_a_tick(&"reload_creatures")
 	_load_creatures()
 	_show_creatures()
+	_start_screen_clock()                                 # (the screen is announced again, and drawn from its start)
 	screen_loaded.emit(sector_index, screen_index)
+
+
+## The shown screen begins to run now (`screen_started_tick`).
+func _start_screen_clock() -> void:
+	screen_started_tick = tick_number + (1 if _ticking else 0)
 
 
 ## Lays out everything of screen `index` of the current sector: walls and currents, pieces, triggers, which creatures are on it.
 func load_screen(index: int) -> void:
 	assert(sector != null, "call load_sector() first")
 	screen_index = index
+	_start_screen_clock()
 	var grid := TileGrid.from_screen(sector.screens[index])
 	tile_grid = grid.without_currents() if ignore_currents else grid
 	for pellet in pellets:                                # pellets do not follow you to the next screen

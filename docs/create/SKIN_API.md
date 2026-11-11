@@ -50,8 +50,9 @@ Each call makes new **copies**: ask on `ticked` and keep the answer, do the arit
 | `view.sector_index`, `screen_index`, `zone`, `tick_number` | where we are; `tick_number` counts ticks from 0 (during a tick and in its `ticked` it is that tick's; between ticks the next one's) |
 | `view.is_solid(column, row)`, `view.current_at(column, row)` | the walls and water currents of the shown screen (38 x 18 tiles of 16 px) |
 
-The pictures of the screen itself (background, decorations) are content: read them with `Catalog` as `OriginalPresenter` does, once per
-`screen_loaded`. The player's game (air, ink, pieces) belongs to the console, not to the presenter.
+The screen's own content is read from the view too: `view.decorations()` (`DecoState`: `layer`, `slot`, `position`, `mirrored`, the still decorations back layer first), `view.anim_decorations()` (`AnimDecoState`: `position`, `frames`, `cursor`, `frame`),
+`view.screen_ticks()` (the ticks the screen has run: what the cursors have stepped) and `view.station()` (`StationState`: `left`, `door_picture`, `balloon_shown`, or null; `StationLayout.parts` says where its pictures go); the pictures themselves are the
+chain's, from `Catalog` (`decos_frames(view.zone)`, `station_frames()`, `Assets.background(...)`), once per `screen_loaded`. The player's game (air, ink, pieces) belongs to the console, not to the presenter.
 
 ### The previous state and the tick fraction
 
@@ -239,8 +240,14 @@ A read-only Dictionary, made again after any event (`SkinState.build`; places ar
 | `sequence` | null before the first supply trip, else `kind`, `ticks`, `started_tick`, `elapsed`, `done`, `drive`, `door` (the door's picture, -1 open), `balloon_previous`, `balloon_current`; progress is `(elapsed - 1 + fraction) / ticks`, 1.0 when `done` |
 | `dissolve` | `running`, `elapsed`, `ticks`, `progress` (0..1), `done` (the sub has dissolved away) |
 | `walls` | one String of `columns * rows` characters, `"1"` for a wall tile and `"0"` for water: the tile at (column, row) is `walls[row * columns + column]` |
+| `background` | the skin key of the picture behind the screen (`background/bg_s00_03`), or `""` when the screen has none (it shows plain black) |
+| `decos` | the still decorations, a Dictionary with one entry for each layer, `back_decos`, `mid_decos` and `front_decos` (the order they are drawn). Each layer is **columns**: parallel Arrays `slot`, `key` (`deco/coral_fan_cyan`; `""` for a slot the pack has no picture for), `position` (the top-left corner), `size` (the picture's) and `mirrored`, the decoration at index i being the i-th of each, in the order of the screen's list |
+| `anim_decos` | the animated decorations (the `anim_decos` layer, drawn over the sub), in columns: `position`, `size` and `key` of the picture it shows, `frame` (its slot, -1 when it has no frames) and `cursor` (the entry of its frame list it is at). A screen starts every one at its start cursor and steps it once per tick, so a skin bound on any tick is told the entry the original look shows |
+| `station` | null on a screen with no supply station (screens 0 and 11 have one), else `side` (`"left"` or `"right"`) and `parts`, the pictures of the station in the order they are drawn: `name` (`balloon`, `body_a`, `body_b`, `body_c`, `door`), `picture` (its number in the station's pictures; the door's is that of the trip now: 2 closed, 3 and 4 moving, -1 open), `key` (`frame/station_00`), `size`, `position`, `previous` (where it was a tick before: `position` for all but the balloon), `mirrored`, `shown` (false for the balloon unless a trip raises it, and for an open door) |
 
-The triggers and the water currents are not in it (invisible in the game; the rectangles of the overlay are the author's tool, `O`).
+The decorations are columns (Arrays of values) and not an Array of Dictionaries because a script may hold only so many of the game's objects at a time: a screen has up to some 150 decorations, and one Dictionary each would be more than the limit, where seven Arrays are
+seven. Walk one column by index (`for i in positions.size()`) and read the others at `i`. The screen's content is told by name: a `key` is the skin key of the picture as the pack in use holds it (`GameSkin.key_of`), with the picture's size, so a script knows what is where and how big; the draw list names pictures of the mod's own pack only (`skin/x.png`), so a script draws a
+picture of its own for each key it knows (a script that names a key the pack has no picture for draws nothing for it). The triggers and the water currents are not in it (invisible in the game; the rectangles of the overlay are the author's tool, `O`).
 
 ### The events
 

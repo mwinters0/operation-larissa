@@ -10,6 +10,10 @@ extends GdUnitTestSuite
 const WORLD_SCENE := "res://src/gameplay/sector_world.tscn"
 const PRESENTER_SCENE := "res://src/mods/mod_presenter.tscn"
 
+## The dev pack's sector with decorations of every layer, and the screen that has an animated one.
+const DECORATED_SECTOR := 100
+const DECORATED_SCREEN := 6
+
 var _shelves: Array[PackShelf] = []
 
 
@@ -44,6 +48,17 @@ func _sim() -> SimWorld:
 	sim.foe_context.rng.seed = 4242
 	sim.start_flight(200, 150, 6)
 	sim.tick()
+	return sim
+
+
+## A sim on screen `screen` of the sector of the dev pack that has all four kinds of decorations (`DECORATED_SECTOR`), the sub flying, `ticks` ticks run.
+func _decorated_sim(screen: int, ticks: int = 0) -> SimWorld:
+	var sim := SimWorld.new(GameState)
+	sim.load_sector(DECORATED_SECTOR, screen)
+	sim.foe_context.rng.seed = 4242
+	sim.start_flight(200, 150, 6)
+	for i in ticks:
+		sim.tick()
 	return sim
 
 
@@ -181,6 +196,20 @@ func test_the_document_names_every_key_of_the_state_every_command_and_every_cap(
 	sim.start_launch()
 	sim.tick()
 	for key: String in SkinState.build(SimView.new(sim))["sequence"]:
+		named.append(key)
+	var at_the_station := SimWorld.new(GameState)
+	at_the_station.load_sector(DevCreatures.ARENA, 0)
+	var launching := SkinState.build(SimView.new(at_the_station))
+	for key: String in launching["station"]:
+		named.append(key)
+	for key: String in launching["station"]["parts"][0]:
+		named.append(key)
+	var decorated := SkinState.build(SimView.new(_decorated_sim(DECORATED_SCREEN)))
+	for layer: String in decorated["decos"]:
+		named.append(layer)
+		for key: String in decorated["decos"][layer]:
+			named.append(key)
+	for key: String in decorated["anim_decos"]:
 		named.append(key)
 	for key in named:
 		assert_bool(doc.contains("`%s`" % key)).override_failure_message("SKIN_API.md does not mention the key `%s` of the state" % key).is_true()
@@ -438,6 +467,192 @@ func test_the_skin_draws_the_sector_from_the_state_it_is_given() -> void:
 	var shown := presenter.view.creatures().filter(func(c: SimView.CreatureState) -> bool: return c.shown)
 	assert_int(_commands(presenter, "picture").filter(func(c: Array) -> bool: return c[1] == shelf.pack.texture("skin/creature.png")).size()).is_equal(shown.size())
 	assert_int(shown.size()).is_greater(0)
+
+
+# --- the screen in the state --------------------------------------------------------------------------------------------
+
+func test_the_state_names_the_background_the_decorations_and_the_station_of_the_screen() -> void:
+	_mount(["skinny"] as Array[String])
+	var sim := _decorated_sim(DECORATED_SCREEN, 5)
+	var state := SkinState.build(SimView.new(sim))
+	var screen := sim.sector.screens[DECORATED_SCREEN]
+	var frames := Catalog.pack_decos_frames(sim.sector.zone)
+	var layers := {"back_decos": screen.bg_decos, "mid_decos": screen.mid_decos, "front_decos": screen.fg_decos}
+	assert_array(state["decos"].keys()).is_equal(layers.keys())                                           # (the layers in the order they are drawn)
+	for layer: String in layers:
+		var columns: Dictionary = state["decos"][layer]
+		assert_array(layers[layer]).override_failure_message("the screen has no decoration of the %s layer to tell" % layer).is_not_empty()
+		for column: String in ["slot", "key", "position", "size", "mirrored"]:
+			assert_int((columns[column] as Array).size()).is_equal(layers[layer].size())
+		for i in layers[layer].size():
+			var placement: DecoPlacement = layers[layer][i]                                              # (each in the order of the screen's list)
+			var picture := frames.get_frame_texture(&"all", placement.slot)
+			assert_int(columns["slot"][i]).is_equal(placement.slot)
+			assert_that(columns["position"][i]).is_equal(Vector2(placement.pos) - SubModel.PLAYFIELD_ORIGIN)
+			assert_bool(columns["mirrored"][i]).is_equal(placement.flag)
+			assert_str(columns["key"][i]).is_equal(GameSkin.key_of(Packs.source_of(picture)))
+			assert_str(columns["key"][i]).starts_with("deco/")
+			assert_that(columns["size"][i]).is_equal(Vector2(picture.get_size()))
+	var records := screen.anim_decos
+	assert_array(records).is_not_empty()
+	var swaying: Dictionary = state["anim_decos"]
+	for column: String in ["position", "size", "key", "frame", "cursor"]:
+		assert_int((swaying[column] as Array).size()).is_equal(records.size())
+	for i in records.size():
+		var record: AnimDecoData = records[i]
+		assert_int(swaying["cursor"][i]).is_equal((record.start_cursor + 5) % record.frames.size())     # (five ticks run on this screen)
+		assert_int(swaying["frame"][i]).is_equal(record.frames[swaying["cursor"][i]])
+		assert_that(swaying["position"][i]).is_equal(Vector2(record.pos) - SubModel.PLAYFIELD_ORIGIN)
+		assert_str(swaying["key"][i]).starts_with("deco/")
+	assert_str(state["background"]).is_equal("")                                                          # (the dev pack has no picture for sector 100)
+	assert_object(state["station"]).is_null()                                                             # (and no station on screen 6)
+	var arena := SimWorld.new(GameState)
+	arena.load_sector(0, 3)                                                                                # (sector 0 of the dev pack has its pictures)
+	assert_str(SkinState.build(SimView.new(arena))["background"]).is_equal("background/bg_s00_03")
+
+
+func test_the_station_is_told_part_by_part_as_the_trip_has_it() -> void:
+	_mount(["skinny"] as Array[String])
+	var sim := SimWorld.new(GameState)
+	sim.load_sector(DevCreatures.ARENA, 0)
+	sim.start_flight(200, 150, 6)
+	var station: Dictionary = SkinState.build(SimView.new(sim))["station"]
+	assert_str(station["side"]).is_equal("left")
+	var names := (station["parts"] as Array).map(func(part: Dictionary) -> String: return part["name"])
+	assert_array(names).is_equal(["balloon", "body_a", "door"])
+	var parts := {}
+	for part: Dictionary in station["parts"]:
+		parts[part["name"]] = part
+		assert_str(part["key"]).starts_with("frame/station_")
+		assert_that(part["size"]).is_equal(Vector2(Catalog.pack_station_frames().get_frame_texture(&"all", part["picture"]).get_size()))
+	assert_bool(parts["balloon"]["shown"]).is_false()
+	assert_bool(parts["door"]["shown"]).is_true()
+	assert_int(parts["door"]["picture"]).is_equal(StationLayout.DOOR_CLOSED)
+	for part: Dictionary in StationLayout.parts(true):                                                    # (where they go is the layout's)
+		assert_that(parts[part["name"]]["position"]).is_equal(part["position"])
+		assert_bool(parts[part["name"]]["mirrored"]).is_equal(part["mirrored"])
+	sim.load_screen(5)
+	assert_object(SkinState.build(SimView.new(sim))["station"]).is_null()
+	sim.load_screen(SimWorld.DOCK_SCREEN)
+	station = SkinState.build(SimView.new(sim))["station"]
+	assert_str(station["side"]).is_equal("right")
+	assert_array((station["parts"] as Array).map(func(part: Dictionary) -> String: return part["name"])).is_equal(["balloon", "body_a", "body_b", "body_c", "door"])
+	# the door follows the trip: it opens, and the picture is the one `sequence` says
+	sim.start_dock()
+	var doors: Array[int] = []
+	while not sim.sequence.is_done():
+		sim.tick()
+		var told := SkinState.build(SimView.new(sim))
+		var door: Dictionary = told["station"]["parts"][4]
+		assert_int(door["picture"]).is_equal(told["sequence"]["door"])
+		assert_bool(door["shown"]).is_equal(told["sequence"]["door"] >= 0)
+		doors.append(door["picture"])
+	assert_array(doors).contains([-1])
+	assert_int(doors.back()).is_equal(StationLayout.DOOR_CLOSED)
+	# the balloon rises where the trip has it
+	sim.start_balloon()
+	for i in 6:
+		sim.tick()
+	var balloon: Dictionary = SkinState.build(SimView.new(sim))["station"]["parts"][0]
+	var trip: Dictionary = SkinState.build(SimView.new(sim))["sequence"]
+	assert_bool(balloon["shown"]).is_true()
+	assert_that(balloon["position"]).is_equal(trip["balloon_current"])
+	assert_that(balloon["previous"]).is_equal(trip["balloon_previous"])
+	assert_float(balloon["position"].y).is_less(balloon["previous"].y)
+
+
+## The state tells an animated decoration the entry the original look shows: with the real clock's order (the rules tick first, then the nodes of the screen step), after any number of ticks, on a screen
+## laid out between ticks and on one the sub flew into in the middle of a tick, and after the lock opens (the screen is announced again).
+func test_the_animated_decorations_are_at_the_entry_the_original_look_shows() -> void:
+	var sim := SimWorld.new(GameState)
+	var clock := func(_count: int) -> void: sim.tick(InputSnapshot.steering(1 if sim.screen_index < DECORATED_SCREEN else 0))
+	GameClock.tick.connect(clock)                                       # (as `SectorWorld` does: the rules first, the decorations after)
+	sim.load_sector(DECORATED_SECTOR, DECORATED_SCREEN - 1)
+	sim.start_flight(560, 150, 6)
+	var original := auto_free((load("res://src/gameplay/original_presenter.tscn") as PackedScene).instantiate()) as OriginalPresenter
+	original.run_in_skin(func() -> void:
+		add_child(original)
+		original.bind(sim))
+	var changed := -1
+	var compared := 0
+	for i in 60:
+		GameClock.tick.emit(i)
+		if sim.screen_index == DECORATED_SCREEN and changed < 0:
+			changed = i
+		if changed >= 0 and sim.screen_index == DECORATED_SCREEN:
+			_assert_the_decorations_step_as_the_original_look_does(sim, original, "tick %d, %d after the sub came in" % [i, i - changed])
+			compared += 1
+	GameClock.tick.disconnect(clock)
+	assert_int(changed).override_failure_message("the sub did not fly into screen %d" % DECORATED_SCREEN).is_greater_equal(0)
+	assert_int(compared).is_greater_equal(12)
+	sim.load_screen(DECORATED_SCREEN)                                   # (between ticks: the next tick is the screen's first)
+	GameClock.tick.connect(clock)
+	for i in 14:
+		_assert_the_decorations_step_as_the_original_look_does(sim, original, "a load between ticks, %d ticks on" % i)
+		GameClock.tick.emit(i)
+	sim.reload_creatures()
+	_assert_the_decorations_step_as_the_original_look_does(sim, original, "the creatures reloaded")
+	GameClock.tick.emit(0)
+	_assert_the_decorations_step_as_the_original_look_does(sim, original, "a tick after the creatures reloaded")
+	GameClock.tick.disconnect(clock)
+	original.unbind()
+
+
+func _assert_the_decorations_step_as_the_original_look_does(sim: SimWorld, original: OriginalPresenter, when: String) -> void:
+	var view := SimView.new(sim)
+	var told: Array = SkinState.build(view)["anim_decos"]["frame"]
+	view.close()
+	var shown: Array = original.anim_decos.get_children().map(func(deco: AnimDeco) -> int: return deco.frame)
+	assert_array(shown).is_not_empty()
+	assert_array(told).override_failure_message("%s: the state says the entries %s, the original look shows %s" % [when, told, shown]).is_equal(shown)
+
+
+func test_the_state_of_a_screen_is_the_same_for_a_skin_bound_late() -> void:
+	var shelf := _mount(["skinny"] as Array[String])
+	var skin := SkinChoice.load_skin(shelf.id)
+	var sim := SimWorld.new(GameState)
+	var early := _presenter(sim, skin)
+	sim.load_sector(DECORATED_SECTOR, DECORATED_SCREEN)
+	sim.foe_context.rng.seed = 4242
+	sim.start_flight(200, 150, 6)
+	for i in 7:
+		sim.tick()
+	var late := _presenter(sim, skin)
+	for presenter: ModPresenter in [early, late]:
+		presenter.show_between_ticks(0.5)
+	assert_array(late.drawn()).is_not_empty()
+	assert_array(late.drawn()).is_equal(early.drawn())
+	assert_array(_commands(late, "rect").filter(func(c: Array) -> bool: return (c[2] as Color).is_equal_approx(Color(0.30, 0.60, 0.30, 0.6)))).is_not_empty()   # (the front decorations were drawn)
+
+
+func test_the_skin_draws_the_screen_from_what_the_state_tells() -> void:
+	var shelf := _mount(["skinny"] as Array[String])
+	var skin := SkinChoice.load_skin(shelf.id)
+	var sim := _decorated_sim(DECORATED_SCREEN, 3)
+	var presenter := _presenter(sim, skin)
+	presenter.show_between_ticks(1.0)
+	var state := SkinState.build(presenter.view)
+	var rects := _commands(presenter, "rect")
+	for layer: Array in [["back_decos", Color(0.10, 0.40, 0.25, 0.6)], ["mid_decos", Color(0.20, 0.50, 0.20, 0.6)], ["front_decos", Color(0.30, 0.60, 0.30, 0.6)]]:
+		var columns: Dictionary = state["decos"][layer[0]]
+		assert_array(columns["position"]).override_failure_message("a %s to draw" % layer[0]).is_not_empty()
+		var wanted: Array[Rect2] = []
+		for i in (columns["position"] as Array).size():
+			wanted.append(Rect2(columns["position"][i], columns["size"][i]))
+		var drawn := rects.filter(func(c: Array) -> bool: return (c[2] as Color).is_equal_approx(layer[1]))
+		assert_array(drawn.map(func(c: Array) -> Rect2: return c[1])).is_equal(wanted)
+	var swaying: Dictionary = state["anim_decos"]
+	for i in (swaying["cursor"] as Array).size():
+		var colour := Color.from_hsv((swaying["cursor"][i] % 12) / 12.0, 0.5, 1.0, 0.6)
+		var area := Rect2(swaying["position"][i], swaying["size"][i])
+		assert_array(rects.filter(func(c: Array) -> bool: return (c[2] as Color).is_equal_approx(colour) and c[1] == area)).is_not_empty()
+	var arena := SimWorld.new(GameState)                                                                    # (a screen with a station: its parts, the door in its colour)
+	arena.load_sector(0, 0)
+	arena.start_flight(200, 150, 6)
+	var with_station := _presenter(arena, skin)
+	with_station.show_between_ticks(1.0)
+	var door := (SkinState.build(with_station.view)["station"]["parts"] as Array)[2] as Dictionary
+	assert_array(_commands(with_station, "rect").filter(func(c: Array) -> bool: return c[1] == Rect2(door["position"], door["size"]) and c[2] == Color(0.9, 0.8, 0.2))).has_size(1)
 
 
 func test_what_moves_is_drawn_between_where_it_was_and_where_it_is() -> void:

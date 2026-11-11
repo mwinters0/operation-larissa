@@ -523,8 +523,16 @@ static func tileset() -> TileSet:
 ## SpriteFrames of the zone's decorations (slot == frame index, animation "all").
 ## Finale zones share the decos of art zone 4.
 static func decos_frames(zone_index: int) -> SpriteFrames:
-	var art_zone := zone(zone_index).tile_zone
-	return _skinned("data/sprite_frames/decos_zone%d.tres" % art_zone) as SpriteFrames
+	return _skinned(_decos_rel(zone_index)) as SpriteFrames
+
+
+## The same pictures as the pack in use holds them (no skin): what the skin keys of the decorations are made from (`GameSkin.key_of`).
+static func pack_decos_frames(zone_index: int) -> SpriteFrames:
+	return _door(_decos_rel(zone_index)) as SpriteFrames
+
+
+static func _decos_rel(zone_index: int) -> String:
+	return "data/sprite_frames/decos_zone%d.tres" % zone(zone_index).tile_zone
 
 
 ## SpriteFrames of the zone's creatures (slot == frame index, animation "all").
@@ -555,6 +563,11 @@ static func pieces_frames() -> SpriteFrames:
 
 static func station_frames() -> SpriteFrames:
 	return _skinned("data/sprite_frames/station_frames.tres") as SpriteFrames
+
+
+## The station's pictures as the pack in use holds them (no skin), for their skin keys.
+static func pack_station_frames() -> SpriteFrames:
+	return _door("data/sprite_frames/station_frames.tres") as SpriteFrames
 
 
 static func sfx_catalog() -> SfxCatalog:

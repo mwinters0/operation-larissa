@@ -115,8 +115,18 @@ static func problem_art_rel(number: int) -> String:
 
 ## The picture behind screen `screen` of sector `sector`, or null when the screen has none (two of the finale's are plain black).
 static func background(sector: int, screen: int) -> Texture2D:
+	return texture_at(background_path(sector, screen)) if has_background(sector, screen) else null
+
+
+## Has screen `screen` of sector `sector` a picture behind it (a file of the chain, or one a pack maps for its key)?
+static func has_background(sector: int, screen: int) -> bool:
 	var path := background_path(sector, screen)
-	return texture_at(path) if Packs.exists_at(path) or Packs.picture(GameSkin.key_of(path)) != null else null
+	return Packs.exists_at(path) or Packs.picture(GameSkin.key_of(path)) != null
+
+
+## The skin key of that picture (`background/bg_s03_07`), or "" when the screen has none.
+static func background_key(sector: int, screen: int) -> String:
+	return GameSkin.key_of(background_path(sector, screen)) if has_background(sector, screen) else ""
 
 
 ## "res://packs/legacy/assets/backgrounds/bg_s03_07.png": where the picture behind screen `screen` of sector `sector` is (or would be).

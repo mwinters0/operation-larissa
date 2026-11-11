@@ -5,13 +5,11 @@ extends Node2D
 ##
 ## Teaches: why the editor can not simply reuse a game scene. `SupplyStation` (src/gameplay/supply_station.gd) is not a
 ## `@tool` script and gets its pictures from the `Catalog`, so inside the editor it would be an empty node. This class
-## repeats the part that only PLACES the pictures (`SupplyStation.set_side`), in window pixels, so the picture of the
-## screen matches what the game shows; the numbers are the same ones. It has no owner in the scene, so it is neither saved
+## places the same parts (`StationLayout`, which `SupplyStation.set_side` uses too), in window pixels, so the picture of the
+## screen matches what the game shows. It has no owner in the scene, so it is neither saved
 ## nor listed in the scene tree.
 
 const FRAMES_REL := "data/sprite_frames/station_frames.tres"
-## Y of the door and of the sub while it drives.
-const DRIVE_Y := SupplyStation.DRIVE_Y
 ## The screen of the end station (the dock), fixed in the original program like screen 0's start station.
 const LAST_SCREEN := SimWorld.DOCK_SCREEN
 
@@ -30,12 +28,9 @@ func show_for(screen: int) -> void:
 	var frames := Packs.resource(FRAMES_REL) as SpriteFrames
 	if frames == null:
 		return
-	var left := screen == 0
-	_add(frames, 0, Vector2(16, 144) if left else Vector2(448, 144), left)               # the body
-	if not left:
-		_add(frames, 1, Vector2(528, 144), false)
-		_add(frames, 1, Vector2(576, 144), true)
-	_add(frames, 2, Vector2(84, DRIVE_Y) if left else Vector2(448, DRIVE_Y), left)       # the closed door
+	for part in StationLayout.parts(screen == 0):
+		if part["name"] != &"balloon":                              # (the still station: the bodies and the closed door)
+			_add(frames, part["picture"], part["position"] + SubModel.PLAYFIELD_ORIGIN, part["mirrored"])
 
 
 func _add(frames: SpriteFrames, picture: int, at: Vector2, flipped: bool) -> void:
