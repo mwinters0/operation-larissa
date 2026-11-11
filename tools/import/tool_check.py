@@ -34,7 +34,7 @@ WINDOWS_HINTS = {
     "ffmpeg": "winget install --id Gyan.FFmpeg -e",
     "fluidsynth": "download the win10-x64 zip of a FluidSynth release (github.com/FluidSynth/fluidsynth/releases) and put its bin "
                   "folder on the PATH",
-    "soundfont": "copy FluidR3_GM.sf2 (Linux's fluid-soundfont-gm package) to soundfonts\\FluidR3_GM.sf2",
+    "soundfont": "uv run tools/fetch_soundfont.py (mise run setup does it on Windows)",
 }
 
 
