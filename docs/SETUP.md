@@ -120,7 +120,7 @@ version is yours to find.
 | `fluidsynth` | the importer's `audio` step (MIDI to WAV); the Proton tasks' MIDI | `sudo dnf install fluidsynth` | |
 | A General MIDI soundfont | the importer's `audio` step | `sudo dnf install fluid-soundfont-common fluid-soundfont-gm` | Installs `/usr/share/soundfonts/FluidR3_GM.sf2`, the importer's default. `--soundfont` names another. |
 | `soundfonts/opl.sf2` | optional: the AdLib set of songs | your own copy (135 MB) | Not in the repository, git-ignored. Without it the AdLib set sounds like General MIDI. See [`play/LEGACY.md`](play/LEGACY.md), "Soundfonts". |
-| The speech engine (faster-whisper, CTranslate2) and its model | the importer's `transcripts` step | `uv sync` | Pinned versions. The model (about 480 MB) is downloaded on first use. |
+| The speech engine (faster-whisper, CTranslate2) and its model | the importer's `transcripts` step (`--no-transcripts` leaves it out) | `uv sync` | Pinned versions. The model (about 480 MB) is downloaded on first use. |
 | Piper text-to-speech | regenerating the dev pack's audio | `uv run --group dev-pack ...` | Not installed by default. Its voice (63 MB) goes to `~/.cache/neptune-dev-pack/` on first use. [`../tools/dev_pack/README.md`](../tools/dev_pack/README.md). |
 | Steam with *Proton Experimental*, `7z`, `xxd`, PipeWire | running the *original* game under Wine (the `mise -E proton run` tasks) | Steam; `sudo dnf install 7zip xxd` | The Proton path is `PROTON` in `mise.proton.toml`. Quick start above. Music also needs `fluidsynth` and the GM soundfont. [`port/FIDELITY.md`](port/FIDELITY.md), "Comparing with the original game". |
 | A JDK 21 or newer | the Ghidra workflow | `mise install` (Temurin 25) | |
@@ -178,4 +178,4 @@ wherever `HF_HOME` / `HF_HUB_CACHE` point. It is fetched once and reused. `sound
 on 1 GB free.
 
 A full importer run takes about 10 minutes, nearly all of it the voice transcripts (423 clips on the CPU). The first run adds the
-model download.
+model download. `--no-transcripts` leaves them out: a minute or two, no model ([`play/LEGACY.md`](play/LEGACY.md)).

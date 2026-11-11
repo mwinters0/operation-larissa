@@ -200,7 +200,7 @@ Then it makes the legacy pack's folder and its `pack.json` (below, "Where the le
 | `story` | The pack's `data/story/news_cartoon.tres`; the other cutscene timelines are the project's `godot/data/story/` (committed). |
 | `campaigns` | The pack's `data/campaigns/voyager.tres` and `expert.tres`. |
 | `transcripts` | Turns the 423 voice clips into text: see "Voice transcripts". Writes `extracted/sounds/voice_transcripts.json` and `voice_transcripts_machine.json`. |
-| `audio` | The 52 sound effects and 371 speech clips (`assets/audio/`), the music rendered from MIDI (both sets), the catalogs (`sfx_catalog`, `music_catalog`, `voice_index`, `voice_cues`), and a copy of the MIDI files in the pack's `midi/`. The speech text in `voice_index.tres` comes from the transcripts. |
+| `audio` | The 52 sound effects and 371 speech clips (`assets/audio/`), the music rendered from MIDI (both sets), the catalogs (`sfx_catalog`, `music_catalog`, `voice_index`, `voice_cues`), and a copy of the MIDI files in the pack's `midi/`. The speech text in `voice_index.tres` comes from the transcripts; after a run without them the clips have no text. |
 | `godot` | Always last. Has Godot import the project (below, "The Godot import"). Needs Godot. |
 
 Between the `audio` step and `godot`, the importer also removes asset files that an earlier run wrote under an old name
@@ -220,7 +220,7 @@ unchanged.
 ```
 uv run tools/import/import_all.py [--only STEPS] [--clean] [--validate]
                                   [--soundfont PATH] [--adlib-soundfont PATH]
-                                  [--compute-type int8|float32]
+                                  [--no-transcripts] [--compute-type int8|float32]
 ```
 
 | Option | What it does |
@@ -230,6 +230,7 @@ uv run tools/import/import_all.py [--only STEPS] [--clean] [--validate]
 | `--validate` | After the run, cross-checks the generated tree and prints `validation OK`, or `VALIDATION FAILED:` with what is wrong. Needs no Godot. |
 | `--soundfont PATH` | General MIDI soundfont for the `E*.MID` songs. Default `/usr/share/soundfonts/FluidR3_GM.sf2`. |
 | `--adlib-soundfont PATH` | Soundfont for the AdLib `B*.MID` songs. Default `soundfonts/opl.sf2`; falls back to the General MIDI soundfont when that file is missing. |
+| `--no-transcripts` | Leaves out the `transcripts` step: no speech engine needed, no model download, and the run takes a minute or two instead of about 10. The voice clips then have no text ("Voice transcripts"). |
 | `--compute-type int8\|float32` | For the `transcripts` step. `int8` is the default; the environment variable `NEP_WHISPER_COMPUTE` does the same. |
 
 The importer returns 1 when the ISO is missing or is not the reference release, when a program a step needs is missing, or when a
@@ -276,9 +277,9 @@ Three things to know before a partial run:
   sector headers in the legacy pack's `data/sectors/sector_00..31/` are the stored version that designers edit, so a run of `sectors`
   (or a full run) writes the originals over your changes. Label names and comments you stored in the project's
   `godot/data/sectors/foe_annotations.json` are kept and written back. To put back only some things, use the reset tools (below) instead.
-- **`audio` needs `transcripts` first.** The speech text in `voice_index.tres` comes from
-  `extracted/sounds/voice_transcripts.json`, which the `transcripts` step writes. In a fresh checkout run both:
-  `--only extract,transcripts,audio`. Likewise `transcripts` needs `extract` (it says `N clips are missing in ...: run
+- **`audio` takes its speech text from `transcripts`.** The speech text in `voice_index.tres` comes from
+  `extracted/sounds/voice_transcripts.json`, which the `transcripts` step writes; without that file the clips have no text. In a fresh
+  checkout run both: `--only extract,transcripts,audio`. Likewise `transcripts` needs `extract` (it says `N clips are missing in ...: run
   tools/extract/extract_sounds.py first` otherwise).
 - **Music is re-rendered only when it must be**: see "Music with another soundfont".
 
@@ -287,8 +288,10 @@ After any partial run, let Godot import the changes: `tools/godot.sh --headless 
 ## Voice transcripts
 
 The `transcripts` step turns the 423 sound clips (371 speech, 52 effects) into text with a speech model (Whisper `small.en`,
-run by `faster-whisper`). The text is the game's speech, so it is not committed. It feeds the subtitles and the tests that check
-which clip says what. It takes most of the 10 minutes.
+run by `faster-whisper`). The text is the game's speech, so it is not committed. Nothing the game plays reads it: it feeds the sound
+test's list (`src/debug/sound_test.gd`), the `Audio` cue log and the tests that check which clip says what. It takes most of the 10
+minutes, so `--no-transcripts` leaves it out; then the clips have no text, the sound test shows none, and those tests
+(`godot/tests/legacy/test_voice_cues_legacy.gd`, `tools/import/test_audio.py`) skip.
 
 **It is meant to give the same text on every machine.** Everything that could change it is pinned: the `faster-whisper` and
 `ctranslate2` versions (`uv.lock`), the model by Hugging Face revision, with the SHA-256 of every model file (the weights
@@ -604,8 +607,7 @@ that needs it and how to get it, and nothing was written. `uv run tools/import/t
   `GODOT_BIN` ([SETUP.md](../SETUP.md), "Godot").
 - `ffmpeg`, `fluidsynth` or `General MIDI soundfont (step audio)`: install the packages the line names ([SETUP.md](../SETUP.md)), or give `--soundfont` the path of another General MIDI `.sf2`. An `ffmpeg` without the libvorbis encoder is refused too.
 - `speech engine (step transcripts): faster-whisper is not installed ...`: run
-  `uv sync --group transcribe` (or a plain `uv sync`). To build everything but the speech text, leave the step out (`--only` with the
-  other steps); the `audio` step then has no transcripts to read, so this is only for a partial pack.
+  `uv sync --group transcribe` (or a plain `uv sync`), or leave the step out with `--no-transcripts` (the clips then have no text).
 
 **`!!! WARNING: not the version the project pins, tests and supports`**
 A program is there but at another version than the pinned one; the importer goes on. Nothing to do if you chose that version on

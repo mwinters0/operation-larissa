@@ -71,6 +71,20 @@ static func missing(witnesses: Array[String] = WITNESSES) -> Array[String]:
 	return out
 
 
+## True when the legacy pack is there and the importer's transcripts step gave its voice clips their texts (a run with
+## `--no-transcripts` leaves it out, tools/import/import_all.py). The suites that compare clips with their words skip without them.
+static func has_transcripts() -> bool:
+	if not present():
+		return false
+	var index := load(ROOT + "data/voice_index.tres") as VoiceIndex
+	if index == null:
+		return false
+	for text in index.transcripts:
+		if text != "":
+			return true
+	return false
+
+
 ## True when the importer has written the legacy pack (every witness is there). The first call, with the switch on, makes the suite play the export (`play_the_export`).
 static func present() -> bool:
 	var here := missing().is_empty()

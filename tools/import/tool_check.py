@@ -85,7 +85,7 @@ def check_transcripts() -> list[str]:
     try:
         transcripts.check_engine()
     except transcripts.EngineMismatch as error:
-        return ["speech engine (step transcripts): %s" % error]
+        return ["speech engine (step transcripts): %s; or leave the step out with --no-transcripts" % error]
     return []
 
 
