@@ -1,7 +1,7 @@
 {
  "0x004107c7": {
   "name": "SetColor",
-  "evidence": "SetColor(n): current drawing / text colour = VGA palette entry n (table of 16 RGB triples at 0x440084)"
+  "evidence": "SetColor(n): current drawing / text colour = VGA palette entry n (table of 16 entries at 0x440084, 12 bytes each: red, green and blue at +0, +4 and +8, one byte of a dword each) [V asm]"
  },
  "0x00410832": {
   "name": "GetColor",
@@ -313,7 +313,7 @@
  },
  "0x0041b411": {
   "map": "0009:16A3",
-  "evidence": "CALC.C (MAP BlinkButton, follows GetAnswer): WaitForInput, translate the key (TranslateCalcKey), flash it (HighlightCalcKey press/release 12 ticks apart) and return the calculator action 0-10 / -1 (Esc); DESIGN 7 calc_key"
+  "evidence": "CALC.C (MAP BlinkButton, follows GetAnswer): BlinkButton(blink), the one argument is a flag that switches the key flash on; WaitForInput, translate the key (TranslateCalcKey), flash it (HighlightCalcKey press/release 12 ticks apart) and return the calculator action 0-10 / -1 (Esc); DESIGN 7 calc_key"
  },
  "0x0041b4f1": {
   "name": "HighlightCalcKey",
@@ -1105,7 +1105,7 @@
  },
  "0x0042fe4d": {
   "name": "SignInSpeech",
-  "evidence": "SIGNIN.C static: sign-in speech: stage 1 clips 0x2e1 / 0x2e4 (classified mission), stages 2 / 3 AnimateSecurityScan + 0x2e7 + 0x2ea (begin) / 0x2ed (resume); DESIGN 7 speech table"
+  "evidence": "SIGNIN.C static: sign-in speech: stage 1 clips 0x2e1 / 0x2e4 (classified mission), stages 2 / 3 AnimateSecurityScan + 0x2e7 + 0x2ea (begin) / 0x2ed (resume); DESIGN 7 speech table [I param name: stage (from DESIGN and the values 1..3)]"
  },
  "0x00430c33": {
   "name": "SignInScreenLoop",
@@ -1157,7 +1157,7 @@
  },
  "0x00431a0f": {
   "name": "RadarSweep",
-  "evidence": "Prob03 helper RadarSweep(x, y, step): 2 turns of 12 steps (6 ticks each) redrawing the panel and the beam (tables 0x443044 / 0x443050), RadarBlip at the target step, put_pixel trail; DESIGN 5.5 type 3"
+  "evidence": "Prob03 helper RadarSweep(x, y, step): 2 turns of 12 steps (6 ticks each) redrawing the panel and the beam (tables 0x443044 / 0x443050), RadarBlip at the target step, put_pixel trail; DESIGN 5.5 type 3 [I param name: step]"
  },
  "0x00431b7d": {
   "name": "Prob03_Diagram",
@@ -1557,7 +1557,7 @@
  },
  "0x0042f611": {
   "name": "SetSignInButtonLooks",
-  "evidence": "SIGNIN.C static: (start, new, practice, exit, flush) each 0 = pressed picture (DAT_0044af4c / af3c / af44 / af34), 1 = normal picture (af50 / af40 / af48 / af38). SignInScreenLoop (0x430c33) calls (0,1,1,1,1) for Start, (1,0,1,1,1) for New (then DelayTicks(0x24) at 0x4311be), (1,1,0,1,1) for Practice, (1,1,1,0,1) for Exit; for a customized player Start waits DelayTicks(0x24) at 0x431142 before CustomizedGameNotice (0x42f4be) [V, flow audit]"
+  "evidence": "SIGNIN.C static: (start, new, practice, exit, flush) each 0 = pressed picture (DAT_0044af4c / af3c / af44 / af34), 1 = normal picture (af50 / af40 / af48 / af38). SignInScreenLoop (0x430c33) calls (0,1,1,1,1) for Start, (1,0,1,1,1) for New (then DelayTicks(0x24) at 0x4311be), (1,1,0,1,1) for Practice, (1,1,1,0,1) for Exit; for a customized player Start waits DelayTicks(0x24) at 0x431142 before CustomizedGameNotice (0x42f4be) [V, flow audit] [I param names: start_look, new_look, practice_look, exit_look (which button is which comes from the x positions and DESIGN)]"
  },
  "0x00426317": {
   "name": "ShowWrongAnswerNotice",
@@ -1569,7 +1569,7 @@
  },
  "0x00415fd4": {
   "name": "DrawTextItem",
-  "evidence": "TEXTHI.C static: ConvertTextMarkup (0x415ebf) on a text bundle item, then WrapTextLayout (0x4160f6) in draw mode at (x, y) with box width w; DoDataBank draws the log entry n-1 of bundle 0x1c0 + game at (44, 84, 264) with it [V call chain, I name]"
+  "evidence": "TEXTHI.C static: ConvertTextMarkup (0x415ebf) on a text bundle item, then WrapTextLayout (0x4160f6) in draw mode at (x, y) with box width w; the fourth argument h (the box height; callers pass 0xc8, 0x190, 0xca) is never read; DoDataBank draws the log entry n-1 of bundle 0x1c0 + game at (44, 84, 264) with it [V call chain, I name] [I param name: h (rests on the callers' constants)]"
  },
  "0x00415ebf": {
   "name": "ConvertTextMarkup",
@@ -1865,7 +1865,7 @@
  },
  "0x00410f80": {
   "name": "ResourceTypeTagForId",
-  "evidence": "WFILE.C (static, by position): real id (LogicalToRealResource) -> pointer to the 5-byte type tag string: <900 'BNDL' (0x440185), <950 'RRGB' palette (0x44018a), <1000 'FFNT' font (0x44018f), <4000 'PMAP' bitmap (0x440194), <10000 'SSND' sound (0x440199), else 'OTHR' (0x44019e); matches the DESIGN 7 'Type by real id' table; callers generic_load_uncompressed (0x411224), load_uncompressed (0x4112ba), load_special (0x41153b)"
+  "evidence": "WFILE.C (static, by position): ResourceTypeTagForId(logical_id): converts the logical id itself (LogicalToRealResource 0x410e00), then the real id -> pointer to the 5-byte type tag string: <900 'BNDL' (0x440185), <950 'RRGB' palette (0x44018a), <1000 'FFNT' font (0x44018f), <4000 'PMAP' bitmap (0x440194), <10000 'SSND' sound (0x440199), else 'OTHR' (0x44019e); matches the DESIGN 7 'Type by real id' table; callers generic_load_uncompressed (0x411224), load_uncompressed (0x4112ba), load_special (0x41153b)"
  },
  "0x00410fda": {
   "map": "0002:14B2",
@@ -1969,7 +1969,7 @@
  },
  "0x00411bc1": {
   "map": "0003:048C",
-  "evidence": "WGR.C (MAP _vscreen_to_screen, 0003:048C): WinGBitBlt (0x445318) of a (x, y, w, h) strip of the WinG back buffer to the screen DC DAT_004401c4; the source x is rounded down to a multiple of 4 and the width up (DIB rows are dword-aligned); caller Rupdate_screen (0x411bfd)"
+  "evidence": "WGR.C (MAP _vscreen_to_screen, 0003:048C): vscreen_to_screen(src_x, src_y, width, height, screen_x, screen_y): WinGBitBlt (0x445318) of the (src_x, src_y, width, height) strip of the WinG back buffer to the screen DC DAT_004401c4 at (screen_x, screen_y); the source x is rounded down to a multiple of 4 and the width up (DIB rows are dword-aligned); caller Rupdate_screen (0x411bfd)"
  },
  "0x00411bfd": {
   "map": "0003:04E5",
@@ -2069,7 +2069,7 @@
  },
  "0x00412b03": {
   "map": "0004:157B",
-  "evidence": "WGRAPHHI.C (MAP get_image 0x157b, order get_image < put_image): saves screen rect (x, y, w, h) into a picture buffer, x rounded down to even and w up to even (the 16-bit word alignment), then GrabScreenRect (0x412f6b); callers SaveDialogBackground, PracticeSetupDialog, DrawSupplyStation [guess: exact MAP match by order and size class]"
+  "evidence": "WGRAPHHI.C (MAP get_image 0x157b, order get_image < put_image): get_image(x, y, width, height, pic_buffer): saves screen rect (x, y, width, height) into the picture buffer pic_buffer, x rounded down to even and w up to even (the 16-bit word alignment), then GrabScreenRect (0x412f6b); callers SaveDialogBackground, PracticeSetupDialog, DrawSupplyStation [guess: exact MAP match by order and size class]"
  },
  "0x00412b2d": {
   "map": "0004:15B8",
@@ -2153,7 +2153,7 @@
  },
  "0x00413e24": {
   "name": "GetSoundsDirPath",
-  "evidence": "WMIDI.C (static): copies the install directory DAT_00446518 and appends \"SOUNDS\\\" (string at 0x440f21): the folder of the .MID files; caller InitMIDIDriver (and LoadMidiFile)"
+  "evidence": "WMIDI.C (static): copies the install directory DAT_00446518 and appends \"SOUNDS\\\" (string at 0x440f21): the folder of the .MID files; only caller InitMIDIDriver (0x413bf3)"
  },
  "0x00413e44": {
   "map": "0005:0CBC",
@@ -2209,7 +2209,7 @@
  },
  "0x0041432d": {
   "map": "0005:1356",
-  "evidence": "WSTARTUP.C (MAP _set_fiddle_kludge 0x1356): stores DAT_00440f40 = n and, unless the fiddle is disabled (DAT_00440f3c == 0x7fff, i.e. the screen is not 480 high), WindowOriginY (0x440b40) = n + DAT_00440f3c: on a 640x480 display the 640x400 game area is moved up 23 px (n = -0x17) while the menu bar is shown (LoadMenuStringsPlaying, LoadMenuStringsPractice) and back to 0 when the menu is removed (do_math_practice, SignIn: n = 0); callers DoAction, do_math_practice, SignIn"
+  "evidence": "WSTARTUP.C (MAP _set_fiddle_kludge 0x1356): stores DAT_00440f40 = n and, unless the fiddle is disabled (DAT_00440f3c == 0x7fff, i.e. the screen is not 480 high), WindowOriginY (0x440b40) = n + DAT_00440f3c: on a 640x480 display the 640x400 game area is moved up 23 px (n = -0x17) while the menu bar is shown (LoadMenuStringsPlaying, LoadMenuStringsPractice) and back to 0 when the menu is removed (do_math_practice, SignIn: n = 0); callers DoAction, do_math_practice, SignIn [I param name: fiddle_offset ('fiddle' from the MAP name, 'offset' from the code)]"
  },
  "0x00414351": {
   "map": "0005:1379",
@@ -2297,7 +2297,7 @@
  },
  "0x004152f0": {
   "map": "0006:0460",
-  "evidence": "ANIMLIST.C (MAP _erase_clipped, 'idle'): clips (x,y,w,h) to the clip rectangle (0x440b30 left, 0x440b34 right, 0x440b28 top, ClipBottom) and CopyBackBufferRect from row+n to row (restores the clean background); only caller erase_anims (0x415539), itself unused"
+  "evidence": "ANIMLIST.C (MAP _erase_clipped, 'idle'): clips (x,y,w,h) to the clip rectangle (0x440b30 left, 0x440b34 right, 0x440b28 top, ClipBottom) and CopyBackBufferRect from the rows at y + source_offset_y (the fifth argument) to the rows at y (restores the clean background); only caller erase_anims (0x415539), itself unused"
  },
  "0x00415377": {
   "map": "0006:04EF",
@@ -2373,7 +2373,7 @@
  },
  "0x00416e73": {
   "name": "DrawDialogButton",
-  "evidence": "WINDOW.C (static, by position before ReverseButton): draws dialog button n (rectangle table 0x4484e8 x / 0x4484f0 y / 0x4484f8 w / 0x448500 h, label pointer 0x4484e0) with rounded corners in black: normal state = white fill + black text, reversed (arg 2 = 0) = black fill + white text; label centred; stores the state at 0x448510; callers ReverseButton (0x417028), DrawWindow (0x41714c)"
+  "evidence": "WINDOW.C (static, by position before ReverseButton): draws dialog button n (rectangle table 0x4484e8 x / 0x4484f0 y / 0x4484f8 w / 0x448500 h, label pointer 0x4484e0) with rounded corners in black: DrawDialogButton(button, reversed): reversed = 0 is the normal look (fill colour 15 + text colour 0, what DrawWindow draws first), non-zero is reversed (black fill + white text); label centred; stores the state at 0x448510; callers ReverseButton (0x417028), DrawWindow (0x41714c)"
  },
  "0x00417028": {
   "map": "0007:06F8",
@@ -2417,7 +2417,7 @@
  },
  "0x0041bc4d": {
   "map": "000A:0066",
-  "evidence": "CDGLUE.C (MAP _read_users_dat): path = CheckForFile('onusers.dat') ? install dir + 'onusers.dat' : 'c:\\tlcwin\\onwincd\\onusers.dat'; opens it, reads a 4-byte header (content ignored) then n bytes into the roster (99 x 36 bytes); if the open or the read fails or is short the buffer is zeroed (rsetmem) and 0 is returned; caller SignInLoadFilesAndPictures (roster load at sign-in)"
+  "evidence": "CDGLUE.C (MAP _read_users_dat(buffer, size)): path = CheckForFile('onusers.dat') ? install dir + 'onusers.dat' : 'c:\\tlcwin\\onwincd\\onusers.dat'; opens it, reads a 4-byte header (content ignored) then size bytes into buffer (the roster, 99 x 36 bytes); if the open or the read fails or is short the buffer is zeroed (rsetmem) and 0 is returned; caller SignInLoadFilesAndPictures (roster load at sign-in)"
  },
  "0x0041bdad": {
   "map": "000A:01F7",
@@ -2473,7 +2473,7 @@
  },
  "0x0041ceb7": {
   "name": "ExpertClosingCrewStep",
-  "evidence": "CLOSING.C (static): one animation step of deck actor n (0-5), called 6 times per frame by ExpertClosingSequence: interprets the byte script ExpertCraneTable (0x4415a4; 4-byte records [op, bundle item, mirror, delay]; the 6 scripts start at DAT_004487a4[n] = just after each 0xfd byte; script position DAT_004487d4[n], delay counter DAT_004487bc[n]). ops: -8 wait [delay] without drawing, -2 draw item for delay steps, -4 / -5 move x +4 / -4 then draw, -7 / -6 move y +10 / -10 then draw, -3 draw the last picture and end (script restarts). So ExpertCraneTable is NOT a crane script: it is the six sailors' walk / wave scripts (positions start (496,214) (332,214) (368,224) (436,214) (496,214) (496,214)); this answers the 'not decoded' note in DESIGN 2.1"
+  "evidence": "CLOSING.C (static): one animation step of deck actor n (0-5), called 6 times per frame by ExpertClosingSequence: interprets the byte script ExpertCraneTable (0x4415a4; 4-byte records [op, bundle item, mirror, delay]; the 6 scripts start at DAT_004487a4[n] = just after each 0xfd byte; script position DAT_004487d4[n], delay counter DAT_004487bc[n]). ops: -8 wait [delay] without drawing, -2 draw item for delay steps, -4 / -5 move x +4 / -4 then draw, -7 / -6 move y +10 / -10 then draw, -3 draw the last picture and end (script restarts). So ExpertCraneTable is NOT a crane script: it is the six sailors' walk / wave scripts (positions start (496,214) (332,214) (368,224) (436,214) (496,214) (496,214)); this answers the 'not decoded' note in DESIGN 2.1 [I param name: actor (the code shows a per-entity index 0..5)]"
  },
  "0x0041d088": {
   "name": "CollideAddRect",
@@ -2509,7 +2509,7 @@
  },
  "0x00428ffd": {
   "name": "CartoonDrawCapsuleRing",
-  "evidence": "OPENING.C (static): called by CartoonCapsuleTrail (0x42907e): restores the 52 x 42 box at point 21 (crash site) from the clean copy, draws ring picture n (bundle item n + 2 = pictures 1003-1006) masked there and flushes it; DESIGN 2.1 news cartoon (ring, one picture per call)"
+  "evidence": "OPENING.C (static): called by CartoonCapsuleTrail (0x42907e): restores the 52 x 42 box at point 21 (crash site) from the clean copy, draws ring picture n (bundle item n + 2 = pictures 1003-1006) masked there and flushes it; DESIGN 2.1 news cartoon (ring, one picture per call) [I param name: ring (from the note's wording)]"
  },
  "0x004291cd": {
   "name": "CartoonDrawMap",
@@ -2521,11 +2521,11 @@
  },
  "0x004293ef": {
   "name": "CartoonDrawStatusLight",
-  "evidence": "OPENING.C (static): called by CartoonStatusLights (0x429440): draws status light picture item 9 + (state mod 3) (pictures 1010-1012), mirrored when state > 2, masked at point n"
+  "evidence": "OPENING.C (static): called by CartoonStatusLights (0x429440): draws status light picture item 9 + (state mod 3) (pictures 1010-1012), mirrored when state > 2, masked at the point whose x is the short at index coord_index of the points table (2 shorts per point, so point = coord_index / 2; callers step it by 2) [I param name: state (the code shows a value 0..5)]"
  },
  "0x00429544": {
   "name": "CartoonDrawPanelLight",
-  "evidence": "OPENING.C (static): called by CartoonPanelLights (0x429595): draws panel light picture item 12 + (state mod 3) (pictures 1013-1015), mirrored when state > 2, masked at point n"
+  "evidence": "OPENING.C (static): called by CartoonPanelLights (0x429595): draws panel light picture item 12 + (state mod 3) (pictures 1013-1015), mirrored when state > 2, masked at the point whose x is the short at index coord_index of the points table (2 shorts per point, so point = coord_index / 2; callers step it by 2) [I param name: state (the code shows a value 0..5)]"
  },
  "0x004296b6": {
   "name": "CartoonDrawCrewPicture",
@@ -2549,15 +2549,15 @@
  },
  "0x0042a761": {
   "name": "StoryDrawLoosePicture",
-  "evidence": "OPENING.C (static): LoadSpeechClip(id) (loads a picture resource into the shared buffer DAT_00444e64) then DrawPictureMasked(x, y); used by StoryDrawCaption (0x42a785), StoryDrawHeading (0x42a7a2) and TitleScreenPromptLoop (0x42a49a)"
+  "evidence": "OPENING.C (static): LoadSpeechClip(id) (loads a picture resource into the shared buffer DAT_00444e64) then DrawPictureMasked(x, y); used by StoryDrawCaption (0x42a785), StoryDrawHeading (0x42a7a2) and TitleScreenPromptLoop (0x42a49a) [I param name: resource_id (from LoadSpeechClip)]"
  },
  "0x0042a785": {
   "name": "StoryDrawCaption",
-  "evidence": "OPENING.C (static): called by OpeningStoryPages: StoryDrawLoosePicture(52, 316, 0x1de + page) = the page text bitmap (pictures 2056-2064)"
+  "evidence": "OPENING.C (static): called by OpeningStoryPages: StoryDrawLoosePicture(52, 316, 0x1de + page) = the page text bitmap (pictures 2056-2064) [I param name: page (from the callers' order 0..8)]"
  },
  "0x0042a7a2": {
   "name": "StoryDrawHeading",
-  "evidence": "OPENING.C (static): called by OpeningStoryPages: StoryDrawLoosePicture(168, 6, 0x1ee + n) = a page heading (pictures 2072-2075)"
+  "evidence": "OPENING.C (static): called by OpeningStoryPages: StoryDrawLoosePicture(168, 6, 0x1ee + n) = a page heading (pictures 2072-2075) [I param name: heading (from the function's name)]"
  },
  "0x0042a7bf": {
   "name": "StoryAnimateRing",
@@ -2613,7 +2613,7 @@
  },
  "0x0043008d": {
   "name": "ChooseGameLevelDrawLabels",
-  "evidence": "SIGNIN.C (static): called by ChooseGameLevelDialog (0x43013f): TextOutA of two lines (x, y1 / y2): with sel == 1 line 1 black and line 2 white, else line 1 white and line 2 black (the selected option is the one on the inverted bar); the Voyager / Expert choice"
+  "evidence": "SIGNIN.C (static): called by ChooseGameLevelDialog (0x43013f): ChooseGameLevelDrawLabels(selected, x, text1, y1, text2, y2): TextOutA of two lines (text1 at (x, y1), text2 at (x, y2)): with selected == 1 line 1 black and line 2 white, else line 1 white and line 2 black (the selected option is the one on the inverted bar); the Voyager / Expert choice"
  },
  "0x00430512": {
   "name": "DrawNameCaret",
@@ -3193,7 +3193,7 @@
  },
  "0x00438bc8": {
   "name": "rtl_va_float_size",
-  "evidence": "__vprinter float hook [0x444260]: returns arg + 8 (double) or arg + 0xc (long double) depending on the flag -- advances the va_list past a float argument; installed by the initializer at 0x438bde [guess]"
+  "evidence": "__vprinter float hook (slot address 0x444260 not confirmed: no instruction in the disassembly references it): returns arg + 8 (double) or arg + 0xc (long double) depending on the flag -- advances the va_list past a float argument; installed by the initializer at 0x438bde [guess]"
  },
  "0x00439050": {
   "name": "__scanrslt",
@@ -3297,7 +3297,7 @@
  },
  "0x00439ed8": {
   "name": "__exit",
-  "evidence": "Borland RTL __exit(status, quick, dontexit): runs the atexit table (0x44f8b0, count 0x444450), _cleanup (0x43a60c), exit hook [0x444454]; if not 'quick' calls the two shutdown hooks [0x444458]/[0x44445c]; then ExitProcess (0x43a684)"
+  "evidence": "Borland RTL __exit(quick, dont_exit, status): quick = 0 runs the atexit table (0x44f8b0, count 0x444450), _cleanup (0x43a60c) and the exit hook [0x444454]; dont_exit = 0 then, when quick = 0 as well, calls the two shutdown hooks [0x444458]/[0x44445c], and ends with ExitProcess (0x43a684) of status; exit() passes (0, 0, status), _exit() passes (1, 0, status) [V asm] [I param names: quick, dont_exit (from Borland's meaning; the code shows only what each non-zero value skips)]"
  },
  "0x00439f30": {
   "map": "0001:4D0D",
@@ -3369,11 +3369,11 @@
  },
  "0x0043a824": {
   "name": "__isDST",
-  "evidence": "Borland RTL __isDST(hour, yday, month, year): DST rule check (first Sunday of April / last Sunday of October style using the 0x444574 day-of-year table)"
+  "evidence": "Borland RTL __isDST(hour, day, month, year): all four unsigned; day is the 0-based day within the month when month is non-zero (__totime passes it so; it is a day of the year only when month is 0); DST rule check (first Sunday of April / last Sunday of October style using the 0x444574 day-of-year table)"
  },
  "0x0043a938": {
   "name": "__totime",
-  "evidence": "Borland RTL __totime(year, mon, mday, hour, min, sec) = mktime core: days since 1970 via the month table (0x44456c lengths, 0x444578 cumulative), leap years, adds timezone offset (0x444698) and subtracts an hour in DST (0x44469c + __isDST); -1 outside 1970..2030"
+  "evidence": "Borland RTL __totime(year, mon, mday, hour, min, sec) = mktime core (mday is 0-based at both call sites: wDay - 1): days since 1970 via the month table (0x44456c lengths, 0x444578 cumulative), leap years, adds timezone offset (0x444698) and subtracts an hour in DST (0x44469c + __isDST); -1 outside 1970..2030"
  },
  "0x0043aab0": {
   "name": "rtl_filetime_to_time_t",

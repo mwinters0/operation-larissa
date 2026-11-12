@@ -215,6 +215,203 @@
   }
  },
  "functions": {
+  "0x004100e6": {
+   "name": "NeOpenResourceFile",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/char * path"
+    ]
+   }
+  },
+  "0x00410553": {
+   "name": "LockHandleIfSet",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void *",
+    "params": [
+     "/int handle"
+    ]
+   }
+  },
+  "0x00410569": {
+   "name": "UnlockHandleIfSet",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int handle"
+    ]
+   }
+  },
+  "0x00410582": {
+   "name": "FreeHandleIfSet",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int handle"
+    ]
+   }
+  },
+  "0x004106d1": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int palette_id"
+    ]
+   }
+  },
+  "0x0041072e": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/byte r",
+     "/byte g",
+     "/byte b"
+    ]
+   }
+  },
+  "0x004107c7": {
+   "name": "SetColor",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int vga_color"
+    ]
+   }
+  },
+  "0x00410838": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int color_index"
+    ]
+   }
+  },
+  "0x00410bc5": {
+   "name": "PollInputEvent",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int * event"
+    ]
+   }
+  },
+  "0x00410daa": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x00410f80": {
+   "name": "ResourceTypeTagForId",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/char *",
+    "params": [
+     "/int logical_id"
+    ]
+   }
+  },
+  "0x00410fda": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void *",
+    "params": [
+     "/char * type_tag",
+     "/int logical_id"
+    ]
+   }
+  },
+  "0x00411346": {
+   "name": "LoadBundleInto",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int logical_id",
+     "/int * bundle_out"
+    ]
+   }
+  },
+  "0x0041177d": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int handle",
+     "/void * buffer",
+     "/int count"
+    ]
+   }
+  },
+  "0x00411793": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int handle",
+     "/void * buffer",
+     "/int count"
+    ]
+   }
+  },
+  "0x004117a9": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int handle"
+    ]
+   }
+  },
+  "0x004118df": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int width",
+     "/int height"
+    ]
+   }
+  },
+  "0x00411a43": {
+   "name": "ClearSystemPalette",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x00411ace": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x00411bc1": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int src_x",
+     "/int src_y",
+     "/int width",
+     "/int height",
+     "/int screen_x",
+     "/int screen_y"
+    ]
+   }
+  },
   "0x00411bfd": {
    "signature": {
     "cc": "__cdecl",
@@ -239,6 +436,16 @@
    "labels": {
     "0x00411c38": "call_draw",
     "0x00411c52": "return"
+   }
+  },
+  "0x00411c56": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/byte * rgb_table",
+     "/int exclusive"
+    ]
    }
   },
   "0x004120b3": {
@@ -285,6 +492,617 @@
     "0x004120ff": "truncate_y",
     "0x00412110": "call_draw",
     "0x00412138": "return"
+   }
+  },
+  "0x0041213f": {
+   "name": "AddDirtyRect",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int width",
+     "/int height"
+    ]
+   }
+  },
+  "0x00412322": {
+   "name": "FillBackBufferRectBytes",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int width",
+     "/int height",
+     "/byte color_index"
+    ]
+   }
+  },
+  "0x00412364": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y"
+    ]
+   }
+  },
+  "0x0041239a": {
+   "name": "DrawHLine",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int length"
+    ]
+   }
+  },
+  "0x004123d1": {
+   "name": "DrawVLine",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int length"
+    ]
+   }
+  },
+  "0x00412408": {
+   "name": "FillRectWithColor",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int width",
+     "/int height"
+    ]
+   }
+  },
+  "0x00412440": {
+   "name": "DrawRectOutlineIndexed",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int * rect",
+     "/int vga_color"
+    ]
+   }
+  },
+  "0x00412517": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int width",
+     "/int height"
+    ]
+   }
+  },
+  "0x0041254f": {
+   "name": "CopyBackBufferRect",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int src_x",
+     "/int src_y",
+     "/int width",
+     "/int height",
+     "/int dest_x",
+     "/int dest_y"
+    ]
+   }
+  },
+  "0x004125b3": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/ushort * pic"
+    ]
+   }
+  },
+  "0x004125db": {
+   "name": "BlitPictureOpaque",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/ushort * pic"
+    ]
+   }
+  },
+  "0x00412679": {
+   "name": "BlitPictureTransparent",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/ushort * pic"
+    ]
+   }
+  },
+  "0x0041294d": {
+   "name": "DrawPictureMasked",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/ushort * pic",
+     "/int mirror"
+    ]
+   }
+  },
+  "0x00412a12": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x00412b03": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int width",
+     "/int height",
+     "/ushort * pic_buffer"
+    ]
+   }
+  },
+  "0x00412b47": {
+   "name": "BuildRecolorTable",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/byte * pair_list",
+     "/byte * color_map"
+    ]
+   }
+  },
+  "0x00412b8c": {
+   "name": "RecolorBackBufferRect",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int width",
+     "/int height",
+     "/byte * pair_list"
+    ]
+   }
+  },
+  "0x00412c62": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int width",
+     "/int height"
+    ]
+   }
+  },
+  "0x00412cbf": {
+   "name": "BlitRawPicture",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/ushort * pic"
+    ]
+   }
+  },
+  "0x00412d2b": {
+   "name": "BlitRawTransparentClipped",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int width",
+     "/int height",
+     "/byte * pic",
+     "/int row_skip",
+     "/int start_offset"
+    ]
+   }
+  },
+  "0x00412d9f": {
+   "name": "BlitRlePicture",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int width",
+     "/int height",
+     "/int color_key",
+     "/byte * pic"
+    ]
+   }
+  },
+  "0x00412e91": {
+   "name": "BlitRawTransparentMirrored",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int width",
+     "/int height",
+     "/byte * pic",
+     "/int row_skip",
+     "/int start_offset"
+    ]
+   }
+  },
+  "0x00412f6b": {
+   "name": "GrabScreenRect",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int width",
+     "/int height",
+     "/ushort * pic_buffer"
+    ]
+   }
+  },
+  "0x00412fc7": {
+   "name": "ApplyColorMapToRect",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int width",
+     "/int height",
+     "/byte * color_map"
+    ]
+   }
+  },
+  "0x00413890": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void *",
+    "params": [
+     "/int size"
+    ]
+   }
+  },
+  "0x00413919": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/void * ptr"
+    ]
+   }
+  },
+  "0x004139d2": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int * menu_def"
+    ]
+   }
+  },
+  "0x00413e24": {
+   "name": "GetSoundsDirPath",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/char * buffer"
+    ]
+   }
+  },
+  "0x00413e44": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x00413f2b": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int song_id"
+    ]
+   }
+  },
+  "0x0041432d": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int fiddle_offset"
+    ]
+   }
+  },
+  "0x00414626": {
+   "name": "CheckSoundHardware",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": []
+   }
+  },
+  "0x00414dca": {
+   "name": "DrawChar",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int x",
+     "/int y",
+     "/byte ch"
+    ]
+   }
+  },
+  "0x00414f81": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int src_x",
+     "/int src_y",
+     "/int w",
+     "/int h",
+     "/int dst_x",
+     "/int dst_y"
+    ]
+   }
+  },
+  "0x004152f0": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int w",
+     "/int h",
+     "/int source_offset_y"
+    ]
+   }
+  },
+  "0x00415d15": {
+   "name": "AddHotspot",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int id",
+     "/int x",
+     "/int y",
+     "/int w",
+     "/int h"
+    ]
+   }
+  },
+  "0x00415da5": {
+   "name": "HotspotAt",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int x",
+     "/int y"
+    ]
+   }
+  },
+  "0x00415ea0": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/byte * text"
+    ]
+   }
+  },
+  "0x00415ebf": {
+   "name": "ConvertTextMarkup",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/byte *",
+    "params": [
+     "/byte * item"
+    ]
+   }
+  },
+  "0x00415fd4": {
+   "name": "DrawTextItem",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int w",
+     "/int h",
+     "/byte * item",
+     "/int * subst_table",
+     "/int flush"
+    ]
+   }
+  },
+  "0x00416001": {
+   "name": "DrawText",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/byte * text"
+    ]
+   }
+  },
+  "0x0041607c": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int w",
+     "/byte * text",
+     "/int * subst_table",
+     "/int flush"
+    ]
+   }
+  },
+  "0x004165d7": {
+   "name": "DrawWrapChar",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int line_height",
+     "/byte ch",
+     "/int underline",
+     "/int flush"
+    ]
+   }
+  },
+  "0x00416e73": {
+   "name": "DrawDialogButton",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int button",
+     "/int reversed"
+    ]
+   }
+  },
+  "0x0041707d": {
+   "name": "FlashDialogButton",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int button"
+    ]
+   }
+  },
+  "0x0041a684": {
+   "name": "BlitPlayfieldClipped",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int w",
+     "/int h"
+    ]
+   }
+  },
+  "0x0041b411": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int blink"
+    ]
+   }
+  },
+  "0x0041b4f1": {
+   "name": "HighlightCalcKey",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int key",
+     "/int pressed"
+    ]
+   }
+  },
+  "0x0041bc4d": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/char * buffer",
+     "/int size"
+    ]
+   }
+  },
+  "0x0041ce8f": {
+   "name": "ExpertClosingDrawCrewPicture",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int item",
+     "/int mirror"
+    ]
+   }
+  },
+  "0x0041ceb7": {
+   "name": "ExpertClosingCrewStep",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int actor"
+    ]
+   }
+  },
+  "0x004233c8": {
+   "name": "WriteMessageTextWithSender",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/char * text"
+    ]
    }
   },
   "0x00427ee4": {
@@ -712,6 +1530,873 @@
     "params": [
      "/neptune/CompactNumberArg compact",
      "/char * buf"
+    ]
+   }
+  },
+  "0x00428d70": {
+   "name": "RunHelpTopic",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int first_item",
+     "/int string_id",
+     "/int logical_id"
+    ]
+   }
+  },
+  "0x00428f88": {
+   "name": "CopyBackBufferRectAndFlush",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int src_x",
+     "/int src_y",
+     "/int w",
+     "/int h",
+     "/int dst_x",
+     "/int dst_y"
+    ]
+   }
+  },
+  "0x00428ffd": {
+   "name": "CartoonDrawCapsuleRing",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int ring"
+    ]
+   }
+  },
+  "0x004293ef": {
+   "name": "CartoonDrawStatusLight",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int coord_index",
+     "/int state"
+    ]
+   }
+  },
+  "0x00429544": {
+   "name": "CartoonDrawPanelLight",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int coord_index",
+     "/int state"
+    ]
+   }
+  },
+  "0x004296b6": {
+   "name": "CartoonDrawCrewPicture",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int item",
+     "/int mirror"
+    ]
+   }
+  },
+  "0x00429b65": {
+   "name": "CartoonWrapTypeText",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int max_width",
+     "/byte * text"
+    ]
+   }
+  },
+  "0x00429c18": {
+   "name": "CartoonTeletypeNextBulletin",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x00429d09": {
+   "name": "TitleDrawBackdrop",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x0042a1d7": {
+   "name": "TitleWaveStrip",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x0042a3e3": {
+   "name": "TitleShowOperation",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x0042a761": {
+   "name": "StoryDrawLoosePicture",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int resource_id"
+    ]
+   }
+  },
+  "0x0042a785": {
+   "name": "StoryDrawCaption",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int page"
+    ]
+   }
+  },
+  "0x0042a7a2": {
+   "name": "StoryDrawHeading",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int heading"
+    ]
+   }
+  },
+  "0x0042a7bf": {
+   "name": "StoryAnimateRing",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int flush"
+    ]
+   }
+  },
+  "0x0042a9a3": {
+   "name": "StoryLoadRingPictures",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x0042a9cd": {
+   "name": "StoryFreeRingPictures",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x0042a9f1": {
+   "name": "OpeningStoryPages",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": []
+   }
+  },
+  "0x0042b74c": {
+   "name": "MenuAboutBox",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x0042c424": {
+   "name": "PracticeDrawCentredText",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int y",
+     "/byte * text"
+    ]
+   }
+  },
+  "0x0042c79d": {
+   "name": "DrawPracticeSetupControl",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int control"
+    ]
+   }
+  },
+  "0x0042d119": {
+   "name": "PracticeScoreWidth",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": []
+   }
+  },
+  "0x0042d45a": {
+   "name": "PracticeDrawFrame",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x0042daf8": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/byte id",
+     "/short x",
+     "/short y"
+    ]
+   }
+  },
+  "0x0042f5dc": {
+   "name": "DrawSignInButton",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/ushort * picture",
+     "/int flush"
+    ]
+   }
+  },
+  "0x0042f611": {
+   "name": "SetSignInButtonLooks",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int start_look",
+     "/int new_look",
+     "/int practice_look",
+     "/int exit_look",
+     "/int flush"
+    ]
+   }
+  },
+  "0x0042f6eb": {
+   "name": "RemoveRosterSlot",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int slot"
+    ]
+   }
+  },
+  "0x0042f72a": {
+   "name": "SetSignInScrollThumb",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int thumb_y"
+    ]
+   }
+  },
+  "0x0042f7ef": {
+   "name": "SignInThumbToIndex",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int count"
+    ]
+   }
+  },
+  "0x0042f81a": {
+   "name": "SignInIndexToThumbY",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int index",
+     "/int count"
+    ]
+   }
+  },
+  "0x0042fe4d": {
+   "name": "SignInSpeech",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int stage"
+    ]
+   }
+  },
+  "0x0043008d": {
+   "name": "ChooseGameLevelDrawLabels",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int selected",
+     "/int x",
+     "/char * text1",
+     "/int y1",
+     "/char * text2",
+     "/int y2"
+    ]
+   }
+  },
+  "0x00430512": {
+   "name": "DrawNameCaret",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int color"
+    ]
+   }
+  },
+  "0x004307ec": {
+   "name": "RosterOpenSortedSlot",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/char * name"
+    ]
+   }
+  },
+  "0x004309ec": {
+   "name": "DrawSignInZoneIcons",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int count",
+     "/int y"
+    ]
+   }
+  },
+  "0x00430a26": {
+   "name": "DrawSignInRow",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/byte * player",
+     "/int y"
+    ]
+   }
+  },
+  "0x00430b03": {
+   "name": "DrawSignInList",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int top_row",
+     "/int selected"
+    ]
+   }
+  },
+  "0x00430ba7": {
+   "name": "SignInKeepSelectionVisible",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int top_row",
+     "/int selected"
+    ]
+   }
+  },
+  "0x004319ad": {
+   "name": "RadarBlip",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y"
+    ]
+   }
+  },
+  "0x00431a0f": {
+   "name": "RadarSweep",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int x",
+     "/int y",
+     "/int step"
+    ]
+   }
+  },
+  "0x0043204d": {
+   "name": "PlaySectorMusic",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int play"
+    ]
+   }
+  },
+  "0x004320cc": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x00434250": {
+   "name": "memchr",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void *",
+    "params": [
+     "/void * buffer",
+     "/int ch",
+     "/uint count"
+    ]
+   }
+  },
+  "0x00434270": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void *",
+    "params": [
+     "/void * dst",
+     "/void * src",
+     "/uint count"
+    ]
+   }
+  },
+  "0x00434294": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void *",
+    "params": [
+     "/void * dst",
+     "/void * src",
+     "/uint count"
+    ]
+   }
+  },
+  "0x004342e0": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void *",
+    "params": [
+     "/void * dst",
+     "/int value",
+     "/uint count"
+    ]
+   }
+  },
+  "0x0043434c": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/char * a",
+     "/char * b"
+    ]
+   }
+  },
+  "0x004343f8": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/void * a",
+     "/void * b",
+     "/uint count"
+    ]
+   }
+  },
+  "0x0043448c": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/char *",
+    "params": [
+     "/char * s",
+     "/char * set"
+    ]
+   }
+  },
+  "0x004344b8": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/char *",
+    "params": [
+     "/char * s",
+     "/int ch"
+    ]
+   }
+  },
+  "0x004344e4": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/char *",
+    "params": [
+     "/char * s",
+     "/char * sub"
+    ]
+   }
+  },
+  "0x00436fb4": {
+   "name": "__vprinter",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/void * sink",
+     "/void * sink_arg",
+     "/char * fmt",
+     "/void * args"
+    ]
+   }
+  },
+  "0x004378e8": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int fd",
+     "/void * buf",
+     "/uint count"
+    ]
+   }
+  },
+  "0x004379c8": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/char *",
+    "params": [
+     "/char * buf",
+     "/char * path",
+     "/uint maxlen"
+    ]
+   }
+  },
+  "0x00437d00": {
+   "name": "__IOerror",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int code"
+    ]
+   }
+  },
+  "0x00437d78": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/char * path"
+    ]
+   }
+  },
+  "0x00438044": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int fd"
+    ]
+   }
+  },
+  "0x00438074": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int fd",
+     "/int offset",
+     "/int whence"
+    ]
+   }
+  },
+  "0x004382e8": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/char *",
+    "params": [
+     "/char * s"
+    ]
+   }
+  },
+  "0x0043830c": {
+   "name": "tolower",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int c"
+    ]
+   }
+  },
+  "0x00438334": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int c"
+    ]
+   }
+  },
+  "0x0043835c": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/double",
+    "params": [
+     "/double x"
+    ]
+   }
+  },
+  "0x0043838c": {
+   "name": "_control87",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/uint",
+    "params": [
+     "/uint new_word",
+     "/uint mask"
+    ]
+   }
+  },
+  "0x004383cc": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/double",
+    "params": [
+     "/double x"
+    ]
+   }
+  },
+  "0x004383dc": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/double",
+    "params": [
+     "/double x"
+    ]
+   }
+  },
+  "0x004383f8": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/double",
+    "params": [
+     "/double x",
+     "/double y"
+    ]
+   }
+  },
+  "0x00438574": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/char * s"
+    ]
+   }
+  },
+  "0x004385f8": {
+   "name": "abs",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int x"
+    ]
+   }
+  },
+  "0x00438894": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/uint seed"
+    ]
+   }
+  },
+  "0x004388c4": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": []
+   }
+  },
+  "0x0043973c": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/void * p"
+    ]
+   }
+  },
+  "0x00439878": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void *",
+    "params": [
+     "/uint size"
+    ]
+   }
+  },
+  "0x00439a7c": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void *",
+    "params": [
+     "/void * p",
+     "/uint size"
+    ]
+   }
+  },
+  "0x00439d4c": {
+   "name": "rtl_msgbox_flags",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/uint",
+    "params": []
+   }
+  },
+  "0x00439e54": {
+   "name": "__ErrorExit",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/char * msg"
+    ]
+   }
+  },
+  "0x00439ed8": {
+   "name": "__exit",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int quick",
+     "/int dont_exit",
+     "/int status"
+    ]
+   }
+  },
+  "0x00439f30": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int status"
+    ]
+   }
+  },
+  "0x00439f48": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/int status"
+    ]
+   }
+  },
+  "0x00439fd0": {
+   "name": "rtl_nop_stub",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x0043a378": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int sig"
+    ]
+   }
+  },
+  "0x0043a3fc": {
+   "name": "rtl_next_pragma_proc",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void *",
+    "params": [
+     "/int * table",
+     "/int is_exit"
+    ]
+   }
+  },
+  "0x0043a60c": {
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": []
+   }
+  },
+  "0x0043a684": {
+   "name": "__ExitProcess",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/void",
+    "params": [
+     "/uint exit_code"
+    ]
+   }
+  },
+  "0x0043a824": {
+   "name": "__isDST",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/uint hour",
+     "/uint day",
+     "/uint month",
+     "/uint year"
+    ]
+   }
+  },
+  "0x0043a938": {
+   "name": "__totime",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int year",
+     "/int mon",
+     "/int mday",
+     "/int hour",
+     "/int min",
+     "/int sec"
     ]
    }
   }

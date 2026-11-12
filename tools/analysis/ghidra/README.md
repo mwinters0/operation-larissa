@@ -68,7 +68,8 @@ comparators after `NumberCmp`; `DoMathProblem` is the only caller of the 34-way 
 (`ShowProblemHint`, `Prob07_SolutionSubst`). All 852 functions are named (847 in `names_onwin32.json`, 5 Borland
 dialog procs keep their imported mangled names; 408 global labels in `labels_onwin32.json`). The statically linked Borland C++ runtime starts at
 0x434250 (`strcpy`, `rand`, `sprintf` ...); its exception-handling / RTTI internals are marked `[guess]`. Evidence
-containing `[guess]` is a position-only match. Three MAP functions have no Ghidra function yet (code Ghidra did not
+containing `[guess]` is a position-only match. A parameter name in `annotations_onwin32.json` that the code does not prove (it comes from
+a caller pattern, a plate wording or the function's own name) is flagged in that function's evidence as `[I param name: x (why)]`. Three MAP functions have no Ghidra function yet (code Ghidra did not
 disassemble): `get_font` 0x414dbe, `init_anim` 0x4153f9, `do_help` ~0x415b7c.
 
 `port_map_onwin32.json` records, for every named function, whether the Godot port implements it (`ported` + where, `not-ported` + the difference, or `n/a` for platform plumbing / dead code).
