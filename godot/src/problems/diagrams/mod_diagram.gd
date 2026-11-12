@@ -27,6 +27,7 @@ var _told_tick := -1
 
 
 func _init() -> void:
+	super()                                           # (GDScript does not run the base's `_init` for a class that has its own: the base sets the size of the window, which `clip_contents` below cuts the picture to)
 	clip_contents = true
 	_stack.name = "Drawn"
 	add_child(_stack)
