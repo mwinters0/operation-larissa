@@ -55,7 +55,7 @@ writes the first readable form to `extracted/` (git-ignored, large), which the i
 | `NEP256.DLL` | 1158 pictures with the colour key (sprites, UI parts, tiles, problem-panel art) |
 | `NEPBG1.DLL`, `NEPBG2.DLL` | The backgrounds, one 608 x 288 picture per screen (ids 3000 + sector * 12 + screen; a few ids at the end do not exist) |
 | `NEP.DLL` | Palettes, bundle lists, text, binary tables (sector and creature data, sprite metadata, problem tables), fonts, two x86 stubs of the DOS blitters |
-| `NE0SOUND.DLL` | 52 sound effects (ids 8000-8051) and 191 AdLib FM patches (9000-9190, not used by the port) |
+| `NE0SOUND.DLL` | 52 sound effects (ids 8000-8051) and the DOS game's sound data (ids 9000-9190: effects and songs for four sound devices, nine AdLib FM songs among them; the importer extracts the bytes and nothing plays them) |
 | `NE1SOUND.DLL` | 371 speech clips (4000-4370) |
 | `NE2SOUND.DLL` | A 12-byte stub with no assets |
 | `SOUNDS/*.MID` | 20 MIDI files: `B*.MID` for the AdLib / base sound card, `E*.MID` for General MIDI (same ten songs, richer arrangement) |
@@ -113,7 +113,10 @@ and `rock` come from `extracted/tables/piece_animation.json`.
   ignored `extracted/sounds/voice_transcripts.json` (hand corrections from the git-ignored hand-data area `godot/data/legacy/`, or
   `$NEP_LEGACY`, applied). The committed
   fixture `godot/tests/fixtures/voice_transcripts.json` holds one SHA-256 per clip and the engine pins, no text.
-* **AdLib FM patches** (NE0SOUND 9000-9190: `u32 type 0-4`, then register and note bytes): not decoded, superseded by the WAVs.
+* **The DOS game's sound data** (NE0SOUND 9000-9190: `u32` device type, the same value as the first byte; 1 PC speaker, 2 Tandy / PS-1, 3 AdLib, 4 MPU-401): the
+  DOS engine's sequences, 48 effects and the songs, extracted raw to `extracted/sounds/fm_patches_undecoded/`. A type-3 song holds a song
+  table, 6 to 9 eleven-byte OPL2 patches and the events; the layout, the nine AdLib songs and their relation to the `B*.MID` files are in
+  [`ADLIB_MUSIC.md`](ADLIB_MUSIC.md). The importer does not decode them and the engine does not play them.
 * **Music** is Standard MIDI in `SOUNDS/`; the importer renders the ten songs of each set to OGG (`step_audio.py`), recording the
   soundfont and the MIDI hashes in `rendered_with.json` beside them. FluidSynth does not render the same samples twice, so the OGGs
   are fixed by the hashes of the MIDI files, not by their own.
@@ -144,6 +147,6 @@ labels (`DESIGN.md` section 5.5).
 * The CD's `ASSETS/*.GRP` archives and `MOVIES/MV107A.SMK` belong to a preview reel for other Learning Company titles (a different
   licence), not to Operation Neptune; `tools/extract/extract_previews.py` can unpack them (`RGrp` archives with ASEQ animations,
   WAVE speech, RRGB palettes) into the ignored `extracted/previews_other_titles/`, and nothing reads them.
-* The AdLib FM patches and the bitmap font data, as above; the editor-era pictures 2081-2090 are imported only for reference
+* The DOS game's sound data (NE0SOUND 9000-9190, [`ADLIB_MUSIC.md`](ADLIB_MUSIC.md)) and the bitmap font data, as above; the editor-era pictures 2081-2090 are imported only for reference
   (`assets/authoring_tool/`, `DESIGN.md` section 16).
 * Not decoded: the preview reel's cel format, and any palette cycling (the program seems to have none).

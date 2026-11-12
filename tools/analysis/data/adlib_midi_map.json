@@ -1,0 +1,923 @@
+{
+ "about": "Measured mapping of the Windows AdLib MIDI songs (B*.MID) onto the DOS game's own AdLib songs: per song the DOS resource, loop length and pitch match, per MIDI line the DOS voice and patch index, per drum key the DOS rhythm instrument; indices, counts and shares only. How it was derived: docs/port/ADLIB_MUSIC.md section 3.",
+ "tick_hz": 72.8274,
+ "velocity_to_carrier_level": {
+  "tl_per_velocity": -0.222,
+  "notes": 3570,
+  "songs": 9,
+  "kind": "least-squares fit, not a rule"
+ },
+ "drum_keys": {
+  "measured": {
+   "35": {
+    "instrument": "BD",
+    "songs": 1,
+    "songs_with_instrument": 1,
+    "mean_f1": 1.0,
+    "settled": true
+   },
+   "36": {
+    "instrument": "BD",
+    "songs": 8,
+    "songs_with_instrument": 8,
+    "mean_f1": 0.86,
+    "settled": true
+   },
+   "38": {
+    "instrument": "SD",
+    "songs": 9,
+    "songs_with_instrument": 9,
+    "mean_f1": 0.92,
+    "settled": true
+   },
+   "39": {
+    "instrument": "HH",
+    "songs": 2,
+    "songs_with_instrument": 2,
+    "mean_f1": 1.0,
+    "settled": true
+   },
+   "41": {
+    "instrument": "TOM",
+    "songs": 1,
+    "songs_with_instrument": 1,
+    "mean_f1": 0.55,
+    "settled": false
+   },
+   "42": {
+    "instrument": "HH",
+    "songs": 7,
+    "songs_with_instrument": 6,
+    "mean_f1": 0.89,
+    "settled": true
+   },
+   "43": {
+    "instrument": "SD",
+    "songs": 2,
+    "songs_with_instrument": 1,
+    "mean_f1": 0.4,
+    "settled": false
+   },
+   "44": {
+    "instrument": "HH",
+    "songs": 1,
+    "songs_with_instrument": 1,
+    "mean_f1": 1.0,
+    "settled": true
+   },
+   "45": {
+    "instrument": "BD",
+    "songs": 2,
+    "songs_with_instrument": 1,
+    "mean_f1": 0.25,
+    "settled": false
+   },
+   "46": {
+    "instrument": "SD",
+    "songs": 2,
+    "songs_with_instrument": 1,
+    "mean_f1": 0.67,
+    "settled": false
+   },
+   "47": {
+    "instrument": "TOM",
+    "songs": 3,
+    "songs_with_instrument": 1,
+    "mean_f1": 0.4,
+    "settled": false
+   },
+   "48": {
+    "instrument": "BD",
+    "songs": 1,
+    "songs_with_instrument": 1,
+    "mean_f1": 0.25,
+    "settled": false
+   },
+   "50": {
+    "instrument": "BD",
+    "songs": 3,
+    "songs_with_instrument": 2,
+    "mean_f1": 0.41,
+    "settled": false
+   },
+   "54": {
+    "instrument": "TOM",
+    "songs": 1,
+    "songs_with_instrument": 1,
+    "mean_f1": 0.4,
+    "settled": false
+   },
+   "56": {
+    "instrument": "SD",
+    "songs": 2,
+    "songs_with_instrument": 2,
+    "mean_f1": 0.45,
+    "settled": false
+   },
+   "60": {
+    "instrument": "TOM",
+    "songs": 5,
+    "songs_with_instrument": 2,
+    "mean_f1": 0.18,
+    "settled": false
+   },
+   "61": {
+    "instrument": "SD",
+    "songs": 5,
+    "songs_with_instrument": 2,
+    "mean_f1": 0.26,
+    "settled": false
+   },
+   "62": {
+    "instrument": "SD",
+    "songs": 5,
+    "songs_with_instrument": 2,
+    "mean_f1": 0.31,
+    "settled": false
+   },
+   "63": {
+    "instrument": "TOM",
+    "songs": 5,
+    "songs_with_instrument": 4,
+    "mean_f1": 0.27,
+    "settled": false
+   },
+   "64": {
+    "instrument": "BD",
+    "songs": 4,
+    "songs_with_instrument": 2,
+    "mean_f1": 0.1,
+    "settled": false
+   },
+   "65": {
+    "instrument": "TOM",
+    "songs": 3,
+    "songs_with_instrument": 3,
+    "mean_f1": 0.32,
+    "settled": false
+   },
+   "66": {
+    "instrument": "BD",
+    "songs": 3,
+    "songs_with_instrument": 1,
+    "mean_f1": 0.31,
+    "settled": false
+   },
+   "67": {
+    "instrument": "SD",
+    "songs": 4,
+    "songs_with_instrument": 2,
+    "mean_f1": 0.28,
+    "settled": false
+   },
+   "68": {
+    "instrument": "TOM",
+    "songs": 2,
+    "songs_with_instrument": 1,
+    "mean_f1": 0.29,
+    "settled": false
+   },
+   "69": {
+    "instrument": "TOM",
+    "songs": 4,
+    "songs_with_instrument": 2,
+    "mean_f1": 0.43,
+    "settled": false
+   }
+  },
+  "prototype_assignment": {
+   "BD": [
+    35,
+    36
+   ],
+   "SD": [
+    37,
+    38,
+    40
+   ],
+   "HH": [
+    39,
+    42,
+    44,
+    46
+   ],
+   "TOM": [
+    41,
+    43,
+    45,
+    47,
+    48,
+    50,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69
+   ],
+   "dropped": [
+    49,
+    51,
+    52,
+    53,
+    55,
+    57,
+    59
+   ]
+  }
+ },
+ "songs": {
+  "BSECT1": {
+   "dos_resource": "0x1063",
+   "ne0sound": 9158,
+   "loop_ticks": 569,
+   "loop_beats": 16,
+   "midi_repetitions": 15,
+   "pitch_match": [
+    107,
+    147
+   ],
+   "lines": [
+    {
+     "channel": 13,
+     "program": 12,
+     "midi_notes": 623,
+     "dos_voice": 2,
+     "dos_patch": 3,
+     "voice_notes_found": 36,
+     "voice_notes": 36,
+     "shift_semitones": 0,
+     "match": "ok"
+    },
+    {
+     "channel": 14,
+     "program": 13,
+     "midi_notes": 312,
+     "dos_voice": 0,
+     "dos_patch": 1,
+     "voice_notes_found": 26,
+     "voice_notes": 26,
+     "shift_semitones": 0,
+     "match": "ok"
+    },
+    {
+     "channel": 15,
+     "program": 33,
+     "midi_notes": 220,
+     "dos_voice": 1,
+     "dos_patch": 2,
+     "voice_notes_found": 20,
+     "voice_notes": 20,
+     "shift_semitones": 0,
+     "match": "ok"
+    }
+   ],
+   "dos_voices_without_line": [
+    {
+     "voice": 3,
+     "patch": 4,
+     "notes": 36
+    },
+    {
+     "voice": 4,
+     "patch": 4,
+     "notes": 18
+    },
+    {
+     "voice": 5,
+     "patch": 5,
+     "notes": 11
+    }
+   ]
+  },
+  "BSECT2": {
+   "dos_resource": "0x1067",
+   "ne0sound": 9162,
+   "loop_ticks": 340,
+   "loop_beats": 8,
+   "midi_repetitions": 32,
+   "pitch_match": [
+    28,
+    66
+   ],
+   "lines": [
+    {
+     "channel": 13,
+     "program": 5,
+     "midi_notes": 152,
+     "dos_voice": 2,
+     "dos_patch": 6,
+     "voice_notes_found": 19,
+     "voice_notes": 19,
+     "shift_semitones": 0,
+     "match": "ok"
+    },
+    {
+     "channel": 14,
+     "program": 12,
+     "midi_notes": 64,
+     "dos_voice": 0,
+     "dos_patch": 8,
+     "voice_notes_found": 32,
+     "voice_notes": 32,
+     "shift_semitones": -19,
+     "match": "ok"
+    },
+    {
+     "channel": 14,
+     "program": 54,
+     "midi_notes": 8,
+     "dos_voice": 0,
+     "dos_patch": 8,
+     "voice_notes_found": 0,
+     "voice_notes": 32,
+     "shift_semitones": -19,
+     "match": "none"
+    },
+    {
+     "channel": 14,
+     "program": 62,
+     "midi_notes": 44,
+     "dos_voice": 1,
+     "dos_patch": 5,
+     "voice_notes_found": 1,
+     "voice_notes": 4,
+     "shift_semitones": 0,
+     "match": "none"
+    },
+    {
+     "channel": 15,
+     "program": 39,
+     "midi_notes": 240,
+     "dos_voice": 1,
+     "dos_patch": 5,
+     "voice_notes_found": 4,
+     "voice_notes": 4,
+     "shift_semitones": 0,
+     "match": "ok"
+    }
+   ],
+   "dos_voices_without_line": [
+    {
+     "voice": 3,
+     "patch": 0,
+     "notes": 1
+    },
+    {
+     "voice": 4,
+     "patch": 0,
+     "notes": 1
+    },
+    {
+     "voice": 5,
+     "patch": 1,
+     "notes": 9
+    }
+   ]
+  },
+  "BSECT3": {
+   "dos_resource": "0x106B",
+   "ne0sound": 9166,
+   "loop_ticks": 340,
+   "loop_beats": 8,
+   "midi_repetitions": 30,
+   "pitch_match": [
+    34,
+    95
+   ],
+   "lines": [
+    {
+     "channel": 13,
+     "program": 12,
+     "midi_notes": 414,
+     "dos_voice": 2,
+     "dos_patch": 2,
+     "voice_notes_found": 21,
+     "voice_notes": 21,
+     "shift_semitones": 10,
+     "match": "ok"
+    },
+    {
+     "channel": 14,
+     "program": 13,
+     "midi_notes": 176,
+     "dos_voice": 3,
+     "dos_patch": 1,
+     "voice_notes_found": 22,
+     "voice_notes": 25,
+     "shift_semitones": 2,
+     "match": "ok"
+    },
+    {
+     "channel": 14,
+     "program": 80,
+     "midi_notes": 280,
+     "dos_voice": 1,
+     "dos_patch": 6,
+     "voice_notes_found": 8,
+     "voice_notes": 15,
+     "shift_semitones": 22,
+     "match": "weak"
+    },
+    {
+     "channel": 15,
+     "program": 37,
+     "midi_notes": 60,
+     "dos_voice": 3,
+     "dos_patch": 1,
+     "voice_notes_found": 0,
+     "voice_notes": 25,
+     "shift_semitones": 2,
+     "match": "none"
+    },
+    {
+     "channel": 15,
+     "program": 39,
+     "midi_notes": 232,
+     "dos_voice": 3,
+     "dos_patch": 1,
+     "voice_notes_found": 0,
+     "voice_notes": 25,
+     "shift_semitones": 2,
+     "match": "none"
+    }
+   ],
+   "dos_voices_without_line": [
+    {
+     "voice": 4,
+     "patch": 2,
+     "notes": 20
+    },
+    {
+     "voice": 5,
+     "patch": 0,
+     "notes": 14
+    }
+   ]
+  },
+  "BSECT4": {
+   "dos_resource": "0x106F",
+   "ne0sound": 9170,
+   "loop_ticks": 569,
+   "loop_beats": 16,
+   "midi_repetitions": 19,
+   "pitch_match": [
+    46,
+    143
+   ],
+   "lines": [
+    {
+     "channel": 13,
+     "program": 12,
+     "midi_notes": 136,
+     "dos_voice": 4,
+     "dos_patch": 6,
+     "voice_notes_found": 7,
+     "voice_notes": 17,
+     "shift_semitones": 0,
+     "match": "none"
+    },
+    {
+     "channel": 13,
+     "program": 76,
+     "midi_notes": 88,
+     "dos_voice": 2,
+     "dos_patch": 5,
+     "voice_notes_found": 2,
+     "voice_notes": 64,
+     "shift_semitones": 0,
+     "match": "none"
+    },
+    {
+     "channel": 13,
+     "program": 80,
+     "midi_notes": 44,
+     "dos_voice": 4,
+     "dos_patch": 6,
+     "voice_notes_found": 1,
+     "voice_notes": 17,
+     "shift_semitones": 0,
+     "match": "none"
+    },
+    {
+     "channel": 14,
+     "program": 13,
+     "midi_notes": 168,
+     "dos_voice": 0,
+     "dos_patch": 0,
+     "voice_notes_found": 3,
+     "voice_notes": 5,
+     "shift_semitones": 7,
+     "match": "weak"
+    },
+    {
+     "channel": 14,
+     "program": 80,
+     "midi_notes": 66,
+     "dos_voice": 3,
+     "dos_patch": 0,
+     "voice_notes_found": 7,
+     "voice_notes": 17,
+     "shift_semitones": 2,
+     "match": "none"
+    },
+    {
+     "channel": 15,
+     "program": 37,
+     "midi_notes": 126,
+     "dos_voice": 1,
+     "dos_patch": 4,
+     "voice_notes_found": 7,
+     "voice_notes": 21,
+     "shift_semitones": 0,
+     "match": "none"
+    },
+    {
+     "channel": 15,
+     "program": 39,
+     "midi_notes": 240,
+     "dos_voice": 5,
+     "dos_patch": 7,
+     "voice_notes_found": 7,
+     "voice_notes": 19,
+     "shift_semitones": -15,
+     "match": "none"
+    }
+   ],
+   "dos_voices_without_line": []
+  },
+  "BSECT5": {
+   "dos_resource": "0x1073",
+   "ne0sound": 9174,
+   "loop_ticks": 589,
+   "loop_beats": 16,
+   "midi_repetitions": 18,
+   "pitch_match": [
+    104,
+    130
+   ],
+   "lines": [
+    {
+     "channel": 13,
+     "program": 45,
+     "midi_notes": 78,
+     "dos_voice": 4,
+     "dos_patch": 7,
+     "voice_notes_found": 35,
+     "voice_notes": 35,
+     "shift_semitones": 0,
+     "match": "ok"
+    },
+    {
+     "channel": 13,
+     "program": 60,
+     "midi_notes": 39,
+     "dos_voice": 5,
+     "dos_patch": 0,
+     "voice_notes_found": 14,
+     "voice_notes": 14,
+     "shift_semitones": 0,
+     "match": "ok"
+    },
+    {
+     "channel": 13,
+     "program": 71,
+     "midi_notes": 101,
+     "dos_voice": 1,
+     "dos_patch": 4,
+     "voice_notes_found": 0,
+     "voice_notes": 36,
+     "shift_semitones": 0,
+     "match": "none"
+    },
+    {
+     "channel": 14,
+     "program": 5,
+     "midi_notes": 297,
+     "dos_voice": 2,
+     "dos_patch": 5,
+     "voice_notes_found": 11,
+     "voice_notes": 11,
+     "shift_semitones": 0,
+     "match": "ok"
+    },
+    {
+     "channel": 15,
+     "program": 33,
+     "midi_notes": 141,
+     "dos_voice": 2,
+     "dos_patch": 5,
+     "voice_notes_found": 2,
+     "voice_notes": 11,
+     "shift_semitones": 0,
+     "match": "none"
+    },
+    {
+     "channel": 15,
+     "program": 35,
+     "midi_notes": 72,
+     "dos_voice": 3,
+     "dos_patch": 6,
+     "voice_notes_found": 17,
+     "voice_notes": 29,
+     "shift_semitones": -10,
+     "match": "weak"
+    },
+    {
+     "channel": 15,
+     "program": 37,
+     "midi_notes": 88,
+     "dos_voice": 1,
+     "dos_patch": 4,
+     "voice_notes_found": 36,
+     "voice_notes": 36,
+     "shift_semitones": 0,
+     "match": "ok"
+    }
+   ],
+   "dos_voices_without_line": [
+    {
+     "voice": 0,
+     "patch": 5,
+     "notes": 5
+    }
+   ]
+  },
+  "BSECT6": {
+   "dos_resource": "0x1077",
+   "ne0sound": 9178,
+   "loop_ticks": 344,
+   "loop_beats": 8,
+   "midi_repetitions": 34,
+   "pitch_match": [
+    79,
+    83
+   ],
+   "lines": [
+    {
+     "channel": 13,
+     "program": 54,
+     "midi_notes": 16,
+     "dos_voice": 4,
+     "dos_patch": 5,
+     "voice_notes_found": 1,
+     "voice_notes": 14,
+     "shift_semitones": 0,
+     "match": "none"
+    },
+    {
+     "channel": 13,
+     "program": 73,
+     "midi_notes": 56,
+     "dos_voice": 0,
+     "dos_patch": 2,
+     "voice_notes_found": 14,
+     "voice_notes": 14,
+     "shift_semitones": 0,
+     "match": "ok"
+    },
+    {
+     "channel": 13,
+     "program": 80,
+     "midi_notes": 102,
+     "dos_voice": 5,
+     "dos_patch": 6,
+     "voice_notes_found": 17,
+     "voice_notes": 17,
+     "shift_semitones": 0,
+     "match": "ok"
+    },
+    {
+     "channel": 14,
+     "program": 5,
+     "midi_notes": 448,
+     "dos_voice": 4,
+     "dos_patch": 5,
+     "voice_notes_found": 14,
+     "voice_notes": 14,
+     "shift_semitones": 0,
+     "match": "ok"
+    },
+    {
+     "channel": 15,
+     "program": 35,
+     "midi_notes": 32,
+     "dos_voice": 2,
+     "dos_patch": 0,
+     "voice_notes_found": 4,
+     "voice_notes": 4,
+     "shift_semitones": -10,
+     "match": "ok"
+    },
+    {
+     "channel": 15,
+     "program": 37,
+     "midi_notes": 108,
+     "dos_voice": 1,
+     "dos_patch": 4,
+     "voice_notes_found": 20,
+     "voice_notes": 20,
+     "shift_semitones": 0,
+     "match": "ok"
+    },
+    {
+     "channel": 15,
+     "program": 38,
+     "midi_notes": 160,
+     "dos_voice": 1,
+     "dos_patch": 4,
+     "voice_notes_found": 20,
+     "voice_notes": 20,
+     "shift_semitones": 0,
+     "match": "ok"
+    }
+   ],
+   "dos_voices_without_line": [
+    {
+     "voice": 3,
+     "patch": 5,
+     "notes": 14
+    }
+   ]
+  },
+  "BEND": {
+   "dos_resource": "0x107B",
+   "ne0sound": 9182,
+   "loop_ticks": 308,
+   "loop_beats": 8,
+   "midi_repetitions": 16,
+   "pitch_match": [
+    80,
+    80
+   ],
+   "lines": [
+    {
+     "channel": 13,
+     "program": 34,
+     "midi_notes": 288,
+     "dos_voice": 1,
+     "dos_patch": 3,
+     "voice_notes_found": 18,
+     "voice_notes": 18,
+     "shift_semitones": 0,
+     "match": "ok"
+    },
+    {
+     "channel": 14,
+     "program": 13,
+     "midi_notes": 432,
+     "dos_voice": 2,
+     "dos_patch": 4,
+     "voice_notes_found": 5,
+     "voice_notes": 32,
+     "shift_semitones": 0,
+     "match": "none"
+    },
+    {
+     "channel": 15,
+     "program": 69,
+     "midi_notes": 992,
+     "dos_voice": 2,
+     "dos_patch": 4,
+     "voice_notes_found": 32,
+     "voice_notes": 32,
+     "shift_semitones": 0,
+     "match": "ok"
+    }
+   ],
+   "dos_voices_without_line": [
+    {
+     "voice": 4,
+     "patch": 4,
+     "notes": 30
+    }
+   ]
+  },
+  "BNEPT2": {
+   "dos_resource": "0x20E5",
+   "ne0sound": 9185,
+   "loop_ticks": 351,
+   "loop_beats": 12,
+   "midi_repetitions": 8,
+   "pitch_match": [
+    29,
+    33
+   ],
+   "lines": [
+    {
+     "channel": 13,
+     "program": 0,
+     "midi_notes": 1,
+     "dos_voice": 1,
+     "dos_patch": 4,
+     "voice_notes_found": 1,
+     "voice_notes": 25,
+     "shift_semitones": 0,
+     "match": "none"
+    },
+    {
+     "channel": 13,
+     "program": 37,
+     "midi_notes": 199,
+     "dos_voice": 1,
+     "dos_patch": 4,
+     "voice_notes_found": 25,
+     "voice_notes": 25,
+     "shift_semitones": 0,
+     "match": "ok"
+    },
+    {
+     "channel": 14,
+     "program": 11,
+     "midi_notes": 32,
+     "dos_voice": 2,
+     "dos_patch": 1,
+     "voice_notes_found": 4,
+     "voice_notes": 4,
+     "shift_semitones": 0,
+     "match": "ok"
+    }
+   ],
+   "dos_voices_without_line": [
+    {
+     "voice": 0,
+     "patch": 0,
+     "notes": 4
+    }
+   ]
+  },
+  "BEND2": {
+   "dos_resource": "0x20E9",
+   "ne0sound": 9189,
+   "loop_ticks": 467,
+   "loop_beats": 16,
+   "midi_repetitions": 8,
+   "pitch_match": [
+    79,
+    96
+   ],
+   "lines": [
+    {
+     "channel": 13,
+     "program": 5,
+     "midi_notes": 408,
+     "dos_voice": 3,
+     "dos_patch": 3,
+     "voice_notes_found": 17,
+     "voice_notes": 17,
+     "shift_semitones": 0,
+     "match": "ok"
+    },
+    {
+     "channel": 14,
+     "program": 32,
+     "midi_notes": 136,
+     "dos_voice": 0,
+     "dos_patch": 2,
+     "voice_notes_found": 17,
+     "voice_notes": 17,
+     "shift_semitones": -12,
+     "match": "ok"
+    },
+    {
+     "channel": 15,
+     "program": 60,
+     "midi_notes": 224,
+     "dos_voice": 5,
+     "dos_patch": 0,
+     "voice_notes_found": 14,
+     "voice_notes": 14,
+     "shift_semitones": 0,
+     "match": "ok"
+    }
+   ],
+   "dos_voices_without_line": [
+    {
+     "voice": 1,
+     "patch": 3,
+     "notes": 17
+    },
+    {
+     "voice": 2,
+     "patch": 3,
+     "notes": 17
+    },
+    {
+     "voice": 4,
+     "patch": 0,
+     "notes": 14
+    }
+   ]
+  }
+ }
+}

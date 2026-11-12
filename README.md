@@ -39,7 +39,7 @@ something to test.
 | ... teach with it: which Godot concept each file shows | [`docs/engine/TEACHING.md`](docs/engine/TEACHING.md) |
 | **study the port**: how the original behaves | [`docs/port/DESIGN.md`](docs/port/DESIGN.md) |
 | ... how fidelity and provenance are kept | [`docs/port/FIDELITY.md`](docs/port/FIDELITY.md) |
-| ... known differences, the call-site audit, file formats, Ghidra | [`PORT_GAPS`](docs/port/PORT_GAPS.md), [`AUDIT_CALLSITES`](docs/port/AUDIT_CALLSITES.md), [`ASSET_FORMATS`](docs/port/ASSET_FORMATS.md), [`GHIDRA_GUI`](docs/port/GHIDRA_GUI.md) |
+| ... known differences, the call-site audit, file formats, Ghidra, AdLib music | [`PORT_GAPS`](docs/port/PORT_GAPS.md), [`AUDIT_CALLSITES`](docs/port/AUDIT_CALLSITES.md), [`ASSET_FORMATS`](docs/port/ASSET_FORMATS.md), [`GHIDRA_GUI`](docs/port/GHIDRA_GUI.md), [`ADLIB_MUSIC`](docs/port/ADLIB_MUSIC.md) |
 | see what comes next | [`docs/ROADMAP.md`](docs/ROADMAP.md) |
 
 Agents: [`AGENTS.md`](AGENTS.md) and [`docs/CODEMAP.md`](docs/CODEMAP.md).
