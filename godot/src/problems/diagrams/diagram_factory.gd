@@ -13,7 +13,7 @@ const INPUT_FAMILIES: Array[String] = ["lock", "ballast_panel"]
 
 ## A set-up diagram for `problem`, ready to be added to the scene tree.
 static func create(problem: ProblemInstance) -> DiagramBase:
-	if takes_input(problem.type.diagram["family"]):
+	if takes_input(family_of(problem.type)):
 		return plain(problem)
 	var diagram := ModDiagram.new()
 	diagram.setup(problem)
@@ -22,9 +22,14 @@ static func create(problem: ProblemInstance) -> DiagramBase:
 
 ## The set-up diagram the type's data names, whatever a mod does: what a `ModDiagram` shows and plays under (and instead of) its mod's layers, and the diagram of a lock or a ballast panel.
 static func plain(problem: ProblemInstance) -> DiagramBase:
-	var diagram := _new_for(problem.type.diagram["family"])
+	var diagram := _new_for(family_of(problem.type), problem.type.id)
 	diagram.setup(problem)
 	return diagram
+
+
+## The family the type's data names ("" when it names none: a type a pack adds with no `family` in its `diagram`; `_new_for` says what the player sees then).
+static func family_of(type: ProblemType) -> String:
+	return String(type.diagram.get("family", ""))
 
 
 ## Is a type of this diagram family answered through its diagram (the lock, the ballast panel), so that no mod draws it?
@@ -32,7 +37,7 @@ static func takes_input(family: String) -> bool:
 	return INPUT_FAMILIES.has(family)
 
 
-static func _new_for(family: String) -> DiagramBase:
+static func _new_for(family: String, type_id: int = -1) -> DiagramBase:
 	match family:
 		"items": return DiagramBase.new()
 		"sonar": return SonarDiagram.new()
@@ -48,5 +53,6 @@ static func _new_for(family: String) -> DiagramBase:
 		"ballast_panel": return BallastPanelDiagram.new()
 		"lock": return LockDiagram.new()
 		"mod": return DiagramBase.new()          # a type a pack adds for a mod to draw (`ModProblems`): its plain picture is the generic `items` of the data
-	push_error("DiagramFactory: unknown diagram family '%s'" % family)
+	TroubleLog.session.tell("[problems] problem type %d: its diagram %s, so its picture is the plain list of items of its data" % [
+			type_id, "family '%s' is not one the game draws" % family if not family.is_empty() else "names no family"])
 	return DiagramBase.new()

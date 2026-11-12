@@ -98,7 +98,7 @@ func test_a_trigger_slot_whose_types_the_chain_lacks_is_told_once() -> void:
 	for i in 3:
 		assert_object(ProblemFactory.for_trigger_slot(5, 0)).is_null()
 	assert_array(TroubleLog.session.told).has_size(1)
-	assert_str(TroubleLog.session.told[0]).is_equal("[problems] the trigger table (of the chain in use) names problem types 250 and 250 for slot 5 at level 0, and the chain has no problem of either there; no problem opens")
+	assert_str(TroubleLog.session.told[0]).is_equal("[problems] the trigger table (of the chain in use) names problem types 250 and 250 for slot 5 at level 0, and the chain has no problem of either there; no problem opens and the sub goes on as if it were solved (a data canister counts as collected, without its log entry)")
 	shelf.remove()
 	assert_object(ProblemFactory.for_trigger_slot(5, 0)).is_not_null()                # (the chain's own table: a problem opens, and nothing more is told)
 	assert_array(TroubleLog.session.told).has_size(1)

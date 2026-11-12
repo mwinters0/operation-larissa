@@ -33,7 +33,7 @@ static func for_trigger_slot(slot: int, level: int, rng: RandomNumberGenerator =
 		type_id = table.type_for(slot, level, 1 - pick)
 	var instance := make(type_id, level, rng)
 	if instance == null:
-		TroubleLog.session.tell("[problems] the trigger table (of the chain in use) names problem types %d and %d for slot %d at level %d, and the chain has no problem of either there; no problem opens" % [
+		TroubleLog.session.tell("[problems] the trigger table (of the chain in use) names problem types %d and %d for slot %d at level %d, and the chain has no problem of either there; no problem opens and the sub goes on as if it were solved (a data canister counts as collected, without its log entry)" % [
 				table.type_for(slot, level, 0), table.type_for(slot, level, 1), slot, level])
 	else:
 		instance.trigger_slot = slot

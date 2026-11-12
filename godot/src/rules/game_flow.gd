@@ -336,6 +336,9 @@ func _on_midpoint_changed(_past: bool) -> void:
 ## Shows the math problem of trigger `slot` and tells the world how it went.
 func open_problem(slot: int) -> void:
 	var problem: ProblemInstance = world.make_problem(slot)
+	if problem == null:                                   # (`ProblemFactory` told why)
+		world.problem_resolved(slot, ProblemSession.not_made())
+		return
 	var session := await run_problem(problem)
 	world.problem_resolved(slot, session)
 	_play_sector_music()                                  # the music was stopped while the problem was up
@@ -367,15 +370,25 @@ func on_dock_reached() -> void:
 	busy = true
 	var level: int = run.edu_level
 	var problem := ProblemFactory.make(0, level)
-	while problem == null and level > 0:                  # (the lock exists at every level, but be safe)
+	while problem == null and level > 0:                  # (the original's lock exists at every level; a pack's type 0 may not)
 		level -= 1
 		problem = ProblemFactory.make(0, level)
-	var session := await run_problem(problem)
-	if session.oxygen_code != OxygenModel.OK:
-		busy = false                                      # the lost tank is handled by `_on_tank_lost`
-		return
+	if problem == null:
+		_no_lock()
+	else:
+		var session := await run_problem(problem)
+		if session.oxygen_code != OxygenModel.OK:
+			busy = false                                  # the lost tank is handled by `_on_tank_lost`
+			return
 	await complete_sector()
 	busy = false
+
+
+## The chain in use holds no combination lock (problem type 0) at the player's level or any below it (a pack's type 0 with no records there), so there is no lock to open at the end station: the player is told, and the
+## sector is finished as if the lock had opened. (`busy` stays set until `complete_sector` is over, as for a lock that opens, and the player is never left at a dock that does nothing.)
+func _no_lock() -> void:
+	TroubleLog.session.tell("[problems] sector %d (campaign '%s'): the chain has no combination lock (problem type 0) at educational level %d or below, so the lock at the end station opens by itself" % [
+			world.sector_index, campaign.id, run.edu_level])
 
 
 ## The lock is open: the creatures start over, drive in (to the sector's song), show the surface ship message (silent music), send the

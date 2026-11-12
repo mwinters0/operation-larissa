@@ -33,6 +33,15 @@ func _init(problem: ProblemInstance) -> void:
 	instance = problem
 
 
+## The session of a problem that could not be made (`ProblemFactory` returned null and told why): over at once, nothing lost, no
+## instance. The owner answers the world with it, because the world entered "a problem is open" when it asked (`SimWorld.open_problem`)
+## and only `problem_resolved` leaves that: the sub goes on as if the problem were solved without a screen, and a data canister stays taken.
+static func not_made() -> ProblemSession:
+	var none := ProblemSession.new(null)
+	none.finished = true
+	return none
+
+
 ## Oxygen the player has lost to wrong answers so far (the screen applies it to GameState
 ## one point at a time, as each miss happens).
 func oxygen_lost() -> int:

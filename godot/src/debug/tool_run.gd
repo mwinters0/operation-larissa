@@ -48,6 +48,9 @@ func begin_sector(index: int, screen: int = 0) -> void:
 ## Shows the problem of trigger `slot` over the tool and tells the rules how it went (`GameFlow.open_problem`).
 func open_problem(slot: int) -> void:
 	var problem := world.make_problem(slot)
+	if problem == null:                                   # (`ProblemFactory` told why)
+		world.problem_resolved(slot, ProblemSession.not_made())
+		return
 	var session := await ProblemRunner.run(host, problem)
 	world.problem_resolved(slot, session)
 

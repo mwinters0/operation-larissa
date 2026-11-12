@@ -178,7 +178,7 @@ The file is committed (it is hand-made, not copied out of the game) and holds th
 ([`HARD_CODED.md`](../engine/HARD_CODED.md)). A pack states only the keys it changes, in its own `rules/durations.json`; the files of the
 chain are laid over the project's file key by key (the bottom pack first, the chosen pack last), and a key no pack states keeps the project
 file's number. The pack check refuses numbers that cannot work (a step of zero ticks where one is needed, a dock that drives left) and
-warns about odd ones (no movement at all, a wait longer than ten minutes). So a longer dock is a number you change, not code. A skin is
+warns about odd ones (no movement at all, a wait longer than ten minutes); a station trip that the numbers make shorter than one tick (a balloon that starts where it ends) takes one tick. So a longer dock is a number you change, not code. A skin is
 *told* the length and fits its animation to it; it never decides it.
 
 ### Rule values

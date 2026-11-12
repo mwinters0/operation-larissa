@@ -30,6 +30,10 @@ const DOOR_OPEN := -1              # (no picture: the doorway is empty)
 ## The sub's picture is this high (window y) while it drives (where the station's door is drawn, not a length).
 const DRIVE_Y := 202
 
+## A trip takes at least this many ticks, whatever the data says (a balloon that starts where it ends, a drive of no length with a door that takes no time): the rules end a trip in the tick that counts its last step, so a trip of no ticks would never end and
+## whoever waits for it (`SimWorld.sequence_over`) would wait for ever.
+const MIN_TICKS := 1
+
 ## Which trip this is.
 var kind: Kind
 ## How many game ticks the whole trip lasts (the view is told this).
@@ -81,7 +85,8 @@ func _init(trip: Kind) -> void:
 		balloon_x = Durations.at(section + "x")
 		balloon_from_y = Durations.at(section + "from_y")
 		balloon_to_y = Durations.at(section + "to_y")
-		ticks = maxi(ceili(float(balloon_from_y - balloon_to_y) / pixels_per_tick), 0)
+		ticks = ceili(float(balloon_from_y - balloon_to_y) / pixels_per_tick)
+	ticks = maxi(ticks, MIN_TICKS)
 
 
 ## A copy of this trip with every number of it as it is now (its own lengths and places, not the data's: the data may have changed
