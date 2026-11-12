@@ -381,9 +381,10 @@ Game (Node, game.gd)                                                the view of 
  |   |   |- Background, BackDecos, Walls (TileMapLayer), Currents (TileMapLayer, hidden), Station, MidDecos, Collectibles, Triggers
  |   |   |- Sub (Node2D), Foes, Pellets, FrontDecos, AnimDecos, Bubbles      (draw order = this order in play; while a supply trip
  |   |   |  runs the presenter moves Station between Sub and Collectibles: MidDecos, Sub, Station, Collectibles)
- |- MenuBar (GameMenuBar)   File / Options / Help (the original's texts)
  |- GameDebug (CanvasLayer) F3 cheats; deletes itself in release builds (OS.is_debug_build())
  |- ProblemLayer (CanvasLayer 10)   a ProblemScreen, SurfaceShipScreen or closing sequence is added here while it plays
+ |- MenuLayer (CanvasLayer 15)      MenuBar (GameMenuBar): File / Options / Help (the original's texts); above every screen that plays, so the menus
+ |                                  answer mouse and keys during a math problem as the original's Windows menu does, and below every dialog
  |- DialogLayer (CanvasLayer 20)    MessageBox, Hall of Fame, Help, Customization, Audio settings (modals of `Game.modals`: ProblemLayer
                                    sleeps while one is open)
 ```

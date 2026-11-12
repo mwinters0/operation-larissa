@@ -28,14 +28,19 @@ offset_top = 32.0
 offset_right = 624.0
 offset_bottom = 320.0
 
-[node name="MenuBar" parent="." instance=ExtResource("4_menu")]
-unique_name_in_owner = true
-
 [node name="GameDebug" parent="." instance=ExtResource("6_debug")]
 
 [node name="ProblemLayer" type="CanvasLayer" parent="."]
 unique_name_in_owner = true
 layer = 10
+
+; The menu bar is above every screen that plays (`ProblemLayer`) and below every dialog: the original's Windows menu works while a
+; math problem is up, and a screen that covers the strip would swallow its clicks.
+[node name="MenuLayer" type="CanvasLayer" parent="."]
+layer = 15
+
+[node name="MenuBar" parent="MenuLayer" instance=ExtResource("4_menu")]
+unique_name_in_owner = true
 
 [node name="DialogLayer" type="CanvasLayer" parent="."]
 unique_name_in_owner = true
