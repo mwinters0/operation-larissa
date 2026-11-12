@@ -59,11 +59,94 @@ def music_stems(entry: dict, letter: str) -> str:
     return (letter + entry["file"][1:].rsplit(".", 1)[0]).lower()
 
 
-# Each rendered set records what it was rendered from, next to its OGGs: the soundfont (file name and SHA-256) and the
-# SHA-256 of each song's MIDI file. A song is rendered again only when its OGG is missing or one of those changed,
+# The AdLib set (B*.MID) is written for the base-level multi-timbral layout (MPC): melodic channels 13-15 and the percussion on
+# channel 16, whose notes are General MIDI drum keys. FluidSynth, like General MIDI, plays only channel 10 as drums, so a render
+# moves the percussion there first. The files in the legacy pack's `midi/` stay the original bytes; the game moves the channel
+# itself when it plays them (godot/src/audio/midi_music.gd, `MidiMusic.percussion_to_channel_10`, the same rule).
+ADLIB_PERCUSSION = 15      # channel 16, counted from 0
+GM_PERCUSSION = 9          # channel 10
+ADLIB_RECIPE = "percussion-channel-10"
+
+
+class MidiChannelRefused(ValueError):
+    """A MIDI file whose percussion channel cannot be moved: it is not a standard MIDI file, or it already has notes on channel 10."""
+
+
+def _channel_events(data: bytes):
+    """Yields (offset of the status byte, status byte) of every channel event of a standard MIDI file, in file order; an event that
+    runs on the status of the one before (running status) has no byte of its own and is not yielded: it follows the byte that is.
+    Raises MidiChannelRefused for a file that does not parse."""
+    if len(data) < 14 or data[:4] != b"MThd":
+        raise MidiChannelRefused("not a standard MIDI file (no MThd header)")
+    pos = 8 + int.from_bytes(data[4:8], "big")
+    while pos < len(data):
+        if data[pos:pos + 4] != b"MTrk" or pos + 8 > len(data):
+            raise MidiChannelRefused("a chunk at byte %d is not a track" % pos)
+        end = pos + 8 + int.from_bytes(data[pos + 4:pos + 8], "big")
+        if end > len(data):
+            raise MidiChannelRefused("the track at byte %d runs past the end of the file" % pos)
+        pos += 8
+        running = 0
+        while pos < end:
+            while data[pos] & 0x80:                                  # the delta time: a variable-length number
+                pos += 1
+                if pos >= end:
+                    raise MidiChannelRefused("a delta time runs past the end of its track")
+            pos += 1
+            if pos >= end:
+                raise MidiChannelRefused("an event is missing after its delta time")
+            status = data[pos]
+            if status == 0xFF or status in (0xF0, 0xF7):             # a meta event or a system exclusive: a length, then that many bytes
+                running = 0
+                pos += 2 if status == 0xFF else 1
+                size = 0
+                while True:
+                    if pos >= end:
+                        raise MidiChannelRefused("an event runs past the end of its track")
+                    size = size << 7 | data[pos] & 0x7F
+                    pos += 1
+                    if not data[pos - 1] & 0x80:
+                        break
+                pos += size
+                continue
+            if status >= 0xF0:
+                raise MidiChannelRefused("an event at byte %d has the status %02X, which a MIDI file does not hold" % (pos, status))
+            if status & 0x80:
+                running = status
+                yield pos, status
+                pos += 1
+            elif running == 0:
+                raise MidiChannelRefused("a data byte at byte %d has no status to run on" % pos)
+            pos += 1 if running & 0xF0 in (0xC0, 0xD0) else 2
+        if pos != end:
+            raise MidiChannelRefused("an event runs past the end of its track")
+
+
+def percussion_to_channel_10(data: bytes) -> bytes:
+    """The AdLib songs' percussion (channel 16) moved to channel 10, the only channel FluidSynth (and General MIDI) plays as drums.
+    Every channel-voiced event on channel 16 gets the status byte of channel 10; a run of events on running status follows its first
+    byte, so editing the status bytes is the whole edit. A file with no channel 16 comes back unchanged. Raises MidiChannelRefused
+    for a file that does not parse or that already uses channel 10 (the two channels would be played as one)."""
+    events = list(_channel_events(data))
+    used = {status & 0x0F for _, status in events}
+    if ADLIB_PERCUSSION not in used:
+        return data
+    if GM_PERCUSSION in used:
+        raise MidiChannelRefused("the file has notes on channel 10 as well as on channel 16")
+    out = bytearray(data)
+    for pos, status in events:
+        if status & 0x0F == ADLIB_PERCUSSION:
+            out[pos] = status & 0xF0 | GM_PERCUSSION
+    return bytes(out)
+
+
+# Each rendered set records what it was rendered from, next to its OGGs: the soundfont (file name and SHA-256), the
+# SHA-256 of each song's MIDI file and, for a set whose MIDI bytes are changed before the render (the AdLib set's percussion
+# channel), the name of that recipe. A song is rendered again only when its OGG is missing or one of those changed,
 # so `--soundfont other.sf2` re-renders the whole set, while re-extracting the same MIDI files (new modification
 # times, same bytes) re-renders nothing. That matters because FluidSynth does not render every song to the same
-# samples twice: a needless re-render would change committed files.
+# samples twice: a needless re-render would change committed files. The MIDI hash stays the hash of the file as the CD has it
+# (the one source_files.json holds), so the recipe is a field of its own: a set rendered without it is rendered again once.
 STAMP = "rendered_with.json"
 
 
@@ -96,35 +179,53 @@ def adopt_song(dest: Path, midi_stem: str, song_id: int) -> bool:
 
 
 def render_set(stems: list[str], dest_dir: Path, soundfont: str, midi_dir: Path = EXTRACTED / "music",
-               files: dict[str, Path] | None = None) -> int:
+               files: dict[str, Path] | None = None, adlib: bool = False) -> int:
     """Renders the songs of one set into `dest_dir` (see STAMP above); returns how many were rendered.
-    `files`: stem -> the OGG to write, for songs that are not called `<stem>.ogg` (named songs, `asset_names.music_file`)."""
+    `files`: stem -> the OGG to write, for songs that are not called `<stem>.ogg` (named songs, `asset_names.music_file`).
+    `adlib`: the AdLib set, whose percussion channel is moved to channel 10 before the render (`ADLIB_RECIPE`)."""
     stamp_path = dest_dir / STAMP
     old = json.loads(stamp_path.read_text()) if stamp_path.exists() else {}   # not load_json: it caches
     font_hash = file_sha256(Path(soundfont))
-    same_font = old.get("soundfont_sha256") == font_hash
+    recipe = ADLIB_RECIPE if adlib else ""
+    same_font = old.get("soundfont_sha256") == font_hash and old.get("recipe", "") == recipe
     songs, rendered = {}, 0
     for stem in stems:
         src = midi_dir / (stem.upper() + ".MID")
-        midi_hash = sha256_hex(src.read_bytes())
+        original = src.read_bytes()
+        midi_hash = sha256_hex(original)
         dest = (files or {}).get(stem, dest_dir / (stem + ".ogg"))
         if not (dest.exists() and same_font and old.get("songs", {}).get(stem) == midi_hash):
-            render_music(src, dest, soundfont)
+            render_music(prepared_midi(original, src.name) if adlib else original, dest, soundfont)
             rendered += 1
         songs[stem] = midi_hash
-    stamp = {"comment": "What the OGGs in this folder were rendered from, written by tools/import/step_audio.py: a "
-                        "song is rendered again only when its MIDI file or the soundfont changes. Choose another "
-                        "soundfont with import_all.py --only audio --soundfont / --adlib-soundfont.",
-             "soundfont": Path(soundfont).name, "soundfont_sha256": font_hash, "songs": songs}
+    stamp: dict = {"comment": "What the OGGs in this folder were rendered from, written by tools/import/step_audio.py: a "
+                        "song is rendered again only when its MIDI file, the way the file is prepared for the render or the "
+                        "soundfont changes. Choose another soundfont with import_all.py --only audio --soundfont / --adlib-soundfont.",
+             "soundfont": Path(soundfont).name, "soundfont_sha256": font_hash}
+    if recipe:
+        stamp["recipe"] = recipe
+    stamp["songs"] = songs
     out_text(stamp_path, json.dumps(stamp, indent=1) + "\n")
     return rendered
 
 
-def render_music(src: Path, dest: Path, soundfont: str) -> None:
-    """MIDI -> WAV with fluidsynth, WAV -> OGG with ffmpeg (trailing silence trimmed)."""
+def prepared_midi(original: bytes, name: str) -> bytes:
+    """The bytes an AdLib song is rendered from: its percussion on channel 10. A file that cannot be moved (it already has channel 10)
+    is rendered as the CD has it, and the importer says so."""
+    try:
+        return percussion_to_channel_10(original)
+    except MidiChannelRefused as why:
+        print("  WARNING: %s: %s - rendered as it is, its percussion will sound as pitched notes" % (name, why))
+        return original
+
+
+def render_music(midi: bytes, dest: Path, soundfont: str) -> None:
+    """MIDI bytes -> WAV with fluidsynth, WAV -> OGG with ffmpeg (trailing silence trimmed)."""
     dest.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
         wav = Path(tmp) / "x.wav"
+        src = Path(tmp) / "x.mid"
+        src.write_bytes(midi)
         subprocess.run(["fluidsynth", "-ni", "-g", "0.8", "-r", "44100", "-F", str(wav), soundfont, str(src)],
                        check=True, capture_output=True)
         # areverse + silenceremove + areverse trims silence at the END; bitexact = no encoder version or date in
@@ -139,7 +240,7 @@ def render_music(src: Path, dest: Path, soundfont: str) -> None:
 
 def copy_midi(songs: list[dict]) -> int:
     """Copies the original MIDI files (both sets) to the legacy pack's `midi/`, where `MidiMusic` finds them: the game can play them through
-    any SoundFont at runtime (docs/engine/AUDIO.md) instead of the OGGs rendered above. Original bytes, so they are in the legacy pack (git-ignored); the
+    any SoundFont at runtime (docs/engine/AUDIO.md) instead of the OGGs rendered above (it moves the AdLib percussion channel itself). Original bytes, so they are in the legacy pack (git-ignored); the
     files are the ones `source_files.json` hashes (the importer checks them first). Returns how many were written."""
     dest = MIDI
     dest.mkdir(parents=True, exist_ok=True)
@@ -236,7 +337,7 @@ def run(soundfont: str = DEFAULT_SOUNDFONT, adlib_soundfont: str = ADLIB_SOUNDFO
         if adlib_font != adlib_soundfont:
             print("  note: %s not found - the AdLib set is rendered with %s (give --adlib-soundfont an OPL soundfont for the real sound)"
                   % (adlib_soundfont, Path(adlib_font).name))
-        n = render_set([music_stems(e, "B") for e in songs], music_dir / "adlib", adlib_font, files=adlib_files)
+        n = render_set([music_stems(e, "B") for e in songs], music_dir / "adlib", adlib_font, files=adlib_files, adlib=True)
         print("  music (AdLib, %s): %d of %d songs rendered" % (Path(adlib_font).name, n, len(songs)))
     print("  midi: %d files copied to the legacy pack's midi/ (for music from MIDI at runtime)" % copy_midi(songs))
     print("  audio: 52 sfx, 371 voice clips, %d songs x 2 sets" % len(songs))

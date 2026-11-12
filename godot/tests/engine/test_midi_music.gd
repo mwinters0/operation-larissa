@@ -95,6 +95,64 @@ func test_the_pack_has_the_midi_file_of_its_song() -> void:
 	music.free()
 
 
+# --- the AdLib songs' percussion channel -------------------------------------------------------------
+
+## A format-0 MIDI file (480 ticks a quarter note) whose one track holds `events` (delta times included).
+func _midi(events: PackedByteArray) -> PackedByteArray:
+	var track := events + PackedByteArray([0x00, 0xFF, 0x2F, 0x00])
+	var bytes := "MThd".to_ascii_buffer() + PackedByteArray([0, 0, 0, 6, 0, 0, 0, 1, 0x01, 0xE0]) + "MTrk".to_ascii_buffer()
+	bytes.append_array(PackedByteArray([0, 0, track.size() >> 8, track.size() & 0xFF]))      # (the length is big-endian)
+	bytes.append_array(track)
+	return bytes
+
+
+func test_the_percussion_of_an_adlib_song_moves_from_channel_16_to_channel_10() -> void:
+	var events := PackedByteArray([0x00, 0xCD, 0x0B,                                   # program change, channel 14
+		0x00, 0xFF, 0x03, 0x04, 0x9F, 0x8F, 0x41, 0x42,                                  # a name that holds bytes like channel-16 statuses
+		0x00, 0xF0, 0x03, 0x7D, 0x9F, 0xF7,                                              # a system exclusive that does too
+		0x00, 0x9F, 0x24, 0x64, 0x83, 0x60, 0x8F, 0x24, 0x00,                            # note on / off, channel 16
+		0x00, 0x9D, 0x3C, 0x40, 0x01, 0x3E, 0x40,                                        # channel 14, the second note on running status
+		0x00, 0xEF, 0x00, 0x40, 0x00, 0xDF, 0x30])                                       # pitch bend, channel pressure, channel 16
+	var moved := MidiMusic.percussion_to_channel_10(_midi(events))
+	var expected := events.duplicate()
+	for at: int in [18, 23, 34, 38]:                                                    # the explicit status bytes of channel 16
+		assert_int(expected[at] & 0x0F).is_equal(15)
+		expected[at] = (expected[at] & 0xF0) | 9
+	assert_array(moved).is_equal(_midi(expected))
+
+
+func test_a_song_without_channel_16_or_with_channel_10_too_is_played_as_it_is() -> void:
+	var general := _midi(PackedByteArray([0x00, 0x99, 0x24, 0x64, 0x00, 0x90, 0x3C, 0x40]))   # General MIDI: channel 10 and 1
+	assert_array(MidiMusic.percussion_to_channel_10(general)).is_equal(general)
+	var both := _midi(PackedByteArray([0x00, 0x99, 0x24, 0x64, 0x00, 0x9F, 0x24, 0x64]))
+	assert_array(MidiMusic.percussion_to_channel_10(both)).is_equal(both)                    # the two would become one channel
+	var melodic := _midi(PackedByteArray([0x00, 0x9D, 0x3C, 0x40]))
+	assert_array(MidiMusic.percussion_to_channel_10(melodic)).is_equal(melodic)
+
+
+func test_bytes_that_are_not_a_midi_file_come_back_as_they_are() -> void:
+	var cut := _midi(PackedByteArray([0x00, 0x9F, 0x24, 0x64])).slice(0, 21)                 # the track runs past the end
+	var no_status := _midi(PackedByteArray([0x00, 0x24, 0x64]))                               # a data byte with no status to run on
+	for bytes: PackedByteArray in [PackedByteArray(), "RIFF....WAVEfmt  ".to_ascii_buffer(), cut, no_status]:
+		assert_array(MidiMusic.percussion_to_channel_10(bytes)).is_equal(bytes)
+
+
+func test_play_bytes_hands_the_player_the_percussion_on_channel_10() -> void:
+	var music := MidiMusic.new()
+	add_child(music)
+	music.set_soundfont(SOUNDFONT)
+	var events := PackedByteArray([0x00, 0x9D, 0x3C, 0x40, 0x00, 0x9F, 0x24, 0x64, 0x60, 0x8F, 0x24, 0x00, 0x00, 0x8D, 0x3C, 0x00])
+	assert_bool(music.play_bytes(_midi(events), "adlib_percussion")).is_true()
+	var channels := {}
+	for track in music._player.smf_data.tracks:
+		for chunk: SMF.MIDIEventChunk in track.events:
+			if chunk.event.type == SMF.MIDIEventType.note_on or chunk.event.type == SMF.MIDIEventType.note_off:
+				channels[chunk.channel_number] = true
+	assert_array(channels.keys()).contains_exactly_in_any_order([9, 13])                      # (channel numbers count from 0)
+	music.free()
+	MidiMusic.remove_buses()
+
+
 # --- with a SoundFont ----------------------------------------------------------------------------------
 
 func test_a_midi_song_makes_sound_that_stays_under_the_ceiling() -> void:

@@ -157,6 +157,10 @@ importer renders both to OGG with FluidSynth and a soundfont.
 - The General MIDI set uses `/usr/share/soundfonts/FluidR3_GM.sf2` unless you pass `--soundfont PATH`.
 - The AdLib set uses `soundfonts/opl.sf2` (an OPL3 imitation, 135 MB; put it in `soundfonts/` in the repository, which is
   git-ignored) unless you pass `--adlib-soundfont PATH`.
+- The AdLib files put their percussion on MIDI channel 16 (the base-level layout: melodic channels 13-15, drums on 16), where
+  FluidSynth plays pitched notes; the importer moves the channel to 10 in the bytes it renders (the General MIDI drum channel), and the
+  game does the same when it plays the files itself. The files in `midi/` stay the original bytes. A file that already has notes on
+  channel 10 is rendered as it is, with a warning.
 - If `soundfonts/opl.sf2` is not there, the AdLib set is rendered with the General MIDI soundfont instead. The legacy pack is then
   complete, the importer prints a note saying so, and the AdLib songs just sound like General MIDI. Add the soundfont later
   and run the `audio` step again.
@@ -379,8 +383,9 @@ uv run tools/import/import_all.py --only audio --soundfont path/to/your.sf2     
 uv run tools/import/import_all.py --only audio --adlib-soundfont path/to/your.sf2    # the AdLib set
 ```
 
-Each rendered set has a `rendered_with.json` beside its OGG files that records the soundfont (its name and hash) and the hash of each
-MIDI file. A song is rendered again only when one of those changed or the OGG is missing; a song that only got a new name is moved to
+Each rendered set has a `rendered_with.json` beside its OGG files that records the soundfont (its name and hash), the hash of each
+MIDI file and, for the AdLib set, the way its files are prepared for the render (`recipe`: the percussion channel moved to 10). A song is
+rendered again only when one of those changed or the OGG is missing; a song that only got a new name is moved to
 it, not rendered again. FluidSynth does not give identical samples on every run, so a re-render changes the OGG files a little even
 with the same soundfont. To go back to the standard renders, delete `assets/audio/music` in the legacy pack and run the `audio` step
 with the default soundfont.

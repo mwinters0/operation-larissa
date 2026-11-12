@@ -21,6 +21,9 @@ extends Node
 ##     leveler measures what comes out of the player (an `AudioEffectCapture`), keeps the running mean of the song and turns the
 ##     song down by the same rule as the importer; it starts from a typical song's level and remembers each song's mean, so the
 ##     second time a song plays it starts at its final level;
+##   * the AdLib songs' percussion: the original's `B*.MID` use the base-level layout (melodic channels 13-15, percussion on 16) that the
+##     importer moves to channel 10 before it renders; `play_bytes` does the same to the bytes it hands to the player
+##     (`percussion_to_channel_10`), because the player, like General MIDI, plays only channel 10 as drums;
 ##   * looping: `loop = true`, back to the first event when the last one has played (the original restarts the song from its
 ##     start); a song with the "tkool" loop-point controller (CC 111) loops to that point instead.
 
@@ -50,6 +53,9 @@ const PRIOR_SECONDS := 10.0
 ## The leveler moves the gain this slowly (dB per second), so it never pumps.
 const MAX_SLEW_DB_PER_SECOND := 3.0
 const MAX_POLYPHONY := 160
+## The AdLib songs (`B*.MID`) play their percussion on MIDI channel 16 and the player plays channel 10 as drums (counted from 0 here).
+const ADLIB_PERCUSSION := 15
+const GM_PERCUSSION := 9
 
 var soundfont_path: String = ""
 ## The song's level on top of `GAIN_DB`: what a fade changes (0.0 full, `SILENT_DB` silent).
@@ -128,6 +134,84 @@ static func song_seconds(bytes: PackedByteArray) -> float:
 	return seconds
 
 
+## The AdLib songs' percussion on the channel the player plays as drums: every channel event on MIDI channel 16 gets the status byte of
+## channel 10 (a run on running status follows its first byte). The same rule as `percussion_to_channel_10` in tools/import/step_audio.py,
+## which does it before it renders. Bytes with no channel 16 (the General MIDI songs), with channel 10 as well as 16, or that are not
+## a MIDI file that parses come back as they are.
+static func percussion_to_channel_10(bytes: PackedByteArray) -> PackedByteArray:
+	var statuses := _channel_status_offsets(bytes)
+	if statuses.is_empty():
+		return bytes
+	var found_16 := false
+	for offset: int in statuses:
+		match bytes[offset] & 0x0F:
+			ADLIB_PERCUSSION: found_16 = true
+			GM_PERCUSSION: return bytes
+	if not found_16:
+		return bytes
+	var moved := bytes.duplicate()
+	for offset: int in statuses:
+		if moved[offset] & 0x0F == ADLIB_PERCUSSION:
+			moved[offset] = (moved[offset] & 0xF0) | GM_PERCUSSION
+	return moved
+
+
+## The offset of every status byte of a channel event in a standard MIDI file (an event on running status has none: it follows the
+## byte before). Empty for bytes that do not parse.
+static func _channel_status_offsets(bytes: PackedByteArray) -> PackedInt32Array:
+	var offsets := PackedInt32Array()
+	var size := bytes.size()
+	if size < 14 or bytes.slice(0, 4).get_string_from_ascii() != "MThd":
+		return offsets
+	var pos := 8 + _big_endian(bytes, 4)
+	while pos < size:
+		if pos + 8 > size or bytes.slice(pos, pos + 4).get_string_from_ascii() != "MTrk":
+			return PackedInt32Array()
+		var end := pos + 8 + _big_endian(bytes, pos + 4)
+		if end > size:
+			return PackedInt32Array()
+		pos += 8
+		var running := 0
+		while pos < end:
+			while bytes[pos] & 0x80 != 0:                                  # the delta time: a variable-length number
+				pos += 1
+				if pos >= end:
+					return PackedInt32Array()
+			pos += 1
+			if pos >= end:
+				return PackedInt32Array()
+			var status := bytes[pos]
+			if status == 0xFF or status == 0xF0 or status == 0xF7:         # a meta event or a system exclusive: a length, then that many bytes
+				running = 0
+				pos += 2 if status == 0xFF else 1
+				var length := 0
+				while true:
+					if pos >= end:
+						return PackedInt32Array()
+					length = (length << 7) | (bytes[pos] & 0x7F)
+					pos += 1
+					if bytes[pos - 1] & 0x80 == 0:
+						break
+				pos += length
+				continue
+			if status >= 0xF0:
+				return PackedInt32Array()
+			if status & 0x80 != 0:
+				running = status
+				offsets.append(pos)
+				pos += 1
+			elif running == 0:
+				return PackedInt32Array()
+			pos += 1 if (running & 0xF0) == 0xC0 or (running & 0xF0) == 0xD0 else 2
+		if pos != end:
+			return PackedInt32Array()
+	return offsets
+
+
+static func _big_endian(bytes: PackedByteArray, at: int) -> int:
+	return (bytes[at] << 24) | (bytes[at + 1] << 16) | (bytes[at + 2] << 8) | bytes[at + 3]
+
+
 ## Removes the buses the player made (its own 49 and `BUS`), e.g. when the SoundFont is switched off. Not while a MidiMusic plays.
 static func remove_buses() -> void:
 	for index in range(AudioServer.bus_count - 1, -1, -1):
@@ -186,7 +270,7 @@ func play_bytes(bytes: PackedByteArray, key: String = "bytes") -> bool:
 		return false
 	_ensure_player()
 	_player.stop()
-	if not _player.load_from_bytes(bytes):
+	if not _player.load_from_bytes(percussion_to_channel_10(bytes)):
 		return false
 	var heard: Array = _heard.get(key, [0.0, 0.0])
 	_energy = heard[0]

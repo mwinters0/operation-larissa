@@ -48,6 +48,12 @@ What stands in for the importer's treatment of a render:
   `MidiMusic` bus keeps the ceiling, and a leveler measures the player's output (`AudioEffectCapture`), keeps the song's running mean and
   applies the same rule, slewing at 3 dB/s from a typical song's level; a song's mean is remembered for its next play. With FluidR3 all
   ten songs measure -20.8 to -21.8 dB mean (the renders: -19.7 to -23.0) and none passes -1.5 dB.
+- **The AdLib songs' percussion.** The `B*.MID` files put their drums on MIDI channel 16 and none on channel 10 (the base-level layout:
+  melodic channels 13-15, percussion on 16; [`../port/DESIGN.md`](../port/DESIGN.md), section 7). The player, like FluidSynth and
+  General MIDI, plays only channel 10 as drums, so `MidiMusic.percussion_to_channel_10` gives every channel-16 event the status byte of
+  channel 10 in the bytes `play_bytes` hands to the player (running status follows its first byte; the addon is not touched). Bytes
+  with no channel 16, with channel 10 as well, or that do not parse play as they are. The importer applies the same rule before it
+  renders the AdLib set (`step_audio.percussion_to_channel_10`); the `midi/` files stay the original bytes.
 - **Looping** goes back to the first event (or a CC 111 loop point), as the original restarted a song.
 
 Audible differences: a note starts on the frame after its MIDI event (up to 1/60 s late), the loop cuts the release of the last notes,

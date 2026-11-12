@@ -166,19 +166,19 @@ def test_voice_durations_are_the_lengths_of_the_original_clips_in_ticks_of_one_7
 
 # --- when music is rendered again (step_audio.render_set) ----------------------------------------------------------
 
-def _fake_set(tmp_path, monkeypatch):
-    """Two MIDI files and a soundfont in tmp_path; render_music only records which songs it was asked for."""
+def _fake_set(tmp_path, monkeypatch, prefix="e"):
+    """Two MIDI files and a soundfont in tmp_path; render_music only records which songs it was asked for, and with what bytes."""
     import step_audio
     midi = tmp_path / "midi"
     midi.mkdir()
-    for stem in ("esect1", "esect2"):
-        (midi / (stem.upper() + ".MID")).write_bytes(b"MThd" + stem.encode())
+    for stem in (prefix + "sect1", prefix + "sect2"):
+        (midi / (stem.upper() + ".MID")).write_bytes(smf(b"\x00\x90\x3c\x40"))
     font = tmp_path / "a.sf2"
     font.write_bytes(b"font a")
     calls = []
 
-    def fake_render(src, dest, soundfont):
-        calls.append(dest.stem)
+    def fake_render(midi_bytes, dest, soundfont):
+        calls.append((dest.stem, midi_bytes))
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_bytes(b"ogg")
     monkeypatch.setattr(step_audio, "render_music", fake_render)
@@ -192,8 +192,8 @@ def test_a_set_is_rendered_once_and_again_only_for_what_changed(tmp_path, monkey
     assert step_audio.render_set(stems, out, str(font), midi) == 0         # nothing changed
     (midi / "ESECT1.MID").touch()                                            # re-extracted: new time, same bytes
     assert step_audio.render_set(stems, out, str(font), midi) == 0
-    (midi / "ESECT2.MID").write_bytes(b"MThd changed")                       # one MIDI file changed
-    assert step_audio.render_set(stems, out, str(font), midi) == 1 and calls[-1] == "esect2"
+    (midi / "ESECT2.MID").write_bytes(smf(b"\x00\x90\x3e\x40"))             # one MIDI file changed
+    assert step_audio.render_set(stems, out, str(font), midi) == 1 and calls[-1][0] == "esect2"
     other = tmp_path / "b.sf2"                                               # another soundfont: everything
     other.write_bytes(b"font b")
     assert step_audio.render_set(stems, out, str(other), midi) == 2
@@ -201,6 +201,121 @@ def test_a_set_is_rendered_once_and_again_only_for_what_changed(tmp_path, monkey
     assert step_audio.render_set(stems, out, str(other), midi) == 1
     stamp = json.loads((out / step_audio.STAMP).read_text())
     assert stamp["soundfont"] == "b.sf2" and set(stamp["songs"]) == set(stems)
+    assert "recipe" not in stamp                                             # the General MIDI set is rendered from the file as it is
+
+
+def test_the_general_midi_set_is_rendered_from_the_original_bytes(tmp_path, monkeypatch):
+    step_audio, midi, font, out, calls = _fake_set(tmp_path, monkeypatch)
+    step_audio.render_set(["esect1"], out, str(font), midi)
+    assert calls[0][1] == (midi / "ESECT1.MID").read_bytes()
+
+
+def test_the_adlib_set_is_rendered_from_the_file_with_its_percussion_on_channel_10(tmp_path, monkeypatch):
+    step_audio, midi, font, out, calls = _fake_set(tmp_path, monkeypatch, "b")
+    (midi / "BSECT1.MID").write_bytes(smf(b"\x00\x9f\x24\x64" b"\x10\x8f\x24\x00"))
+    stems = ["bsect1", "bsect2"]
+    assert step_audio.render_set(stems, out, str(font), midi, adlib=True) == 2
+    assert dict(calls)["bsect1"] == smf(b"\x00\x99\x24\x64" b"\x10\x89\x24\x00")
+    assert dict(calls)["bsect2"] == (midi / "BSECT2.MID").read_bytes()       # no channel 16: nothing to move
+    stamp = json.loads((out / step_audio.STAMP).read_text())
+    assert stamp["recipe"] == step_audio.ADLIB_RECIPE
+    assert stamp["songs"]["bsect1"] == common.sha256_hex((midi / "BSECT1.MID").read_bytes())    # the hash is the CD file's
+    assert step_audio.render_set(stems, out, str(font), midi, adlib=True) == 0
+
+
+def test_a_set_rendered_before_the_recipe_is_rendered_again_once(tmp_path, monkeypatch):
+    step_audio, midi, font, out, _calls = _fake_set(tmp_path, monkeypatch, "b")
+    stems = ["bsect1", "bsect2"]
+    step_audio.render_set(stems, out, str(font), midi, adlib=True)
+    stamp_path = out / step_audio.STAMP
+    stamp = json.loads(stamp_path.read_text())
+    del stamp["recipe"]                                                      # a stamp written before the percussion was moved
+    stamp_path.write_text(json.dumps(stamp))
+    assert step_audio.render_set(stems, out, str(font), midi, adlib=True) == 2
+    assert step_audio.render_set(stems, out, str(font), midi, adlib=True) == 0
+    assert step_audio.render_set(stems, out, str(font), midi) == 2           # the same folder asked for without the recipe: again
+
+
+def test_an_adlib_song_with_a_channel_10_is_rendered_as_it_is_and_says_so(tmp_path, monkeypatch, capsys):
+    step_audio, midi, font, out, calls = _fake_set(tmp_path, monkeypatch, "b")
+    both = smf(b"\x00\x99\x24\x64" b"\x00\x9f\x24\x64")
+    (midi / "BSECT1.MID").write_bytes(both)
+    step_audio.render_set(["bsect1"], out, str(font), midi, adlib=True)
+    assert dict(calls)["bsect1"] == both
+    assert "BSECT1.MID" in capsys.readouterr().out
+
+
+# --- the AdLib percussion channel (step_audio.percussion_to_channel_10) -----------------------------------------------
+
+def smf(events: bytes, tracks: int = 1) -> bytes:
+    """A format-0 (or format-1, more tracks) MIDI file with the given event bytes (delta times included) in each track."""
+    track = b"MTrk" + len(events + b"\x00\xff\x2f\x00").to_bytes(4, "big") + events + b"\x00\xff\x2f\x00"
+    return b"MThd\x00\x00\x00\x06\x00" + (b"\x00" if tracks == 1 else b"\x01") + tracks.to_bytes(2, "big") + b"\x01\xe0" + track * tracks
+
+
+def test_every_event_on_channel_16_moves_to_channel_10_and_nothing_else_changes():
+    import step_audio
+    program = b"\x00\xcd\x0b"                       # a program change on channel 14
+    pitch = b"\x00\xef\x00\x40"                     # a pitch bend on channel 16
+    note_on, note_off, touch = b"\x00\x9f\x24\x64", b"\x83\x60\x8f\x24\x00", b"\x00\xdf\x30"
+    meta = b"\x00\xff\x51\x03\x07\xa1\x20" b"\x00\xff\x03\x04" b"Name"
+    sysex = b"\x00\xf0\x05\x7e\x7f\x09\x01\xf7"
+    source = smf(program + meta + pitch + note_on + sysex + note_off + touch)
+    moved = step_audio.percussion_to_channel_10(source)
+    assert moved == smf(program + meta + b"\x00\xe9\x00\x40" + b"\x00\x99\x24\x64" + sysex + b"\x83\x60\x89\x24\x00" + b"\x00\xd9\x30")
+    assert len(moved) == len(source)
+
+
+def test_running_status_follows_the_status_byte_that_is_changed():
+    import step_audio
+    # note on ch16, then two more notes on running status, then a channel 14 note with its own status byte, then running status on it
+    source = smf(b"\x00\x9f\x24\x64" b"\x01\x26\x64" b"\x01\x28\x64" b"\x01\x9d\x3c\x40" b"\x01\x3e\x40")
+    assert step_audio.percussion_to_channel_10(source) == smf(
+        b"\x00\x99\x24\x64" b"\x01\x26\x64" b"\x01\x28\x64" b"\x01\x9d\x3c\x40" b"\x01\x3e\x40")
+
+
+def test_a_data_byte_that_looks_like_a_status_of_channel_16_is_not_touched():
+    import step_audio
+    # a meta event's text and a system exclusive's bytes hold 0x9F and 0x8F, and a delta time is a variable-length number
+    source = smf(b"\x00\xff\x01\x02\x9f\x8f" b"\x00\xf0\x03\x7d\x7f\xf7" b"\x8f\x7f\x9d\x3c\x40")
+    assert step_audio.percussion_to_channel_10(source) == source
+
+
+def test_every_track_of_a_file_is_moved_and_a_file_without_channel_16_comes_back_as_it_is():
+    import step_audio
+    assert step_audio.percussion_to_channel_10(smf(b"\x00\x9f\x24\x64", tracks=2)) == smf(b"\x00\x99\x24\x64", tracks=2)
+    melodic = smf(b"\x00\x9d\x3c\x40")
+    assert step_audio.percussion_to_channel_10(melodic) is melodic
+    assert step_audio.percussion_to_channel_10(smf(b"\x00\x99\x24\x64")) == smf(b"\x00\x99\x24\x64")      # General MIDI: as it is
+
+
+def test_a_file_that_already_has_channel_10_is_refused():
+    import step_audio
+    with pytest.raises(step_audio.MidiChannelRefused, match="channel 10"):
+        step_audio.percussion_to_channel_10(smf(b"\x00\x99\x24\x64" b"\x00\x9f\x24\x64"))
+
+
+@pytest.mark.parametrize("data", [b"", b"RIFF" + bytes(20), smf(b"\x00\x9f\x24")[:-5], smf(b"\x00\x9f\x24\x64")[:20],
+                                  smf(b"\x00\x26\x64"), smf(b"\x00\xf5\x01")],
+                         ids=["empty", "not midi", "track cut short", "track cut short again", "no running status yet", "undefined status"])
+def test_a_file_that_does_not_parse_is_refused(data):
+    import step_audio
+    with pytest.raises(step_audio.MidiChannelRefused):
+        step_audio.percussion_to_channel_10(data)
+
+
+@pytest.mark.legacy
+def test_the_ten_adlib_songs_move_their_percussion_without_losing_an_event():
+    import step_audio
+    for entry in songs():
+        data = (common.EXTRACTED / "music" / entry["file"]).read_bytes()
+        moved = step_audio.percussion_to_channel_10(data)
+        before = [status & 0x0F for _, status in step_audio._channel_events(data)]
+        after = [status & 0x0F for _, status in step_audio._channel_events(moved)]
+        assert 15 in before and 9 not in before, entry["file"]                  # the MPC layout: 13-16, percussion on 16
+        assert after == [9 if channel == 15 else channel for channel in before], entry["file"]
+        assert len(moved) == len(data)
+        assert [i for i in range(len(data)) if data[i] != moved[i]] and 15 not in after
 
 
 @pytest.mark.legacy
@@ -210,6 +325,7 @@ def test_the_committed_music_records_what_it_was_rendered_from():
         stamp = common.load_json(folder / step_audio.STAMP)
         assert set(stamp["songs"]) == {step_audio.music_stems(e, letter) for e in songs()}
         assert len(stamp["soundfont_sha256"]) == 64
+        assert stamp.get("recipe", "") == (step_audio.ADLIB_RECIPE if letter == "B" else "")
 
 
 # --- the music is fixed by the hashes of its MIDI files (docs/port/FIDELITY.md) -----------------------------------------
