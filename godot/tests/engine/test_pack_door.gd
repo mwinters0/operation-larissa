@@ -86,7 +86,7 @@ func test_the_kinds_come_out_equal_to_dev_and_with_their_pictures_from_the_scrat
 	var type_in_dev := dev.resource("data/problems/problem_type_03.tres") as ProblemType
 	assert_array(Array(type.art_keys)).is_equal(Array(type_in_dev.art_keys))
 	for key in type.art_keys:
-		assert_str(Packs.source_of(Assets.picture_by_key(key))).starts_with(_shelf.root + "/assets/")
+		assert_str(Packs.source_of(Assets.picture_by_key(key).resolved())).starts_with(_shelf.root + "/assets/")
 	var differences: Array[String] = []
 	ResourceCompare.same(type, type_in_dev, "problem type", differences)
 	assert_array(differences).is_empty()
@@ -94,13 +94,13 @@ func test_the_kinds_come_out_equal_to_dev_and_with_their_pictures_from_the_scrat
 
 func test_the_pictures_the_game_asks_for_by_name_come_from_the_scratch_pack() -> void:
 	var title := Assets.ui_picture(&"title_sky")
-	assert_object(title).is_not_null()
-	assert_bool(Packs.source_of(title).begins_with(_shelf.root + "/assets/")).is_true()
+	assert_bool(Assets.holds("ui_picture/title_sky")).is_true()
+	assert_bool(Packs.source_of(title.resolved()).begins_with(_shelf.root + "/assets/")).is_true()
 	var background := Assets.background(0, 0)
 	assert_object(background).is_not_null()
-	assert_bool(Packs.source_of(background).begins_with(_shelf.root + "/assets/")).is_true()
+	assert_bool(Packs.source_of(background.resolved()).begins_with(_shelf.root + "/assets/")).is_true()
 	var art := Assets.picture_by_key(Catalog.problem_type(3).art_keys[0])
-	assert_bool(Packs.source_of(art).begins_with(_shelf.root + "/")).is_true()
+	assert_bool(Packs.source_of(art.resolved()).begins_with(_shelf.root + "/")).is_true()
 
 
 func test_the_sounds_come_from_the_scratch_pack() -> void:

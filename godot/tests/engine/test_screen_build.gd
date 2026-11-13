@@ -57,9 +57,9 @@ func test_background_is_the_pictures_file_of_sector_and_screen() -> void:
 	var world := _world(runner)
 	var sector := DevPack.TOUR_SECTORS[2]
 	world.load_sector(sector, 7)
-	assert_str(world.original.background.texture.resource_path).ends_with("bg_s%02d_07.png" % sector)
+	assert_str((world.original.background.texture as PictureRef).resolved().resource_path).ends_with("bg_s%02d_07.png" % sector)
 	world.load_screen(8)
-	assert_str(world.original.background.texture.resource_path).ends_with("bg_s%02d_08.png" % sector)
+	assert_str((world.original.background.texture as PictureRef).resolved().resource_path).ends_with("bg_s%02d_08.png" % sector)
 
 
 func test_decos_use_slot_position_and_flip_flag() -> void:

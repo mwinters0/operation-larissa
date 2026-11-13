@@ -254,9 +254,9 @@ func finale_message() -> String:
 	return text(finale_text)
 
 
-## The generic finale's picture, or null (none named, or no pack of the chain holds a picture for the key).
+## The generic finale's picture, held by its key, or null (none named, or no pack of the chain holds a picture for the key).
 func finale_texture() -> Texture2D:
-	return Assets.picture_by_key(finale_picture) if not finale_picture.is_empty() else null
+	return Assets.picture_by_key(finale_picture) if Assets.holds(finale_picture) else null
 
 
 # --- music ------------------------------------------------------------------------------------------------------------------------

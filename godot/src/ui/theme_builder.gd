@@ -157,7 +157,7 @@ static func derive(data: SkinTheme) -> Theme:
 static func _styled(base: StyleBox, fields: Dictionary) -> StyleBox:
 	var margin: Vector2i = fields.get("margin", Vector2i(-1, -1))
 	if fields.has("picture"):
-		var texture := Assets.picture_by_key(fields["picture"])
+		var texture: Texture2D = Assets.picture_by_key(fields["picture"]) if Assets.holds(fields["picture"]) else null
 		if texture != null:
 			var slice: Vector4i = fields["slice"]
 			var box := StyleBoxTexture.new()

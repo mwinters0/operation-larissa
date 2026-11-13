@@ -184,7 +184,7 @@ static func _mod(live: Pack, report: PackReport) -> void:
 		for message in ModParts.problems(live):
 			report.error("mod", message)
 		for key in live.mod.theme_pictures():
-			if Assets.picture_by_key(key) == null:
+			if not Assets.holds(key):
 				report.warn("mod", "the theme's picture %s is held by no pack of the chain (a row of a pictures.json): the style is drawn flat" % key)
 		scripts.erase(live.mod.entry)
 	for rel in live.all_files():

@@ -295,7 +295,7 @@ func test_a_pictures_row_whose_file_the_pack_lacks_is_told_once_and_the_pack_und
 	Mods.sync()
 	assert_str(ModHost.failure(String(shelf.id))).is_empty()                                             # (the skin is no reason to refuse: the table is the pack's)
 	assert_array(SkinChoice.available()).contains([shelf.id])
-	assert_str(Assets.picture_by_key(KEY).resource_path).is_equal(DevPack.picture_file("ui_picture/ui_1195"))
+	assert_str(Assets.picture_by_key(KEY).resolved().resource_path).is_equal(DevPack.picture_file("ui_picture/ui_1195"))
 	assert_array(TroubleLog.session.told.filter(func(line: String) -> bool: return line.contains("skin/sky.png") and line.contains("pack '%s'" % shelf.id))).has_size(1)
 
 

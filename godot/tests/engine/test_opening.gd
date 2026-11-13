@@ -401,17 +401,17 @@ func test_no_effect_starts_while_the_window_is_inactive() -> void:
 
 func test_every_story_picture_exists() -> void:
 	var script := Catalog.story_script()
-	assert_object(Assets.ui_picture(script.background)).is_not_null()
+	assert_bool(Assets.holds("ui_picture/" + script.background)).is_true()
 	for picture in script.ring_pictures:
-		assert_object(Assets.ui_picture(picture)).is_not_null()
+		assert_bool(Assets.holds("ui_picture/" + picture)).is_true()
 	for i in script.pages.size():
 		var page := script.pages[i]
-		assert_object(Assets.ui_picture(page.heading)).is_not_null()
-		assert_object(Assets.ui_picture(page.frame)).is_not_null()
-		assert_object(Assets.ui_picture(page.caption)).is_not_null()
+		assert_bool(Assets.holds("ui_picture/" + page.heading)).is_true()
+		assert_bool(Assets.holds("ui_picture/" + page.frame)).is_true()
+		assert_bool(Assets.holds("ui_picture/" + page.caption)).is_true()
 		assert_int(page.extra_positions.size()).is_equal(page.extra_pictures.size())
 		for picture in page.extra_pictures:
-			assert_object(Assets.ui_picture(picture)).is_not_null()
+			assert_bool(Assets.holds("ui_picture/" + picture)).is_true()
 		assert_int(Catalog.voice_cues().story_page(i).size()).is_greater(0)
 
 

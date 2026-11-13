@@ -88,17 +88,17 @@ func test_the_catalog_answers_from_the_file() -> void:
 	assert_str(Catalog.campaign(&"dev_tour").pack_id).is_equal(String(ID))
 	assert_str(Catalog.zone(1).title).is_equal(Packs.dev().resource("data/zones.tres").zones[1].title)
 	assert_array(Array(Catalog.problem_type(3).art_keys)).is_not_empty()
-	assert_str(Packs.source_of(Assets.picture_by_key(Catalog.problem_type(3).art_keys[0]))).starts_with(_file + "/assets/")
+	assert_str(Packs.source_of(Assets.picture_by_key(Catalog.problem_type(3).art_keys[0]).resolved())).starts_with(_file + "/assets/")
 	assert_object(Catalog.sub_frames()).is_not_null()
 	assert_object(Catalog.tileset()).is_not_null()
 
 
 func test_pictures_and_sounds_come_from_the_file() -> void:
 	var title := Assets.ui_picture(&"title_sky")
-	assert_object(title).is_not_null()
-	assert_bool(_from_the_file(title)).is_true()
-	assert_bool(_from_the_file(Assets.background(0, 0))).is_true()
-	assert_bool(_from_the_file(Assets.picture_by_key(Catalog.problem_type(3).art_keys[0]))).is_true()
+	assert_bool(Assets.holds("ui_picture/title_sky")).is_true()
+	assert_bool(_from_the_file(title.resolved())).is_true()
+	assert_bool(_from_the_file(Assets.background(0, 0).resolved())).is_true()
+	assert_bool(_from_the_file(Assets.picture_by_key(Catalog.problem_type(3).art_keys[0]).resolved())).is_true()
 	var index := Catalog.voice_index()
 	var clip := index.stream(index.ids[0])
 	assert_object(clip).is_instanceof(AudioStreamWAV)

@@ -224,7 +224,7 @@ static func _picture(command: Array, pack: Pack, assets: ModAssets, keys: Dictio
 	if not ModSpec.is_drawable_key(path):
 		return null
 	if not keys.has(path):
-		keys[path] = Assets.picture_by_key(path)
+		keys[path] = Assets.picture_by_key(path) if Assets.holds(path) else null
 	return keys[path]
 
 

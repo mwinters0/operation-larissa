@@ -23,6 +23,8 @@ extends Texture2D
 var _texture: Texture2D
 var _epoch := -1
 var _image: Image
+## The log that was told this key holds no picture (`TroubleLog.session` changes with each run, so the next run is told again).
+var _told_in: TroubleLog
 
 
 ## The key `texture` holds when it is a `PictureRef` ("" for any other texture, or none): what data that holds pictures says a texture is.
@@ -60,8 +62,9 @@ func resolved() -> Texture2D:
 		_epoch = Pictures.epoch
 		_image = null
 		_texture = Pictures.resolve(key)
-		if _texture == null and not key.is_empty():
-			TroubleLog.session.tell(Pictures.unheld_line(key))
+	if _texture == null and not key.is_empty() and _told_in != TroubleLog.session:
+		_told_in = TroubleLog.session
+		TroubleLog.session.tell(Pictures.unheld_line(key))
 	return _texture
 
 
@@ -72,6 +75,7 @@ func _chain_changed() -> void:
 
 func _forget() -> void:
 	_epoch = -1
+	_told_in = null
 	_texture = null
 	_image = null
 

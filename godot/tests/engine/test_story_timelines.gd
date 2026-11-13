@@ -30,7 +30,7 @@ func test_every_name_in_the_timelines_exists() -> void:
 				CutsceneTrack.PROP_PICTURE:
 					for value in track.values:
 						assert_int(registry.index_of(&"ui_picture", String(value))).is_greater_equal(0)
-						assert_object(Assets.ui_picture(value)).is_not_null()
+						assert_bool(Assets.holds("ui_picture/" + value)).is_true()
 				CutsceneTrack.PROP_TEXT:
 					for value in track.values:
 						if value != &"":
@@ -95,4 +95,4 @@ func test_the_sailors_of_the_deck_shot_are_six_programs_that_end_and_run() -> vo
 			drew = drew or actor.visible
 		assert_bool(drew).override_failure_message("sailor %d never draws" % member).is_true()
 	for key in crew.pictures:
-		assert_object(Assets.picture_by_key(key)).override_failure_message("the crew's picture %s" % key).is_not_null()
+		assert_bool(Assets.holds(key)).override_failure_message("the crew's picture %s" % key).is_true()

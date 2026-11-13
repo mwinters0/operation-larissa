@@ -207,7 +207,7 @@ func test_the_frame_pictures_are_the_chains_in_the_layouts_rectangles() -> void:
 	for picture: TextureRect in [made.background, made.calculator.picture, made.answer_box.picture]:
 		assert_vector(picture.texture.get_size()).is_equal(Vector2(32, 18))
 		assert_that(PicturesShelf.color_of(picture.texture)).is_equal(Color.CYAN)
-	assert_object((made.background.texture as PictureRef).resolved()).is_same(Assets.picture_by_key("problem_art/pa_1780"))
+	assert_object((made.background.texture as PictureRef).resolved()).is_same(Assets.picture_by_key("problem_art/pa_1780").resolved())
 	assert_array(_order(made)).is_equal(plain_order)
 	assert_array(_rects(made)).is_equal(plain_rects)                                                   # (not one rectangle moved)
 	var before := made.background.texture
@@ -241,12 +241,14 @@ func test_the_senders_picture_is_the_chains() -> void:
 	await await_idle_frame()
 	assert_bool(screen.sender_icon.visible).is_true()
 	var plain := screen.sender_icon.texture
+	var plain_color := PicturesShelf.color_of(plain)
 	var rect := screen.sender_icon.get_rect()
 	var skin := _mount()
 	var made := _screen(problem)
 	await await_idle_frame()
 	assert_object(made.sender_icon.texture).is_same(Assets.picture_by_key("ui_picture/prompt_sender_ship"))
-	assert_object(made.sender_icon.texture).is_not_same(plain)
+	assert_that(PicturesShelf.color_of(made.sender_icon.texture)).is_not_equal(plain_color)
+	assert_object(made.sender_icon.texture).override_failure_message("the reference holds the key: the screen that had it before shows the pack's picture now").is_same(plain)
 	assert_object(made.sender_icon.get_rect()).is_equal(rect)                                          # (stretched to the 55 x 20 the original has)
 	SkinChoice.select(skin)
 	await await_idle_frame()

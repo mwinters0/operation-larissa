@@ -54,6 +54,8 @@ func _ready() -> void:
 	while covered < REACH:
 		var picture := _picture_of_piece(index)
 		var texture := Assets.ui_picture(picture)
+		if texture.get_height() <= 0:                  # (a picture no pack holds has no height: the chain stops where the pictures do)
+			break
 		var piece := Sprite2D.new()
 		piece.name = "Piece%d" % index
 		piece.centered = false

@@ -71,9 +71,9 @@ func test_with_the_original_skin_every_resource_is_the_very_object_on_disk() -> 
 
 
 func test_with_the_original_skin_a_picture_is_the_file() -> void:
-	assert_str(Assets.ui_picture(&"title_sky").resource_path).is_equal(DevPack.picture_file("ui_picture/title_sky"))
-	assert_str(Assets.problem_art(&"log_scan_0").resource_path).is_equal(DevPack.picture_file("problem_art/log_scan_0"))
-	assert_str(Assets.background(0, 0).resource_path).is_equal(DevPack.picture_file("background/bg_s00_00"))
+	assert_str(Assets.ui_picture(&"title_sky").resolved().resource_path).is_equal(DevPack.picture_file("ui_picture/title_sky"))
+	assert_str(Assets.problem_art(&"log_scan_0").resolved().resource_path).is_equal(DevPack.picture_file("problem_art/log_scan_0"))
+	assert_str(Assets.background(0, 0).resolved().resource_path).is_equal(DevPack.picture_file("background/bg_s00_00"))
 	assert_object(Assets.background(30, 11)).is_null()                  # (a finale screen without a picture stays without)
 
 
@@ -92,7 +92,7 @@ func test_a_skin_changes_no_picture() -> void:
 	var frames := Catalog.foes_frames(0)
 	SkinChoice.select(_tiny)
 	assert_object(Assets.ui_picture(&"title_sky")).is_same(sky)
-	assert_str(sky.resource_path).is_equal(DevPack.picture_file("ui_picture/title_sky"))
+	assert_str(sky.resolved().resource_path).is_equal(DevPack.picture_file("ui_picture/title_sky"))
 	assert_object(Catalog.foes_frames(0)).is_same(frames)
 
 
@@ -101,7 +101,7 @@ func test_a_pack_changes_a_picture_by_key_under_every_skin() -> void:
 	for skin in [SkinChoice.original(), _tiny]:
 		SkinChoice.select(skin)
 		assert_that(_color(Assets.ui_picture(&"title_sky"))).is_equal(Color.RED)
-		assert_str(Assets.ui_picture(&"title_sea").resource_path).is_equal(DevPack.picture_file("ui_picture/title_sea"))      # (not drawn: the pack under it answers)
+		assert_str(Assets.ui_picture(&"title_sea").resolved().resource_path).is_equal(DevPack.picture_file("ui_picture/title_sea"))      # (not drawn: the pack under it answers)
 
 
 func test_the_pictures_a_data_file_holds_come_through_the_packs_tables() -> void:
@@ -137,7 +137,7 @@ func test_the_tileset_the_problems_and_the_keys_in_data_come_through_the_packs_t
 	assert_that(_color((Catalog.tileset().get_source(1) as TileSetAtlasSource).texture)).is_not_equal(Color.RED)
 	assert_that(_color(Catalog.screen_layout().background)).is_equal(Color.RED)               # the problem screen's panel (`problem_art/pa_1780`)
 	var type := Catalog.problem_type(0)                                              # art_keys holds KEYS; the tables answer for each
-	assert_object(Assets.picture_by_key(type.art_keys[0])).is_not_null()
+	assert_bool(Assets.holds(type.art_keys[0])).is_true()
 
 
 func test_a_picture_named_by_a_problem_types_key_is_the_packs_too() -> void:
@@ -151,7 +151,7 @@ func test_a_picture_named_by_a_problem_types_key_is_the_packs_too() -> void:
 func test_a_background_comes_through_the_packs_tables() -> void:
 	_redraw({"background/bg_s00_00": Color.RED})
 	assert_that(_color(Assets.background(0, 0))).is_equal(Color.RED)
-	assert_str(Assets.background(0, 1).resource_path).is_equal(DevPack.picture_file("background/bg_s00_01"))
+	assert_str(Assets.background(0, 1).resolved().resource_path).is_equal(DevPack.picture_file("background/bg_s00_01"))
 
 
 # --- falling back to the original ----------------------------------------------------------------------
@@ -162,7 +162,7 @@ func test_what_a_skin_does_not_map_falls_back_to_the_original() -> void:
 	SkinChoice.select(empty)
 	assert_object(Catalog.hud_layout()).is_same(load(DevPack.ROOT + "data/ui/hud_layout.tres"))
 	assert_object(Catalog.foes_frames(1)).is_same(load(DevPack.ROOT + "data/sprite_frames/foes_zone1.tres"))
-	assert_str(Assets.ui_picture(&"title_sky").resource_path).is_equal(DevPack.picture_file("ui_picture/title_sky"))
+	assert_str(Assets.ui_picture(&"title_sky").resolved().resource_path).is_equal(DevPack.picture_file("ui_picture/title_sky"))
 	assert_int(empty.render_settings().texture_filter).is_equal(Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST)
 	assert_object(empty.labels()).is_null()
 	assert_object(empty.presenter_scene_or_null()).is_null()
@@ -213,7 +213,7 @@ func test_a_switch_is_announced_and_goes_both_ways() -> void:
 	assert_array(heard).has_size(2)
 	assert_object(heard[0]).is_same(_tiny)
 	assert_object(heard[1]).is_same(SkinChoice.original())
-	assert_str(Assets.ui_picture(&"title_sky").resource_path).is_equal(DevPack.picture_file("ui_picture/title_sky"))
+	assert_str(Assets.ui_picture(&"title_sky").resolved().resource_path).is_equal(DevPack.picture_file("ui_picture/title_sky"))
 
 
 func test_a_forced_choice_wins_and_a_skin_is_found_by_its_id() -> void:

@@ -101,15 +101,13 @@ func _exit_tree() -> void:
 		Pictures.events.changed.disconnect(_on_pictures_changed)
 
 
-## The chain's pictures may be other ones (a pack was chosen, `Pictures.events`): they are looked up again (an item holds the number of its picture, never the picture) and drawn again, wherever the animation is.
+## The chain's pictures may be other ones (a pack was chosen, `Pictures.events`): the references in `_textures` show them, and the diagram is drawn again, wherever the animation is.
 func _on_pictures_changed() -> void:
-	if type == null:
-		return
-	_resolve_textures()
-	queue_redraw()
+	if type != null:
+		queue_redraw()
 
 
-## The pictures of the type's panel as the chain shows them (`ProblemType.art_keys`, asked of the packs' tables): the one place `_textures` is made, by `setup` and when the chain's pictures change.
+## The pictures of the type's panel, held by their keys (`ProblemType.art_keys`, `Assets.picture_by_key`): made by `setup`.
 func _resolve_textures() -> void:
 	_textures.clear()
 	for key in type.art_keys:

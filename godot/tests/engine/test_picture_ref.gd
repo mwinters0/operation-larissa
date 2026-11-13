@@ -117,5 +117,5 @@ func test_a_ref_is_read_from_the_dev_packs_table() -> void:
 	assert_bool(Packs.dev().picture_table().present).is_true()
 	var ref := PictureRef.of("frame/sub_00")
 	assert_object(ref.resolved()).is_not_null()
-	assert_object(ref.resolved()).is_same(Assets.picture_by_key("frame/sub_00"))
-	assert_object(Pictures.resolve("ui_picture/title_sky")).is_same(Assets.ui_picture(&"title_sky"))
+	assert_object(ref.resolved()).is_same(Assets.picture_by_key("frame/sub_00").resolved())
+	assert_object(Pictures.resolve("ui_picture/title_sky")).is_same(Assets.ui_picture(&"title_sky").resolved())

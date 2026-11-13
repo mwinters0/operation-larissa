@@ -822,7 +822,7 @@ func test_the_state_of_an_original_type_is_the_types_own_data_and_still_no_verdi
 	assert_int((state["fields"] as Array).size()).is_equal(problem.type.field_kinds.length())
 	assert_array(state["art"]).is_equal(Array(problem.type.art_keys))
 	for key: String in state["art"]:
-		assert_object(Assets.picture_by_key(key)).override_failure_message("%s is a key nothing holds" % key).is_not_null()
+		assert_bool(Assets.holds(key)).override_failure_message("%s is a key nothing holds" % key).is_true()
 	var bad: Array[String] = []
 	_plain_only(state, "state", bad)
 	assert_array(bad).is_empty()

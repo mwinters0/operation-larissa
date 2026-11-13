@@ -69,7 +69,7 @@ func test_every_name_in_the_timelines_exists() -> void:
 				CutsceneTrack.PROP_PICTURE:
 					for value in track.values:
 						assert_int(registry.index_of(&"ui_picture", String(value))).is_greater_equal(0)
-						assert_object(Assets.ui_picture(value)).is_not_null()
+						assert_bool(Assets.holds("ui_picture/" + value)).is_true()
 				CutsceneTrack.PROP_TEXT:
 					for value in track.values:
 						if value != &"":

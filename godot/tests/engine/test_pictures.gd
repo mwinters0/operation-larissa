@@ -78,7 +78,7 @@ func test_a_key_is_found_through_the_table_whatever_its_file_is_called() -> void
 	_shelf.mount_base()
 	var sky := Pictures.resolve("ui_picture/title_sky")
 	assert_object(sky).is_same(_held(_shelf.base, "art/zz1.png"))
-	assert_object(sky).is_same(Assets.picture_by_key("ui_picture/title_sky"))
+	assert_object(sky).is_same(Assets.picture_by_key("ui_picture/title_sky").resolved())
 	assert_object(Pictures.resolve("problem_art/log_scan_0")).is_same(_held(_shelf.base, "art/zz3.png"))
 	assert_object(Pictures.resolve("ui_picture/never_heard_of")).is_null()
 	assert_object(Pictures.resolve("")).is_null()
@@ -193,10 +193,10 @@ func test_what_was_told_is_told_again_in_the_next_run() -> void:
 
 func test_the_assets_lookups_find_a_key_the_table_holds_even_when_the_registry_has_not_its_name() -> void:
 	_shelf.mount_over()
-	assert_object(Assets.ui_picture(&"title_sky")).is_same(_held(_shelf.over, "art/other.png"))
-	assert_object(Assets.ui_picture(&"coral_dawn")).is_same(_held(_shelf.over, "art/other.png"))        # (a name of the pack's own)
-	assert_object(Assets.problem_art(&"log_scan_0")).is_same(_held(_shelf.base, "art/zz3.png"))
-	assert_object(Assets.picture_by_key("deco/coral_fan_cyan")).is_same(_held(_shelf.over, "art/zz4.png"))
+	assert_object(Assets.ui_picture(&"title_sky").resolved()).is_same(_held(_shelf.over, "art/other.png"))
+	assert_object(Assets.ui_picture(&"coral_dawn").resolved()).is_same(_held(_shelf.over, "art/other.png"))        # (a name of the pack's own)
+	assert_object(Assets.problem_art(&"log_scan_0").resolved()).is_same(_held(_shelf.base, "art/zz3.png"))
+	assert_object(Assets.picture_by_key("deco/coral_fan_cyan").resolved()).is_same(_held(_shelf.over, "art/zz4.png"))
 
 
 # --- a pack with no table holds no picture; a name nobody holds is told once -------------------------------------------------
@@ -215,12 +215,13 @@ func test_a_pack_with_no_table_holds_no_picture_however_its_files_are_named() ->
 	shelf.remove()
 
 
-func test_a_name_no_pack_holds_is_null_and_told_once_naming_the_key() -> void:
-	assert_object(Assets.ui_picture(&"zz_nobody_has_me")).is_null()
-	assert_object(Assets.ui_picture(&"zz_nobody_has_me")).is_null()
-	assert_object(Assets.problem_art(&"zz_nor_me")).is_null()
+func test_a_name_no_pack_holds_is_told_once_naming_the_key_by_the_reference_that_draws_nothing() -> void:
+	for ref in [Assets.ui_picture(&"zz_nobody_has_me"), Assets.ui_picture(&"zz_nobody_has_me"), Assets.problem_art(&"zz_nor_me")]:
+		assert_vector((ref as PictureRef).get_size()).is_equal(Vector2.ZERO)
+		assert_object((ref as PictureRef).resolved()).is_null()
 	assert_array(_told_about("'ui_picture/zz_nobody_has_me'")).has_size(1)
 	assert_array(_told_about("'problem_art/zz_nor_me'")).has_size(1)
 	assert_str(_told_about("'ui_picture/zz_nobody_has_me'")[0]).contains("nothing is drawn")
-	assert_object(Assets.picture_by_key("ui_picture/zz_quiet")).override_failure_message("a plain key lookup says nothing: the caller that needs the picture says so").is_null()
-	assert_array(_told_about("zz_quiet")).is_empty()
+	assert_bool(Assets.holds("ui_picture/zz_quiet")).override_failure_message("asking whether a picture is held says nothing: the one that draws it says so").is_false()
+	Assets.picture_by_key("ui_picture/zz_quiet")
+	assert_array(_told_about("zz_quiet")).override_failure_message("a reference nobody draws says nothing").is_empty()

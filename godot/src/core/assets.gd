@@ -9,6 +9,10 @@ extends RefCounted
 ##
 ## NO SKIN. A skin maps no picture: the pictures are the packs'.
 ##
+## ONE WAY TO HOLD A PICTURE. Every picture handed out here is a `PictureRef` (one per key, kept: the same key is the same object), the way data holds a picture. A screen that keeps one in a node keeps the KEY, so it shows what the chain holds
+## now when the chain changes (a pack installed or removed), with nothing to rebuild; a snapshot of a texture would go on showing the pack that was. `holds` says whether a pack of the chain has a picture for a key, for the caller that must
+## decide something by it (a screen with no picture behind it, a style that falls back to flat colour). A reference to a key nothing holds draws nothing and says so itself, once per run (`PictureRef`, `Pictures.unheld_line`).
+##
 ## Teaches: a resolver as a seam. Code that needs a picture holds a name, a small static class owns "name -> key -> the chain's texture",
 ## and a key nothing holds is said once instead of drawing a missing texture without a word.
 ##
@@ -22,28 +26,29 @@ extends RefCounted
 
 # --- the interface, story and console pictures (`ui_picture`) ------------------------------------------------
 
-## The texture of the picture `picture_name` (a `ui_picture` name), or null when no pack of the chain holds it (told once).
-static func ui_picture(picture_name: StringName) -> Texture2D:
-	return _named("ui_picture/" + picture_name)
+## The picture `picture_name` (a `ui_picture` name), held by its key (nothing is drawn, and the reference says so once, when no pack of the chain holds it).
+static func ui_picture(picture_name: StringName) -> PictureRef:
+	return picture_by_key("ui_picture/" + picture_name)
 
 
 # --- the pictures of the math problems (`problem_art`) -----------------------------------------------------------
 
-## The texture of the problem-art picture `picture_name`, or null when no pack of the chain holds it (told once).
-static func problem_art(picture_name: StringName) -> Texture2D:
-	return _named("problem_art/" + picture_name)
+## The problem-art picture `picture_name`, held by its key (as `ui_picture`).
+static func problem_art(picture_name: StringName) -> PictureRef:
+	return picture_by_key("problem_art/" + picture_name)
 
 
 # --- the backgrounds of the screens ------------------------------------------------------------------------
 
-## The picture behind screen `screen` of sector `sector`, or null when the screen has none (two of the finale's are plain black).
-static func background(sector: int, screen: int) -> Texture2D:
-	return picture_by_key(_background_key(sector, screen))
+## The picture behind screen `screen` of sector `sector`, held by its key, or null when the screen has none (two of the finale's are plain black, and that is no trouble).
+static func background(sector: int, screen: int) -> PictureRef:
+	var key := _background_key(sector, screen)
+	return picture_by_key(key) if holds(key) else null
 
 
 ## Has screen `screen` of sector `sector` a picture behind it (a picture of the chain for its key)?
 static func has_background(sector: int, screen: int) -> bool:
-	return picture_by_key(_background_key(sector, screen)) != null
+	return holds(_background_key(sector, screen))
 
 
 ## The key of that picture (`background/bg_s03_07`), or "" when the screen has none.
@@ -55,22 +60,25 @@ static func _background_key(sector: int, screen: int) -> String:
 	return "background/bg_s%02d_%02d" % [sector, screen]
 
 
-## Forget what was read from the chain's files (`Catalog.packs_changed`: another pack is in use).
+## Forget what was read from the chain's files (`Catalog.packs_changed`: another pack is in use). The references handed out stay: they ask again.
 static func forget_folders() -> void:
 	Pictures.forget()
 
 
 # --- a picture by its skin key ------------------------------------------------------------------------------------
 
-## The picture of the skin key `key` (`frame/sub_00`, `background/bg_s03_07`, `deco/coral_fan_cyan`): what the chain's picture tables say (`Pictures.resolve`, the one resolver; a `PictureRef` asks it too);
-## null for a key no pack holds, said nowhere (a caller that needs the picture says so: `ui_picture`, `problem_art`). What a mod's draw list names is resolved here (`ModDraw`), so a mod sees what `OriginalPresenter` would show, and holds no picture itself.
-static func picture_by_key(key: String) -> Texture2D:
-	return Pictures.resolve(key)
+## key -> the `PictureRef` handed out for it.
+static var _refs: Dictionary = {}
 
 
-## The picture of `key` that the game asks for by name: null, and a warning naming the key (once per run), when no pack holds it.
-static func _named(key: String) -> Texture2D:
-	var held := picture_by_key(key)
-	if held == null:
-		TroubleLog.session.tell(Pictures.unheld_line(key))
-	return held
+## The picture of the skin key `key` (`frame/sub_00`, `background/bg_s03_07`, `deco/coral_fan_cyan`), held by it: the reference shows what the chain's picture tables say now (`Pictures.resolve`, the one resolver), draws nothing for a key no pack holds
+## (told once per run, by the reference). What a mod's draw list names is held here (`ModDraw`), so a mod sees what `OriginalPresenter` would show, and holds no picture itself.
+static func picture_by_key(key: String) -> PictureRef:
+	if not _refs.has(key):
+		_refs[key] = PictureRef.of(key)
+	return _refs[key]
+
+
+## Does a pack of the chain hold a picture for `key`? Said nowhere (the caller that decides by it says what it does instead).
+static func holds(key: String) -> bool:
+	return Pictures.has(key)

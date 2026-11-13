@@ -7,19 +7,19 @@ extends GdUnitTestSuite
 
 func test_every_named_ui_picture_loads() -> void:
 	for picture_name: String in NameRegistry.original().entries(&"ui_picture"):
-		assert_object(Assets.ui_picture(StringName(picture_name))).override_failure_message("ui_picture '%s'" % picture_name).is_not_null()
+		assert_bool(Assets.holds("ui_picture/" + picture_name)).override_failure_message("ui_picture '%s'" % picture_name).is_true()
 
 
 func test_every_named_problem_art_loads() -> void:
 	for picture_name: String in NameRegistry.original().entries(&"problem_art"):
-		assert_object(Assets.problem_art(StringName(picture_name))).override_failure_message("problem_art '%s'" % picture_name).is_not_null()
+		assert_bool(Assets.holds("problem_art/" + picture_name)).override_failure_message("problem_art '%s'" % picture_name).is_true()
 
 
 func test_a_name_is_the_name_of_a_key() -> void:
 	assert_object(Assets.ui_picture(&"title_sky")).is_same(Assets.picture_by_key("ui_picture/title_sky"))
 	assert_object(Assets.problem_art(&"log_scan_0")).is_same(Assets.picture_by_key("problem_art/log_scan_0"))
 	assert_object(Assets.ui_picture(&"ui_2025")).override_failure_message("a picture nobody named is held by its made-up name").is_same(Assets.picture_by_key("ui_picture/ui_2025"))
-	assert_object(Assets.ui_picture(&"ui_1039")).override_failure_message("the made-up name of a picture that has a name is no key").is_null()
+	assert_bool(Assets.holds("ui_picture/ui_1039")).override_failure_message("the made-up name of a picture that has a name is no key").is_false()
 
 
 # --- strings, songs, speech and sounds by name ---------------------------------------------------------------

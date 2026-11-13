@@ -71,7 +71,7 @@ func test_choosing_it_the_game_answers_from_its_files() -> void:
 	assert_str(Catalog.zone(0).title).is_equal(from_dev.zones[0].title)
 	assert_str(Packs.source_of(Catalog.zones())).is_equal(_root + "/data/zones.tres")
 	var title := Assets.ui_picture(&"title_sky")
-	assert_str(Packs.source_of(title)).starts_with(_root + "/assets/")
+	assert_str(Packs.source_of(title.resolved())).starts_with(_root + "/assets/")
 	assert_int(Packs.sector_ids().size()).is_equal(Packs.dev().folders_in("data/sectors").size())
 	assert_object(Packs.sector_owner(1)).is_same(Packs.pack(ID))
 	assert_array(Array(Catalog.sector(1).encode())).is_equal(Array(DevPack.sector(1).encode()))

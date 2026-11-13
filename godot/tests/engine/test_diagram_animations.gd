@@ -357,7 +357,7 @@ func test_a_pack_put_on_in_the_middle_of_an_animation_shows_its_pictures_at_the_
 	var worn := diagram.texture_of(item)
 	assert_vector(worn.get_size()).override_failure_message("the item holds the number of its picture, not the picture").is_equal(Vector2(9, 9))
 	assert_that(PicturesShelf.color_of(worn)).is_equal(Color.RED)
-	assert_object(before).is_not_same(worn)
+	assert_object(worn).override_failure_message("the diagram holds the picture by its key: the same reference shows the new chain").is_same(before)
 	assert_bool(diagram.is_playing()).is_true()
 	assert_int(diagram.animation_tick()).is_equal(length / 2)
 	assert_int(diagram.intro_length()).is_equal(length)

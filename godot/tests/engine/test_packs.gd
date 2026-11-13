@@ -380,7 +380,7 @@ func test_a_file_that_is_not_a_picture_or_a_sound_is_nothing_with_a_warning() ->
 	shelf.write_text("audio/sound/correct.ogg", "not an ogg")
 	shelf.mount()
 	assert_object(Packs.clip(&"sound", &"correct")).is_null()
-	assert_object(Assets.ui_picture(&"title_sky")).is_not_null()                                    # the original's, as if the pack did not have it
+	assert_bool(Assets.holds("ui_picture/" + &"title_sky")).is_true()                                    # the original's, as if the pack did not have it
 
 
 # --- what can be chosen (the list G4 shows) ----------------------------------------------------------------------------------

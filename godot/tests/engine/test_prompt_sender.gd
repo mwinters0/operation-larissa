@@ -56,8 +56,8 @@ func test_the_pictures_are_55_by_20() -> void:
 		var texture := PromptSender.texture(slot)
 		assert_object(texture).is_not_null()
 		assert_vector(Vector2(texture.get_size())).is_equal(Vector2(PromptSender.PICTURE_SIZE))
-	assert_str(PromptSender.texture(2).resource_path).is_equal(DevPack.picture_file("ui_picture/prompt_sender_ship"))
-	assert_str(PromptSender.texture(20).resource_path).is_equal(DevPack.picture_file("ui_picture/prompt_sender_control_room"))
+	assert_str(PromptSender.texture(2).resolved().resource_path).is_equal(DevPack.picture_file("ui_picture/prompt_sender_ship"))
+	assert_str(PromptSender.texture(20).resolved().resource_path).is_equal(DevPack.picture_file("ui_picture/prompt_sender_control_room"))
 
 
 func test_the_header_starts_beside_the_picture() -> void:
@@ -102,7 +102,7 @@ func test_a_ship_prompt_shows_the_ship_the_header_beside_it_and_the_rest_below()
 	_screen.start(problem)
 	var parts := PromptSender.split(problem.prompt)
 	assert_bool(_screen.sender_icon.visible).is_true()
-	assert_str(_screen.sender_icon.texture.resource_path).is_equal(DevPack.picture_file("ui_picture/prompt_sender_ship"))
+	assert_str((_screen.sender_icon.texture as PictureRef).resolved().resource_path).is_equal(DevPack.picture_file("ui_picture/prompt_sender_ship"))
 	assert_vector(_screen.sender_icon.position).is_equal(Vector2(361, 48))
 	assert_str(_screen.sender_header.text).is_equal(parts[0])
 	assert_vector(_screen.sender_header.position).is_equal(Vector2(414, 48))
@@ -113,11 +113,11 @@ func test_a_ship_prompt_shows_the_ship_the_header_beside_it_and_the_rest_below()
 
 func test_a_computer_prompt_and_the_canister_show_the_control_room() -> void:
 	_screen.start(_asked_by(30))
-	assert_str(_screen.sender_icon.texture.resource_path).is_equal(DevPack.picture_file("ui_picture/prompt_sender_control_room"))
+	assert_str((_screen.sender_icon.texture as PictureRef).resolved().resource_path).is_equal(DevPack.picture_file("ui_picture/prompt_sender_control_room"))
 	_screen.start(_asked_by(1))
-	assert_str(_screen.sender_icon.texture.resource_path).is_equal(DevPack.picture_file("ui_picture/prompt_sender_control_room"))
+	assert_str((_screen.sender_icon.texture as PictureRef).resolved().resource_path).is_equal(DevPack.picture_file("ui_picture/prompt_sender_control_room"))
 	_screen.start(_asked_by(60))
-	assert_str(_screen.sender_icon.texture.resource_path).is_equal(DevPack.picture_file("ui_picture/prompt_sender_ship"))
+	assert_str((_screen.sender_icon.texture as PictureRef).resolved().resource_path).is_equal(DevPack.picture_file("ui_picture/prompt_sender_ship"))
 
 
 func test_practice_and_direct_problems_have_no_picture() -> void:
@@ -168,5 +168,5 @@ func test_the_picture_waits_for_the_diagram_to_build_up() -> void:
 	assert_bool(_screen.sender_header.visible).is_false()
 	_screen.diagram.skip_animation()
 	assert_bool(_screen.sender_icon.visible).is_true()
-	assert_str(_screen.sender_icon.texture.resource_path).is_equal(DevPack.picture_file("ui_picture/prompt_sender_control_room"))
+	assert_str((_screen.sender_icon.texture as PictureRef).resolved().resource_path).is_equal(DevPack.picture_file("ui_picture/prompt_sender_control_room"))
 	assert_str(_screen.sender_header.text).is_equal(PromptSender.split(problem.prompt)[0])

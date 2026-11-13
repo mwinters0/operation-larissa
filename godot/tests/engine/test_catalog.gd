@@ -53,7 +53,7 @@ func test_problem_types() -> void:
 		assert_int(problem.art_keys.size()).is_greater(0)
 		# Every picture of its panel must be held by the chain.
 		for key in problem.art_keys:
-			assert_object(Assets.picture_by_key(key)).override_failure_message("problem type %d: no picture for %s" % [i, key]).is_not_null()
+			assert_bool(Assets.holds(key)).override_failure_message("problem type %d: no picture for %s" % [i, key]).is_true()
 
 
 func test_the_game_data_comes_from_the_first_pack_of_the_chain_that_has_it() -> void:
@@ -61,7 +61,7 @@ func test_the_game_data_comes_from_the_first_pack_of_the_chain_that_has_it() -> 
 	assert_str(Packs.path("data/zones.tres")).is_equal(DevPack.path("data/zones.tres"))
 	assert_str(Catalog.zones().resource_path).is_equal(DevPack.path("data/zones.tres"))
 	assert_str(Catalog.pack_resource("data/ui/hud_layout.tres").resource_path).is_equal(DevPack.path("data/ui/hud_layout.tres"))
-	assert_str(Assets.background(3, 7).resource_path).is_equal(DevPack.picture_file("background/bg_s03_07"))
+	assert_str(Assets.background(3, 7).resolved().resource_path).is_equal(DevPack.picture_file("background/bg_s03_07"))
 	assert_str(Catalog.sector_dir(3)).is_equal(DevPack.SECTORS_DIR + "/sector_03")
 	assert_array(Catalog.own_sector_dirs()).is_equal([DevPack.SECTORS_DIR, Catalog.SECTORS_DIR])
 	assert_array(Catalog.own_campaign_dirs()).is_equal([DevPack.CAMPAIGNS_DIR, Catalog.CAMPAIGNS_DIR])

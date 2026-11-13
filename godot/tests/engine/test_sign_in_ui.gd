@@ -759,12 +759,14 @@ func test_home_and_end_with_an_empty_list_do_nothing() -> void:
 ## The scanner pictures depend on the pack chain: nothing keeps them, so a pack chosen later is seen (and a skin is not).
 func test_the_scanner_pictures_are_the_chains() -> void:
 	var original := SignIn.scan_pictures()                            # (asked first in the chain of the suite)
+	var original_color := PicturesShelf.color_of(original[0])
 	var shelf := PackShelf.new()
 	shelf.add_picture_row("ui_picture/scanner_strip_0", Color.RED)
 	shelf.mount()
 	var drawn := SignIn.scan_pictures()
 	assert_that(PicturesShelf.color_of(drawn[0])).is_equal(Color.RED)
-	assert_object(original[0]).is_not_same(drawn[0])
+	assert_object(drawn[0]).override_failure_message("the screen holds the picture by its key: the same reference shows the new chain").is_same(original[0])
+	assert_that(original_color).is_not_equal(Color.RED)
 	assert_object(SkinChoice.within(SkinChoice.original(), SignIn.scan_pictures)[0]).is_same(drawn[0])      # (no skin has a part in it)
 	shelf.remove()
-	assert_object(SignIn.scan_pictures()[0]).is_same(original[0])             # (and the suite's again when the pack goes)
+	assert_that(PicturesShelf.color_of(original[0])).is_equal(original_color)             # (and the suite's again when the pack goes)

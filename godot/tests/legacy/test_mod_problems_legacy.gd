@@ -85,7 +85,7 @@ func test_a_mod_that_draws_every_original_type_it_may_leaves_the_originals_diagr
 		_plain_only(state, "state", bad)
 		assert_array(bad).is_empty()
 		for key: String in state["art"]:
-			assert_bool(key.is_empty() or Assets.picture_by_key(key) != null).override_failure_message("type %d: %s names no picture" % [entry[0], key]).is_true()
+			assert_bool(key.is_empty() or Assets.holds(key)).override_failure_message("type %d: %s names no picture" % [entry[0], key]).is_true()
 		if wrapped.has_intro():
 			sonar_like += 1
 		diagram.free()

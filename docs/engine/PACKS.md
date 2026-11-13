@@ -156,10 +156,12 @@ The format of a pack's picture table, the order of the lookup and what a creator
 - **`Pictures`** (`src/core/pictures.gd`) is the one resolver, key to texture: the chain's tables, top of the chain first; a file row is the pack's PNG (a `ScaledTexture` over it for a `scale`); an alias is
   resolved from the top of the chain again; a row that does not resolve is left out and the packs under it answer. Answers are kept per chain: `Assets.forget_folders` calls `Pictures.forget` when
   `Catalog.packs_changed` says the chain changed, and `Pictures.events.changed` tells whoever holds an answer. Each cause of trouble is told once per run through `TroubleLog` (`Pictures.unheld_line`,
-  the line a key nothing holds gets, is shared by `Assets` and `PictureRef`, so one line per key). `Pictures.in_pack(pack, key)` is what a pack itself draws for a key, whatever lies over it (the size a pack
+  the line a key nothing holds gets, is told by the `PictureRef` that draws nothing, once per run). `Pictures.in_pack(pack, key)` is what a pack itself draws for a key, whatever lies over it (the size a pack
   redraws is judged against the pack at the bottom, `SkinTemplates`); `Pictures.unanswered(key)` is the question `PackCheck` asks of an alias.
-- **`Assets`** asks it: `picture_by_key(key)`, and `ui_picture(name)` / `problem_art(name)` (`"<kind>/<name>"`, the miss told once) for a name the code holds. No path, number or file name is ever built
-  (`tests/engine/test_pictures_only_by_key.gd` reads the source for it).
+- **`Assets`** hands out a `PictureRef` for a key, one per key kept for good: `picture_by_key(key)`, and `ui_picture(name)` / `problem_art(name)` (`"<kind>/<name>"`) for a name the code holds, `background(sector, screen)` (null for a screen
+  with none: two of the finale's have no picture, and that is no trouble). A screen that keeps what it was given in a node keeps the key, so it shows the chain as it is when a pack is installed or taken away
+  (`tests/engine/test_assets_follow_the_chain.gd`). `holds(key)` says whether a pack of the chain has a picture for a key, for what is decided by it (a style that falls back to flat colour, `PackCheck`). No path, number or file
+  name is ever built (`tests/engine/test_pictures_only_by_key.gd` reads the source for it).
 - **`PictureRef`** (`src/core/picture_ref.gd`) is how data holds a picture: a `Texture2D` with a `key` that forwards every question and draw to the picture the chain gives that key, and asks again when the chain
   changes, so a pack over another redraws it with nothing rebuilt. In a `.tres` it is a sub-resource with its script and `key`; in the data form it is `{"$picture": key}` ("JSON forms").
 - **`PackCheck._pictures`** judges a pack's table, **`PackNeeds`** asks for a picture as a key (the keys of the registry's names and every key the pack's data holds), **`PackPictures`** writes a table from a folder

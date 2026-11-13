@@ -303,7 +303,7 @@ func test_expert_crew_programs_come_from_the_data() -> void:
 	# the sailors use all 17 pictures 2022-2038 (the story's, by key), every one imported
 	assert_array(pictures.keys()).contains_exactly_in_any_order(range(2022, 2039).map(func(id: int) -> String: return "ui_picture/" + NameRegistry.original().name_of(&"ui_picture", id)))
 	for key: String in pictures:
-		assert_object(Assets.picture_by_key(key)).override_failure_message(key).is_not_null()
+		assert_bool(Assets.holds(key)).override_failure_message(key).is_true()
 
 
 func test_expert_crew_actor_runs_the_step_rules() -> void:

@@ -51,7 +51,6 @@ const RULE_FILES: Array[String] = [
 ## Files that sit in the folders above (or among the problem models) and still name what the rules may not, each with the reason.
 ## They are LOADERS or the draw lists of a view: they turn a name into a picture, which is the one job that needs a texture.
 const EXCLUDED: Dictionary = {
-	"res://src/core/assets.gd": "the loader that turns the NAME of a picture into a Texture2D; the rules only hold names, a presenter calls it",
 	"res://src/core/pack.gd": "reads one pack's files; its `texture` turns a PNG of the pack into a Texture2D (a loader like `Assets`, called by the lookups)",
 	"res://src/core/packs.gd": "the mounted packs and their lookups; `picture` answers a Texture2D to `Assets` / `GameSkin`, which are the views' side",
 	"res://src/core/pictures.gd": "the lookup of a picture KEY in the packs' tables; answers a Texture2D to `Assets`, `GameSkin` and `PictureRef`, which are the views' side",
@@ -122,7 +121,6 @@ func test_the_guarded_set_holds_the_rules() -> void:
 	for path in ["res://src/rules/sim_world.gd", "res://src/rules/game_flow.gd", "res://src/rules/station_sequence.gd", "res://src/core/foe_vm.gd",
 			"res://src/core/tile_grid.gd", "res://src/ui/message_queue.gd", "res://src/problems/problem_flow.gd"]:
 		assert_bool(files.has(path)).override_failure_message(path + " is not guarded").is_true()
-	assert_bool(files.has("res://src/core/assets.gd")).is_false()
 	assert_int(files.size()).is_greater(45)
 
 
