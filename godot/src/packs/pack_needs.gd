@@ -303,9 +303,14 @@ static func _references(chain: Array[Pack], scan: Scan) -> void:
 				_data_references(chain, holder, rel, scan)
 
 
-## The picture keys a trusted `.tres` holds (`PictureRef.keys_in_tres`), each of which a row of some pack of the chain must answer. The text is read, nothing is loaded.
+## The picture keys a trusted `.tres` holds (`PictureRef.keys_in_tres`), in itself and in the `PictureRef` files it names as textures (`PictureRef.texture_files_in_tres`), each of which a row of some pack of the chain must answer. The text is read, nothing is loaded.
 static func _tres_pictures(chain: Array[Pack], holder: Pack, rel: String, scan: Scan) -> void:
-	for key in PictureRef.keys_in_tres(holder.read_text(rel)):
+	var text := holder.read_text(rel)
+	var keys := PictureRef.keys_in_tres(text)
+	for path in PictureRef.texture_files_in_tres(text):
+		if Packs.has_file_at(path):
+			keys.append_array(PictureRef.keys_in_tres(Packs.bytes_at(path).get_string_from_utf8()))
+	for key in keys:
 		scan.ask(key)
 		if not _row_for(chain, key):
 			scan.lack(GROUP_PICTURES, key, rel)

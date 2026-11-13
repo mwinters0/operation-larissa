@@ -111,6 +111,19 @@ func test_a_ref_is_a_sub_resource_with_a_key_in_a_tres() -> void:
 	DirAccess.remove_absolute(path)
 
 
+## What `keys_in_tres` and `texture_files_in_tres` read of the text of a `.tres`: a `PictureRef` is a sub-resource, a file of its own, or a file another one names as a texture.
+func test_the_keys_of_the_text_of_a_tres_are_read_in_every_form_a_picture_ref_is_saved() -> void:
+	var sub_resource := '[gd_resource type="SpriteFrames" format=3]\n\n[sub_resource type="Texture2D" id="Texture2D_a"]\nscript = ExtResource("1_x")\nkey = "frame/in_a_sub"\n\n[resource]\n'
+	assert_array(PictureRef.keys_in_tres(sub_resource)).is_equal(["frame/in_a_sub"])
+	var own_file := '[gd_resource type="Texture2D" script_class="PictureRef" format=3]\n\n[ext_resource type="Script" path="res://src/core/picture_ref.gd" id="1_x"]\n\n[resource]\nscript = ExtResource("1_x")\nkey = "frame/own_file"\n'
+	assert_array(PictureRef.keys_in_tres(own_file)).is_equal(["frame/own_file"])
+	var other_resource := '[gd_resource type="Resource" format=3]\n\n[resource]\nkey = "frame/not_a_picture"\n'
+	assert_array(PictureRef.keys_in_tres(other_resource)).override_failure_message("a `key` of a resource that is no PictureRef is no picture").is_empty()
+	var names_one := '[gd_resource type="SpriteFrames" format=3]\n\n[ext_resource type="Texture2D" path="res://packs/x/data/ui/ref.tres" id="1"]\n[ext_resource type="Texture2D" path="res://packs/x/assets/a.png" id="2"]\n[ext_resource type="Script" path="res://x.gd" id="3"]\n\n[resource]\n'
+	assert_array(PictureRef.texture_files_in_tres(names_one)).is_equal(["res://packs/x/data/ui/ref.tres"])
+	assert_array(PictureRef.texture_files_in_tres(sub_resource)).is_empty()
+
+
 func test_a_ref_is_read_from_the_dev_packs_table() -> void:
 	_shelf.remove()                                                                         # (the chain is the dev pack again)
 	_shelf = PicturesShelf.new()

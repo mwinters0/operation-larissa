@@ -247,6 +247,18 @@ func test_a_picture_a_data_file_names_by_key_is_needed_as_a_key() -> void:
 	assert_array(ResourceJson.named_pictures(shelf.pack_json("data/ui/hud_layout.json"))).is_equal(["frame/not_drawn_anywhere"])
 
 
+## A `PictureRef` saved as a file of its own, and a `.tres` that names it as a texture, hold a key as much as a sub-resource does: the check does not under-report them.
+func test_a_picture_ref_that_is_a_file_of_its_own_is_needed_as_a_key() -> void:
+	PackFiles.write_text(PROBE_ROOT + "/pack.json", JSON.stringify({"id": String(PROBE_ID), "title": "Needs probe", "version": "1"}))
+	PackFiles.write_text(PROBE_ROOT + "/data/ui/zz_ref.tres", '[gd_resource type="Texture2D" script_class="PictureRef" format=3]\n\n[ext_resource type="Script" path="res://src/core/picture_ref.gd" id="1_x"]\n\n[resource]\nscript = ExtResource("1_x")\nkey = "frame/zz_standalone"\n')
+	PackFiles.write_text(PROBE_ROOT + "/data/zones.tres", '[gd_resource type="Resource" format=3]\n\n[ext_resource type="Texture2D" path="%s/data/ui/zz_ref.tres" id="1"]\n\n[resource]\n' % PROBE_ROOT)
+	var chain := _chain_of(Pack.open(PROBE_ROOT))
+	assert_array(PackNeeds.required(chain)).contains(["frame/zz_standalone"])
+	assert_array(PackNeeds.missing(chain)).contains(["frame/zz_standalone"])
+	PackFiles.write_text(PROBE_ROOT + "/pictures.json", JSON.stringify({"format": 1, "pictures": {"frame/zz_standalone": "art/zz.png"}}))
+	assert_array(PackNeeds.missing(_chain_of(Pack.open(PROBE_ROOT)))).not_contains(["frame/zz_standalone"])
+
+
 # --- what a resource names ---------------------------------------------------------------------------------------------------------
 
 func test_a_resource_that_names_a_file_nobody_has_is_reported() -> void:

@@ -163,7 +163,7 @@ The format of a pack's picture table, the order of the lookup and what a creator
   (`tests/engine/test_assets_follow_the_chain.gd`). `holds(key)` says whether a pack of the chain has a picture for a key, for what is decided by it (a style that falls back to flat colour, `PackCheck`). No path, number or file
   name is ever built (`tests/engine/test_pictures_only_by_key.gd` reads the source for it).
 - **`PictureRef`** (`src/core/picture_ref.gd`) is how data holds a picture: a `Texture2D` with a `key` that forwards every question and draw to the picture the chain gives that key, and asks again when the chain
-  changes, so a pack over another redraws it with nothing rebuilt. In a `.tres` it is a sub-resource with its script and `key`; in the data form it is `{"$picture": key}` ("JSON forms").
+  changes, so a pack over another redraws it with nothing rebuilt. In a `.tres` it is a sub-resource with its script and `key` (or a file of its own, which a `.tres` names as a texture: `PackNeeds` reads all three forms, `PictureRef.keys_in_tres`); in the data form it is `{"$picture": key}` ("JSON forms").
 - **`PackCheck._pictures`** judges a pack's table, **`PackNeeds`** asks for a picture as a key (the keys of the registry's names and every key the pack's data holds), **`PackPictures`** writes a table from a folder
   (`pack_tool --pictures-table`), and export, copy, install and the archive carry `pictures.json` and the files it names as plain files.
 

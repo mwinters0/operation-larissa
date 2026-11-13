@@ -32,16 +32,33 @@ static func key_of(texture: Texture2D) -> String:
 	return (texture as PictureRef).key if texture is PictureRef else ""
 
 
-## The keys the `PictureRef` sub-resources of the text of a `.tres` hold (each `[sub_resource type="Texture2D" ...]` block with a `key = "..."` line): what a pack's data needs some table to answer. The one reader of that part of the format (`PackNeeds`,
-## which must not load a pack that may lack files; the test helper `PictureUse`): the text is read, nothing is loaded.
+## The keys the `PictureRef`s of the text of a `.tres` hold: each `[sub_resource type="Texture2D" ...]` block with a `key = "..."` line, and the `[resource]` of a file that is a `PictureRef` itself (`[gd_resource type="Texture2D" script_class="PictureRef" ...]`).
+## What a pack's data needs some table to answer. The one reader of that part of the format (`PackNeeds`, which must not load a pack that may lack files; the test helper `PictureUse`): the text is read, nothing is loaded.
 static func keys_in_tres(text: String) -> Array[String]:
 	var found: Array[String] = []
+	var header := text.get_slice("\n", 0)
+	var is_one := header.begins_with('[gd_resource type="Texture2D"') and header.contains('script_class="PictureRef"')
 	for block in text.split("\n\n"):
-		if not block.begins_with('[sub_resource type="Texture2D"'):
+		if not (block.begins_with('[sub_resource type="Texture2D"') or (is_one and block.begins_with("[resource]"))):
 			continue
 		for line in block.split("\n"):
 			if line.begins_with('key = "') and line.ends_with('"'):
 				found.append(line.trim_prefix('key = "').trim_suffix('"'))
+	return found
+
+
+## The `.tres` files the text of a `.tres` names as textures (`[ext_resource type="Texture2D" path="res://packs/x/data/pic.tres" ...]`): where a `PictureRef` saved as a file of its own is held. What `keys_in_tres` reads of each is the keys.
+static func texture_files_in_tres(text: String) -> Array[String]:
+	var found: Array[String] = []
+	for line in text.split("\n"):
+		if not line.begins_with('[ext_resource type="Texture2D"'):
+			continue
+		var from := line.find(' path="')
+		if from < 0:
+			continue
+		var path := line.substr(from + 7).get_slice('"', 0)
+		if path.get_extension() == "tres":
+			found.append(path)
 	return found
 
 
