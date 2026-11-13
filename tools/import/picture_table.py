@@ -50,7 +50,7 @@ _FOLDERS = {
 
 
 def key_of_rel(rel: str) -> str:
-    """The key of the picture file `rel` (`assets/ui/title/title_sky_1039.png`), "" for a file that is no picture of the game (the authoring tool's art, a README)."""
+    """The key of the picture file `rel` (`assets/ui/title/title_sky_1039.png`), "" for a file that is no picture of the game (a README)."""
     parts = rel.split("/")
     if len(parts) < 3 or parts[0] != "assets" or not rel.endswith(".png"):
         return ""

@@ -15,7 +15,7 @@ const ALLOWED := [
 ## Not scanned: other people's code; the pack itself, which is the one place that opens its own folder (and reads its pack file through `PackArchive`).
 const SKIPPED := ["res://addons/gdUnit4/", "res://addons/godot_ai/", "res://addons/godot_sandbox/", "res://addons/midi/", "res://src/core/pack.gd"]
 
-var _pack_path := RegEx.create_from_string("Packs\\.path\\s*\\(|(?<!SkinChoice)\\.path_of\\s*\\(|Assets\\.\\w*path\\w*\\s*\\(|\\.root\\b")
+var _pack_path := RegEx.create_from_string("Packs\\.path\\s*\\(|(?<!SkinChoice)\\.path_of\\s*\\(|\\.root\\b")
 var _opens := RegEx.create_from_string("\\b(FileAccess|DirAccess|ResourceLoader)\\.|Image\\.load|OS\\.shell_open")
 
 

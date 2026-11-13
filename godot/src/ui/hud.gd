@@ -94,7 +94,7 @@ func _on_skin_changed(_skin: GameSkin) -> void:
 ## Takes the layout and the lettering of the skin in use and puts them on.
 func _apply_skin() -> void:
 	var wearing := SkinChoice.worn(skin)
-	layout = Catalog.shown_by(wearing, _scene_layout) as HudLayout
+	layout = wearing.skinned(_scene_layout) as HudLayout
 	_labels = wearing.labels()
 	_apply_layout()
 	_apply_label_style()

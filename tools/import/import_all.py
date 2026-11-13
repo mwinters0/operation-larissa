@@ -83,8 +83,7 @@ STEPS = {
 OWNED_DIRS = {
     "extract": [],                      # extracted/ (its tables/ too) is rewritten in place, never cleaned
     "tables": [],
-    "images": [common.ASSETS / "backgrounds", common.ASSETS / "ui", common.ASSETS / "problem_art",
-               common.ASSETS / "authoring_tool"],
+    "images": [common.ASSETS / "backgrounds", common.ASSETS / "ui", common.ASSETS / "problem_art"],
     "tiles": [common.ASSETS / "tiles"],
     "sprites": [common.ASSETS / "sprites", common.PACK_DATA / "sprite_frames", common.PACK_DATA / "sprite_meta"],
     "sectors": [],                      # not the folder: see OWNED_FILES

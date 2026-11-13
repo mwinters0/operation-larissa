@@ -68,20 +68,21 @@ func test_the_two_engine_classes_are_described_and_built_from_a_whitelist() -> v
 
 func test_a_hand_written_sprite_frames_and_tile_set_are_built() -> void:
 	var shelf := PackShelf.new()
-	shelf.add_picture("assets/a.png", Color.RED, Vector2i(16, 16))
-	shelf.add_picture("assets/b.png", Color.BLUE, Vector2i(32, 16))
+	shelf.add_picture_row("frame/zz_a", Color.RED, Vector2i(16, 16))
+	shelf.add_picture_row("tile/zz_b", Color.BLUE, Vector2i(32, 16))
 	var pack := shelf.mount()
 	var reader := ResourceJson.new(pack)
 	var frames := reader.resource_from({"class": "SpriteFrames", "animations": [
-			{"name": "walk", "speed": 8, "loop": true, "frames": [{"texture": {"$ref": "assets/a.png"}}, {"texture": {"$ref": "assets/b.png"}, "duration": 2}]}]}) as SpriteFrames
+			{"name": "walk", "speed": 8, "loop": true, "frames": [{"texture": {"$picture": "frame/zz_a"}}, {"texture": {"$picture": "tile/zz_b"}, "duration": 2}]}]}) as SpriteFrames
 	assert_array(reader.problems).is_empty()
 	assert_array(Array(frames.get_animation_names())).is_equal([&"walk"])
 	assert_int(frames.get_frame_count(&"walk")).is_equal(2)
 	assert_float(frames.get_frame_duration(&"walk", 1)).is_equal(2.0)
 	assert_float(frames.get_animation_speed(&"walk")).is_equal(8.0)
-	assert_str(Packs.source_of(frames.get_frame_texture(&"walk", 0))).is_equal(shelf.root + "/assets/a.png")
+	assert_str(PictureRef.key_of(frames.get_frame_texture(&"walk", 0))).is_equal("frame/zz_a")
+	assert_vector(frames.get_frame_texture(&"walk", 1).get_size()).is_equal(Vector2(32, 16))
 	var tile_set := reader.resource_from({"class": "TileSet", "physics_layers": [{"collision_layer": 2}], "custom_data_layers": [{"name": "push", "type": TYPE_VECTOR2}],
-			"sources": [{"id": 3, "name": "b", "texture": {"$ref": "assets/b.png"}, "padding": false, "tiles": [
+			"sources": [{"id": 3, "name": "b", "texture": {"$picture": "tile/zz_b"}, "padding": false, "tiles": [
 				{"at": [1, 0], "physics": [[[-8, -8, 8, -8, 8, 8, -8, 8]]], "data": {"0": [1, -1]}}]}]}) as TileSet
 	assert_array(reader.problems).is_empty()
 	var source := tile_set.get_source(3) as TileSetAtlasSource
@@ -215,25 +216,47 @@ func test_a_path_field_is_written_relative_to_its_pack_and_read_in_the_pack_that
 
 func test_a_ref_looks_in_its_own_pack_and_then_down_the_chain_never_up() -> void:
 	var shelf := PackShelf.new()
-	shelf.add_picture("assets/only_up_here.png", Color.GREEN)
+	shelf.write_text("assets/audio/sfx/only_up_here.wav", "RIFF")
 	var pack := shelf.mount()
 	assert_array(Packs.chain_ids()).is_equal([shelf.id, PackShelf.base_id()])
-	# a file of the pack on top, and a file only the pack below has (dev's tile picture)
+	# a sound of the pack on top, and one only the pack below has
 	var reader := ResourceJson.new(pack)
-	var holder := reader.resource_from({"class": "HudLayout", "bezel": {"$ref": "assets/only_up_here.png"}, "tank_full": {"$ref": DevPack.picture_rel("tile/zone0_tiles")}}) as HudLayout
+	var catalog := reader.resource_from({"class": "SfxCatalog", "streams": [{"$ref": "assets/audio/sfx/angler_chomp_2.wav"}]}) as SfxCatalog
 	assert_array(reader.problems).is_empty()
-	assert_str(Packs.source_of(holder.bezel)).is_equal(shelf.root + "/assets/only_up_here.png")
-	assert_str(Packs.source_of(holder.tank_full)).starts_with(_dev().root)
+	assert_int(catalog.streams.size()).is_equal(1)
+	assert_str(Packs.source_of(catalog.streams[0])).starts_with(_dev().root)
 	# the pack below cannot see what the pack above holds
 	var below := ResourceJson.new(_dev())
-	below.resource_from({"class": "HudLayout", "bezel": {"$ref": "assets/only_up_here.png"}})
+	below.resource_from({"class": "SfxCatalog", "streams": [{"$ref": "assets/audio/sfx/only_up_here.wav"}]})
 	assert_str(below.problems[0]).contains("no pack holds")
-	assert_object(Packs.provider_below(_dev(), "assets/only_up_here.png")).is_null()
-	assert_object(Packs.provider_below(pack, "assets/only_up_here.png")).is_same(pack)
-	# a reference to something that is not a picture, or that leaves the pack
+	assert_object(Packs.provider_below(_dev(), "assets/audio/sfx/only_up_here.wav")).is_null()
+	assert_object(Packs.provider_below(pack, "assets/audio/sfx/only_up_here.wav")).is_same(pack)
+	# a reference that leaves the pack
 	var wrong := ResourceJson.new(pack)
-	wrong.resource_from({"class": "HudLayout", "bezel": {"$ref": "../x.png"}, "tank_empty": {"$ref": "assets/audio/sfx/angler_chomp_2.wav"}})
-	assert_int(wrong.problems.size()).is_equal(2)
+	wrong.resource_from({"class": "SfxCatalog", "streams": [{"$ref": "../x.wav"}]})
+	assert_int(wrong.problems.size()).is_equal(1)
+	shelf.remove()
+
+
+func test_data_holds_a_picture_by_its_key_never_by_a_file() -> void:
+	var shelf := PackShelf.new()
+	shelf.add_picture("assets/only_up_here.png", Color.GREEN)
+	var pack := shelf.mount()
+	for held: Variant in [{"$ref": "assets/only_up_here.png"}, "assets/only_up_here.png"]:                 # (a file by `$ref`, a bare path)
+		var reader := ResourceJson.new(pack)
+		var layout := reader.resource_from({"class": "HudLayout", "bezel": held}) as HudLayout
+		assert_object(layout.bezel).is_null()
+		assert_array(reader.problems).is_not_empty()
+		assert_str(reader.problems[0]).contains("$picture")
+	var frames := ResourceJson.new(pack)
+	frames.resource_from({"class": "SpriteFrames", "animations": [{"name": "walk", "speed": 8, "loop": true, "frames": [{"texture": {"$ref": "assets/only_up_here.png"}}]}]})
+	assert_str(frames.problems[0]).contains("$picture")
+	var written := ResourceJson.new(pack)                                                                  # (a picture that is a file cannot be written either)
+	var layout := HudLayout.new()
+	layout.bezel = pack.texture("assets/only_up_here.png")
+	written.data_of(layout)
+	assert_array(written.problems).is_not_empty()
+	assert_str(written.problems[0]).contains("PictureRef")
 	shelf.remove()
 
 

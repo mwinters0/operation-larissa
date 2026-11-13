@@ -1,7 +1,7 @@
 class_name TestNoDirectLoads
 extends GdUnitTestSuite
 ## Teaches: a rule kept by a test that reads the source. A file of a pack becomes an object in ONE place, the door (`Pack.resource` / `texture` / `stream`, reached
-## through `Packs.resource` / `texture` / `stream` / `file_at`): a trusted pack's `.tres` is loaded there and any other pack's data form is read there, so
+## through `Packs.resource` / `stream` / `file_at`; a picture is reached by its key, `Pictures`): a trusted pack's `.tres` is loaded there and any other pack's data form is read there, so
 ## nothing a stranger's pack holds can reach `ResourceLoader`. This suite reads every script of `src/` and `addons/` and fails on a `load(` or
 ## `ResourceLoader.load(` that is not in the short list below, and on any `load(` of a pack path (`Packs.path`, `path_of`) anywhere.
 ## A new direct load is either routed through the door or added to the list with the reason it is not a pack's file.
@@ -28,7 +28,7 @@ const ALLOWED := {
 const SKIPPED := ["res://addons/gdUnit4/", "res://addons/godot_ai/", "res://addons/midi/"]
 
 var _load_call := RegEx.create_from_string("(?<![\\w.])load\\s*\\(|ResourceLoader\\.load\\s*\\(")
-var _pack_path := RegEx.create_from_string("Packs\\.path\\s*\\(|\\.path_of\\s*\\(|Assets\\.\\w*path\\w*\\s*\\(")
+var _pack_path := RegEx.create_from_string("Packs\\.path\\s*\\(|\\.path_of\\s*\\(")
 
 
 func _scripts() -> Array[String]:
@@ -54,7 +54,7 @@ func test_every_load_is_in_the_door_or_is_not_a_packs_file() -> void:
 			number += 1
 			if _load_call.search(code) != null:
 				stray.append("%s:%d  %s" % [path, number, code.strip_edges()])
-	assert_array(stray).override_failure_message("a direct load outside the door (route it through Packs.resource / texture / stream / file_at, or list it with its reason):\n" + "\n".join(stray)).is_empty()
+	assert_array(stray).override_failure_message("a direct load outside the door (route it through Packs.resource / stream / file_at, or list it with its reason):\n" + "\n".join(stray)).is_empty()
 
 
 func test_no_load_takes_a_path_of_a_pack_anywhere() -> void:

@@ -303,17 +303,12 @@ static func _references(chain: Array[Pack], scan: Scan) -> void:
 				_data_references(chain, holder, rel, scan)
 
 
-## The picture keys a trusted `.tres` holds (the `key` of each `PictureRef` sub-resource: a `Texture2D` block with the script of `PictureRef`), each of which a row of some pack of the chain must answer. The text is read, nothing is loaded.
+## The picture keys a trusted `.tres` holds (`PictureRef.keys_in_tres`), each of which a row of some pack of the chain must answer. The text is read, nothing is loaded.
 static func _tres_pictures(chain: Array[Pack], holder: Pack, rel: String, scan: Scan) -> void:
-	for block in holder.read_text(rel).split("\n\n"):
-		if not block.begins_with('[sub_resource type="Texture2D"'):
-			continue
-		for line in block.split("\n"):
-			if line.begins_with('key = "') and line.ends_with('"'):
-				var key := line.trim_prefix('key = "').trim_suffix('"')
-				scan.ask(key)
-				if not _row_for(chain, key):
-					scan.lack(GROUP_PICTURES, key, rel)
+	for key in PictureRef.keys_in_tres(holder.read_text(rel)):
+		scan.ask(key)
+		if not _row_for(chain, key):
+			scan.lack(GROUP_PICTURES, key, rel)
 
 
 ## The files (and folders) the data form of `rel` (`holder`'s `.json`) names, each of which some pack of `chain` from the holder down must provide.

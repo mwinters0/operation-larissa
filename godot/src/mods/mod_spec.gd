@@ -387,7 +387,7 @@ static func _parse_style(name: String, value: Variant, made: SkinTheme, found: A
 			fields["slice"] = Vector4i(cut[0], cut[1], cut[2], cut[3])
 	if value.has("picture"):
 		if not value["picture"] is String or not is_drawable_key(value["picture"]):
-			found.append("the \"picture\" of the theme's \"%s\" must be a picture key, <kind>/<name> with a kind of %s" % [name, ", ".join(GameSkin.KEY_KINDS)])
+			found.append("the \"picture\" of the theme's \"%s\" must be a picture key, <kind>/<name> with a kind of %s" % [name, ", ".join(PictureTable.KINDS)])
 		else:
 			fields["picture"] = value["picture"]
 		if not value.has("slice"):
@@ -561,12 +561,12 @@ static func is_key_name(name: String) -> bool:
 	return _key_name.search(name) != null
 
 
-## Is `key` a picture key a draw list may name (`GameSkin.KEY_KINDS`, then a name: `is_key_name`)? A shape only: whether the chain holds a picture for it is `Assets.picture_by_key`'s answer.
+## Is `key` a picture key a draw list may name (`PictureTable.KINDS`, then a name: `is_key_name`)? A shape only: whether the chain holds a picture for it is `Assets.picture_by_key`'s answer.
 static func is_drawable_key(key: String) -> bool:
 	if key.length() > MAX_KEY:
 		return false
 	var parts := key.split("/")
-	return parts.size() == 2 and GameSkin.KEY_KINDS.has(parts[0]) and is_key_name(parts[1])
+	return parts.size() == 2 and PictureTable.KINDS.has(parts[0]) and is_key_name(parts[1])
 
 
 ## Is `path` a place a skin's font may be: `skin/` and then a plain relative path ending `.ttf`?

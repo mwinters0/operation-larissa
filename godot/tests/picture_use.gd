@@ -17,7 +17,7 @@ static func held(pack: Pack) -> Dictionary:
 	var found := {}
 	for rel in pack.all_files():
 		if rel.begins_with("data/") and rel.get_extension() == "tres":
-			for key in tres_keys(pack.read_text(rel)):
+			for key in PictureRef.keys_in_tres(pack.read_text(rel)):
 				found[key] = rel
 	for type_id in Catalog.problem_type_ids():
 		var type := Catalog.problem_type_unskinned(type_id)
@@ -31,18 +31,6 @@ static func held(pack: Pack) -> Dictionary:
 	for campaign in Catalog.campaigns():
 		if not campaign.finale_picture.is_empty():
 			found[campaign.finale_picture] = "campaign %s" % campaign.id
-	return found
-
-
-## The keys of the `PictureRef` sub-resources of the text of a `.tres`.
-static func tres_keys(text: String) -> Array[String]:
-	var found: Array[String] = []
-	for block in text.split("\n\n"):
-		if not block.begins_with('[sub_resource type="Texture2D"'):
-			continue
-		for line in block.split("\n"):
-			if line.begins_with('key = "') and line.ends_with('"'):
-				found.append(line.trim_prefix('key = "').trim_suffix('"'))
 	return found
 
 

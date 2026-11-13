@@ -567,8 +567,7 @@ Note: `nepres.py`/`rsrcmap.py` read a scratchpad JSON copy of the id map; `neptu
 
 The shipped game contains no editor code, but the authoring tool left three traces.
 
-**Art: NEP.DLL pictures 2081-2090 (logical ids 863-872, `OTHR/15001` indices; the port copies them to the legacy pack's `assets/authoring_tool/editor_<id>.png`,
-step_images `AUTHORING_TOOL_IDS`).** They are the editor's interface:
+**Art: NEP.DLL pictures 2081-2090 (logical ids 863-872, `OTHR/15001` indices; the importer leaves them in `extracted/images/`, not in the legacy pack: step_images `AUTHORING_TOOL_IDS`).** They are the editor's interface:
 
 | real id | size | content |
 |---|---|---|

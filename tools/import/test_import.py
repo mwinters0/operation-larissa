@@ -166,7 +166,6 @@ def _rel(path: Path) -> str:
 
 
 SAME_PIXELS_DIFFERENT_IDS = {
-    frozenset({"authoring_tool/editor_2083.png", "authoring_tool/editor_2084.png"}),
     frozenset({_rel(asset_names.problem_art_folder_file("b084", 1851)), _rel(asset_names.problem_art_folder_file("b088", 1866)),
                _rel(asset_names.problem_art_folder_file("b092", 1889))}),
     frozenset({_rel(asset_names.problem_art_folder_file("b084", 1852)), _rel(asset_names.problem_art_folder_file("b088", 1867))}),

@@ -326,7 +326,7 @@ There is one kind of pack. What is safe depends on **where the pack is**, and so
 A pack outside the project holds only files the game reads itself. The game decodes them with plain file reading and never hands them to Godot's resource loader (a
 `.tres` can carry a script), so installing one runs nothing. It cannot hold scenes, scripts or resources, and it never answers for a `.tres` file even if one is in its
 folder. What a `.tres` holds in the project, such a pack holds as the JSON of the same name (`data/zones.json` for `data/zones.tres`: the **data form**,
-[`../engine/PACKS.md`](../engine/PACKS.md) "JSON forms"), and a picture or sound a data file names is a file of the pack (`{"$ref": "assets/sprites/sub/sub_00.png"}`). It
+[`../engine/PACKS.md`](../engine/PACKS.md) "JSON forms"), and a sound a data file names is a file of the pack (`{"$ref": "assets/audio/sfx/x.wav"}`), a picture it names is a key of the pack's `pictures.json` (`{"$picture": "frame/sub_00"}`). It
 names a `base`, or it is complete: every kind in the data form and no `base`, as `pack_tool --export-pack=<id>` writes dev, legacy or a copy of dev. A pack with no `base`
 that lacks what the game needs gets `dev` put under it (when there is a dev pack) and the game opens on the warning, below. A manifest cannot make a pack trusted, and a pack file is never trusted.
 
@@ -437,7 +437,7 @@ wins. It works like your shell's `PATH`, or CSS.
 There are two kinds of lookup, both down the chain:
 
 - **A whole file** of a complete pack (`data/zones.tres`, `assets/tiles/zone0_tiles.png`): the first pack that provides the file. A pack of the project answers
-  for a `.tres`, any pack for the JSON of it (`data/zones.json`). `Catalog`, `Assets`, the music and the scenes ask this (`Packs.resource`, `Packs.texture`, `Packs.stream`).
+  for a `.tres`, any pack for the JSON of it (`data/zones.json`). `Catalog`, `Assets`, the music and the scenes ask this (`Packs.resource`, `Packs.stream`).
 - **A thing a pack holds in the layout above**: a sector or campaign as JSON, a text, a picture by skin key, a clip by name, a problem type. A pack
   with no such thing answers nothing and the next one is asked. Texts and speech groups are merged down the chain, the pack nearest the top having
   the last word.
@@ -733,7 +733,7 @@ content.
 | Path in the legacy pack | Holds |
 | --- | --- |
 | `pack.json` | the manifest (`"id": "legacy"`, no `base`: it is complete) |
-| `assets/` | pictures and sounds (`sprites/`, `tiles/`, `backgrounds/`, `ui/`, `problem_art/`, `authoring_tool/`, `audio/`), each with a stub `.import` file |
+| `assets/` | pictures and sounds (`sprites/`, `tiles/`, `backgrounds/`, `ui/`, `problem_art/`, `audio/`), each with a stub `.import` file |
 | `data/sectors/sector_00` ... `sector_31` | the original's sectors 0-31 |
 | `data/campaigns/{voyager,expert}.tres` | the original's two campaigns |
 | `data/problems/`, `sprite_frames/`, `sprite_meta/` | problem types, text tables, the problem screen's layout (`screen_layout.tres`), creature and deco frames, hit rectangles |

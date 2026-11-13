@@ -147,6 +147,6 @@ labels (`DESIGN.md` section 5.5).
 * The CD's `ASSETS/*.GRP` archives and `MOVIES/MV107A.SMK` belong to a preview reel for other Learning Company titles (a different
   licence), not to Operation Neptune; `tools/extract/extract_previews.py` can unpack them (`RGrp` archives with ASEQ animations,
   WAVE speech, RRGB palettes) into the ignored `extracted/previews_other_titles/`, and nothing reads them.
-* The DOS game's sound data (NE0SOUND 9000-9190, [`ADLIB_MUSIC.md`](ADLIB_MUSIC.md)) and the bitmap font data, as above; the editor-era pictures 2081-2090 are imported only for reference
-  (`assets/authoring_tool/`, `DESIGN.md` section 16).
+* The DOS game's sound data (NE0SOUND 9000-9190, [`ADLIB_MUSIC.md`](ADLIB_MUSIC.md)) and the bitmap font data, as above; the editor-era pictures 2081-2090 stay in `extracted/images/` and
+  are not part of the pack (`DESIGN.md` section 16).
 * Not decoded: the preview reel's cel format, and any palette cycling (the program seems to have none).

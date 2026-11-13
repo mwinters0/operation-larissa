@@ -126,6 +126,14 @@ func test_a_png_no_row_names_is_a_warning_and_the_folders_of_a_mod_are_not_judge
 	assert_bool(_told(_check(mod), PackReport.Severity.WARNING).any(func(message: String) -> bool: return message.contains("skin/dot.png"))).override_failure_message("a draw list names a mod's own pictures by path").is_false()
 
 
+func test_a_pack_with_no_table_holds_no_picture_and_its_pngs_are_named_by_no_row() -> void:
+	var shelf := _shelf()
+	shelf.add_picture("assets/ui/title/title_sky_1039.png", Color.RED)
+	var report := _check(shelf)
+	assert_bool(_has(report, PackReport.Severity.WARNING, "assets/ui/title/title_sky_1039.png is named by no row of pictures.json: nothing reads it")).override_failure_message(report.text()).is_true()
+	assert_array(_told(report, PackReport.Severity.ERROR)).is_empty()
+
+
 func test_a_picture_that_is_not_the_size_of_the_one_it_redraws_is_a_warning_unless_a_scale_makes_it_so() -> void:
 	var size: Vector2i = SkinTemplates.sizes()["ui_picture/ui_1195"]
 	var shelf := _shelf()

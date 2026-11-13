@@ -111,15 +111,9 @@ static func skinned(resource: Resource) -> Resource:
 	return _shown(resource)
 
 
-## `resource` as the skin in use shows it: the skin's own resource for it, else the resource with the chain's pictures put in where it holds a file (BRIDGE: `PathPictures`).
+## `resource` as the skin in use shows it: the skin's own resource for it, else `resource` itself.
 static func _shown(resource: Resource) -> Resource:
-	return shown_by(SkinChoice.current(), resource)
-
-
-## `resource` as the skin `skin` shows it (a presenter or a HUD with a skin of its own): the skin's own resource for it, else the resource with the chain's pictures put in (BRIDGE: `PathPictures`).
-static func shown_by(skin: GameSkin, resource: Resource) -> Resource:
-	var own := skin.skinned(resource)
-	return own if own != resource else PathPictures.dress(resource)
+	return SkinChoice.current().skinned(resource)
 
 
 ## `dir`, or `sectors_dir` when none is given: the folder that holds the sector folders.
@@ -540,7 +534,7 @@ static func decos_frames(zone_index: int) -> SpriteFrames:
 	return _skinned(_decos_rel(zone_index)) as SpriteFrames
 
 
-## The same pictures as the pack in use holds them (no skin): what the skin keys of the decorations are made from (`GameSkin.key_of`).
+## The decorations' frames as the pack in use holds them, whatever skin is worn (a skin may replace `decos_frames` with a set of its own): what the keys told to a mod are made from (the frames hold keys: `PictureRef.key_of`).
 static func pack_decos_frames(zone_index: int) -> SpriteFrames:
 	return _door(_decos_rel(zone_index)) as SpriteFrames
 

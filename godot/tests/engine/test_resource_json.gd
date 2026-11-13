@@ -128,21 +128,22 @@ func test_a_dictionary_field_turns_whole_numbers_and_numeric_keys_into_ints() ->
 	assert_int(catalog.diagram_cue(8)).is_equal(2)
 
 
-func test_a_picture_field_names_a_png_of_the_pack() -> void:
+func test_a_picture_field_holds_a_key_and_not_a_png_of_the_pack() -> void:
 	var shelf := PackShelf.new()
 	shelf.add_picture("pictures/mine.png", Color.RED, Vector2i(3, 2))
 	var pack := Pack.open(shelf.root)
 	var reader := ResourceJson.new(pack)
-	var campaign := reader.resource_from({"class": "Campaign", "id": "x", "banner": "pictures/mine.png"}) as Campaign
+	var campaign := reader.resource_from({"class": "Campaign", "id": "x", "banner": {"$picture": "ui_picture/mine"}}) as Campaign
 	assert_array(reader.problems).is_empty()
-	assert_object(campaign.banner).is_not_null()
-	assert_vector(campaign.banner.get_size()).is_equal(Vector2(3, 2))
-	var missing := ResourceJson.new(pack)
-	missing.resource_from({"class": "Campaign", "id": "x", "banner": "pictures/none.png"})
-	assert_str(missing.problems[0]).contains("no picture")
-	var escaping := ResourceJson.new(pack)
-	escaping.resource_from({"class": "Campaign", "id": "x", "banner": "../outside.png"})
-	assert_str(escaping.problems[0]).contains("no picture")                        # a path that leaves the pack is not a picture of it
+	assert_str(PictureRef.key_of(campaign.banner)).is_equal("ui_picture/mine")
+	for held: Variant in ["pictures/mine.png", "../outside.png", {"$ref": "pictures/mine.png"}]:           # (a file, whether it is there or not, is no way to name a picture)
+		var by_file := ResourceJson.new(pack)
+		var back := by_file.resource_from({"class": "Campaign", "id": "x", "banner": held}) as Campaign
+		assert_object(back.banner).is_null()
+		assert_str(by_file.problems[0]).contains("$picture")
+	var bad_key := ResourceJson.new(pack)
+	bad_key.resource_from({"class": "Campaign", "id": "x", "banner": {"$picture": "mine"}})
+	assert_str(bad_key.problems[0]).contains("picture key")
 	shelf.remove()
 
 

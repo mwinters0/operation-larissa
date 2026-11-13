@@ -17,12 +17,12 @@ extends RefCounted
 ##     key 1204). Inside a Dictionary or an untyped Array a number that is whole becomes an int, and a packed array that the code
 ##     reads as one is written `{"$": "PackedInt32Array", "v": [2, 3]}` (the type cannot be known from the field there).
 ##   * a Resource field (`PieceData`, `FoeData`, ...): an object of its own, with the same rules, without "class" (the field says it).
-##   * a Texture2D or AudioStream field, or an element of a list or a value of a dictionary: `{"$ref": "assets/sprites/sub/sub_00.png"}`, the
+##   * an AudioStream field, or an element of a list or a value of a dictionary: `{"$ref": "assets/audio/sfx/x.wav"}`, the
 ##     file of the pack by its AUTHORING path (the path a `.tres` of a trusted pack names it by). It is looked for in the pack the file is in and then in
-##     the packs under it in the chain (`Packs.provider_below`), never above. A `.ogg` / `.wav` is an AudioStream, a `.png` a Texture2D, a `.tres` another
-##     resource of the pack (its data form, `X.json`). A Texture2D field may also be a bare path of a PNG in the pack (a campaign by hand).
-##   * a Texture2D field, or an element of a list or a value of a dictionary, may instead hold a picture BY KEY: `{"$picture": "frame/sub_00"}`, a `PictureRef` that is whatever picture the chain's picture tables (`Pictures`) give that key, so
-##     the data names no file of any pack.
+##     the packs under it in the chain (`Packs.provider_below`), never above. A `.ogg` / `.wav` is an AudioStream, a `.tres` another
+##     resource of the pack (its data form, `X.json`).
+##   * a Texture2D field, or an element of a list or a value of a dictionary, holds a picture BY KEY only: `{"$picture": "frame/sub_00"}`, a `PictureRef` that is whatever picture the chain's picture tables (`Pictures`) give that key, so
+##     the data names no file of any pack. A `$ref` of a PNG, a bare path in a Texture2D field, and a texture that is not a `PictureRef` (to write) are problems.
 ##   * a String field that holds a path into a pack (`JSON_PATH_FIELDS`): `{"$path": "assets/audio/voice/x.wav"}`, read as the full path of the
 ##     file in the pack that holds it (`res://packs/dev/assets/...`), which `Packs.file_at` then serves. A string that is not under a pack stays as it is.
 ##   * a sub-resource used more than once in the file: `{"$id": "r1", ...fields}` the first time and `{"$id": "r1"}` after.
@@ -196,9 +196,7 @@ func _decode_object(value: Variant, info: Dictionary, label: String) -> Variant:
 		if value.has(ID_KEY) and value.size() == 1:
 			return _shared_resource(value[ID_KEY], label)
 	if declared == "Texture2D" or ClassDB.is_parent_class(declared, "Texture2D"):
-		if value is String and pack != null and pack.has(value):
-			return pack.texture(value)
-		problems.append("%s: no picture '%s' in the pack (say {\"$ref\": \"assets/...png\"})" % [label, value])
+		problems.append("%s: a picture is held by its key, {\"%s\": \"<kind>/<name>\"}, not by a file ('%s')" % [label, PICTURE_KEY, value])
 		return null
 	if declared == "AudioStream" or ClassDB.is_parent_class(declared, "AudioStream"):
 		problems.append("%s: a sound is a file of the pack (say {\"$ref\": \"assets/...wav\"})" % label)
@@ -266,6 +264,9 @@ func _path_of(value: Variant, label: String) -> String:
 func _reference(rel: Variant, declared: String, label: String) -> Variant:
 	if not rel is String or not Pack.is_safe(rel):
 		problems.append("%s: '%s' is not a path inside a pack" % [label, rel])
+		return null
+	if rel.get_extension().to_lower() == PictureTable.PICTURE_EXTENSION:
+		problems.append("%s: '%s' is a picture file, and data holds a picture by its key: {\"%s\": \"<kind>/<name>\"}, a row of a pictures.json" % [label, rel, PICTURE_KEY])
 		return null
 	var holder := Packs.provider_below(pack, rel)
 	if holder == null:
@@ -401,15 +402,13 @@ func vector2i(value: Variant, label: String, fallback: Vector2i) -> Vector2i:
 	return Vector2i(int(value[0]), int(value[1])) if _is_numbers(value, 2) else _wrong(label, "[x, y]", fallback)
 
 
-## The picture a `texture` entry names: `{"$ref": ...}`, or null (a texture is optional).
+## The picture a `texture` entry names: `{"$picture": key}`, or null (a texture is optional).
 func texture_from(value: Variant, label: String) -> Texture2D:
 	if value == null:
 		return null
 	if value is Dictionary and value.has(PICTURE_KEY):
 		return _picture(value, "Texture2D", label) as Texture2D
-	if value is Dictionary:
-		return _reference(value.get(REF_KEY), "Texture2D", label) as Texture2D
-	problems.append("%s should be {\"$ref\": \"assets/...png\"} or {\"$picture\": \"<key>\"}" % label)
+	problems.append("%s should be {\"%s\": \"<kind>/<name>\"}" % [label, PICTURE_KEY])
 	return null
 
 
@@ -533,10 +532,13 @@ func _path_data(path: String) -> Variant:
 	return {PATH_KEY: path.trim_prefix(holder.root + "/")}
 
 
-## `{"$ref": rel}` for a picture or a sound that is a file of a pack (the file `Packs.source_of` names), `{"$picture": key}` for a `PictureRef`, else null with a problem.
+## `{"$ref": rel}` for a sound that is a file of a pack (the file `Packs.source_of` names), `{"$picture": key}` for a `PictureRef`, else null with a problem (a picture that is a file is one too).
 func reference_of(resource: Resource) -> Variant:
 	if resource is PictureRef:
 		return {PICTURE_KEY: (resource as PictureRef).key}
+	if resource is Texture2D:
+		problems.append("%s is a picture held by its file (%s): data holds a picture by its key (PictureRef)" % [resource.get_class(), Packs.source_of(resource) if not Packs.source_of(resource).is_empty() else "made in memory"])
+		return null
 	var path := Packs.source_of(resource)
 	var holder := Packs.pack_of_path(path, pack)
 	if holder == null:

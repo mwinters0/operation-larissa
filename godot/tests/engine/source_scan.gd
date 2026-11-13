@@ -90,3 +90,32 @@ static func scripts_under(dir: String) -> Array[String]:
 			found.append(dir.path_join(file))
 	found.sort()
 	return found
+
+
+## Splits one line of GDScript: `code` is the line without its comment and with the inside of its strings emptied, `strings` the text inside each string.
+static func parts(line: String) -> Dictionary:
+	var code := ""
+	var strings: Array[String] = []
+	var quote := ""
+	var current := ""
+	var i := 0
+	while i < line.length():
+		var c := line[i]
+		if quote.is_empty():
+			if c == "#":
+				break
+			if c == "\"" or c == "'":
+				quote = c
+				current = ""
+			code += c
+		elif c == "\\" and i + 1 < line.length():
+			current += line.substr(i, 2)
+			i += 1
+		elif c == quote:
+			strings.append(current)
+			quote = ""
+			code += c
+		else:
+			current += c
+		i += 1
+	return {"code": code, "strings": strings}

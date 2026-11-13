@@ -530,7 +530,7 @@ A skin is a `GameSkin` resource, `res://skins/<id>/skin.tres`, in a folder of th
 
 A **key** is `<kind>/<name>`. To find the key of a picture you want to redraw, look at its file in the pack you build on (`godot/packs/legacy/assets/`, or `godot/packs/dev/assets/`, which has the same paths): `assets/ui/title/title_sky_1039.png` is `ui_picture/title_sky` (the importer's trailing
 number is dropped when the picture has a real name; a made-up name such as `ui_1189` keeps it); `sprites/foes/…` is `frame/…`, `sprites/decos/…` is `deco/…`, `tiles/…` is `tile/…`, `backgrounds/…`
-is `background/…`, `problem_art/…` is `problem_art/…`; the sub, pieces, station and bubbles are `frame/sub_00` and similar. `GameSkin.key_of(path)` does exactly this. A picture that is the *content's* and that a pack of the chain
+is `background/…`, `problem_art/…` is `problem_art/…`; the sub, pieces, station and bubbles are `frame/sub_00` and similar. `tools/import/picture_table.py` (`key_of_rel`) does exactly this for the legacy pack's table. A picture that is the *content's* and that a pack of the chain
 supplies wins over every skin.
 
 ## C2. Make one

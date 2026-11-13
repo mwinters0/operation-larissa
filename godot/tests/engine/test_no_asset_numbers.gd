@@ -10,10 +10,9 @@ extends GdUnitTestSuite
 ## asset folders that the resolvers own. The allow-list below says why each exception is not an asset id.
 
 const SOURCE := "res://src"
-## Files that ARE the registry or the resolver: asset numbers and asset paths are their job.
+## Files that ARE the registry: asset numbers are its job. (No resolver holds one: a picture is found by its key.)
 const OWNERS := {
 	"res://src/core/name_registry.gd": "the registry: the first and last number of each kind",
-	"res://src/core/assets.gd": "the resolver of the picture kinds: which folder a picture number lives in",
 }
 ## Numbers that are not asset ids. Each is exact: a second one in the same file is a failure again.
 const NOT_ASSET_IDS := {
@@ -27,8 +26,8 @@ const NOT_ASSET_IDS := {
 	"res://src/resources/player_profile.gd": {9999: "the most tries a record holds"},
 	"res://src/resources/screen_data.gd": {1020: "the biggest x of a screen record (x / 4 in one byte)"},
 }
-## Where a path into the asset folders of a pack (`res://packs/<id>/assets/ui` ...) may be written: only in the resolver.
-const ASSET_FOLDERS: Array[String] = ["assets/ui", "assets/problem_art", "assets/audio"]
+## Where a path into the asset folders of a pack (`res://packs/<id>/assets/ui` ...) may be written: nowhere in the source (`test_pictures_only_by_key` says the same of a picture's file name).
+const ASSET_FOLDERS: Array[String] = ["assets/ui", "assets/problem_art", "assets/sprites", "assets/tiles", "assets/backgrounds", "assets/pictures", "assets/audio"]
 const PACKS_ROOT := "res://packs/"
 
 var _number := RegEx.create_from_string("(?<![\\w.%])(0[xX][0-9a-fA-F]{2}|[1-9][0-9]{3,4})(?![\\w.])")
@@ -47,7 +46,7 @@ func test_no_asset_number_is_written_in_the_source() -> void:
 		var line_number := 0
 		for line in FileAccess.get_file_as_string(path).split("\n"):
 			line_number += 1
-			var parts := _parts(line)
+			var parts := SourceScan.parts(line)
 			for value in _asset_numbers(parts["code"]):
 				if not allowed.has(value):
 					found.append("%s:%d  %d  (%s)" % [path, line_number, value, line.strip_edges()])
@@ -55,7 +54,7 @@ func test_no_asset_number_is_written_in_the_source() -> void:
 				if (_numbered_file.search(literal) != null or _numbered_asset_name.search(literal) != null) and not literal.contains("%"):
 					found.append("%s:%d  the string '%s' names a numbered asset" % [path, line_number, literal])
 				if _is_asset_path(literal):
-					found.append("%s:%d  the path '%s' belongs to the resolver (Assets)" % [path, line_number, literal])
+					found.append("%s:%d  the path '%s' belongs to the pack (a picture is found by its key, a sound by its name)" % [path, line_number, literal])
 	assert_array(found).override_failure_message("asset numbers or paths outside the registry and the resolver:\n" + "\n".join(found)).is_empty()
 
 
@@ -96,15 +95,15 @@ func _is_asset_path(literal: String) -> bool:
 
 ## The scanner itself, on a few lines.
 func test_the_scanner_ignores_comments_and_strings_and_sees_code() -> void:
-	assert_str(_parts("var a := 1039   # picture 1039")["code"]).contains("1039").not_contains("picture")
-	assert_str(_parts("var a := \"1039\"")["code"]).not_contains("1039")
-	assert_array(_parts("var a := \"x # y\" + b # c")["strings"]).is_equal(["x # y"])
+	assert_str(SourceScan.parts("var a := 1039   # picture 1039")["code"]).contains("1039").not_contains("picture")
+	assert_str(SourceScan.parts("var a := \"1039\"")["code"]).not_contains("1039")
+	assert_array(SourceScan.parts("var a := \"x # y\" + b # c")["strings"]).is_equal(["x # y"])
 	assert_array(_asset_numbers("var a := 1039")).is_equal([1039])
 	assert_array(_asset_numbers("Audio.play_sfx(0x1F, 12, 1200.0, 3 + 20000)")).is_equal([31])
 	assert_array(_asset_numbers("var y := 0xe8 + 42")).is_empty()           # a hexadecimal number about something else
 
 
-## The numbers of one line of code (see `_parts`) that look like an asset id.
+## The numbers of one line of code (see `SourceScan.parts`) that look like an asset id.
 func _asset_numbers(code: String) -> Array[int]:
 	var found: Array[int] = []
 	var about_sounds := _sound_words.search(code) != null
@@ -127,33 +126,3 @@ func _scripts(dir: String) -> Array[String]:
 			found.append(dir.path_join(file))
 	found.sort()
 	return found
-
-
-## Splits one line of GDScript: `code` is the line without its comment and with the inside of its strings emptied,
-## `strings` the text inside each string.
-func _parts(line: String) -> Dictionary:
-	var code := ""
-	var strings: Array[String] = []
-	var quote := ""
-	var current := ""
-	var i := 0
-	while i < line.length():
-		var c := line[i]
-		if quote.is_empty():
-			if c == "#":
-				break
-			if c == "\"" or c == "'":
-				quote = c
-				current = ""
-			code += c
-		elif c == "\\" and i + 1 < line.length():
-			current += line.substr(i, 2)
-			i += 1
-		elif c == quote:
-			strings.append(current)
-			quote = ""
-			code += c
-		else:
-			current += c
-		i += 1
-	return {"code": code, "strings": strings}

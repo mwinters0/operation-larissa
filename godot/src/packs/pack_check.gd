@@ -251,13 +251,11 @@ static func _voice_cues(live: Pack, report: PackReport) -> void:
 
 
 ## The pack's picture table (`pictures.json`, `PictureTable`): each mistake of the file itself, a row whose file the pack does not hold or the engine cannot decode, an alias that leads to a key no pack of the chain has a picture for (or round in a circle through the chain), a picture the table
-## gives that is not the size of the picture it redraws (a warning: it is drawn stretched), a PNG of the pack no row names (a warning: nothing reads it). A pack with no table is not judged (BRIDGE: a complete pack of the importer names its files in its data).
+## gives that is not the size of the picture it redraws (a warning: it is drawn stretched), a PNG of the pack no row names (a warning: nothing reads it). A pack with no table holds no picture: its PNGs are named by no row (warned), and a `pictures/` folder is not read.
 static func _pictures(live: Pack, report: PackReport) -> void:
 	var table := live.picture_table()
-	if not table.present:
-		if not live.folders_in("pictures").is_empty():
-			report.warn("pictures", "the pictures/ folder is not read: the game finds a picture through pictures.json (`pack_tool --pictures-table=<folder>` writes one from a folder of <kind>/<name>.png)")
-		return
+	if not table.present and not live.folders_in("pictures").is_empty():
+		report.warn("pictures", "the pictures/ folder is not read: the game finds a picture through pictures.json (`pack_tool --pictures-table=<folder>` writes one from a folder of <kind>/<name>.png)")
 	for message in table.check(live):
 		report.error("pictures", message)
 	var sizes: Dictionary[String, Vector2i] = SkinTemplates.sizes()
@@ -272,7 +270,7 @@ static func _pictures(live: Pack, report: PackReport) -> void:
 			if not why.is_empty():
 				report.error("pictures", "%s: '%s' is an alias of '%s', which no picture answers for: %s" % [PictureTable.FILE, key, table.aliases[key], why])
 	for rel in live.all_files():
-		if rel.get_extension() == "png" and not named.has(rel) and not _is_a_mods_own(live, rel):
+		if rel.get_extension() == "png" and not named.has(rel) and not _is_a_mods_own(live, rel) and not (rel.begins_with("pictures/") and not table.present):       # (the pictures/ folder is told once, whole)
 			report.warn("pictures", "%s is named by no row of %s: nothing reads it" % [rel, PictureTable.FILE])
 
 

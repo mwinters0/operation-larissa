@@ -223,7 +223,7 @@ func test_the_document_names_every_key_of_the_state_every_command_and_every_cap(
 	assert_bool(doc.contains("%d to %d" % [ModDraw.MIN_FONT_SIZE, ModDraw.MAX_FONT_SIZE])).is_true()
 	assert_bool(doc.contains("%d bytes" % ModShader.MAX_BYTES)).is_true()
 	assert_bool(doc.contains("`SkinState.MAX_EVENTS`")).is_true()
-	for kind in GameSkin.KEY_KINDS:                                                                        # (pictures by key: every kind, the longest key, the API version a mod that names one says)
+	for kind in PictureTable.KINDS:                                                                        # (pictures by key: every kind, the longest key, the API version a mod that names one says)
 		assert_bool(doc.contains("`%s`" % kind)).override_failure_message("SKIN_API.md does not name the kind of picture key `%s`" % kind).is_true()
 	assert_bool(doc.contains("`ModSpec.MAX_KEY` (%d)" % ModSpec.MAX_KEY)).is_true()
 	assert_bool(doc.contains("\"requires_api\": %d" % ModSpec.API_VERSION)).is_true()
@@ -500,7 +500,7 @@ func test_a_key_the_game_cannot_resolve_or_that_has_a_wrong_shape_draws_nothing(
 	assert_int(drawn.dropped).is_equal(list.size() - 1)
 	assert_bool(ModSpec.is_drawable_key("frame/sub_00") and ModSpec.is_drawable_key("deco/coral_fan_cyan") and ModSpec.is_drawable_key("ui_picture/ui_1189")).is_true()
 	assert_bool(ModSpec.is_drawable_key("tile/zone0_tiles") and ModSpec.is_drawable_key("problem_art/log_scan_0") and ModSpec.is_drawable_key("background/bg_s00_00")).is_true()
-	assert_array(GameSkin.KEY_KINDS).is_equal(["ui_picture", "background", "problem_art", "frame", "deco", "tile"])
+	assert_array(PictureTable.KINDS).is_equal(["ui_picture", "background", "problem_art", "frame", "deco", "tile"])
 	for kind: String in PictureTable.KINDS:                                                                  # (what a table may hold is what a list may name)
 		assert_bool(ModSpec.is_drawable_key("%s/x" % kind)).is_true()
 

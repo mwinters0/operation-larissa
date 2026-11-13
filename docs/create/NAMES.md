@@ -179,9 +179,8 @@ The numbers of the original are an implementation detail of the registry; the re
   `VoiceCues` hands out `voice` names.
 * **One resolver per kind.** `sound`: `SfxCatalog.stream_named`; `music`: `MusicCatalog.stream_named`; `voice`: `VoiceIndex.stream_named`;
   `text`: `Catalog.text(name)`; `ui_picture` and `problem_art`: `Assets.ui_picture(name)` and `Assets.problem_art(name)` (`src/core/assets.gd`),
-  which turn the name into the number (registry) and the number into a path (`Assets.ui_picture_path`, `Assets.problem_art_path`: the
-  only places that know the folders); creature pictures: `NameRegistry.index_of(&"frame", name, zone)`. The asset files carry the name and the number
-  (`lock_tick_38.wav`, "Asset file names" below), and `Assets.file_stem` is where the game knows that. The closing crew's pictures are `ui_picture` keys
+  which turn the name into a key (`ui_picture/<name>`) that the chain's picture tables answer (`Pictures`); creature pictures: `NameRegistry.index_of(&"frame", name, zone)`.
+  The asset files carry the name and the number (`lock_tick_38.wav`, "Asset file names" below): the importer's own convention, which the game never reads. The closing crew's pictures are `ui_picture` keys
   (`ClosingCrewScripts.pictures`); no data file holds a picture's number.
 * **Cutscene timelines hold names, not numbers.** The tracks of a cutscene (`data/story/*.tres`) say
   `ship_radar_1`, `opening_scene`, `news_bulletin_0`, `alien_artifact_0`: the importer finds each name from the original's number (`step_story.py`,
@@ -205,8 +204,7 @@ The numbers of the original are an implementation detail of the registry; the re
 
 The file of a **named** entry is `<name>_<number>.<ext>`, so the original's number is next to the name when someone reads an original script,
 a manifest or a folder (`lock_tick_38.wav` is sound 38). An entry **nobody has named** has a file name that holds
-its number (the table). The number is decimal, as in the registry, and not padded. `tools/import/asset_names.py` is the rule; `Assets.file_stem` is its GDScript twin
-for the picture kinds the game resolves by path (the other kinds are reached through the generated catalogs and SpriteFrames, which hold the paths).
+its number (the table). The number is decimal, as in the registry, and not padded. `tools/import/asset_names.py` is the rule; the game does not know it (a pack's `pictures.json` says which file draws which key).
 The folders are those of the legacy pack's `assets/`.
 
 | Kind | Named | Unnamed |
@@ -223,8 +221,7 @@ The folders are those of the legacy pack's `assets/`.
 
 The **zone** of a creature or deco picture is a `foe_z<zone>_` / `deco_z<art zone>_` prefix, because a zone-scoped name means a different drawing in
 every zone and all zones share one folder; the shared slots are named once (`common`) and carry no zone. The zone prefix is the one spelling for
-both kinds (a folder per zone would have worked as well). Kinds without names (backgrounds, tiles, the sub, pieces, station and fx sets, the
-authoring-tool art) keep their file names.
+both kinds (a folder per zone would have worked as well). Kinds without names (backgrounds, tiles, the sub, pieces, station and fx sets) keep their file names.
 
 **Stale files.** A step writes the files of the current names; `import_all.py` then removes every file of the folders it ran that no step wrote
 (`asset_manifest.prune`), so a rename never leaves the old file behind, and the folders hold exactly the files of the asset manifest. Godot's
@@ -297,7 +294,7 @@ resolver is not in the registry, or when a run is incomplete. `code_names.py` ha
 
 1. *direct*: a literal in the name argument of `Catalog.text`, `Assets.ui_picture`, `Assets.problem_art`, `play_sfx`, `play_voice`, `play_voice_sequence`,
    `play_music`, `stream_named`, `<signal>.emit` of `sfx_requested` / `sfx_played` / `voice_played` / `voice_started` / `music_changed`,
-   `index_of(&"kind", "name")` / `explain_unknown` / `number_of`; wrappers (`StringName(...)`, a ternary, an array) are
+   `index_of(&"kind", "name")` / `explain_unknown`; wrappers (`StringName(...)`, a ternary, an array) are
    looked through, other calls are not (so `&"voice"` in `name_of(&"voice", n)` is a kind, not a name);
 2. *bound*: a `&"..."` in a constant or variable (or an argument of a function of the project) whose value flows into such an argument by an assignment, a
    `for ... in`, `.append`, `return` or a parameter (`const SFX_TICK := &"..."` ... `sfx_requested.emit(SFX_TICK)`; `HOPPING_PICTURES` ... `index_of(&"frame", picture_name, zone)`);

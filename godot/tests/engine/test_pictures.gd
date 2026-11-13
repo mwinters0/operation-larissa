@@ -197,3 +197,30 @@ func test_the_assets_lookups_find_a_key_the_table_holds_even_when_the_registry_h
 	assert_object(Assets.ui_picture(&"coral_dawn")).is_same(_held(_shelf.over, "art/other.png"))        # (a name of the pack's own)
 	assert_object(Assets.problem_art(&"log_scan_0")).is_same(_held(_shelf.base, "art/zz3.png"))
 	assert_object(Assets.picture_by_key("deco/coral_fan_cyan")).is_same(_held(_shelf.over, "art/zz4.png"))
+
+
+# --- a pack with no table holds no picture; a name nobody holds is told once -------------------------------------------------
+
+func test_a_pack_with_no_table_holds_no_picture_however_its_files_are_named() -> void:
+	var shelf := PackShelf.new()
+	shelf.add_picture("assets/ui/title/title_sky_1039.png", Color.RED)               # (the importer's file name for the key)
+	shelf.add_picture("pictures/ui_picture/zz_nobody_names_me.png", Color.RED)       # (a folder of <kind>/<name>.png)
+	shelf.add_picture("assets/sprites/zz_loose/frame_zz_loose.png", Color.RED)
+	shelf.mount()
+	assert_bool(Packs.pack(shelf.id).picture_table().present).is_false()
+	assert_object(Pictures.resolve("ui_picture/zz_nobody_names_me")).is_null()
+	assert_object(Pictures.resolve("frame/zz_loose")).is_null()
+	assert_str(Pictures.unanswered("frame/zz_loose")).is_not_empty()
+	assert_str(Pictures.resolve("ui_picture/title_sky").resource_path).override_failure_message("the pack under it answers, a pack with no table says nothing").is_equal(DevPack.picture_file("ui_picture/title_sky"))
+	shelf.remove()
+
+
+func test_a_name_no_pack_holds_is_null_and_told_once_naming_the_key() -> void:
+	assert_object(Assets.ui_picture(&"zz_nobody_has_me")).is_null()
+	assert_object(Assets.ui_picture(&"zz_nobody_has_me")).is_null()
+	assert_object(Assets.problem_art(&"zz_nor_me")).is_null()
+	assert_array(_told_about("'ui_picture/zz_nobody_has_me'")).has_size(1)
+	assert_array(_told_about("'problem_art/zz_nor_me'")).has_size(1)
+	assert_str(_told_about("'ui_picture/zz_nobody_has_me'")[0]).contains("nothing is drawn")
+	assert_object(Assets.picture_by_key("ui_picture/zz_quiet")).override_failure_message("a plain key lookup says nothing: the caller that needs the picture says so").is_null()
+	assert_array(_told_about("zz_quiet")).is_empty()

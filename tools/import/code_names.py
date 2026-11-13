@@ -62,7 +62,7 @@ SINK_METHODS: dict[str, tuple[str | None, set[int] | None, str | None]] = {
 # `<signal>.emit(name)`: the events that carry a name.
 SIGNAL_KINDS = {"sfx_requested": "sound", "sound_requested": "sound", "sfx_played": "sound", "voice_played": "voice", "voice_started": "voice", "music_changed": "music"}
 # Calls whose first argument says the kind and whose second is the name: index_of(&"sound", "begin", scope).
-KIND_FIRST = {"index_of": 1, "explain_unknown": 1, "number_of": 1}
+KIND_FIRST = {"index_of": 1, "explain_unknown": 1}
 # The files that implement the resolvers. A value that is passed into them has reached its sink; following it through their
 # internals (tables keyed by every kind) would only mix the kinds up.
 RESOLVER_FILES = {"name_registry.gd", "catalog.gd", "assets.gd", "sfx_catalog.gd", "music_catalog.gd", "voice_index.gd", "voice_cues.gd", "foe_names.gd"}

@@ -17,9 +17,8 @@ When a name is given or changed (rename_name.py) the file moves: run the importe
                  sprites/decos/deco_z<zone>_<name>_<slot>.png              deco_z<zone>_%03d.png           (slots 70+, the art zone's own)
 
 The zone stays in the file name as a `foe_z<zone>_` / `deco_z<zone>_` prefix because a name belongs to a zone (slot 40 is a different
-drawing in every zone) and the files of all zones share one folder. godot/src/core/assets.gd (`Assets.ui_picture_path`,
-`problem_art_path`) is the GDScript twin for the two picture kinds that code resolves by path; the other kinds are reached through
-the generated catalogs and SpriteFrames, which hold the paths this module makes.
+drawing in every zone) and the files of all zones share one folder. the game does not know these file names: the legacy pack's `pictures.json`
+(`picture_table.py`) says which file draws which key, and the resources hold keys (`PictureRef`).
 """
 from __future__ import annotations
 

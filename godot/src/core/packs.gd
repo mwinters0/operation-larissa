@@ -768,12 +768,6 @@ static func resource(rel: String) -> Resource:
 	return held.resource(rel) if held != null else null
 
 
-## The picture file `rel` (`assets/tiles/zone0_tiles.png`) of the first pack that has it, as a texture (`Pack.texture`), or null.
-static func texture(rel: String) -> Texture2D:
-	var held := holder(rel)
-	return held.texture(rel) if held != null else null
-
-
 ## The sound file `rel` (`assets/audio/sfx/x.wav`, `.ogg`) of the first pack that has it, as a stream (`Pack.stream`), or null.
 static func stream(rel: String) -> AudioStream:
 	var held := holder(rel)

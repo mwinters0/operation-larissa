@@ -53,7 +53,6 @@ def test_a_key_of_a_plain_folder_is_the_stem_and_what_is_no_picture_has_none():
     assert picture_table.key_of_rel("assets/ui/hud/ui_1189.png") == "ui_picture/ui_1189"                        # (nobody named it: the number is part of the name)
     assert picture_table.key_of_rel("assets/sprites/decos/deco_z0_096.png") == "deco/deco_z0_096"
     assert picture_table.key_of_rel("assets/sprites/foes/foe_z2_octopus_ball_41.png") == "frame/foe_z2_octopus_ball"
-    assert picture_table.key_of_rel("assets/authoring_tool/editor_2081.png") == ""
     assert picture_table.key_of_rel("assets/problem_art/single/README.md") == ""
     assert picture_table.key_of_rel("assets/audio/sfx/lock_tick_38.wav") == ""
 
@@ -112,7 +111,7 @@ def test_every_row_is_a_file_of_the_pack_or_an_alias_that_ends_in_one():
             assert row in manifest and (common.LEGACY / row).is_file(), (key, row)
             assert files.setdefault(row, key) == key, "%s and %s are one file" % (files[row], key)
     for rel in manifest:
-        if rel.endswith(".png") and "/authoring_tool/" not in rel:
+        if rel.endswith(".png"):
             assert rel in files, "%s has no row" % rel
     assert table == picture_table.rows(manifest, step_images.problem_art_index())       # (the table on disk is what the manifest says)
 

@@ -344,7 +344,7 @@ func test_a_pack_file_is_a_pack_of_the_chain_and_its_paths_are_found_by_their_pr
 	pack.forget()
 	assert_bool(pack._archive.is_open()).override_failure_message("forgetting lets go of the file").is_false()
 	Packs.refresh()                                                                                          # (the lists are rebuilt: the clips are measured, which reads the file again)
-	assert_object(Packs.texture(PROBE)).is_not_null()
+	assert_object(Pictures.resolve("ui_picture/zz_probe")).is_not_null()
 	assert_object(Packs.clip(&"sound", &"zz_tone")).is_not_null()
 
 

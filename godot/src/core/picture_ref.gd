@@ -30,6 +30,19 @@ static func key_of(texture: Texture2D) -> String:
 	return (texture as PictureRef).key if texture is PictureRef else ""
 
 
+## The keys the `PictureRef` sub-resources of the text of a `.tres` hold (each `[sub_resource type="Texture2D" ...]` block with a `key = "..."` line): what a pack's data needs some table to answer. The one reader of that part of the format (`PackNeeds`,
+## which must not load a pack that may lack files; the test helper `PictureUse`): the text is read, nothing is loaded.
+static func keys_in_tres(text: String) -> Array[String]:
+	var found: Array[String] = []
+	for block in text.split("\n\n"):
+		if not block.begins_with('[sub_resource type="Texture2D"'):
+			continue
+		for line in block.split("\n"):
+			if line.begins_with('key = "') and line.ends_with('"'):
+				found.append(line.trim_prefix('key = "').trim_suffix('"'))
+	return found
+
+
 ## The reference to the picture `picture_key`.
 static func of(picture_key: String) -> PictureRef:
 	var made := PictureRef.new()

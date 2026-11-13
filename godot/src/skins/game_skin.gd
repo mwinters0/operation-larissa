@@ -31,22 +31,6 @@ extends Resource
 ## rest of the data is the rules and the content, which no skin can replace.
 const REPLACEABLE: Array[String] = ["ui/", "sprite_frames/", "neptune_tileset", "problems/screen_layout"]
 
-## The ONE table of picture kinds: the folder of a picture file below a pack's `assets/` (`sprites/decos`, or the first folder alone when the first two are not a key here) -> the kind of its key (the part of a key before the `/`, `key_of_rel`).
-## The two-folder keys come first, as they are looked up before the one-folder ones.
-const KIND_FOLDERS: Dictionary[String, String] = {
-	"ui": "ui_picture",
-	"backgrounds": "background",
-	"problem_art": "problem_art",
-	"sprites/foes": "frame",
-	"sprites/decos": "deco",
-	"sprites": "frame",
-	"tiles": "tile",
-}
-## The folders whose file names are the key's name as they are. The names of the other folders carry the number the importer appends to a registry name (`_registry_name`).
-const PLAIN_FOLDERS: Array[String] = ["backgrounds", "sprites", "tiles"]
-## The kinds of picture key there are (`KIND_FOLDERS`' values, each once). A pack's `pictures.json` holds keys of these kinds (`PictureTable`, `PackCheck`), and a mod's draw list may name a picture of any of them (`ModSpec.is_drawable_key`).
-static var KEY_KINDS: Array[String] = PictureTable.KINDS
-
 ## The skin's id: the folder name under `res://skins/` and the word of `--skin=<id>`.
 @export var id: StringName = &""
 ## What a menu would show.
@@ -62,12 +46,6 @@ static var KEY_KINDS: Array[String] = PictureTable.KINDS
 @export var menu_theme: SkinTheme
 ## A material for a layer of the original presenter: layer name (`SkinLayers.NODES`) -> a `ShaderMaterial` with the shader and the values of its uniforms. Never put on a node as it is: `layer_material` hands out copies.
 @export var layer_materials: Dictionary[StringName, ShaderMaterial] = {}
-
-## BRIDGE (goes with the path-held pictures of the data): a made-up name of the registry (`ui_1189`, `pa_1780`) already holds its number; a real one is followed by it in the file name.
-static var _trailing_number := RegEx.create_from_string("^(.+)_(\\d+)$")
-## path -> key, so a picture asked for a hundred times is parsed once.
-static var _keys: Dictionary = {}
-
 
 # --- the lookups (each one: this skin, else the next, else the original's) ------------------------------------
 
@@ -143,50 +121,6 @@ func menu_theme_in_use() -> SkinTheme:
 		return menu_theme
 	var next := next_skin()
 	return next.menu_theme_in_use() if next != null else null
-
-
-# --- pictures by file (BRIDGE: goes when the data holds keys, not paths) ----------------------------------------------
-
-## BRIDGE (goes when the data holds keys, not paths): the key a picture file has in a pack's table: "ui_picture/title_sky" for "res://packs/legacy/assets/ui/title/title_sky_1039.png". The kind comes
-## from the folder and the name from the file's, without the number the importer appends to a registry name (a made-up name, which
-## holds its number already, stays as it is: "ui_picture/ui_1189"). "" for a file that is not a picture of the game.
-static func key_of(path: String) -> String:
-	if _keys.has(path):
-		return _keys[path]
-	var key := _make_key(path)
-	if not key.is_empty():
-		_keys[path] = key                    # (an empty answer is not kept: the same path can be a picture of a pack chosen later)
-	return key
-
-
-static func _make_key(path: String) -> String:
-	return key_of_rel(Packs.relative(path))
-
-
-## The key of the picture file `assets` as a pack keeps it (`assets/ui/title/title_sky_1039.png`, what `Packs.relative` makes of a path), "" for a file that is not a picture of the game.
-static func key_of_rel(assets: String) -> String:
-	if not assets.begins_with("assets/"):
-		return ""
-	var parts := assets.trim_prefix("assets/").split("/")
-	if parts.size() < 2:
-		return ""
-	var stem := parts[parts.size() - 1].get_basename()
-	var folder := "%s/%s" % [parts[0], parts[1]] if parts.size() > 2 else parts[0]
-	if not KIND_FOLDERS.has(folder):
-		folder = parts[0]
-		if not KIND_FOLDERS.has(folder):
-			return ""
-	var kind := KIND_FOLDERS[folder]
-	if PLAIN_FOLDERS.has(folder):
-		return "%s/%s" % [kind, stem]      # (the sub, pieces, station and bubbles: no registry names, so "sub_00" must not become "sub")
-	return "%s/%s" % [kind, _registry_name(StringName(kind), stem)]
-
-
-static func _registry_name(kind: StringName, stem: String) -> String:
-	var found := _trailing_number.search(stem)
-	if found == null or NameRegistry.fallback_index(kind, stem) >= 0:
-		return stem
-	return found.get_string(1)
 
 
 # --- data resources --------------------------------------------------------------------------------------

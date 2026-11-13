@@ -25,7 +25,7 @@ const SCALE_KEY := "scale"
 const MAX_SCALE := 16
 const PICTURE_EXTENSION := "png"
 
-## The kinds of picture there are (the part of a key before the `/`). `GameSkin.KEY_KINDS` is this list (the kind of a key a skin's tools and a mod's draw list name).
+## The kinds of picture there are (the part of a key before the `/`): what a table's keys, a theme's `picture` and a mod's draw list may name.
 const KINDS: Array[String] = ["ui_picture", "background", "problem_art", "frame", "deco", "tile"]
 
 ## The part of a key after its kind: letters, digits, `_`, `-` and `.`, not starting with a dot.
@@ -33,7 +33,7 @@ static var _name_pattern := RegEx.create_from_string("^[A-Za-z0-9_\\-][A-Za-z0-9
 
 ## The pack the table is of (for the sentences).
 var pack_id: StringName = &""
-## Does the pack hold a `pictures.json` at all? A pack that does not is read by the path lookups the table replaces (`Pictures`).
+## Does the pack hold a `pictures.json` at all? A pack that does not holds no picture (`Pictures`).
 var present := false
 ## key -> the file of the pack (`art/sky.png`).
 var files: Dictionary = {}
