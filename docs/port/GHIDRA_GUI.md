@@ -209,6 +209,14 @@ file, a comment you deleted is deleted from it, and what the file gained in the 
 stays. When you and the file changed the same entry, yours is written and the other is printed as a conflict. Apply in
 turn removes from the project what it applied before and the file no longer has.
 
+**String ids.** A caption, prompt or message is loaded with `LoadStringResource(id, buffer, size)` and the help dialog with
+`RunHelpTopic(first_item, string_id, logical_id)`, passing a number such as 0x2b66. `string_ids_onwin32.json` names every id of the
+string table (`STR_...`; names only, the text is the game's and is never committed) and `./run.sh generate_string_ids.py` turns it
+into the enum `StringId`, an equate at every instruction that holds such a constant and the typed id parameters in
+`annotations_onwin32.json`; `apply_annotations.py` then shows the names in the decompiler and the Listing. A family of consecutive
+strings (the four "correct" phrases) is `base + index`: the base constant is named after the family's first string. To rename an id,
+edit the names file and run the generator again; to see a call site's name, read the decompiler's `STR_...`, not the number.
+
 **Changing the tools.** `./run.sh check_annotations.py` makes one annotation of every kind in a throw-away project,
 exports it, applies it to a second fresh project and exports again, which must find nothing (about 90 s). Run it after
 changing `annotations.py` or `program_annotations.py`; `uv run pytest tools` tests the format and the merge.
