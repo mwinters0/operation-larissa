@@ -342,6 +342,18 @@
     ]
    }
   },
+  "0x00411726": {
+   "name": "LoadStringResource",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/undefined",
+    "params": [
+     "/neptune/StringId uID",
+     "/winnt.h/LPSTR lpBuffer",
+     "/int cchBufferMax"
+    ]
+   }
+  },
   "0x0041177d": {
    "signature": {
     "cc": "__cdecl",
@@ -1540,7 +1552,7 @@
     "return": "/int",
     "params": [
      "/int first_item",
-     "/int string_id",
+     "/neptune/StringId string_id",
      "/int logical_id"
     ]
    }
@@ -2066,6 +2078,18 @@
     ]
    }
   },
+  "0x00436248": {
+   "name": "write",
+   "signature": {
+    "cc": "__cdecl",
+    "return": "/int",
+    "params": [
+     "/int fd",
+     "/void * buf",
+     "/uint count"
+    ]
+   }
+  },
   "0x00436fb4": {
    "name": "__vprinter",
    "signature": {
@@ -2538,6 +2562,1294 @@
     }
    ],
    "comment": "A fraction Number without its kind: what the per-kind arithmetic (AddFractions ...) and NormalizeFraction take (Number + 4)."
+  },
+  "/neptune/StringId": {
+   "kind": "enum",
+   "size": 4,
+   "values": {
+    "STR_ERROR_TITLE": 11000,
+    "STR_COPYRIGHT_NOTICE": 11001,
+    "STR_VERSION": 11002,
+    "STR_CLICK_TO_GO_ON": 11003,
+    "STR_WING_NOT_FOUND": 11004,
+    "STR_OUT_OF_MEMORY": 11005,
+    "STR_ALLOC_FAILED": 11006,
+    "STR_RESOURCE_FILE_MISSING": 11007,
+    "STR_WINDOW_CREATE_ERROR": 11008,
+    "STR_BUTTON_GO_BACK_HINT": 11009,
+    "STR_BUTTON_CLICK_TO_GO_ON": 11010,
+    "STR_BUTTON_GO_BACK_PAGE": 11011,
+    "STR_BUTTON_SEE_NEXT_PAGE": 11012,
+    "STR_BUTTON_DONE": 11013,
+    "STR_BUTTON_CANCEL": 11014,
+    "STR_BUTTON_YES": 11015,
+    "STR_BUTTON_NO": 11016,
+    "STR_DISK_WRITE_FAILED": 11017,
+    "STR_WRITE_ERROR_TITLE": 11018,
+    "STR_DIALOG_DONE": 11019,
+    "STR_DIALOG_CANCEL": 11020,
+    "STR_CUSTOM_TITLE": 11021,
+    "STR_CUSTOM_LEVEL_LABEL": 11022,
+    "STR_CUSTOM_LEVEL_1": 11023,
+    "STR_CUSTOM_LEVEL_2": 11024,
+    "STR_CUSTOM_LEVEL_3": 11025,
+    "STR_CUSTOM_LEVEL_4_HEAD": 11026,
+    "STR_CUSTOM_LEVEL_4_MID": 11027,
+    "STR_CUSTOM_LEVEL_4_TAIL": 11028,
+    "STR_CUSTOM_CALCULATOR_LABEL": 11029,
+    "STR_CUSTOM_CALCULATOR_ON": 11030,
+    "STR_CUSTOM_CALCULATOR_OFF": 11031,
+    "STR_DATABANK_ENTRY": 11032,
+    "STR_DATABANK_MENU_TITLE": 11033,
+    "STR_DATABANK_DONE": 11034,
+    "STR_UNIT_INCHES": 11036,
+    "STR_UNIT_YARDS": 11037,
+    "STR_UNIT_FEET": 11038,
+    "STR_UNIT_KILOMETERS": 11039,
+    "STR_UNIT_FATHOMS": 11040,
+    "STR_UNIT_MILES": 11041,
+    "STR_CALC_ERROR_TITLE": 11042,
+    "STR_CALC_FRACTION_MODE_NOTICE": 11043,
+    "STR_CALC_FRACTION_MODE_TITLE": 11044,
+    "STR_OUT_OF_TIME": 11045,
+    "STR_ERROR_LABEL": 11046,
+    "STR_APPROXIMATE": 11047,
+    "STR_LONGITUDE": 11048,
+    "STR_LATITUDE": 11049,
+    "STR_LETTER_D": 11050,
+    "STR_APPROXIMATE_D": 11051,
+    "STR_MENU_PLAYING_HELP_TITLE": 11052,
+    "STR_MENU_PLAYING_HELP_ITEMS": 11053,
+    "STR_MENU_PLAYING_FILE_TITLE": 11054,
+    "STR_MENU_PLAYING_FILE_ITEMS": 11055,
+    "STR_MENU_PLAYING_OPTIONS_TITLE": 11056,
+    "STR_MENU_PLAYING_OPTIONS_ITEMS": 11057,
+    "STR_MENU_PRACTICE_HELP_TITLE": 11058,
+    "STR_MENU_PRACTICE_HELP_ITEMS": 11059,
+    "STR_MENU_PRACTICE_FILE_TITLE": 11060,
+    "STR_MENU_PRACTICE_FILE_ITEMS": 11061,
+    "STR_MENU_PRACTICE_OPTIONS_TITLE": 11062,
+    "STR_MENU_PRACTICE_OPTIONS_ITEMS": 11063,
+    "STR_ZONE_MAP_TITLE_0": 11064,
+    "STR_ZONE_MAP_TITLE_1": 11065,
+    "STR_ZONE_MAP_TITLE_2": 11066,
+    "STR_ZONE_MAP_TITLE_3": 11067,
+    "STR_ZONE_MAP_TITLE_4": 11068,
+    "STR_ZONE_MAP_TITLE_5": 11069,
+    "STR_ZONE_MAP_TITLE_6": 11070,
+    "STR_ZONE_MAP_TITLE_7": 11071,
+    "STR_ZONE_MAP_TITLE_8": 11072,
+    "STR_ZONE_MAP_TITLE_9": 11073,
+    "STR_TITLE_COMBINATION_LOCK": 11074,
+    "STR_TITLE_DATA_CANISTER": 11075,
+    "STR_TITLE_SPEED_GRAPH": 11076,
+    "STR_TITLE_SONAR": 11077,
+    "STR_TITLE_WATER_PRESSURE": 11078,
+    "STR_TITLE_POWER_SUPPLY": 11079,
+    "STR_TITLE_SOUNDER": 11080,
+    "STR_TITLE_CAPSULE_PIECE_INVENTORY": 11081,
+    "STR_TITLE_DEPTH_GAUGE": 11082,
+    "STR_TITLE_NAVIGATION_CHART": 11083,
+    "STR_TITLE_HEAT_SENSOR": 11084,
+    "STR_TITLE_RADIO_TELEPHONE_SIGNALS": 11085,
+    "STR_TITLE_TEMPERATURE_1": 11086,
+    "STR_TITLE_TEMPERATURE_2": 11087,
+    "STR_TITLE_CLOSED_CIRCUIT_MONITOR": 11088,
+    "STR_TITLE_SCALE": 11089,
+    "STR_TITLE_DISTANCE_TRAVELED_CHART": 11090,
+    "STR_TITLE_FOOD_SUPPLY_PIE_CHART": 11091,
+    "STR_TITLE_OIL_GAUGE": 11092,
+    "STR_TITLE_WINDOW_CRACK": 11093,
+    "STR_TITLE_TOXICITY_GRAPH": 11094,
+    "STR_TITLE_WATER_TANK": 11095,
+    "STR_TITLE_HEADING_INDICATOR": 11096,
+    "STR_TITLE_SIDE_BALLAST": 11097,
+    "STR_TITLE_CLOCK": 11098,
+    "STR_TITLE_TOXICITY_LEVEL_GRAPH": 11099,
+    "STR_TITLE_SPEED_INDICATOR_1": 11100,
+    "STR_TITLE_SPEED_INDICATOR_2": 11101,
+    "STR_TITLE_BALLAST_CONTROL_PANEL_1": 11102,
+    "STR_TITLE_BALLAST_CONTROL_PANEL_2": 11103,
+    "STR_TITLE_FOOD_STORAGE": 11104,
+    "STR_TITLE_SEARCH_GRID_1": 11105,
+    "STR_TITLE_SEARCH_GRID_2": 11106,
+    "STR_TITLE_SEARCH_GRID_3": 11107,
+    "STR_TITLE_SURFACE_SHIP": 11108,
+    "STR_TITLE_STAR_LOG_SYSTEM": 11109,
+    "STR_CORRECT_PHRASE_0": 11110,
+    "STR_CORRECT_PHRASE_1": 11111,
+    "STR_CORRECT_PHRASE_2": 11112,
+    "STR_CORRECT_PHRASE_3": 11113,
+    "STR_PROBLEM_DIRECTED_TO_SHIP": 11114,
+    "STR_NEW_PLAYER_HINT_TITLE": 11115,
+    "STR_HELP_TOPIC_PLAYING_THE_GAME": 11116,
+    "STR_HELP_TOPIC_USING_THE_KEYBOARD": 11117,
+    "STR_HELP_TOPIC_ZONES_AND_SECTORS": 11118,
+    "STR_HELP_TOPIC_SOLVING_MATH": 11119,
+    "STR_HELP_TOPIC_USING_THE_CALCULATOR": 11120,
+    "STR_HELP_TOPIC_EDUCATIONAL_FOCUS": 11121,
+    "STR_HELP_TOPIC_MATH_PRACTICE": 11122,
+    "STR_HALL_OF_FAME_HEADER": 11124,
+    "STR_HALL_OF_FAME_TITLE": 11125,
+    "STR_RETURN_TO_SIGN_IN_SAVE_PROMPT": 11126,
+    "STR_RETURN_TO_SIGN_IN_SAVE_TITLE": 11127,
+    "STR_RETURN_TO_SIGN_IN_PROMPT": 11128,
+    "STR_RETURN_TO_SIGN_IN_TITLE": 11129,
+    "STR_EXIT_SAVE_PROMPT": 11130,
+    "STR_QUIT_SAVE_PROMPT": 11131,
+    "STR_EXIT_TITLE": 11132,
+    "STR_QUIT_TITLE": 11133,
+    "STR_EXIT_PROMPT": 11134,
+    "STR_QUIT_PROMPT": 11135,
+    "STR_VOICE_TITLE": 11136,
+    "STR_VOICE_PROMPT": 11137,
+    "STR_SOUND_EFFECTS_TITLE": 11138,
+    "STR_SOUND_EFFECTS_PROMPT": 11139,
+    "STR_MUSIC_TITLE": 11140,
+    "STR_MUSIC_PROMPT": 11141,
+    "STR_NEW_PLAYER_HINTS_PROMPT": 11142,
+    "STR_NEW_PLAYER_HINTS_TITLE": 11143,
+    "STR_ABOUT_TEXT_1": 11144,
+    "STR_ABOUT_TEXT_2": 11145,
+    "STR_ABOUT_TEXT_3": 11146,
+    "STR_ABOUT_TEXT_4": 11147,
+    "STR_ABOUT_TEXT_5": 11148,
+    "STR_ABOUT_TEXT_6": 11149,
+    "STR_ABOUT_TITLE": 11150,
+    "STR_PRACTICE_CONTINUE_PROMPT": 11151,
+    "STR_PRACTICE_CONTINUE_TITLE": 11152,
+    "STR_PRACTICE_DONE": 11153,
+    "STR_PRACTICE_CANCEL": 11154,
+    "STR_PRACTICE_SETUP_TITLE": 11155,
+    "STR_PRACTICE_SET_TYPE_LABEL": 11156,
+    "STR_PRACTICE_SET_5_MATH": 11157,
+    "STR_PRACTICE_SET_10_MENTAL": 11158,
+    "STR_PRACTICE_SET_ALL_EXCEPT_MENTAL": 11159,
+    "STR_PRACTICE_LEVEL_LABEL": 11160,
+    "STR_PRACTICE_LEVEL_1": 11161,
+    "STR_PRACTICE_LEVEL_2": 11162,
+    "STR_PRACTICE_LEVEL_3": 11163,
+    "STR_PRACTICE_LEVEL_4": 11164,
+    "STR_PRACTICE_CALCULATOR_LABEL": 11165,
+    "STR_PRACTICE_CALCULATOR_ON": 11166,
+    "STR_PRACTICE_CALCULATOR_OFF": 11167,
+    "STR_PRACTICE_SCORE_PROBLEMS": 11168,
+    "STR_PRACTICE_SCORE_CORRECT": 11169,
+    "STR_PRACTICE_SCORE_FIRST_TRY": 11170,
+    "STR_PRACTICE_SCORE_SECOND_TRY": 11171,
+    "STR_TIME_HOUR": 11172,
+    "STR_TIME_DAY": 11173,
+    "STR_TIME_WEEK": 11174,
+    "STR_TIME_MINUTES": 11175,
+    "STR_TIME_HOURS": 11176,
+    "STR_TIME_SECONDS": 11177,
+    "STR_TIME_AN_HOUR": 11178,
+    "STR_TIME_A_DAY": 11179,
+    "STR_TIME_A_WEEK": 11180,
+    "STR_DIRECTION_PORT": 11181,
+    "STR_DIRECTION_STARBOARD": 11182,
+    "STR_NEW_PLAYER_NAME_TITLE": 11183,
+    "STR_NEW_PLAYER_NAME_PROMPT": 11184,
+    "STR_SIGN_IN_LIST_FULL": 11185,
+    "STR_REMOVE_NAME_WARNING": 11186,
+    "STR_REMOVE_NAME_SUFFIX": 11187,
+    "STR_REMOVE_NAME_TITLE": 11188,
+    "STR_CHOOSE_LEVEL_TITLE": 11189,
+    "STR_CHOOSE_LEVEL_ADVICE": 11190,
+    "STR_SIGN_IN_EXIT_TITLE": 11191,
+    "STR_SIGN_IN_EXIT_PROMPT": 11192,
+    "STR_SIGN_IN_QUIT_TITLE": 11193,
+    "STR_SIGN_IN_QUIT_PROMPT": 11194,
+    "STR_CUSTOMIZED_NOTICE_HEAD": 11195,
+    "STR_CUSTOMIZED_NOTICE_LEVEL": 11196,
+    "STR_CUSTOMIZED_NOTICE_CALCULATOR": 11197,
+    "STR_CUSTOMIZED_NOTICE_TAIL": 11198,
+    "STR_GAME_VOYAGER": 11199,
+    "STR_GAME_EXPERT": 11200,
+    "STR_CUSTOMIZED_LEVEL_1": 11201,
+    "STR_CUSTOMIZED_LEVEL_2": 11202,
+    "STR_CUSTOMIZED_LEVEL_3": 11203,
+    "STR_CUSTOMIZED_LEVEL_4": 11204,
+    "STR_CUSTOMIZED_CALCULATOR_OFF": 11205,
+    "STR_CUSTOMIZED_CALCULATOR_ON": 11206,
+    "STR_COPYRIGHT_MARK": 11207,
+    "STR_KEYS_EXIT_LETTERS": 11208,
+    "STR_KEYS_QUIT_LETTERS": 11209,
+    "STR_TIME_HOURS_SHORT": 11210,
+    "STR_TIME_MINUTES_SHORT": 11211,
+    "STR_SURFACE_SHIP_PIECES_MESSAGE": 11212,
+    "STR_UNIT_LITERS_SUFFIX": 11213,
+    "STR_UNIT_GALLONS_SUFFIX": 11214,
+    "STR_BALLAST_STEP_0_01": 11215,
+    "STR_BALLAST_STEP_0_05": 11216,
+    "STR_BALLAST_STEP_0_10": 11217,
+    "STR_BALLAST_STEP_0_25": 11218,
+    "STR_LOCK_DIGIT_0_1": 11219,
+    "STR_LOCK_DIGIT_0_2": 11220,
+    "STR_LOCK_DIGIT_0_3": 11221,
+    "STR_LOCK_DIGIT_0_4": 11222,
+    "STR_LOCK_DIGIT_0_5": 11223,
+    "STR_LOCK_DIGIT_0_6": 11224,
+    "STR_LOCK_DIGIT_0_7": 11225,
+    "STR_LOCK_DIGIT_0_8": 11226,
+    "STR_LOCK_DIGIT_0_9": 11227,
+    "STR_LOCK_DIGIT_0_10": 11228,
+    "STR_LOCK_DIGIT_0_20": 11229,
+    "STR_LOCK_DIGIT_0_30": 11230,
+    "STR_LOCK_DIGIT_0_40": 11231,
+    "STR_LOCK_DIGIT_0_50": 11232,
+    "STR_LOCK_DIGIT_0_60": 11233,
+    "STR_LOCK_DIGIT_0_70": 11234,
+    "STR_LOCK_DIGIT_0_80": 11235,
+    "STR_LOCK_DIGIT_0_90": 11236,
+    "STR_LOCK_DIGIT_1_1": 11237,
+    "STR_LOCK_DIGIT_1_2": 11238,
+    "STR_LOCK_DIGIT_1_3": 11239,
+    "STR_LOCK_DIGIT_1_4": 11240,
+    "STR_LOCK_DIGIT_1_5": 11241,
+    "STR_LOCK_DIGIT_1_6": 11242,
+    "STR_LOCK_DIGIT_1_7": 11243,
+    "STR_LOCK_DIGIT_1_8": 11244,
+    "STR_LOCK_DIGIT_1_9": 11245,
+    "STR_KEYS_CALCULATOR_ENTRY": 11246,
+    "STR_RESOURCE_NOT_FOUND": 11247,
+    "STR_RESOURCE_LOAD_FAILED": 11248,
+    "STR_FALSE_LITERAL": 11249,
+    "STR_PROB06_NUMBER_TEXT": 11250,
+    "STR_PROB10_DEGREE_C_TEXT": 11251,
+    "STR_DATA_FILE_MISSING": 11252,
+    "STR_FONT_SIZE_A": 11253,
+    "STR_FONT_SIZE_B": 11254,
+    "STR_FONT_SIZE_C": 11255,
+    "STR_FONT_FACE": 11256,
+    "STR_CHOOSE_LEVEL_ADVICE_2": 11257,
+    "STR_CHOOSE_LEVEL_VOYAGER_GAME": 11258,
+    "STR_CHOOSE_LEVEL_EXPERT_GAME": 11259,
+    "STR_GAME_NAME": 11500
+   },
+   "comment": "Ids of the string table (LoadStringResource, RunHelpTopic). Generated by generate_string_ids.py from string_ids_onwin32.json."
+  }
+ },
+ "equates": {
+  "STR_ABOUT_TEXT_1": {
+   "value": 11144,
+   "refs": [
+    "0x0042b768:0"
+   ]
+  },
+  "STR_ABOUT_TEXT_2": {
+   "value": 11145,
+   "refs": [
+    "0x0042b781:0"
+   ]
+  },
+  "STR_ABOUT_TEXT_3": {
+   "value": 11146,
+   "refs": [
+    "0x0042b7ad:0"
+   ]
+  },
+  "STR_ABOUT_TEXT_4": {
+   "value": 11147,
+   "refs": [
+    "0x0042b7d9:0"
+   ]
+  },
+  "STR_ABOUT_TEXT_5": {
+   "value": 11148,
+   "refs": [
+    "0x0042b805:0"
+   ]
+  },
+  "STR_ABOUT_TEXT_6": {
+   "value": 11149,
+   "refs": [
+    "0x0042b831:0"
+   ]
+  },
+  "STR_ABOUT_TITLE": {
+   "value": 11150,
+   "refs": [
+    "0x0042b85a:0"
+   ]
+  },
+  "STR_ALLOC_FAILED": {
+   "value": 11006,
+   "refs": [
+    "0x004138e6:0"
+   ]
+  },
+  "STR_APPROXIMATE": {
+   "value": 11047,
+   "refs": [
+    "0x00422e3e:0"
+   ]
+  },
+  "STR_APPROXIMATE_D": {
+   "value": 11051,
+   "refs": [
+    "0x00422ea7:0"
+   ]
+  },
+  "STR_BALLAST_STEP_0_01": {
+   "value": 11215,
+   "refs": [
+    "0x00419dad:0"
+   ]
+  },
+  "STR_BALLAST_STEP_0_05": {
+   "value": 11216,
+   "refs": [
+    "0x00419dd0:0"
+   ]
+  },
+  "STR_BALLAST_STEP_0_10": {
+   "value": 11217,
+   "refs": [
+    "0x00419de9:0"
+   ]
+  },
+  "STR_BALLAST_STEP_0_25": {
+   "value": 11218,
+   "refs": [
+    "0x00419e06:0"
+   ]
+  },
+  "STR_BUTTON_CANCEL": {
+   "value": 11014,
+   "refs": [
+    "0x0041674f:0"
+   ]
+  },
+  "STR_BUTTON_CLICK_TO_GO_ON": {
+   "value": 11010,
+   "refs": [
+    "0x004166ff:0"
+   ]
+  },
+  "STR_BUTTON_DONE": {
+   "value": 11013,
+   "refs": [
+    "0x0041673b:0"
+   ]
+  },
+  "STR_BUTTON_GO_BACK_HINT": {
+   "value": 11009,
+   "refs": [
+    "0x004166eb:0"
+   ]
+  },
+  "STR_BUTTON_GO_BACK_PAGE": {
+   "value": 11011,
+   "refs": [
+    "0x00416713:0"
+   ]
+  },
+  "STR_BUTTON_NO": {
+   "value": 11016,
+   "refs": [
+    "0x00416777:0"
+   ]
+  },
+  "STR_BUTTON_SEE_NEXT_PAGE": {
+   "value": 11012,
+   "refs": [
+    "0x00416727:0"
+   ]
+  },
+  "STR_BUTTON_YES": {
+   "value": 11015,
+   "refs": [
+    "0x00416763:0"
+   ]
+  },
+  "STR_CALC_ERROR_TITLE": {
+   "value": 11042,
+   "refs": [
+    "0x00420df1:0"
+   ]
+  },
+  "STR_CALC_FRACTION_MODE_NOTICE": {
+   "value": 11043,
+   "refs": [
+    "0x00420dce:0"
+   ]
+  },
+  "STR_CALC_FRACTION_MODE_TITLE": {
+   "value": 11044,
+   "refs": [
+    "0x00420daa:0"
+   ]
+  },
+  "STR_CHOOSE_LEVEL_ADVICE_2": {
+   "value": 11257,
+   "refs": [
+    "0x0043019f:0"
+   ]
+  },
+  "STR_CHOOSE_LEVEL_EXPERT_GAME": {
+   "value": 11259,
+   "refs": [
+    "0x0043020a:0"
+   ]
+  },
+  "STR_CHOOSE_LEVEL_TITLE": {
+   "value": 11189,
+   "refs": [
+    "0x0043017b:0"
+   ]
+  },
+  "STR_CHOOSE_LEVEL_VOYAGER_GAME": {
+   "value": 11258,
+   "refs": [
+    "0x004301f4:0"
+   ]
+  },
+  "STR_CLICK_TO_GO_ON": {
+   "value": 11003,
+   "refs": [
+    "0x004220c9:0",
+    "0x00427248:0",
+    "0x0042b048:0"
+   ]
+  },
+  "STR_COPYRIGHT_MARK": {
+   "value": 11207,
+   "refs": [
+    "0x00430ab0:0",
+    "0x00431562:0"
+   ]
+  },
+  "STR_COPYRIGHT_NOTICE": {
+   "value": 11001,
+   "refs": [
+    "0x0042a528:0",
+    "0x0042b8a1:0"
+   ]
+  },
+  "STR_CORRECT_PHRASE_0": {
+   "value": 11110,
+   "refs": [
+    "0x00423602:1"
+   ]
+  },
+  "STR_CUSTOMIZED_CALCULATOR_OFF": {
+   "value": 11205,
+   "refs": [
+    "0x0042f559:1"
+   ]
+  },
+  "STR_CUSTOMIZED_LEVEL_1": {
+   "value": 11201,
+   "refs": [
+    "0x0042f522:1"
+   ]
+  },
+  "STR_CUSTOMIZED_NOTICE_CALCULATOR": {
+   "value": 11197,
+   "refs": [
+    "0x0042f53c:0"
+   ]
+  },
+  "STR_CUSTOMIZED_NOTICE_HEAD": {
+   "value": 11195,
+   "refs": [
+    "0x0042f4d0:0"
+   ]
+  },
+  "STR_CUSTOMIZED_NOTICE_LEVEL": {
+   "value": 11196,
+   "refs": [
+    "0x0042f505:0"
+   ]
+  },
+  "STR_CUSTOMIZED_NOTICE_TAIL": {
+   "value": 11198,
+   "refs": [
+    "0x0042f573:0"
+   ]
+  },
+  "STR_CUSTOM_CALCULATOR_LABEL": {
+   "value": 11029,
+   "refs": [
+    "0x0041dbc9:0"
+   ]
+  },
+  "STR_CUSTOM_CALCULATOR_OFF": {
+   "value": 11031,
+   "refs": [
+    "0x0041dc0c:0"
+   ]
+  },
+  "STR_CUSTOM_CALCULATOR_ON": {
+   "value": 11030,
+   "refs": [
+    "0x0041dbe9:0"
+   ]
+  },
+  "STR_CUSTOM_LEVEL_1": {
+   "value": 11023,
+   "refs": [
+    "0x0041daf0:0"
+   ]
+  },
+  "STR_CUSTOM_LEVEL_2": {
+   "value": 11024,
+   "refs": [
+    "0x0041db10:0"
+   ]
+  },
+  "STR_CUSTOM_LEVEL_3": {
+   "value": 11025,
+   "refs": [
+    "0x0041db30:0"
+   ]
+  },
+  "STR_CUSTOM_LEVEL_4_HEAD": {
+   "value": 11026,
+   "refs": [
+    "0x0041db53:0"
+   ]
+  },
+  "STR_CUSTOM_LEVEL_4_MID": {
+   "value": 11027,
+   "refs": [
+    "0x0041db7f:0"
+   ]
+  },
+  "STR_CUSTOM_LEVEL_4_TAIL": {
+   "value": 11028,
+   "refs": [
+    "0x0041dba4:0"
+   ]
+  },
+  "STR_CUSTOM_LEVEL_LABEL": {
+   "value": 11022,
+   "refs": [
+    "0x0041dad3:0"
+   ]
+  },
+  "STR_CUSTOM_TITLE": {
+   "value": 11021,
+   "refs": [
+    "0x0041dab3:0"
+   ]
+  },
+  "STR_DATABANK_DONE": {
+   "value": 11034,
+   "refs": [
+    "0x0041e387:0",
+    "0x0041e640:0",
+    "0x0041e6eb:0"
+   ]
+  },
+  "STR_DATABANK_ENTRY": {
+   "value": 11032,
+   "refs": [
+    "0x0041e1c0:0"
+   ]
+  },
+  "STR_DATABANK_MENU_TITLE": {
+   "value": 11033,
+   "refs": [
+    "0x0041e279:0"
+   ]
+  },
+  "STR_DATA_FILE_MISSING": {
+   "value": 11252,
+   "refs": [
+    "0x00414a87:0"
+   ]
+  },
+  "STR_DIALOG_CANCEL": {
+   "value": 11020,
+   "refs": [
+    "0x0041dc59:0"
+   ]
+  },
+  "STR_DIALOG_DONE": {
+   "value": 11019,
+   "refs": [
+    "0x0041dc45:0"
+   ]
+  },
+  "STR_DIRECTION_PORT": {
+   "value": 11181,
+   "refs": [
+    "0x0042f090:0"
+   ]
+  },
+  "STR_DIRECTION_STARBOARD": {
+   "value": 11182,
+   "refs": [
+    "0x0042f0a3:0"
+   ]
+  },
+  "STR_DISK_WRITE_FAILED": {
+   "value": 11017,
+   "refs": [
+    "0x0041bd68:0"
+   ]
+  },
+  "STR_ERROR_LABEL": {
+   "value": 11046,
+   "refs": [
+    "0x00422029:0"
+   ]
+  },
+  "STR_ERROR_TITLE": {
+   "value": 11000,
+   "refs": [
+    "0x00411891:0",
+    "0x00414435:0",
+    "0x00426341:0"
+   ]
+  },
+  "STR_EXIT_PROMPT": {
+   "value": 11134,
+   "refs": [
+    "0x0042ba9d:0"
+   ]
+  },
+  "STR_EXIT_SAVE_PROMPT": {
+   "value": 11130,
+   "refs": [
+    "0x0042ba1f:0"
+   ]
+  },
+  "STR_EXIT_TITLE": {
+   "value": 11132,
+   "refs": [
+    "0x0042ba35:0",
+    "0x0042bab3:0"
+   ]
+  },
+  "STR_FALSE_LITERAL": {
+   "value": 11249,
+   "refs": [
+    "0x00427c7f:0"
+   ]
+  },
+  "STR_FONT_FACE": {
+   "value": 11256,
+   "refs": [
+    "0x00414bc0:0"
+   ]
+  },
+  "STR_FONT_SIZE_A": {
+   "value": 11253,
+   "refs": [
+    "0x00414b84:0"
+   ]
+  },
+  "STR_FONT_SIZE_B": {
+   "value": 11254,
+   "refs": [
+    "0x00414b98:0"
+   ]
+  },
+  "STR_FONT_SIZE_C": {
+   "value": 11255,
+   "refs": [
+    "0x00414bac:0"
+   ]
+  },
+  "STR_GAME_NAME": {
+   "value": 11500,
+   "refs": [
+    "0x00414a9d:0"
+   ]
+  },
+  "STR_GAME_VOYAGER": {
+   "value": 11199,
+   "refs": [
+    "0x0042f4eb:1",
+    "0x00430a62:1",
+    "0x00430a83:1",
+    "0x00431535:1"
+   ]
+  },
+  "STR_HALL_OF_FAME_HEADER": {
+   "value": 11124,
+   "refs": [
+    "0x0042bb3e:0"
+   ]
+  },
+  "STR_HALL_OF_FAME_TITLE": {
+   "value": 11125,
+   "refs": [
+    "0x0042bb54:0"
+   ]
+  },
+  "STR_HELP_TOPIC_EDUCATIONAL_FOCUS": {
+   "value": 11121,
+   "refs": [
+    "0x00428f5e:0"
+   ]
+  },
+  "STR_HELP_TOPIC_MATH_PRACTICE": {
+   "value": 11122,
+   "refs": [
+    "0x00428f77:0"
+   ]
+  },
+  "STR_HELP_TOPIC_PLAYING_THE_GAME": {
+   "value": 11116,
+   "refs": [
+    "0x00428ee1:0"
+   ]
+  },
+  "STR_HELP_TOPIC_SOLVING_MATH": {
+   "value": 11119,
+   "refs": [
+    "0x00428f2c:0"
+   ]
+  },
+  "STR_HELP_TOPIC_USING_THE_CALCULATOR": {
+   "value": 11120,
+   "refs": [
+    "0x00428f45:0"
+   ]
+  },
+  "STR_HELP_TOPIC_USING_THE_KEYBOARD": {
+   "value": 11117,
+   "refs": [
+    "0x00428efa:0"
+   ]
+  },
+  "STR_HELP_TOPIC_ZONES_AND_SECTORS": {
+   "value": 11118,
+   "refs": [
+    "0x00428f13:0"
+   ]
+  },
+  "STR_KEYS_CALCULATOR_ENTRY": {
+   "value": 11246,
+   "refs": [
+    "0x0041ae33:0",
+    "0x00428a6d:0"
+   ]
+  },
+  "STR_KEYS_EXIT_LETTERS": {
+   "value": 11208,
+   "refs": [
+    "0x00430d9c:0"
+   ]
+  },
+  "STR_LATITUDE": {
+   "value": 11049,
+   "refs": [
+    "0x00422e6f:0",
+    "0x00422f09:0"
+   ]
+  },
+  "STR_LETTER_D": {
+   "value": 11050,
+   "refs": [
+    "0x00422e94:0"
+   ]
+  },
+  "STR_LOCK_DIGIT_0_1": {
+   "value": 11219,
+   "refs": [
+    "0x0042179b:1"
+   ]
+  },
+  "STR_LOCK_DIGIT_0_10": {
+   "value": 11228,
+   "refs": [
+    "0x004217b3:1"
+   ]
+  },
+  "STR_LOCK_DIGIT_0_9": {
+   "value": 11227,
+   "refs": [
+    "0x00421848:0"
+   ]
+  },
+  "STR_LOCK_DIGIT_1_1": {
+   "value": 11237,
+   "refs": [
+    "0x004217cb:1"
+   ]
+  },
+  "STR_LOCK_DIGIT_1_9": {
+   "value": 11245,
+   "refs": [
+    "0x00421871:0"
+   ]
+  },
+  "STR_LONGITUDE": {
+   "value": 11048,
+   "refs": [
+    "0x00422e5a:0",
+    "0x00422ec3:0"
+   ]
+  },
+  "STR_MENU_PLAYING_FILE_ITEMS": {
+   "value": 11055,
+   "refs": [
+    "0x004231c8:0"
+   ]
+  },
+  "STR_MENU_PLAYING_FILE_TITLE": {
+   "value": 11054,
+   "refs": [
+    "0x004231b1:0"
+   ]
+  },
+  "STR_MENU_PLAYING_HELP_ITEMS": {
+   "value": 11053,
+   "refs": [
+    "0x0042319d:0"
+   ]
+  },
+  "STR_MENU_PLAYING_HELP_TITLE": {
+   "value": 11052,
+   "refs": [
+    "0x00423186:0"
+   ]
+  },
+  "STR_MENU_PLAYING_OPTIONS_ITEMS": {
+   "value": 11057,
+   "refs": [
+    "0x004231f3:0"
+   ]
+  },
+  "STR_MENU_PLAYING_OPTIONS_TITLE": {
+   "value": 11056,
+   "refs": [
+    "0x004231dc:0"
+   ]
+  },
+  "STR_MENU_PRACTICE_FILE_ITEMS": {
+   "value": 11061,
+   "refs": [
+    "0x00423259:0"
+   ]
+  },
+  "STR_MENU_PRACTICE_FILE_TITLE": {
+   "value": 11060,
+   "refs": [
+    "0x00423242:0"
+   ]
+  },
+  "STR_MENU_PRACTICE_HELP_ITEMS": {
+   "value": 11059,
+   "refs": [
+    "0x0042322e:0"
+   ]
+  },
+  "STR_MENU_PRACTICE_HELP_TITLE": {
+   "value": 11058,
+   "refs": [
+    "0x00423217:0"
+   ]
+  },
+  "STR_MENU_PRACTICE_OPTIONS_ITEMS": {
+   "value": 11063,
+   "refs": [
+    "0x00423284:0"
+   ]
+  },
+  "STR_MENU_PRACTICE_OPTIONS_TITLE": {
+   "value": 11062,
+   "refs": [
+    "0x0042326d:0"
+   ]
+  },
+  "STR_MUSIC_PROMPT": {
+   "value": 11141,
+   "refs": [
+    "0x0042bd7e:0"
+   ]
+  },
+  "STR_MUSIC_TITLE": {
+   "value": 11140,
+   "refs": [
+    "0x0042bd65:0"
+   ]
+  },
+  "STR_NEW_PLAYER_HINTS_PROMPT": {
+   "value": 11142,
+   "refs": [
+    "0x0042bc6b:0"
+   ]
+  },
+  "STR_NEW_PLAYER_HINTS_TITLE": {
+   "value": 11143,
+   "refs": [
+    "0x0042bc81:0"
+   ]
+  },
+  "STR_NEW_PLAYER_HINT_TITLE": {
+   "value": 11115,
+   "refs": [
+    "0x00427eab:0"
+   ]
+  },
+  "STR_NEW_PLAYER_NAME_PROMPT": {
+   "value": 11184,
+   "refs": [
+    "0x004305f4:0"
+   ]
+  },
+  "STR_NEW_PLAYER_NAME_TITLE": {
+   "value": 11183,
+   "refs": [
+    "0x004305d0:0"
+   ]
+  },
+  "STR_OUT_OF_MEMORY": {
+   "value": 11005,
+   "refs": [
+    "0x004138d0:0"
+   ]
+  },
+  "STR_OUT_OF_TIME": {
+   "value": 11045,
+   "refs": [
+    "0x00422014:0"
+   ]
+  },
+  "STR_PRACTICE_CALCULATOR_LABEL": {
+   "value": 11165,
+   "refs": [
+    "0x0042c719:0"
+   ]
+  },
+  "STR_PRACTICE_CALCULATOR_OFF": {
+   "value": 11167,
+   "refs": [
+    "0x0042c771:0",
+    "0x0042cf35:0",
+    "0x0042cfbd:0"
+   ]
+  },
+  "STR_PRACTICE_CALCULATOR_ON": {
+   "value": 11166,
+   "refs": [
+    "0x0042c745:0",
+    "0x0042cf06:0",
+    "0x0042cf8e:0"
+   ]
+  },
+  "STR_PRACTICE_CANCEL": {
+   "value": 11154,
+   "refs": [
+    "0x0042d91f:0"
+   ]
+  },
+  "STR_PRACTICE_CONTINUE_PROMPT": {
+   "value": 11151,
+   "refs": [
+    "0x0042da26:0"
+   ]
+  },
+  "STR_PRACTICE_CONTINUE_TITLE": {
+   "value": 11152,
+   "refs": [
+    "0x0042da3c:0"
+   ]
+  },
+  "STR_PRACTICE_DONE": {
+   "value": 11153,
+   "refs": [
+    "0x0042d90b:0"
+   ]
+  },
+  "STR_PRACTICE_LEVEL_1": {
+   "value": 11161,
+   "refs": [
+    "0x0042c669:0"
+   ]
+  },
+  "STR_PRACTICE_LEVEL_2": {
+   "value": 11162,
+   "refs": [
+    "0x0042c695:0"
+   ]
+  },
+  "STR_PRACTICE_LEVEL_3": {
+   "value": 11163,
+   "refs": [
+    "0x0042c6c1:0"
+   ]
+  },
+  "STR_PRACTICE_LEVEL_4": {
+   "value": 11164,
+   "refs": [
+    "0x0042c6ed:0"
+   ]
+  },
+  "STR_PRACTICE_LEVEL_LABEL": {
+   "value": 11160,
+   "refs": [
+    "0x0042c63d:0"
+   ]
+  },
+  "STR_PRACTICE_SCORE_CORRECT": {
+   "value": 11169,
+   "refs": [
+    "0x0042d27d:0"
+   ]
+  },
+  "STR_PRACTICE_SCORE_FIRST_TRY": {
+   "value": 11170,
+   "refs": [
+    "0x0042d341:0"
+   ]
+  },
+  "STR_PRACTICE_SCORE_PROBLEMS": {
+   "value": 11168,
+   "refs": [
+    "0x0042d257:0",
+    "0x0042d31b:0"
+   ]
+  },
+  "STR_PRACTICE_SCORE_SECOND_TRY": {
+   "value": 11171,
+   "refs": [
+    "0x0042d367:0"
+   ]
+  },
+  "STR_PRACTICE_SETUP_TITLE": {
+   "value": 11155,
+   "refs": [
+    "0x0042c574:0"
+   ]
+  },
+  "STR_PRACTICE_SET_10_MENTAL": {
+   "value": 11158,
+   "refs": [
+    "0x0042c5e5:0"
+   ]
+  },
+  "STR_PRACTICE_SET_5_MATH": {
+   "value": 11157,
+   "refs": [
+    "0x0042c5ba:0"
+   ]
+  },
+  "STR_PRACTICE_SET_ALL_EXCEPT_MENTAL": {
+   "value": 11159,
+   "refs": [
+    "0x0042c611:0"
+   ]
+  },
+  "STR_PRACTICE_SET_TYPE_LABEL": {
+   "value": 11156,
+   "refs": [
+    "0x0042c592:0"
+   ]
+  },
+  "STR_PROB06_NUMBER_TEXT": {
+   "value": 11250,
+   "refs": [
+    "0x00431c7b:0"
+   ]
+  },
+  "STR_PROB10_DEGREE_C_TEXT": {
+   "value": 11251,
+   "refs": [
+    "0x0042120d:0"
+   ]
+  },
+  "STR_PROBLEM_DIRECTED_TO_SHIP": {
+   "value": 11114,
+   "refs": [
+    "0x00426391:0"
+   ]
+  },
+  "STR_REMOVE_NAME_SUFFIX": {
+   "value": 11187,
+   "refs": [
+    "0x0043125e:0"
+   ]
+  },
+  "STR_REMOVE_NAME_TITLE": {
+   "value": 11188,
+   "refs": [
+    "0x004312ad:0"
+   ]
+  },
+  "STR_REMOVE_NAME_WARNING": {
+   "value": 11186,
+   "refs": [
+    "0x00431245:0"
+   ]
+  },
+  "STR_RESOURCE_FILE_MISSING": {
+   "value": 11007,
+   "refs": [
+    "0x004149ca:0"
+   ]
+  },
+  "STR_RESOURCE_LOAD_FAILED": {
+   "value": 11248,
+   "refs": [
+    "0x00411185:0"
+   ]
+  },
+  "STR_RESOURCE_NOT_FOUND": {
+   "value": 11247,
+   "refs": [
+    "0x0041116f:0"
+   ]
+  },
+  "STR_RETURN_TO_SIGN_IN_PROMPT": {
+   "value": 11128,
+   "refs": [
+    "0x0042b9a4:0"
+   ]
+  },
+  "STR_RETURN_TO_SIGN_IN_SAVE_PROMPT": {
+   "value": 11126,
+   "refs": [
+    "0x0042b929:0"
+   ]
+  },
+  "STR_RETURN_TO_SIGN_IN_SAVE_TITLE": {
+   "value": 11127,
+   "refs": [
+    "0x0042b93f:0"
+   ]
+  },
+  "STR_RETURN_TO_SIGN_IN_TITLE": {
+   "value": 11129,
+   "refs": [
+    "0x0042b9ba:0"
+   ]
+  },
+  "STR_SIGN_IN_EXIT_PROMPT": {
+   "value": 11192,
+   "refs": [
+    "0x00431060:0",
+    "0x004313cb:0"
+   ]
+  },
+  "STR_SIGN_IN_EXIT_TITLE": {
+   "value": 11191,
+   "refs": [
+    "0x00431047:0",
+    "0x004313b2:0"
+   ]
+  },
+  "STR_SIGN_IN_LIST_FULL": {
+   "value": 11185,
+   "refs": [
+    "0x004311d6:0"
+   ]
+  },
+  "STR_SOUND_EFFECTS_PROMPT": {
+   "value": 11139,
+   "refs": [
+    "0x0042bd07:0"
+   ]
+  },
+  "STR_SOUND_EFFECTS_TITLE": {
+   "value": 11138,
+   "refs": [
+    "0x0042bcee:0"
+   ]
+  },
+  "STR_SURFACE_SHIP_PIECES_MESSAGE": {
+   "value": 11212,
+   "refs": [
+    "0x00432b56:0"
+   ]
+  },
+  "STR_TIME_AN_HOUR": {
+   "value": 11178,
+   "refs": [
+    "0x0042ddf5:1"
+   ]
+  },
+  "STR_TIME_HOUR": {
+   "value": 11172,
+   "refs": [
+    "0x0042dd66:1",
+    "0x0042ddbd:1"
+   ]
+  },
+  "STR_TIME_HOURS_SHORT": {
+   "value": 11210,
+   "refs": [
+    "0x004318e6:0"
+   ]
+  },
+  "STR_TIME_MINUTES": {
+   "value": 11175,
+   "refs": [
+    "0x0042dd82:1",
+    "0x0042ddd9:1"
+   ]
+  },
+  "STR_TIME_MINUTES_SHORT": {
+   "value": 11211,
+   "refs": [
+    "0x004318fb:0"
+   ]
+  },
+  "STR_TITLE_COMBINATION_LOCK": {
+   "value": 11074,
+   "refs": [
+    "0x00424ef9:1"
+   ]
+  },
+  "STR_UNIT_GALLONS_SUFFIX": {
+   "value": 11214,
+   "refs": [
+    "0x00433844:0"
+   ]
+  },
+  "STR_UNIT_INCHES": {
+   "value": 11036,
+   "refs": [
+    "0x004252f4:1"
+   ]
+  },
+  "STR_UNIT_LITERS_SUFFIX": {
+   "value": 11213,
+   "refs": [
+    "0x004337e5:0"
+   ]
+  },
+  "STR_VERSION": {
+   "value": 11002,
+   "refs": [
+    "0x0042b86d:0"
+   ]
+  },
+  "STR_VOICE_PROMPT": {
+   "value": 11137,
+   "refs": [
+    "0x0042bdf5:0"
+   ]
+  },
+  "STR_VOICE_TITLE": {
+   "value": 11136,
+   "refs": [
+    "0x0042bddc:0"
+   ]
+  },
+  "STR_WINDOW_CREATE_ERROR": {
+   "value": 11008,
+   "refs": [
+    "0x0041441f:0"
+   ]
+  },
+  "STR_WING_NOT_FOUND": {
+   "value": 11004,
+   "refs": [
+    "0x0041187b:0"
+   ]
+  },
+  "STR_WRITE_ERROR_TITLE": {
+   "value": 11018,
+   "refs": [
+    "0x0041bd7b:0"
+   ]
   }
  }
 }
