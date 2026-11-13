@@ -2,18 +2,20 @@ class_name TestSkinCompare
 extends GdUnitTestSuite
 ## Teaches: the tools of skin authoring and the one seam they need. `SkinChoice.current()` is global, but the side-by-side tool
 ## (`src/debug/skin_compare.tscn`) shows two skins at once, so a presenter can be dressed for one skin (`SectorPresenter.skin`): what it
-## fetches through `Assets` / `Catalog` - when it is built, in an event, in a frame - comes from that skin (`SkinChoice.within`) while the rest
-## of the game wears another. Also the overlay: the debug rectangles laid over whatever presenter a world has (`SectorWorld.set_overlay`).
+## fetches through `Catalog` (a resource a skin maps, `GameSkin.resources`) - when it is built, in an event, in a frame - comes from that skin (`SkinChoice.within`) while the rest
+## of the game wears another. (What tells the two skins apart is the creature-and-decoration picture set of the zone: a skin maps no picture, but it may bring a whole `SpriteFrames`.) Also the overlay: the debug rectangles laid over whatever presenter a world has (`SectorWorld.set_overlay`).
 
 const WORLD_SCENE := "res://src/gameplay/sector_world.tscn"
 const COMPARE_SCENE := "res://src/debug/skin_compare.tscn"
-const MARKER := "res://tests/skins/tiny/marker.png"
+const OWN_DECOS := "sprite_frames/decos_zone0"
 
+var _own_decos: SpriteFrames
 var _scale_size: Vector2i
 var _window_size: Vector2i
 
 
 func before_test() -> void:
+	_own_decos = Catalog.decos_frames(0).duplicate() as SpriteFrames                  # (another object with the same pictures: the skin's own set)
 	GameClock.paused = true
 	SectorWorld.skip_animations = false
 	PresenterChoice.forced = &""
@@ -35,13 +37,21 @@ func after_test() -> void:
 	GameState.reset()
 
 
-## A skin that shows the marker square for the backgrounds of the first two screens of sector 0, and says the HUD's words as text.
+## A skin that brings its own decoration set for the first zone (the one thing the tests tell it by), and says the HUD's words as text.
 func _marker_skin() -> GameSkin:
 	var skin := load(SkinRoster.TINY).duplicate() as GameSkin
-	skin.id = &"marker_backgrounds"
-	var marker := load(MARKER) as Texture2D
-	skin.pictures = {"background/bg_s00_00": marker, "background/bg_s00_01": marker}
+	skin.id = &"own_decorations"
+	skin.resources = {OWN_DECOS: _own_decos}
 	return skin
+
+
+## The sprite frames of every decoration a presenter shows (back, middle and front).
+func _decos_of(presenter: OriginalPresenter) -> Array[SpriteFrames]:
+	var found: Array[SpriteFrames] = []
+	for layer: Node2D in [presenter.back_decos, presenter.mid_decos, presenter.front_decos]:
+		for deco: AnimatedSprite2D in layer.get_children():
+			found.append(deco.sprite_frames)
+	return found
 
 
 ## A presenter that notes which skin is in use whenever it hears something.
@@ -68,8 +78,8 @@ func test_within_makes_a_skin_current_for_a_while_and_selects_nothing() -> void:
 	assert_array(seen).is_equal([skin, original, skin])
 	assert_object(SkinChoice.current()).is_same(original)
 	assert_object(SkinChoice.within(null, func() -> Object: return SkinChoice.current())).is_same(original)       # (a null skin: just runs it)
-	assert_object(SkinChoice.within(skin, func() -> Object: return Assets.background(0, 0))).is_same(load(MARKER))
-	assert_object(Assets.background(0, 0)).is_not_same(load(MARKER))
+	assert_object(SkinChoice.within(skin, func() -> Object: return Catalog.decos_frames(0))).is_same(_own_decos)
+	assert_object(Catalog.decos_frames(0)).is_not_same(_own_decos)
 	var changes := [0]
 	var listener := func(_skin: GameSkin) -> void: changes[0] += 1
 	SkinChoice.events.changed.connect(listener)
@@ -107,11 +117,12 @@ func test_a_dressed_original_presenter_builds_its_screens_from_its_own_skin() ->
 	presenter.bind(sim)
 	sim.load_sector(0, 0)
 	var dressed := presenter as OriginalPresenter
-	assert_object(dressed.background.texture).is_same(load(MARKER))
+	var shown := _decos_of(dressed)
+	assert_array(shown).is_not_empty()
+	assert_bool(shown.all(func(frames: SpriteFrames) -> bool: return frames == _own_decos)).is_true()
 	sim.load_screen(1)                                                     # (an event: built inside the presenter's skin, while the skin in use is the original's)
-	assert_object(dressed.background.texture).is_same(load(MARKER))
-	sim.load_screen(2)
-	assert_object(dressed.background.texture).is_not_same(load(MARKER))    # (a picture the skin does not map: the original's file)
+	shown = _decos_of(dressed)
+	assert_bool(shown.all(func(frames: SpriteFrames) -> bool: return frames == _own_decos)).is_true()
 	assert_object(SkinChoice.current()).is_same(SkinChoice.original())
 
 
@@ -192,7 +203,7 @@ func test_the_tool_shows_one_set_of_rules_through_two_skins() -> void:
 	assert_object(tool.get("_overlay")).is_not_null()
 
 
-func test_the_right_half_keeps_its_skins_pictures_while_the_left_has_the_originals() -> void:
+func test_the_right_half_keeps_its_skins_resources_while_the_left_has_the_originals() -> void:
 	var skin := _marker_skin()
 	var tool := (load(COMPARE_SCENE) as PackedScene).instantiate() as Control
 	tool.set("start_skin", SkinRoster.TINY)
@@ -201,8 +212,9 @@ func test_the_right_half_keeps_its_skins_pictures_while_the_left_has_the_origina
 	var world := tool.get("world") as SectorWorld
 	world.load_sector(0, 0)
 	var right := tool.get("_presenter") as OriginalPresenter
-	assert_object(right.background.texture).is_same(load(MARKER))
-	assert_object(world.original.background.texture).is_not_same(load(MARKER))
+	assert_array(_decos_of(right)).is_not_empty()
+	assert_bool(_decos_of(right).all(func(frames: SpriteFrames) -> bool: return frames == _own_decos)).is_true()
+	assert_bool(_decos_of(world.original).any(func(frames: SpriteFrames) -> bool: return frames == _own_decos)).is_false()
 	world.load_screen(1)
-	assert_object(right.background.texture).is_same(load(MARKER))
-	assert_object(world.original.background.texture).is_not_same(load(MARKER))
+	assert_bool(_decos_of(right).all(func(frames: SpriteFrames) -> bool: return frames == _own_decos)).is_true()
+	assert_bool(_decos_of(world.original).any(func(frames: SpriteFrames) -> bool: return frames == _own_decos)).is_false()

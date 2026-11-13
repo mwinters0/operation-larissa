@@ -1,13 +1,13 @@
 class_name SkinTemplates
 extends RefCounted
-## The art templates of a skin: for every picture a skin may replace, a PNG of the picture's size in one flat colour with the picture's skin key and its size written on it,
-## for a person to draw the real art over (`docs/create/SKIN_API.md` "Art templates"; the command line is `skin_templates_tool.tscn`).
+## The art templates of a pack's pictures: for every picture of the interface a pack may redraw, a PNG of the picture's size in one flat colour with the picture's key and its size written on it,
+## for a person to draw the real art over (`docs/create/SKIN_API.md` "Art templates"; the command line is `skin_templates_tool.tscn`). The folder it fills, `<kind>/<name>.png`, is what `pack_tool --pictures-table` turns into the pack's `pictures.json`.
 ##
-## TWO LISTS, never mixed. THE PICTURES A SKIN MAY REPLACE (`pictures`, `ModSpec.is_picture_key`): `SOURCES` is the table of the layout files (of the pack in use, as the pack holds them, no skin) whose pictures they are. Each texture a layout holds is a
-## picture of its own, whose key and size are read off the texture: the key is the one `GameSkin.key_of` makes, which is the key a skin's `pictures` names (`ModSpec.REPLACEABLE_KINDS`), and the size is the texture's. The sizes come from the layout, so a
+## TWO LISTS, never mixed. THE PICTURES A PACK MAY REDRAW (`pictures`, of the kinds `TEMPLATE_KINDS`): `SOURCES` is the table of the layout files (of the pack in use, as the pack holds them, no skin) whose pictures they are. Each texture a layout holds is a
+## picture of its own, whose key and size are read off the texture: the key is the one `GameSkin.key_of` makes, which is the key a pack's `pictures.json` names, and the size is the texture's. The sizes come from the layout, so a
 ## template has nothing of any picture in it, only its key and its size. `PromptSender.picture_keys` adds the two pictures beside the first line of a prompt, which no layout holds (their size is `PromptSender.PICTURE_SIZE`, which the screen stretches to).
 ## The frame of the problem screen is among them: the screen picture (`problem_art/pa_1780`), the calculator (`pa_1781`), the "Ans:" panel (`pa_1802`) and the calculator's digits and signs are in the layouts of the screen and of the calculator.
-## THE PICTURES A SCRIPT DRAWS, whole-part pictures of a screen (`layers`), not pictures a skin replaces (no `pictures` entry names them; they are drawn over and put in the skin's `skin/` folder, or in the `problems/` folder of a problem mod, named in a draw list):
+## THE PICTURES A SCRIPT DRAWS, whole-part pictures of a screen (`layers`), not pictures a pack redraws (no `pictures.json` row names them; they are drawn over and put in the skin's `skin/` folder, or in the `problems/` folder of a problem mod, named in a draw list):
 ## one for each layer of the console (`SkinLayers.hud_layers`, key `hud_layer/<layer>`, `hud_layer/hud_oxygen`), the size of the layer's rectangle in the HUD layout (`ConsoleState.rects`), and one for the whole 640 x 400 window of a problem screen
 ## (`problem_layer/window`, `DiagramBase.WINDOW_SIZE`; `ModDiagram`, `docs/create/CONTENT.md` "Problem screens").
 ##
@@ -17,7 +17,9 @@ extends RefCounted
 ## Teaches: drawing into an `Image` with no renderer (so it runs headless): a flat fill and a 3 x 5 pixel font of our own, since a `Font` draws only through the rendering server; and walking a
 ## `Resource`'s stored properties to find every texture in it, arrays included, the way `GameSkin` does to dress a layout.
 
-## The layouts, as a path in a pack's `data/`, whose textures are the pictures a skin may replace.
+## The kinds of picture a template is made for (the interface's: the problem screen's frame and the console, story and title pictures).
+const TEMPLATE_KINDS: Array[String] = ["ui_picture", "problem_art"]
+## The layouts, as a path in a pack's `data/`, whose textures are the pictures a pack may redraw.
 const HUD_LAYOUT := "data/ui/hud_layout.tres"
 const SOURCES: Array[String] = [HUD_LAYOUT, "data/problems/screen_layout.tres", "data/ui/calculator_layout.tres"]
 
@@ -40,7 +42,7 @@ const MARGIN := 1
 const TEXT_COLOR := Color8(26, 26, 31)
 
 
-## The kind of key a layer's template has: not a picture a skin replaces (no `pictures` entry names it) but the picture of a layer a script draws.
+## The kind of key a layer's template has: not a picture a pack redraws (no `pictures.json` row names it) but the picture of a layer a script draws.
 const LAYER_KIND := "hud_layer"
 ## The kind of key the whole window of a problem screen has (`problem_layer/window`), and its key.
 const PROBLEM_LAYER_KIND := "problem_layer"
@@ -60,14 +62,14 @@ class Entry extends RefCounted:
 		return key + ".png"
 
 
-## Every picture to make a template of, in the pack in use: those a skin may replace (`pictures`), then those a script draws (`layers`).
+## Every picture to make a template of, in the pack in use: those a pack may redraw (`pictures`), then those a script draws (`layers`).
 static func entries() -> Array[Entry]:
 	var found := pictures()
 	found.append_array(layers())
 	return found
 
 
-## The pictures a skin may replace (`ModSpec.is_picture_key`), once each: those of the layouts of `SOURCES` in their order, then the prompt sender's. The key and the size.
+## The pictures a pack may redraw (`TEMPLATE_KINDS`), once each: those of the layouts of `SOURCES` in their order, then the prompt sender's. The key and the size.
 static func pictures() -> Array[Entry]:
 	var found: Array[Entry] = []
 	var seen := {}
@@ -77,7 +79,7 @@ static func pictures() -> Array[Entry]:
 			continue
 		for texture in _textures_in(layout):
 			var key := GameSkin.key_of(Packs.source_of(texture))
-			if not key.is_empty() and not seen.has(key) and ModSpec.is_picture_key(key):
+			if not key.is_empty() and not seen.has(key) and TEMPLATE_KINDS.has(key.get_slice("/", 0)):
 				seen[key] = true
 				found.append(Entry.new(key, Vector2i(texture.get_size())))
 	for key in PromptSender.picture_keys():
@@ -85,7 +87,7 @@ static func pictures() -> Array[Entry]:
 	return found
 
 
-## The size of each picture a skin may replace in the pack in use, by key (`pictures`). What `PackCheck` compares a skin's PNG with.
+## The size of each picture a pack may redraw in the pack in use, by key (`pictures`). What `PackCheck` compares a table's PNG with.
 static func sizes() -> Dictionary[String, Vector2i]:
 	var found: Dictionary[String, Vector2i] = {}
 	for entry in pictures():

@@ -2,7 +2,7 @@ class_name TestSkinProblemFrame
 extends GdUnitTestSuite
 ## Teaches: a theme that reaches a screen made of pictures and controls. The problem screen's frame is the original's pictures (the screen, the calculator, the "Ans:" panel, the sender's small picture) with controls over and
 ## around them (the labels, the text box, a button over each key of the calculator) and a field the digits are drawn on. A skin's `theme` says the colours of the text, the glass of a key and the field's colour (`SkinTheme`,
-## `ThemeBuilder`), its `pictures` replace the pictures by key (`problem_art`, `ui_picture`); every control looks the theme up and every picture is put on by one builder (`ProblemScreen._dress`, `Calculator._dress`, `AnswerBox._dress`),
+## `ThemeBuilder`); the pictures are the chain's (`pictures.json` of the packs, by key: `problem_art`, `ui_picture`), under every skin; every control looks the theme up and every picture is put on by one builder (`ProblemScreen._dress`, `Calculator._dress`, `AnswerBox._dress`),
 ## so a screen made under the skin and one the skin is put on under look the same, and none of it moves a rectangle or changes a play. `test_skin_theme.gd` is the theme of the menus; the example pack's is `test_example_pack_modern.gd`.
 
 const FIXTURE := "res://tests/mods/skin_data"
@@ -10,6 +10,7 @@ const SKY := "skin/sky.png"
 const TYPE := 1                                     # a problem whose answer is typed on the calculator
 
 var _shelves: Array[PackShelf] = []
+var _unnumbered := RegEx.create_from_string("@([A-Za-z]+)@\\d+")
 
 
 func before_test() -> void:
@@ -71,17 +72,22 @@ func _screen(problem: ProblemInstance = null) -> ProblemScreen:
 	return screen
 
 
-func _rects(node: Node) -> Dictionary:
-	var found := {}
+## A path without the numbers the engine gives the nodes it names itself (`@Control@192731`): two screens are compared by place, not by those.
+func _place(node: Node, each: Node) -> String:
+	return _unnumbered.sub(String(node.get_path_to(each)), "@$1@", true)
+
+
+func _rects(node: Node) -> Array[Rect2]:
+	var found: Array[Rect2] = []
 	for each in node.find_children("*", "Control", true, false):
-		found[node.get_path_to(each)] = (each as Control).get_rect()
+		found.append((each as Control).get_rect())
 	return found
 
 
 func _order(node: Node) -> Array[String]:
 	var found: Array[String] = []
 	for each in node.find_children("*", "Control", true, false):
-		found.append(String(node.get_path_to(each)))
+		found.append(_place(node, each))
 	return found
 
 
@@ -95,22 +101,20 @@ func _key(calculator: Calculator, key: String) -> Button:
 
 # --- the manifest ---------------------------------------------------------------------------------------------------------
 
-func test_the_keys_display_and_frame_pictures_are_in_the_manifest_from_the_api_that_brought_them() -> void:
-	var look := {"theme": {"colors": {"display": "#001a33"}, "key": {"normal": {"fill": "#00000010"}, "hover": {"fill": "#66ccee40", "border": "#66ccee"}, "pressed": {"fill": "#ffee6680"}}}, "pictures": {"problem_art/pa_1780": SKY}}
+func test_the_keys_and_display_are_in_the_manifest_from_the_api_that_brought_them() -> void:
+	var look := {"theme": {"colors": {"display": "#001a33"}, "key": {"normal": {"fill": "#00000010"}, "hover": {"fill": "#66ccee40", "border": "#66ccee"}, "pressed": {"fill": "#ffee6680"}}}}
 	var got := _parse(_data(look))
 	assert_array(got[1]).is_empty()
 	var spec: ModSpec = got[0]
 	assert_str(spec.theme.colors["display"].to_html(false)).is_equal("001a33")
 	assert_array(spec.theme.styles.keys()).contains_exactly_in_any_order(["key/normal", "key/hover", "key/pressed"])
-	assert_dict(spec.pictures).is_equal({"problem_art/pa_1780": SKY})
 	assert_dict(spec.to_dict()["skin"]).is_equal(look)
 	assert_dict((_parse(spec.to_dict())[0] as ModSpec).to_dict()).is_equal(spec.to_dict())
 	var old := ModSpec.RULE_API_VERSION                                                               # (the API before: each of them is refused by name)
 	assert_bool(_complains(_parse(_data({"theme": {"colors": {"display": "#001a33"}}}, old)), "requires_api\": %d" % ModSpec.DRAWS_THE_GAME_API_VERSION)).is_true()
 	assert_bool(_complains(_parse(_data({"theme": {"key": {"hover": {}}}}, old)), "requires_api\": %d" % ModSpec.DRAWS_THE_GAME_API_VERSION)).is_true()
-	assert_bool(_complains(_parse(_data({"pictures": {"problem_art/pa_1780": SKY}}, old)), "requires_api\": %d" % ModSpec.DRAWS_THE_GAME_API_VERSION)).is_true()
 	assert_bool(_complains(_parse(_data({"theme": {"key": {"focus": {}}}})), "no \"focus\"")).is_true()   # (a key has three states)
-	assert_bool(_complains(_parse(_data({"pictures": {"frame/foe_0": SKY}})), "must be <kind>/<name>")).is_true()   # (the creatures' pictures are still not a theme's to replace)
+	assert_bool(_complains(_parse(_data({"pictures": {"problem_art/pa_1780": SKY}})), "pictures.json")).is_true()   # (the frame's pictures are the pack's: rows of its table, not a skin's)
 
 
 func test_the_check_passes_a_skin_that_dresses_the_frame() -> void:
@@ -120,12 +124,6 @@ func test_the_check_passes_a_skin_that_dresses_the_frame() -> void:
 	var report := PackCheck.run(Pack.open(_shelves[0].root), options)
 	assert_bool(report.passes()).override_failure_message(report.text()).is_true()
 	assert_array(report.warnings().filter(func(f: PackReport.Finding) -> bool: return f.area == "mod" and not f.message.contains("stretched"))).override_failure_message(report.text()).is_empty()
-	var other := PackShelf.new()                                                                      # (a frame picture the game never asks for is a warning, as for the console's)
-	_shelves.append(other)
-	other.add_mod_fixture(FIXTURE, _fixture_skin({"pictures": {"problem_art/no_such_picture": SKY}}))
-	ModSkinShelf.add_files(other)
-	var report_other := PackCheck.run(Pack.open(other.root), options)
-	assert_bool(report_other.warnings().any(func(f: PackReport.Finding) -> bool: return f.message.contains("problem_art/no_such_picture"))).override_failure_message(report_other.text()).is_true()
 
 
 # --- the colours, the keys and the field -------------------------------------------------------------------------------------
@@ -197,32 +195,28 @@ func test_a_key_lit_when_the_skin_changes_is_lit_in_the_new_look() -> void:
 
 # --- the pictures ------------------------------------------------------------------------------------------------------------
 
-func test_the_frame_pictures_are_the_skins_in_the_layouts_rectangles() -> void:
+func test_the_frame_pictures_are_the_chains_in_the_layouts_rectangles() -> void:
 	var screen := _screen()
 	await await_idle_frame()
 	var plain_rects := _rects(screen)
 	var plain_order := _order(screen)
-	var plain_background := screen.background.texture
-	var plain_calculator := screen.calculator.picture.texture
-	assert_object(plain_background.get_size()).is_not_equal(Vector2(32, 18))
-	var skin := _mount()
-	var sky := skin.pictures["problem_art/pa_1780"] as Texture2D
-	SkinChoice.select(skin)
+	assert_object(screen.background.texture.get_size()).is_not_equal(Vector2(32, 18))
+	var skin := _mount()                                                                              # (the pack in use draws the frame's pictures: flat 32 x 18 files)
+	var made := _screen()
 	await await_idle_frame()
-	assert_object(screen.background.texture).is_same(sky)                                              # (the skin's picture, a 32 x 18 flat colour)
-	assert_object(screen.calculator.picture.texture).is_same(sky)
-	assert_object(screen.answer_box.picture.texture).is_same(sky)
-	assert_array(_order(screen)).is_equal(plain_order)
-	var worn := _rects(screen)
-	for path: NodePath in plain_rects:
-		assert_object(worn[path]).override_failure_message("%s moved: %s -> %s" % [path, plain_rects[path], worn[path]]).is_equal(plain_rects[path])
+	for picture: TextureRect in [made.background, made.calculator.picture, made.answer_box.picture]:
+		assert_vector(picture.texture.get_size()).is_equal(Vector2(32, 18))
+		assert_that(PicturesShelf.color_of(picture.texture)).is_equal(Color.CYAN)
+	assert_object(made.background.texture).is_same(Assets.picture_by_key("problem_art/pa_1780"))
+	assert_array(_order(made)).is_equal(plain_order)
+	assert_array(_rects(made)).is_equal(plain_rects)                                                   # (not one rectangle moved)
+	var before := made.background.texture
+	SkinChoice.select(skin)                                                                           # (a skin changes no picture: not the one it is, not the original)
+	await await_idle_frame()
+	assert_object(made.background.texture).is_same(before)
 	SkinChoice.select(SkinChoice.original())
 	await await_idle_frame()
-	assert_object(screen.background.texture).is_same(plain_background)
-	assert_object(screen.calculator.picture.texture).is_same(plain_calculator)
-	var back := _rects(screen)
-	for path: NodePath in plain_rects:
-		assert_object(back[path]).override_failure_message("%s did not return" % path).is_equal(plain_rects[path])
+	assert_object(made.background.texture).is_same(before)
 
 
 func test_a_screen_made_under_the_skin_is_the_same_as_one_the_skin_is_put_on() -> void:
@@ -236,11 +230,11 @@ func test_a_screen_made_under_the_skin_is_the_same_as_one_the_skin_is_put_on() -
 	for node: String in ["%Background", "%Calculator/Picture", "%AnswerBox/Picture"]:
 		assert_object((after.get_node(node) as TextureRect).texture).is_same((before.get_node(node) as TextureRect).texture)
 		assert_object((after.get_node(node) as TextureRect).get_rect()).is_equal((before.get_node(node) as TextureRect).get_rect())
-	assert_array(_rects(after).values()).is_equal(_rects(before).values())                              # (by order: the keys' buttons are named by the engine as they are made)
+	assert_array(_rects(after)).is_equal(_rects(before))
 	assert_str(after.title_label.get_theme_color(&"font_color").to_html()).is_equal(before.title_label.get_theme_color(&"font_color").to_html())
 
 
-func test_the_senders_picture_is_dressed_again_with_the_skin() -> void:
+func test_the_senders_picture_is_the_chains() -> void:
 	var problem := ProblemFactory.for_trigger_slot(2, 0)                                              # (slot 2: the research ship)
 	assert_object(problem).is_not_null()
 	var screen := _screen(problem)
@@ -249,13 +243,14 @@ func test_the_senders_picture_is_dressed_again_with_the_skin() -> void:
 	var plain := screen.sender_icon.texture
 	var rect := screen.sender_icon.get_rect()
 	var skin := _mount()
+	var made := _screen(problem)
+	await await_idle_frame()
+	assert_object(made.sender_icon.texture).is_same(Assets.picture_by_key("ui_picture/prompt_sender_ship"))
+	assert_object(made.sender_icon.texture).is_not_same(plain)
+	assert_object(made.sender_icon.get_rect()).is_equal(rect)                                          # (stretched to the 55 x 20 the original has)
 	SkinChoice.select(skin)
 	await await_idle_frame()
-	assert_object(screen.sender_icon.texture).is_same(skin.pictures["ui_picture/prompt_sender_ship"])
-	assert_object(screen.sender_icon.get_rect()).is_equal(rect)                                        # (stretched to the 55 x 20 the original has)
-	SkinChoice.select(SkinChoice.original())
-	await await_idle_frame()
-	assert_object(screen.sender_icon.texture).is_same(plain)
+	assert_object(made.sender_icon.texture).is_same(Assets.picture_by_key("ui_picture/prompt_sender_ship"))
 
 
 # --- the play ----------------------------------------------------------------------------------------------------------------

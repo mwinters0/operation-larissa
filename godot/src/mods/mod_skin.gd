@@ -1,6 +1,6 @@
 class_name ModSkin
 extends GameSkin
-## The skin a skin MOD is: an ordinary entry of `SkinChoice` (`--skin=<id>`, F3 then S) whose id is the mod pack's id, that maps only what its manifest says (its `render` and `pictures`; the HUD's layout, the screens and the sounds stay the base game's).
+## The skin a skin MOD is: an ordinary entry of `SkinChoice` (`--skin=<id>`, F3 then S) whose id is the mod pack's id, that maps only what its manifest says (its `render`, shaders, fonts and theme; the pictures are the pack's, `pictures.json`; the HUD's layout, the screens and the sounds stay the base game's).
 ## Its sector is always shown by the original presenter, its console by the original HUD. For a skin with an entry script the presenter and the HUD hand chosen layers to the sandboxed script (`ModLayerHost`): the layers of `script_layers`, one call of `skin_layer` each, or, for a script that
 ## draws the whole screen (`draws_frame`), every layer at once from one call of `skin_frame`. `ModHost` makes the skin when it loads a mod whose manifest has `skin` (`make`), keeps it while the mod runs
 ## and lets it go with the mod (`alive` false); `SkinChoice` puts the original skin on again when the one in use stops being alive.
@@ -8,8 +8,7 @@ extends GameSkin
 ## It also holds what the script may name: the shaders the manifest lists, compiled by `ModShader` once, when the mod is loaded. The manifest is judged in one place, `ModParts.make`, which `PackCheck`
 ## (for the author) and `ModHost` (before the mod runs) both ask.
 ##
-## A DATA skin (a manifest with no `entry`) is the same object with no script: `render` and `pictures` of the manifest become the `GameSkin` fields of the same names (the pictures are the pack's `skin/*.png`
-## read through the pack's door, so they are worn only while this skin is: a pack's `pictures/` folder wins under every skin), and its presenter is the original's, so it needs no Sandbox. Its `hud_font` (a `.ttf` of the pack read through the pack's door, `Pack.font`, at its weight, `FontSpec`) with its size and colour is the skin's `GameSkin.hud_labels`, the one field the project's own skins set the HUD's lettering with (`HudLabels`: the boxes keep the layout's sizes); a `hud_font` with no file has no font of its own, and its boxes take the menus' default font. Its `theme` is the skin's `GameSkin.menu_theme` (`SkinTheme`: its font, made the same way, and the colours and styles of the manifest; `ThemeBuilder` puts it on the menus).
+## A DATA skin (a manifest with no `entry`) is the same object with no script: `render` of the manifest becomes the `GameSkin` field of that name, and its presenter is the original's, so it needs no Sandbox. A skin maps no picture: the pack's own pictures are rows of its `pictures.json` (`PictureTable`) and show under every skin. Its `hud_font` (a `.ttf` of the pack read through the pack's door, `Pack.font`, at its weight, `FontSpec`) with its size and colour is the skin's `GameSkin.hud_labels`, the one field the project's own skins set the HUD's lettering with (`HudLabels`: the boxes keep the layout's sizes); a `hud_font` with no file has no font of its own, and its boxes take the menus' default font. Its `theme` is the skin's `GameSkin.menu_theme` (`SkinTheme`: its font, made the same way, and the colours and styles of the manifest; `ThemeBuilder` puts it on the menus).
 ##
 ## Its `layers` are the shaders of the original presenter's layers: each becomes a `ShaderMaterial` of `layer_materials` (`OriginalPresenter` puts a copy on its layer and sets `phase`); a layer the script draws has none (the script names a shader in its draw list).
 ##
@@ -47,7 +46,7 @@ func hud_layers() -> Array[StringName]:
 
 
 ## The skin of the mod pack `pack`, or null with every reason in `reasons`: its id is the id of a skin that comes with the game, a shader of the manifest is not what `ModShader` accepts, a
-## picture of `skin/` is not a PNG the engine can decode, a picture the manifest maps is not in the pack, the font of `hud_font` is no font the engine can use (`Pack.font_problem`). (Null with no reason for a pack that is not a skin.)
+## picture of `skin/` is not a PNG the engine can decode, the font of `hud_font` is no font the engine can use (`Pack.font_problem`). (Null with no reason for a pack that is not a skin.)
 static func make(pack: Pack, reasons: Array[String]) -> ModSkin:
 	if pack.mod == null or not pack.mod.is_skin:
 		return null
@@ -79,12 +78,6 @@ static func make(pack: Pack, reasons: Array[String]) -> ModSkin:
 	if skin.assets != null:
 		for layer in pack.mod.layers:
 			_make_layer(skin, layer, pack.mod.layers[layer], reasons)
-	for key in pack.mod.pictures:
-		var texture := pack.texture(pack.mod.pictures[key])
-		if texture == null:
-			reasons.append("the picture %s of \"%s\" is not in the pack" % [pack.mod.pictures[key], key])
-		else:
-			skin.pictures[key] = texture
 	return skin if reasons.is_empty() else null
 
 

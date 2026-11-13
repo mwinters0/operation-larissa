@@ -78,6 +78,21 @@ func add_picture(rel: String, color: Color, size: Vector2i = Vector2i(4, 4)) -> 
 	write_bytes(rel, image.save_png_to_buffer())
 
 
+## The row of `key` in the pack's `pictures.json` (made if the pack has none; the rows it holds stay): a file of the pack, `{"file": rel, "scale": N}` or `{"alias": key}`.
+func add_row(key: String, value: Variant) -> void:
+	var table: Dictionary = pack_json(PictureTable.FILE) if FileAccess.file_exists("%s/%s" % [root, PictureTable.FILE]) else {"format": PictureTable.FORMAT, "pictures": {}}
+	table["pictures"][key] = value
+	write_json(PictureTable.FILE, table)
+
+
+## A picture of one colour and size as the picture of `key`: the file `art/<kind>_<name>.png` (named by nothing the engine knows) and its row. Returns the file.
+func add_picture_row(key: String, color: Color, size: Vector2i = Vector2i(4, 4)) -> String:
+	var rel := "art/%s.png" % key.replace("/", "_")
+	add_picture(rel, color, size)
+	add_row(key, rel)
+	return rel
+
+
 ## Makes the pack a mod pack from a fixture folder of the project (`tests/mods/<name>/`): its `pack.json`'s `mod` entry goes into the pack's manifest and every other file is copied in
 ## (the `.sgd` script, a skin's `skin/` folder). `mod` overrides the entry's keys (a test of a bad manifest says `{"entry": "../x.sgd"}`).
 func add_mod_fixture(fixture_dir: String, mod: Dictionary = {}) -> void:

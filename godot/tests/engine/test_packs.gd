@@ -35,7 +35,6 @@ func test_with_no_data_pack_in_the_chain_the_game_is_what_it_was() -> void:
 	assert_array(Catalog.sector_ids()).contains(DevPack.TOUR_SECTORS + [DevPack.TOUR_FINALE])
 	assert_bool(Catalog.campaigns().any(func(c: Campaign) -> bool: return c.id == DevPack.TOUR)).is_true()
 	assert_str(Catalog.text(&"click_to_go_on")).is_not_empty()
-	assert_object(Packs.picture("ui_picture/title_sky")).is_null()
 	assert_object(Packs.clip(&"sound", &"correct")).is_null()
 	assert_object(Catalog.voice_cues()).is_same(Catalog.voice_cues())
 	assert_bool(Catalog.has_sector(40)).is_false()
@@ -292,9 +291,9 @@ func test_a_packs_picture_replaces_the_originals_and_a_new_name_is_found() -> vo
 	var original := Assets.ui_picture(&"title_sky")
 	var original_size := original.get_size()
 	var shelf := _shelf(&"paint")
-	shelf.add_picture("pictures/ui_picture/title_sky.png", Color.RED, Vector2i(5, 3))
-	shelf.add_picture("pictures/ui_picture/garden_gate.png", Color.GREEN, Vector2i(7, 2))
-	shelf.add_picture("pictures/background/bg_s40_00.png", Color.BLUE, Vector2i(6, 6))
+	shelf.add_picture_row("ui_picture/title_sky", Color.RED, Vector2i(5, 3))
+	shelf.add_picture_row("ui_picture/garden_gate", Color.GREEN, Vector2i(7, 2))
+	shelf.add_picture_row("background/bg_s40_00", Color.BLUE, Vector2i(6, 6))
 	shelf.mount()
 	assert_vector(Assets.ui_picture(&"title_sky").get_size()).is_equal(Vector2(5, 3))
 	assert_vector(Assets.ui_picture(&"garden_gate").get_size()).is_equal(Vector2(7, 2))         # a name only the pack has
@@ -317,7 +316,7 @@ func test_a_packs_picture_reaches_the_pictures_data_holds_and_goes_away_with_the
 			break
 	assert_str(some_key).is_not_empty()
 	var shelf := _shelf(&"hud")
-	shelf.add_picture("pictures/%s.png" % some_key, Color.RED, Vector2i(2, 2))
+	shelf.add_picture_row(some_key, Color.RED, Vector2i(2, 2))
 	shelf.mount()
 	var during := Catalog.hud_layout()
 	assert_object(during).is_not_same(before)                          # a copy with the pack's picture put in
@@ -373,10 +372,10 @@ func test_a_packs_sounds_songs_and_speech_replace_or_add_by_name() -> void:
 
 func test_a_file_that_is_not_a_picture_or_a_sound_is_nothing_with_a_warning() -> void:
 	var shelf := _shelf(&"junk")
-	shelf.write_text("pictures/ui_picture/title_sky.png", "not a png")
+	shelf.write_text("art/title_sky.png", "not a png")
+	shelf.add_row("ui_picture/title_sky", "art/title_sky.png")
 	shelf.write_text("audio/sound/correct.ogg", "not an ogg")
 	shelf.mount()
-	assert_object(Packs.picture("ui_picture/title_sky")).is_null()
 	assert_object(Packs.clip(&"sound", &"correct")).is_null()
 	assert_object(Assets.ui_picture(&"title_sky")).is_not_null()                                    # the original's, as if the pack did not have it
 

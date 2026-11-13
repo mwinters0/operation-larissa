@@ -184,7 +184,7 @@ func test_the_skin_mods_of_the_roster_really_run_in_the_visit() -> void:
 		var mod := ModHost.mod(String(skin.id))
 		if mod == null:                                          # (the data skin: no script to ask; it is worn with the original's presenter)
 			assert_object(skin.presenter_scene_or_null()).is_null()
-			assert_bool((skin as ModSkin).pictures.is_empty()).is_false()
+			assert_bool((skin as ModSkin).render != null or (skin as ModSkin).hud_labels != null).is_true()          # (it dresses the game with a filter and a lettering)
 			continue
 		var faults := int(mod.get("monitor_exceptions"))
 		var trace := _play(DevCreatures.ARENA, PresenterChoice.ORIGINAL, skin).trace

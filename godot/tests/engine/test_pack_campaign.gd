@@ -2,7 +2,7 @@ class_name TestPackCampaign
 extends GdUnitTestSuite
 ## Teaches: a student's campaign that is nothing but a folder of JSON (a pack in the data form). `test_campaign.gd`
 ## plays a campaign that is a `.tres` of the project; here the campaign, its three sectors and its finale picture live in a scratch DATA pack in
-## `user://` (`PackShelf`: `pack.json`, `campaigns/orchard_pack.json`, `sectors/sector_40..42/*.json` + `.foe`, `pictures/...`), are mounted like a
+## `user://` (`PackShelf`: `pack.json`, `campaigns/orchard_pack.json`, `sectors/sector_40..42/*.json` + `.foe`, `pictures.json` and its pictures), are mounted like a
 ## player's pack, and are played through the same code: `Catalog` finds them, `PlayerProfile` names the campaign by id, `GameFlow` steps through
 ## the sectors and ends at the generic finale, and every sector flies in the rules (`SectorScenario`). Unmounting the pack takes everything away again.
 ##
@@ -22,7 +22,7 @@ func before_test() -> void:
 	_shelf.add_sector_copy(0, 40)
 	_shelf.add_sector_copy(1, 41)
 	_shelf.add_sector_copy(DevPack.test_sector("e", 0), FINALE)
-	_shelf.add_picture("pictures/ui_picture/orchard_finale.png", Color.ORANGE, Vector2i(8, 4))
+	_shelf.add_picture_row("ui_picture/orchard_finale", Color.ORANGE, Vector2i(8, 4))
 	# the campaign as a person would write it: only the fields that differ from the defaults, in JSON
 	_shelf.write_json("campaigns/%s.json" % ID, {
 		"class": "Campaign",

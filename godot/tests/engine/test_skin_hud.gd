@@ -138,7 +138,7 @@ func test_the_hud_changes_with_the_skin_and_comes_back() -> void:
 	SkinChoice.select(load(TINY) as GameSkin)
 	assert_object(_hud.game_label.texture).is_null()
 	assert_str(_hud.game_text.text).is_equal("Tiny Voyager")
-	assert_object(_hud.layout.zone_textures[0]).is_same(load("res://tests/skins/tiny/marker.png"))        # (the skin's picture in the layout)
+	assert_object(_hud.layout.zone_textures[0]).is_same(layout.zone_textures[0])                             # (a skin maps no picture: the layout's own)
 	SkinChoice.select(SkinChoice.original())
 	assert_object(_hud.layout).is_same(layout)                               # (the original's own resource again)
 	assert_object(_hud.game_label.texture).is_same(layout.game_textures[banner])

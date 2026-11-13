@@ -93,7 +93,7 @@ legacy; dev has the same paths under `res://packs/dev/`.
 | Sector | a level: 12 screens, a start, pieces, creatures, triggers | `res://packs/legacy/data/sectors/sector_NN/` | screen editor, sector inspector, Foe Script editor |
 | Problem | one of 34 math problem types, with stored questions and answers | `res://packs/legacy/data/problems/problem_type_NN.tres` | a pack's `data/problems/problem_type_NN.json` |
 | Text | every string the game shows (menus, hints, story, log, messages) | `res://packs/legacy/data/problems/*.tres` text tables | a pack's `texts.json`; a campaign's own words |
-| Picture | sprites, tiles, backgrounds, interface and problem art | `res://packs/legacy/assets/` (PNG) | a pack's `pictures/`; a skin |
+| Picture | sprites, tiles, backgrounds, interface and problem art | `res://packs/legacy/assets/` (PNG) | a pack's `pictures.json` (a key to a file of the pack, or to another key) |
 | Sound, music, speech | effects, 20 MIDI songs rendered to OGG, 371 speech clips | `res://packs/legacy/assets/audio/` | a pack's `audio/` |
 | Story timeline | the opening, the title and the two closings as timed tracks, the story pages, the Voyager flight, the Expert closing's sailors | `res://packs/legacy/data/story/*.tres` | a pack's `data/story/<name>.json` (the data form; a complete pack holds all of them) |
 | Duration | how long a station trip, a fade, a message takes | `res://data/rules/durations.json` | a pack's `rules/durations.json` |
@@ -389,7 +389,9 @@ A pack **outside the project** lays its content out as below. Every part is opti
   sectors/sector_NN/sector_NN.foe      its creature script (same text as in the game)
   texts.json                           {"text_name": "the words"}
   voice_cues.json                      {"groups": {"group_name": ["voice_name", ...]}}
-  pictures/<kind>/<name>.png           a picture by skin key
+  pictures.json                        the picture table: {"format": 1, "pictures": {"ui_picture/title_sky": "art/sky.png"}}: a skin key to a file of the pack,
+                                       {"file": f, "scale": n} (4x art drawn at 1/n) or {"alias": other key}; what the files are called means nothing
+                                       (`pack_tool --pictures-table=<folder>` writes it from a folder of <kind>/<name>.png)
   audio/sound|music|voice/<name>.ogg   a clip by registry name
   audio/lengths.json                   {"voice": {"name": ticks}}  lengths you state yourself (optional)
   data/problems/problem_type_NN.json   a problem type; any other data/ file of a complete pack is held the same way, as the JSON of the same name
@@ -420,17 +422,16 @@ wins. It works like your shell's `PATH`, or CSS.
   game asks for "picture ui_picture/title_sky"
         |
         v
-   chosen pack ----has pictures/ui_picture/title_sky.png?---> use it
+   chosen pack ----has a row for ui_picture/title_sky in its pictures.json?---> use it
         | no
         v
    its base    ----has it?---> use it
         | no                    (and so on down the chain)
         v
-   the skin in use, then the skin it builds on, ... ----has it?---> use it
+   (no skin is asked: a skin maps no picture; a row that is an alias asks the whole chain again for the key it names)
         | no
         v
-   the first pack of the chain that has the picture's file
-   (assets/ui/title/title_sky_1039.png in legacy; dev has the same path)
+   the complete pack at the bottom (a pack with no table answers by its file names until the importer and the dev pack write tables)
 ```
 
 There are two kinds of lookup, both down the chain:
@@ -485,7 +486,7 @@ A manifest's `requires_api` (default 1) is the lowest version of the mod API the
 | 2 | a skin: `skin` with `shaders`, the script drawing the whole screen with `skin_frame` ([`SKIN_API.md`](SKIN_API.md)) |
 | 3 | the screens of problem types the pack adds: `problems` with `types` and `shaders`, `problem_frame(state)` ("Problem screens", below) |
 | 4 | gameplay at the rule hooks of a campaign that declares the mod: `rules` ("Rule hooks", below) |
-| 5 | everything that draws the game: a skin with no script (`render`, `pictures`, `hud_font`, `layers`, `theme`), a script that draws named layers (`script_layers`, the console's too), a draw list that names a picture of the game by key, the screens of the original's problem types by number, and `problem_frame(state, events)` with the events, the clock and the sounds of a problem screen |
+| 5 | everything that draws the game: a skin with no script (`render`, `hud_font`, `layers`, `theme`), a script that draws named layers (`script_layers`, the console's too), a draw list that names a picture of the game by key, the screens of the original's problem types by number, and `problem_frame(state, events)` with the events, the clock and the sounds of a problem screen |
 
 ### Problem screens
 
@@ -691,9 +692,9 @@ There is no skin menu for players yet.
 ### Skins and packs
 
 A skin you give to other people is a **mod pack** (section 3, "Mod packs"): a pack with a script, its pictures in `skin/` and, if it wants, shaders as text. It is code of a stranger in a sandbox, so it can only say what to draw and can change no rule; installing one asks no trust question and it needs the godot-sandbox extension (a skin with no script needs none). `--pack=<id>`
-chooses it (it is laid over the game pack it names as its `base`), and then its skin appears in the list of skins with its pack id and works with `--skin=<id>` and F3 + S like a shipped one. It lasts as long as its pack is in use. How to write one is [`SKIN_API.md`](SKIN_API.md), "Writing a skin mod". The skins of the project itself (`original`, `creatures`) are folders of `res://skins/`; an export carries `original` and not `creatures` ("Shipping", section 6). A mod skin's script draws the layers of the sector and of the console it names (or the whole screen) and leaves the rest to the original; the game's layouts (every rectangle), sounds, rules and timings stay as they are, and the pictures, font and theme of its manifest are worn only while the skin is.
+chooses it (it is laid over the game pack it names as its `base`), and then its skin appears in the list of skins with its pack id and works with `--skin=<id>` and F3 + S like a shipped one. It lasts as long as its pack is in use. How to write one is [`SKIN_API.md`](SKIN_API.md), "Writing a skin mod". The skins of the project itself (`original`, `creatures`) are folders of `res://skins/`; an export carries `original` and not `creatures` ("Shipping", section 6). A mod skin's script draws the layers of the sector and of the console it names (or the whole screen) and leaves the rest to the original; the game's layouts (every rectangle), sounds, rules and timings stay as they are, and the font and theme of its manifest are worn only while the skin is; its pictures are rows of its `pictures.json`, the chain's under every skin.
 
-**The example pack** is `examples/packs/modern/`: a skin with no script, laid over `legacy`, that you can copy. Its `pack.json` has the `skin` entry of [`SKIN_API.md`](SKIN_API.md) ("A skin with no script"): `render` (linear filter, no snapping), `hud_font` (Exo 2 at weight 600, with its licence `OFL.txt` next to it in `skin/fonts/`), a `theme` (that font and cool blues for the menus: the message box, the dialogs and the sign-in screen, and the problem screen's text, calculator keys and display), two `shaders` put on the layers `background` (the water) and `walls` (kept sharp under the smooth filter) and `pictures`, the console's templates. Those are flat colour at the original's sizes with their key and size written on them, made by `mise run skin:templates --pack legacy`; draw your art over them and keep their sizes. The templates of the problem screen's frame (`skin/problem_art/`) are in the folder too, not mapped. `mise run examples:pack modern [--out <dir>]` writes `modern.larissa` (the legacy pack must be found: it is the pack's `base`), and `mise run examples:install modern` installs the folder into `user://packs/`, so that `tools/godot.sh --path godot -- --pack=modern --skin=modern` plays it (`--pack=` chooses the pack, and its skin is then offered). The two are `mise run pack:archive <folder>` and `mise run pack:install <folder-or-file>` for any pack folder: [`FIRST_SKIN.md`](FIRST_SKIN.md), step 8. The template pictures, the shaders and every key of its manifest are told where they are used: [`SKIN_API.md`](SKIN_API.md), "A skin with no script"; [`FIRST_SKIN.md`](FIRST_SKIN.md) walks through it.
+**The example pack** is `examples/packs/modern/`: a skin with no script, laid over `legacy`, that you can copy. Its `pack.json` has the `skin` entry of [`SKIN_API.md`](SKIN_API.md) ("A skin with no script"): `render` (linear filter, no snapping), `hud_font` (Exo 2 at weight 600, with its licence `OFL.txt` next to it in `skin/fonts/`), a `theme` (that font and cool blues for the menus: the message box, the dialogs and the sign-in screen, and the problem screen's text, calculator keys and display), two `shaders` put on the layers `background` (the water) and `walls` (kept sharp under the smooth filter) and a `pictures.json` with a row for each of the console's templates. Those are flat colour at the original's sizes with their key and size written on them, made by `mise run skin:templates --pack legacy`; draw your art over them and keep their sizes. The templates of the problem screen's frame (`skin/problem_art/`) are in the folder too, not mapped. `mise run examples:pack modern [--out <dir>]` writes `modern.larissa` (the legacy pack must be found: it is the pack's `base`), and `mise run examples:install modern` installs the folder into `user://packs/`, so that `tools/godot.sh --path godot -- --pack=modern --skin=modern` plays it (`--pack=` chooses the pack, and its skin is then offered). The two are `mise run pack:archive <folder>` and `mise run pack:install <folder-or-file>` for any pack folder: [`FIRST_SKIN.md`](FIRST_SKIN.md), step 8. The template pictures, the shaders and every key of its manifest are told where they are used: [`SKIN_API.md`](SKIN_API.md), "A skin with no script"; [`FIRST_SKIN.md`](FIRST_SKIN.md) walks through it.
 
 Remember the order in section 4: a pack's picture beats the skin's. If a content pack and a skin both supply a picture, the
 content pack's is what you see.

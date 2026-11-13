@@ -72,19 +72,22 @@ func test_a_world_changes_its_presenter_when_the_skin_changes() -> void:
 	assert_int(world.original.foes.size()).is_equal(world.sim.foes.size())      # (and it shows the sector that is loaded, built from the rules)
 
 
-func test_the_new_presenter_draws_with_the_new_skins_pictures() -> void:
+func test_a_presenter_shows_the_chains_pictures_whatever_the_skin() -> void:
 	var world := scene_runner(WORLD_SCENE).scene() as SectorWorld
 	world.load_sector(0, 0)
-	var marker := load("res://tests/skins/tiny/marker.png") as Texture2D
 	var background := world.original.background.texture
-	assert_object(background).is_not_same(marker)
-	var skin := GameSkin.new()
-	skin.id = &"marker_background"
-	skin.pictures = {"background/bg_s00_00": marker}
-	SkinChoice.select(skin)
-	assert_object(world.original.background.texture).is_same(marker)
-	SkinChoice.select(SkinChoice.original())
+	SkinChoice.select(load(TINY) as GameSkin)                                   # (a skin maps no picture: the same one is shown)
 	assert_object(world.original.background.texture).is_same(background)
+	var shelf := PackShelf.new()
+	shelf.add_picture_row("background/bg_s00_00", Color.RED, Vector2i(608, 288))
+	shelf.mount()                                                                # (the chain changed: the screen is built from it again, as the game does when it enters a sector)
+	world.load_sector(0, 0)
+	assert_that(PicturesShelf.color_of(world.original.background.texture)).is_equal(Color.RED)
+	SkinChoice.select(SkinChoice.original())
+	assert_that(PicturesShelf.color_of(world.original.background.texture)).is_equal(Color.RED)
+	shelf.remove()
+	world.load_sector(0, 0)
+	assert_that(PicturesShelf.color_of(world.original.background.texture)).is_not_equal(Color.RED)
 
 
 func test_a_debug_presenter_stays_debug_when_the_skin_changes() -> void:

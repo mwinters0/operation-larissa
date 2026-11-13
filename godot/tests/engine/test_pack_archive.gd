@@ -5,6 +5,8 @@ extends GdUnitTestSuite
 ## archive. A pack opened from the file answers like the same pack as a folder (`Pack`: `read_text`, `files_in`, `texture`, `stream`, `resource`), the lookups choose between a project folder,
 ## an installed folder, an installed file and a bundled file in that order and say which they used, and installing a pack file copies it and uninstalling deletes it.
 
+## The picture file of the scratch pack (`PackShelf.add_picture_row` names it by its key).
+const PROBE := "art/ui_picture_zz_probe.png"
 const ID := &"zz_archive_probe"
 const TONE := "res://tests/fixtures/pack_tone_short.ogg.bin"
 
@@ -105,7 +107,7 @@ func _manifest(id: StringName = ID, version := "1") -> PackedByteArray:
 func _shelf_with_content(id: StringName = ID) -> PackShelf:
 	var shelf := PackShelf.new(id)
 	shelf.write_json("texts.json", {"zz_text": "words"})
-	shelf.add_picture("pictures/ui_picture/zz_probe.png", Color.ORANGE, Vector2i(8, 4))
+	shelf.add_picture_row("ui_picture/zz_probe", Color.ORANGE, Vector2i(8, 4))
 	shelf.write_bytes("audio/sound/zz_tone.ogg", FileAccess.get_file_as_bytes(TONE))
 	shelf.write_json("data/zones.json", ResourceJson.new().data_of(Packs.dev().resource("data/zones.tres")))
 	shelf.write_text("sectors/readme.txt", "hello")
@@ -129,14 +131,13 @@ func test_the_index_answers_from_the_central_directory() -> void:
 	assert_bool(archive.has("data/zones.json")).is_true()
 	assert_bool(archive.has("data")).override_failure_message("a folder is not a file").is_false()
 	assert_bool(archive.has_folder("data")).is_true()
-	assert_bool(archive.has_folder("pictures/ui_picture")).override_failure_message("a folder above a file").is_true()
+	assert_bool(archive.has_folder("audio/sound")).override_failure_message("a folder above a file").is_true()
 	assert_bool(archive.has_folder("nowhere")).is_false()
 	assert_int(archive.size_of("texts.json")).is_equal(FileAccess.get_file_as_bytes(shelf.root + "/texts.json").size())
 	assert_int(archive.size_of("nowhere.json")).is_equal(-1)
-	assert_array(archive.files_in("")).is_equal(["pack.json", "texts.json"])
-	assert_array(archive.folders_in("")).is_equal(["audio", "data", "pictures", "sectors"])
-	assert_array(archive.folders_in("pictures")).is_equal(["ui_picture"])
-	assert_array(archive.files_in("pictures/ui_picture")).is_equal(["zz_probe.png"])
+	assert_array(archive.files_in("")).is_equal(["pack.json", "pictures.json", "texts.json"])
+	assert_array(archive.folders_in("")).is_equal(["art", "audio", "data", "sectors"])
+	assert_array(archive.files_in("art")).is_equal([PROBE.get_file()])
 	assert_array(archive.all_files()).is_equal(PackFiles.files_under(shelf.root))
 	assert_int(archive.read("texts.json").size()).is_equal(archive.size_of("texts.json"))
 	assert_array(Array(archive.read("audio/sound/zz_tone.ogg"))).is_equal(Array(FileAccess.get_file_as_bytes(TONE)))
@@ -163,7 +164,7 @@ func test_a_stored_entry_is_read_after_a_local_extra_field_and_a_deflated_one_is
 	var deflated := PackArchive.open(_archive_of(shelf))
 	assert_int(deflated.size_of("a/long.txt")).is_equal(text.length())
 	assert_str(deflated.read("a/long.txt").get_string_from_utf8()).is_equal(text)
-	assert_int(deflated.read("pictures/ui_picture/zz_probe.png").size()).is_equal(deflated.size_of("pictures/ui_picture/zz_probe.png"))
+	assert_int(deflated.read(PROBE).size()).is_equal(deflated.size_of(PROBE))
 	assert_int(deflated.read("a/empty.txt").size()).is_equal(0)
 	shelf.remove()
 
@@ -291,7 +292,7 @@ func test_a_pack_file_answers_like_the_same_pack_as_a_folder() -> void:
 	assert_str(file_pack.path_of("data/zones.json")).is_equal(file + "/data/zones.json")
 	assert_dict(file_pack.manifest()).is_equal(folder_pack.manifest())
 	assert_array(file_pack.all_files()).is_equal(folder_pack.all_files())
-	for dir in ["", "data", "pictures", "pictures/ui_picture", "audio", "audio/sound", "sectors", "nowhere"]:
+	for dir in ["", "data", "art", "audio", "audio/sound", "sectors", "nowhere"]:
 		if not dir.is_empty():
 			assert_bool(file_pack.has_folder(dir)).override_failure_message(dir).is_equal(folder_pack.has_folder(dir))
 		assert_array(file_pack.files_in(dir)).override_failure_message(dir).is_equal(folder_pack.files_in(dir))
@@ -306,10 +307,10 @@ func test_a_pack_file_answers_like_the_same_pack_as_a_folder() -> void:
 	assert_int(file_pack.size_of("../x")).is_equal(-1)
 	assert_str(file_pack.read_text("texts.json")).is_equal(folder_pack.read_text("texts.json"))
 	assert_dict(file_pack.read_json("texts.json")).is_equal({"zz_text": "words"})
-	var picture := file_pack.texture("pictures/ui_picture/zz_probe.png")
+	var picture := file_pack.texture(PROBE)
 	assert_object(picture).is_not_null()
 	assert_vector(picture.get_size()).is_equal(Vector2(8, 4))
-	assert_str(Packs.source_of(picture)).is_equal(file + "/pictures/ui_picture/zz_probe.png")
+	assert_str(Packs.source_of(picture)).is_equal(file + "/" + PROBE)
 	var tone := file_pack.stream("audio/sound/zz_tone.ogg")
 	assert_float(tone.get_length()).is_equal(folder_pack.stream("audio/sound/zz_tone.ogg").get_length())
 	var made := file_pack.resource("data/zones.tres")
@@ -333,17 +334,17 @@ func test_a_pack_file_is_a_pack_of_the_chain_and_its_paths_are_found_by_their_pr
 	assert_str(Packs.path("texts.json")).is_equal(file + "/texts.json")
 	assert_str(Packs.relative(file + "/data/zones.json")).is_equal("data/zones.json")
 	assert_object(Packs.pack_of_path(file + "/data/zones.json")).is_same(pack)
-	assert_object(Packs.file_at(file + "/pictures/ui_picture/zz_probe.png")).is_instanceof(Texture2D)
+	assert_object(Packs.file_at(file + "/" + PROBE)).is_instanceof(Texture2D)
 	assert_bool(Packs.exists_at(file + "/data/zones.tres")).is_true()
 	assert_bool(Packs.exists_at(file + "/data/missing.tres")).is_false()
 	assert_str(Packs.text("zz_text")).is_equal("words")
-	assert_object(Packs.picture("ui_picture/zz_probe")).is_not_null()
+	assert_object(Pictures.resolve("ui_picture/zz_probe")).override_failure_message("the table is read from the pack file, and so is the file it names").is_not_null()
 	assert_object(Packs.clip(&"sound", &"zz_tone")).is_not_null()
 	assert_bool(pack._archive.is_open()).is_true()
 	pack.forget()
 	assert_bool(pack._archive.is_open()).override_failure_message("forgetting lets go of the file").is_false()
 	Packs.refresh()                                                                                          # (the lists are rebuilt: the clips are measured, which reads the file again)
-	assert_object(Packs.texture("pictures/ui_picture/zz_probe.png")).is_not_null()
+	assert_object(Packs.texture(PROBE)).is_not_null()
 	assert_object(Packs.clip(&"sound", &"zz_tone")).is_not_null()
 
 

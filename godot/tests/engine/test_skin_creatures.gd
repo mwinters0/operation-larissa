@@ -63,7 +63,7 @@ func test_the_skin_ships_and_is_found() -> void:
 	assert_str(String(skin.id)).is_equal("creatures")
 	assert_object(skin.presenter_scene_or_null()).is_not_null()
 	assert_str(skin.presenter_scene.resource_path).is_equal(FOLDER + "/creatures_presenter.tscn")
-	assert_bool(skin.has_pictures()).is_false()            # (it maps no picture: the original's pictures, the rigs are the difference)
+	assert_dict(skin.resources).is_empty()                 # (it maps no picture and no resource: the original's, the rigs are the difference)
 
 
 func test_a_world_with_the_skin_has_its_presenter_and_it_can_be_switched_at_run_time() -> void:

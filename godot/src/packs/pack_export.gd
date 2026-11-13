@@ -6,9 +6,9 @@ extends RefCounted
 ## A CAMPAIGN pack holds what the campaign needs and is laid over a complete pack (`base` in its manifest: the pack at the bottom of the chain in use unless `Options.base` says another). It holds: `campaigns/<id>.json`, its sectors `sectors/sector_NN/` (JSON and
 ## `.foe`), and the pictures, clips, texts, speech groups, problem
 ## types and durations that are the designer's own. Those come from the PACK SOURCE FOLDER `res://data/campaigns/<id>/`, laid out as a pack
-## (`pictures/ui_picture/finale.png`, `audio/voice/line_a.ogg`, `texts.json`, `rules/durations.json` ...) and copied as they are; a campaign that
+## (`pictures.json` with the files it names, `audio/voice/line_a.ogg`, `texts.json`, `rules/durations.json` ...) and copied as they are; a campaign that
 ## already comes from an untrusted pack of the chain (an installed one, or a student's scratch pack) is exported from that pack's files instead. A picture the
-## campaign names by a `res://` path (`finale_picture`, `banner`) is copied into the pack as `pictures/ui_picture/<name>.png` and named by that name.
+## campaign names by a `res://` path (`finale_picture`, `banner`) is copied into the pack as `ui_picture/<name>.png`, becomes the row `ui_picture/<name>` of the pack's `pictures.json` and is named by that key.
 ## The sectors are exported from the game's own reader (`Catalog.sector`), whether they are `.tres` files or a pack's JSON.
 ##
 ## A COMPLETE pack (`complete`) is written the way a pack that leaves the project is held: every `.tres` of `data/` as the JSON that `ResourceJson` describes it with, the
@@ -187,6 +187,7 @@ static func _write_campaign(source: Campaign, stage: String, pack_id: StringName
 	manifest.base = StringName(base)                                                       # (a pack laid over another holds only what it changes)
 	ResourceJson.save_json(manifest.manifest(), stage + "/" + Pack.MANIFEST)
 	var holder := Packs.pack(source.pack_id) if source.pack_id != &"" else null
+	var rows := {}                                         # (the rows of `pictures.json` the exporter adds: key -> file)
 	# the campaign itself: the author's file as it is when it came from a pack, else the fields of the resource
 	var campaign_rel := "campaigns/%s.json" % source.id
 	if holder != null and holder.has(campaign_rel):
@@ -195,7 +196,7 @@ static func _write_campaign(source: Campaign, stage: String, pack_id: StringName
 			return "cannot copy %s: %s" % [campaign_rel, error_string(error)]
 	else:
 		var data := ResourceJson.new().data_of(source)
-		var failure := _pictures_by_name(source, data, stage)
+		var failure := _pictures_by_name(source, data, stage, rows)
 		if not failure.is_empty():
 			return failure
 		ResourceJson.save_json(data, "%s/%s" % [stage, campaign_rel])
@@ -228,7 +229,7 @@ static func _write_campaign(source: Campaign, stage: String, pack_id: StringName
 			var error := PackFiles.copy_tree(folder, stage, func(rel: String) -> bool: return SOURCE_SKIP.has(rel.get_extension()) or rel == Pack.MANIFEST)
 			if error != OK:
 				return "cannot copy %s: %s" % [folder, error_string(error)]
-	return ""
+	return _add_picture_rows(stage, rows)
 
 
 ## Writes the file `rel` of `from` (a folder or a pack file: the bytes are asked of the pack, `Pack.read_bytes`) into `stage` at the same place. `OK` or the error.
@@ -238,25 +239,25 @@ static func _copy_from(from: Pack, rel: String, stage: String) -> Error:
 	return PackFiles.write_bytes("%s/%s" % [stage, rel], from.read_bytes(rel))
 
 
-## A picture of the campaign that is a `res://` file (`finale_picture`, `banner`) goes into the pack as `pictures/ui_picture/<name>.png`, and the
-## JSON names it. "" or what went wrong.
-static func _pictures_by_name(source: Campaign, data: Dictionary, stage: String) -> String:
+## A picture of the campaign that is a `res://` file (`finale_picture`, `banner`) goes into the pack as `ui_picture/<name>.png` with a row `ui_picture/<name>` in `rows`, and the
+## JSON names it by that key. "" or what went wrong.
+static func _pictures_by_name(source: Campaign, data: Dictionary, stage: String, rows: Dictionary) -> String:
 	if source.finale_picture.begins_with("res://"):
-		var picture_name := _picture_into(source.finale_picture, "%s_finale" % source.id, stage)
+		var picture_name := _picture_into(source.finale_picture, "%s_finale" % source.id, stage, rows)
 		if picture_name.is_empty():
 			return "finale_picture %s is not a PNG file" % source.finale_picture
 		data["finale_picture"] = picture_name
 	if source.banner != null:
 		var from := source.banner.resource_path
-		var banner_name := _picture_into(from, "%s_banner" % source.id, stage) if from.begins_with("res://") else ""
+		var banner_name := _picture_into(from, "%s_banner" % source.id, stage, rows) if from.begins_with("res://") else ""
 		if banner_name.is_empty():
 			return "the banner is not a PNG file of the project (%s)" % (from if not from.is_empty() else "a picture made in memory")
-		data["banner"] = "pictures/ui_picture/%s.png" % banner_name
+		data["banner"] = {ResourceJson.PICTURE_KEY: "ui_picture/" + banner_name}
 	return ""
 
 
-## Copies the PNG `from` into the pack under `pictures/ui_picture/<stem>.png` (the file's own name if it is a name, else `fallback`); returns the name, or "".
-static func _picture_into(from: String, fallback: String, stage: String) -> String:
+## Copies the PNG `from` into the pack as `ui_picture/<stem>.png` (the file's own name if it is a name, else `fallback`), notes its row in `rows`; returns the name, or "".
+static func _picture_into(from: String, fallback: String, stage: String, rows: Dictionary) -> String:
 	if from.get_extension() != "png":
 		return ""
 	var bytes := FileAccess.get_file_as_bytes(from)
@@ -265,7 +266,28 @@ static func _picture_into(from: String, fallback: String, stage: String) -> Stri
 		return ""
 	var stem := from.get_file().get_basename()
 	var picture_name := stem if NameRegistry.is_valid_name(stem) else fallback
-	return picture_name if PackFiles.write_bytes("%s/pictures/ui_picture/%s.png" % [stage, picture_name], bytes) == OK else ""
+	var rel := "ui_picture/%s.png" % picture_name
+	if PackFiles.write_bytes("%s/%s" % [stage, rel], bytes) != OK:
+		return ""
+	rows["ui_picture/" + picture_name] = rel
+	return picture_name
+
+
+## Adds `rows` (key -> file) to the `pictures.json` of the pack being written (the one the source folder brought, or a new one); a key the table has already keeps its row. "" or what went wrong.
+static func _add_picture_rows(stage: String, rows: Dictionary) -> String:
+	if rows.is_empty():
+		return ""
+	var path := "%s/%s" % [stage, PictureTable.FILE]
+	var table := {}
+	if FileAccess.file_exists(path):
+		var held: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+		if held is Dictionary and held.get("pictures") is Dictionary:
+			table = held["pictures"]
+	for key: String in rows:
+		if not table.has(key):
+			table[key] = rows[key]
+	var error := ResourceJson.save_json({"format": PictureTable.FORMAT, "pictures": table}, path)
+	return "" if error == OK else "cannot write %s: %s" % [PictureTable.FILE, error_string(error)]
 
 
 # --- a complete pack in the data form ---------------------------------------------------------------------------------------

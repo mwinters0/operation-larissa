@@ -93,8 +93,6 @@ static var _sector_owner: Dictionary = {}
 static var _texts: Dictionary = {}
 ## voice group name -> the nearest pack's list of clip names.
 static var _voice_groups: Dictionary = {}
-## Does any pack of the chain hold a picture? Worked out when the chain changes, because a skin asks on every data resource it shows.
-static var _has_pictures := false
 
 
 class PackEvents extends RefCounted:
@@ -747,24 +745,6 @@ static func voice_groups() -> Dictionary:
 	return _voice_groups
 
 
-## BRIDGE (the folder convention the picture tables replace): the picture for a skin key (`ui_picture/title_sky`, `background/bg_s40_00`) in the first pack that has `pictures/<key>.png`. `Pictures.resolve` is the lookup.
-static func picture(key: String) -> Texture2D:
-	if key.is_empty():
-		return null
-	var rel := "pictures/%s.png" % key
-	for each in chain():
-		var texture := each.texture(rel)
-		if texture != null:
-			return texture
-	return null
-
-
-## Does any pack hold a picture? (A skin treats the pictures as mapped then: `GameSkin.has_pictures`.)
-static func has_pictures() -> bool:
-	chain()
-	return _has_pictures
-
-
 ## Clips: the sound, song or speech clip called `clip_name` (`kind` is `sound`, `music` or `voice`) in the first pack that has
 ## `audio/<kind>/<name>.ogg`, as a `PackClip`; null when no pack has it. The clip's length comes back in it, from the SAME pack as the stream:
 ## the pack's stated length, else the measured one (`Pack.clip_ticks`).
@@ -878,11 +858,9 @@ static func _reindex() -> void:
 	_sector_owner = {}
 	_texts = {}
 	_voice_groups = {}
-	_has_pictures = false
 	for i in range(_chain.size() - 1, -1, -1):
 		var each := _chain[i]
 		each.measure_clips()
-		_has_pictures = _has_pictures or not each.folders_in("pictures").is_empty() or (each.base != &"" and not each.picture_table().keys().is_empty())
 		for number in each.sector_ids():
 			_sector_owner[number] = each
 		var words: Variant = each.read_json("texts.json")

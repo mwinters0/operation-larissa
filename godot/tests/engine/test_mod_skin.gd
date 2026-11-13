@@ -501,8 +501,8 @@ func test_a_key_the_game_cannot_resolve_or_that_has_a_wrong_shape_draws_nothing(
 	assert_bool(ModSpec.is_drawable_key("frame/sub_00") and ModSpec.is_drawable_key("deco/coral_fan_cyan") and ModSpec.is_drawable_key("ui_picture/ui_1189")).is_true()
 	assert_bool(ModSpec.is_drawable_key("tile/zone0_tiles") and ModSpec.is_drawable_key("problem_art/log_scan_0") and ModSpec.is_drawable_key("background/bg_s00_00")).is_true()
 	assert_array(GameSkin.KEY_KINDS).is_equal(["ui_picture", "background", "problem_art", "frame", "deco", "tile"])
-	for kind: String in ModSpec.REPLACEABLE_KINDS:                                                           # (what a skin may replace is among what a list may name)
-		assert_bool(GameSkin.KEY_KINDS.has(kind)).is_true()
+	for kind: String in PictureTable.KINDS:                                                                  # (what a table may hold is what a list may name)
+		assert_bool(ModSpec.is_drawable_key("%s/x" % kind)).is_true()
 
 
 func test_a_picture_by_key_asks_the_chain_once_for_a_whole_list() -> void:
@@ -808,24 +808,24 @@ func test_the_skin_draws_the_screen_by_the_keys_the_state_tells_and_shows_what_t
 	assert_array(station_drawn.filter(func(c: Array) -> bool: return c[1] == station_original.station.door.texture and c[2] == door["position"])).has_size(1)
 
 
-func test_a_picture_named_by_key_is_the_skin_in_uses_picture_and_the_original_look_shows_the_same() -> void:
+func test_a_picture_named_by_key_is_the_chains_picture_and_the_original_look_shows_the_same() -> void:
 	var shelf := _mount(["skinny"] as Array[String])
 	var skin := SkinChoice.load_skin(shelf.id)
-	var other := ImageTexture.create_from_image(Image.create(608, 288, false, Image.FORMAT_RGBA8))
-	skin.pictures["background/bg_s00_03"] = other
-	skin.forget()
+	shelf.add_picture_row("background/bg_s00_03", Color.RED, Vector2i(608, 288))                           # (the mod's own pack redraws it: a row of its pictures.json)
+	Packs.refresh()
 	var sim := SimWorld.new(GameState)
 	sim.load_sector(0, 3)
 	sim.start_flight(200, 150, 6)
 	var presenter := _presenter(sim, skin)
 	presenter.show_between_ticks(1.0)
 	var original := _the_original_look(sim, skin)
-	assert_object(original.background.texture).is_same(other)
-	assert_object(_game_pictures(presenter, shelf)[0][1]).override_failure_message("the mod's list names the key and the game draws the skin's picture for it").is_same(other)
-	skin.pictures.erase("background/bg_s00_03")
-	skin.forget()
+	assert_that(PicturesShelf.color_of(original.background.texture)).is_equal(Color.RED)
+	assert_object(_game_pictures(presenter, shelf)[0][1]).override_failure_message("the mod's list names the key and the game draws the chain's picture for it").is_same(original.background.texture)
+	shelf.write_json(PictureTable.FILE, {"format": PictureTable.FORMAT, "pictures": {}})
+	Packs.refresh()
 	presenter.refresh()
-	assert_object(_game_pictures(presenter, shelf)[0][1]).override_failure_message("without it, the chain's own").is_same(Assets.background(0, 3))
+	assert_object(_game_pictures(presenter, shelf)[0][1]).override_failure_message("without the row, the pack under it").is_same(Assets.background(0, 3))
+	assert_that(PicturesShelf.color_of(Assets.background(0, 3))).is_not_equal(Color.RED)
 
 
 func test_what_moves_is_drawn_between_where_it_was_and_where_it_is() -> void:

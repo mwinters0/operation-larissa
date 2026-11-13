@@ -1,13 +1,13 @@
 class_name TestModSkinData
 extends GdUnitTestSuite
 ## Teaches: a skin that is only data. A mod pack whose manifest says `skin` and has no `entry` is the same `ModSkin` in `SkinChoice` as a skin that runs a script, and it needs no godot-sandbox
-## extension: its `render` (`RenderSettings`) goes on the window, its `pictures` (a skin key to a PNG of the pack's `skin/` folder) replace the base game's while this skin is worn, and only then, and its `hud_font` (a `.ttf` of the pack, with a
+## extension: its `render` (`RenderSettings`) goes on the window, the pack's own pictures are rows of its `pictures.json` (the chain's, under every skin: a skin maps no picture), and its `hud_font` (a `.ttf` of the pack, with a
 ## size and a colour) is the lettering of the HUD's boxes, which keep their rectangles, and its `layers` put a shader (a compiled `ModShader`, with the values of its uniforms) on a layer of the original presenter, which sets the `phase` uniform to the game's time.
 ## The tests cover the manifest (every mistake is a sentence), the pack check, the skin the host makes (also in a build without the extension), and what wearing it changes and does not. That a skin of any
 ## kind changes no rule is `test_plays_identically.gd`, `test_skins_dont_change_the_game.gd` and `test_presenter_binds_late.gd`, which play this skin through `SkinRoster`.
 
 const FIXTURE := "res://tests/mods/skin_data"
-## The key the fixture maps (the first zone's name box of the console) and the file it maps it to.
+## The key the fixture's `pictures.json` draws (the first zone's name box of the console) and the file it draws it from.
 const KEY := "ui_picture/ui_1195"
 const FILE := "skin/sky.png"
 ## The font the fixture ships (`tools/make_test_font.py`: blocks for every printable ASCII letter), and the name inside it.
@@ -55,8 +55,8 @@ func _report(shelf: PackShelf) -> PackReport:
 
 # --- the manifest ---------------------------------------------------------------------------------------------------------
 
-func test_a_skin_without_an_entry_is_a_data_skin_with_render_and_pictures() -> void:
-	var data := {"requires_api": 5, "skin": {"render": {"texture_filter": "linear", "snap_vertices": false}, "pictures": {KEY: FILE}}}
+func test_a_skin_without_an_entry_is_a_data_skin_with_render() -> void:
+	var data := {"requires_api": 5, "skin": {"render": {"texture_filter": "linear", "snap_vertices": false}}}
 	var got := _parse(data)
 	var spec: ModSpec = got[0]
 	assert_array(got[1]).is_empty()
@@ -66,18 +66,17 @@ func test_a_skin_without_an_entry_is_a_data_skin_with_render_and_pictures() -> v
 	assert_int(spec.render.texture_filter).is_equal(Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR)
 	assert_bool(spec.render.snap_transforms).is_true()                                      # (what it does not say stays the project's)
 	assert_bool(spec.render.snap_vertices).is_false()
-	assert_dict(spec.pictures).is_equal({KEY: FILE})
 	assert_dict(spec.functions()).is_empty()                                                # (no script: no function to define)
 	assert_dict(spec.to_dict()).is_equal(data)
 	assert_dict((_parse(spec.to_dict())[0] as ModSpec).to_dict()).is_equal(data)
 
 
-func test_a_scripted_skin_may_have_render_and_pictures_too() -> void:
-	var spec: ModSpec = _parse({"entry": "reef.sgd", "requires_api": 5, "skin": {"render": {}, "pictures": {KEY: FILE}}})[0]
+func test_a_scripted_skin_may_have_render_too() -> void:
+	var spec: ModSpec = _parse({"entry": "reef.sgd", "requires_api": 5, "skin": {"render": {}}})[0]
 	assert_object(spec).is_not_null()
 	assert_bool(spec.has_entry()).is_true()
 	assert_array(spec.functions().keys()).is_equal([ModSkin.FRAME_FUNCTION])
-	assert_dict(spec.to_dict()["skin"]).is_equal({"render": {}, "pictures": {KEY: FILE}})            # (a render that says nothing is still a render: the skin sets the project's own)
+	assert_dict(spec.to_dict()["skin"]).is_equal({"render": {}})            # (a render that says nothing is still a render: the skin sets the project's own)
 	assert_object((_parse({"entry": "reef.sgd", "requires_api": 2, "skin": {}})[0] as ModSpec).render).is_null()
 
 
@@ -90,33 +89,20 @@ func test_every_render_filter_has_its_name_and_the_names_round_trip() -> void:
 
 
 func test_every_mistake_in_a_data_skin_is_a_sentence() -> void:
-	var many := {}
-	for i in ModSpec.MAX_PICTURES + 1:
-		many["ui_picture/ui_%d" % (1000 + i)] = FILE
 	var bad := {
 		"no entry and no skin": [{"requires_api": 5}, "needs an \"entry\""],
 		"no entry for problem screens": [{"requires_api": 5, "skin": {}, "problems": {"types": [40]}}, "needs an \"entry\""],
 		"no entry for rule hooks": [{"requires_api": 5, "skin": {}, "rules": {"sub": true}}, "needs an \"entry\""],
 		"an empty entry": [{"entry": "", "requires_api": 5, "skin": {}}, "needs an \"entry\""],
 		"a data skin of the skin API": [{"requires_api": 2, "skin": {}}, "requires_api"],
-		"pictures of the skin API": [{"entry": "a.sgd", "requires_api": 2, "skin": {"pictures": {KEY: FILE}}}, "requires_api"],
 		"render of the skin API": [{"entry": "a.sgd", "requires_api": 2, "skin": {"render": {}}}, "requires_api"],
 		"render not an object": [{"requires_api": 5, "skin": {"render": "linear"}}, "\"render\" must be an object"],
 		"a render key it does not know": [{"requires_api": 5, "skin": {"render": {"antialias": true}}}, "no \"antialias\""],
 		"a filter it does not know": [{"requires_api": 5, "skin": {"render": {"texture_filter": "sharp"}}}, "texture_filter"],
 		"a filter not a string": [{"requires_api": 5, "skin": {"render": {"texture_filter": 1}}}, "texture_filter"],
 		"a snap not a boolean": [{"requires_api": 5, "skin": {"render": {"snap_transforms": "no"}}}, "true or false"],
-		"pictures not an object": [{"requires_api": 5, "skin": {"pictures": [FILE]}}, "\"pictures\" must be an object"],
-		"a key of another kind": [{"requires_api": 5, "skin": {"pictures": {"frame/sub_00": FILE}}}, "picture key"],
-		"a key with no kind": [{"requires_api": 5, "skin": {"pictures": {"ui_1195": FILE}}}, "picture key"],
-		"a key with a folder in its name": [{"requires_api": 5, "skin": {"pictures": {"ui_picture/a/b": FILE}}}, "picture key"],
-		"a key that is not a name": [{"requires_api": 5, "skin": {"pictures": {"ui_picture/Sky": FILE}}}, "picture key"],
-		"a picture outside skin/": [{"requires_api": 5, "skin": {"pictures": {KEY: "pictures/sky.png"}}}, "must be a file"],
-		"a picture climbing out": [{"requires_api": 5, "skin": {"pictures": {KEY: "skin/../sky.png"}}}, "must be a file"],
-		"a picture of the game": [{"requires_api": 5, "skin": {"pictures": {KEY: "res://skins/original/sky.png"}}}, "must be a file"],
-		"a picture that is no png": [{"requires_api": 5, "skin": {"pictures": {KEY: "skin/sky.jpg"}}}, "must be a file"],
-		"a picture not a string": [{"requires_api": 5, "skin": {"pictures": {KEY: 3}}}, "must be a file"],
-		"too many pictures": [{"requires_api": 5, "skin": {"pictures": many}}, "at most"],
+		"pictures of the skin (they are the pack's)": [{"requires_api": 5, "skin": {"pictures": {KEY: FILE}}}, "rows of the pack's pictures.json"],
+		"pictures, empty": [{"requires_api": 5, "skin": {"pictures": {}}}, "has no \"pictures\""],
 		"layers of the skin API": [{"requires_api": 2, "skin": {"shaders": [SHADER], "layers": {}}}, "requires_api"],
 	}
 	for what: String in bad:
@@ -192,7 +178,7 @@ func test_the_check_passes_a_sound_data_skin_and_names_what_is_wrong() -> void:
 	var report := _report(sound)
 	assert_bool(report.passes()).override_failure_message(report.text()).is_true()
 	assert_array(report.warnings().filter(func(f: PackReport.Finding) -> bool: return f.area == "mod" and not f.message.contains("stretched"))).override_failure_message(report.text()).is_empty()      # (the fixture's one small picture stands in for six: see the next test)
-	var missing := PackShelf.new()                                                                       # (the manifest maps a file the pack does not hold)
+	var missing := PackShelf.new()                                                                       # (the pictures.json draws a file the pack does not hold)
 	_shelves.append(missing)
 	missing.add_mod_fixture(FIXTURE)
 	var found := _report(missing)
@@ -203,19 +189,13 @@ func test_the_check_passes_a_sound_data_skin_and_names_what_is_wrong() -> void:
 	ModSkinShelf.add_files(broken)
 	broken.write_text(FILE, "not a picture")
 	assert_bool(_report(broken).errors().any(func(f: PackReport.Finding) -> bool: return f.message.contains("skin/sky.png"))).is_true()
-	var unnamed := PackShelf.new()
-	_shelves.append(unnamed)
-	unnamed.add_mod_fixture(FIXTURE, {"skin": {"pictures": {"ui_picture/no_such_picture": FILE}}})
-	ModSkinShelf.add_files(unnamed)
-	var warned := _report(unnamed)
-	assert_bool(warned.passes()).is_true()
-	assert_bool(warned.warnings().any(func(f: PackReport.Finding) -> bool: return f.message.contains("ui_picture/no_such_picture") and f.message.contains("never asked for"))).override_failure_message(warned.text()).is_true()
 
 
 func test_the_check_warns_of_a_picture_that_is_not_the_size_of_the_one_it_replaces() -> void:
 	var odd := PackShelf.new()
 	_shelves.append(odd)
-	odd.add_mod_fixture(FIXTURE, {"skin": {"pictures": {KEY: FILE, "ui_picture/prompt_sender_ship": FILE}}})
+	odd.add_mod_fixture(FIXTURE)
+	odd.write_json(PictureTable.FILE, {"format": 1, "pictures": {KEY: FILE, "ui_picture/prompt_sender_ship": FILE}})
 	ModSkinShelf.add_files(odd)                                                                          # (32x18 for the two pictures: 96x16 and 55x20 in the layouts)
 	var stretched := _report(odd).warnings().filter(func(f: PackReport.Finding) -> bool: return f.message.contains("stretched"))
 	assert_int(stretched.size()).is_equal(2)
@@ -223,7 +203,8 @@ func test_the_check_warns_of_a_picture_that_is_not_the_size_of_the_one_it_replac
 	assert_bool(SkinTemplates.sizes().has("ui_picture/prompt_sender_ship")).is_true()                    # (the sizes are the templates')
 	var right := PackShelf.new()
 	_shelves.append(right)
-	right.add_mod_fixture(FIXTURE, {"skin": {"pictures": {KEY: FILE}}})
+	right.add_mod_fixture(FIXTURE)
+	right.write_json(PictureTable.FILE, {"format": 1, "pictures": {KEY: FILE}})
 	ModSkinShelf.add_files(right)
 	var size: Vector2i = SkinTemplates.sizes()[KEY]
 	right.add_picture(FILE, Color.CYAN, size)
@@ -248,7 +229,7 @@ func test_the_check_says_what_is_wrong_with_a_font() -> void:
 	assert_bool(_report(shelf).errors().any(func(f: PackReport.Finding) -> bool: return f.message.contains("hud_font") and f.message.contains("not in the pack"))).is_true()
 	var unused := PackShelf.new()                                                                      # (a font that no manifest names is only a warning)
 	_shelves.append(unused)
-	unused.add_mod_fixture(FIXTURE, {"skin": {"pictures": {}}})
+	unused.add_mod_fixture(FIXTURE, {"skin": {}})
 	ModSkinShelf.add_files(unused)
 	unused.write_bytes("skin/other.ttf", FileAccess.get_file_as_bytes("%s/%s" % [FIXTURE, FONT]))
 	var report := _report(unused)
@@ -270,8 +251,8 @@ func test_the_host_makes_the_skin_and_needs_no_extension_for_it() -> void:
 		assert_bool(skin is ModSkin).is_true()
 		assert_object(skin.presenter_scene_or_null()).override_failure_message("the presenter of a data skin is the original's").is_null()
 		assert_bool(auto_free(PresenterChoice.make_presenter_for(skin)) is OriginalPresenter).is_true()
-		assert_array(skin.pictures.keys()).contains_exactly_in_any_order([KEY, "ui_picture/title_sky", "problem_art/pa_1780", "problem_art/pa_1781", "problem_art/pa_1802", "ui_picture/prompt_sender_ship"])
-		assert_float(skin.pictures[KEY].get_size().x).is_equal(32.0)
+		assert_array(shelf.pack.picture_table().keys()).contains_exactly_in_any_order([KEY, "ui_picture/title_sky", "problem_art/pa_1780", "problem_art/pa_1781", "problem_art/pa_1802", "ui_picture/prompt_sender_ship"])
+		assert_float(Assets.picture_by_key(KEY).get_size().x).is_equal(32.0)
 		var labels := skin.labels()
 		assert_object(labels).is_not_null()
 		assert_str(labels.font.get_font_name()).is_equal(FONT_NAME)
@@ -305,15 +286,17 @@ func test_the_skin_ends_with_its_pack() -> void:
 	assert_array(SkinChoice.available()).not_contains([shelf.id])
 
 
-func test_a_skin_that_maps_a_file_the_pack_lacks_is_refused() -> void:
+func test_a_pictures_row_whose_file_the_pack_lacks_is_told_once_and_the_pack_under_it_answers() -> void:
+	GameState.reset()                                                                                    # (a run begins: the session's log is a new one)
 	var shelf := PackShelf.new()
 	_shelves.append(shelf)
-	shelf.add_mod_fixture(FIXTURE)
+	shelf.add_mod_fixture(FIXTURE)                                                                       # (its pictures.json names skin/sky.png, which is not written)
 	shelf.mount()
 	Mods.sync()
-	assert_str(ModHost.failure(String(shelf.id))).contains("skin/sky.png")
-	assert_array(SkinChoice.available()).not_contains([shelf.id])
-	assert_array(Mods.loaded_ids()).not_contains([String(shelf.id)])
+	assert_str(ModHost.failure(String(shelf.id))).is_empty()                                             # (the skin is no reason to refuse: the table is the pack's)
+	assert_array(SkinChoice.available()).contains([shelf.id])
+	assert_str(Assets.picture_by_key(KEY).resource_path).is_equal(DevPack.ROOT + "assets/ui/hud/ui_1195.png")
+	assert_array(TroubleLog.session.told.filter(func(line: String) -> bool: return line.contains("skin/sky.png") and line.contains("pack '%s'" % shelf.id))).has_size(1)
 
 
 func test_a_skin_with_the_id_of_a_skin_of_the_game_is_refused() -> void:
@@ -328,18 +311,16 @@ func test_a_skin_with_the_id_of_a_skin_of_the_game_is_refused() -> void:
 
 # --- what wearing it changes ------------------------------------------------------------------------------------------------
 
-func test_the_pictures_are_worn_only_while_the_skin_is() -> void:
-	var shelf := _mount()
-	var mapped: Texture2D = (SkinChoice.load_skin(shelf.id) as ModSkin).pictures[KEY]
-	var plain := Catalog.hud_layout().zone_textures[0]
-	assert_object(plain).is_not_same(mapped)
-	SkinChoice.select_id(shelf.id)
-	assert_object(Catalog.hud_layout().zone_textures[0]).is_same(mapped)
-	assert_object(Catalog.hud_layout().zone_textures[1]).is_same(Catalog.skinned(load(DevPack.ROOT + "data/ui/hud_layout.tres")).get("zone_textures")[1])   # (what it does not map is the original's)
-	SkinChoice.select(SkinChoice.original())
-	assert_object(Catalog.hud_layout().zone_textures[0]).is_same(plain)
-	assert_object(SkinChoice.within(SkinChoice.load_skin(shelf.id), func() -> Texture2D: return Catalog.hud_layout().zone_textures[0])).is_same(mapped)
-	assert_object(Catalog.hud_layout().zone_textures[0]).is_same(plain)                                 # (outside the call: the skin in use)
+func test_the_pictures_are_the_packs_whatever_skin_is_worn() -> void:
+	var shelf := _mount()                                                                                  # (the pack draws sky.png: cyan, 32 x 18)
+	var raw := load(DevPack.ROOT + "data/ui/hud_layout.tres") as HudLayout
+	for skin in [SkinChoice.original(), SkinChoice.load_skin(shelf.id)]:
+		SkinChoice.select(skin)
+		assert_that(PicturesShelf.color_of(Catalog.hud_layout().zone_textures[0])).is_equal(Color.CYAN)
+		assert_vector(Catalog.hud_layout().zone_textures[0].get_size()).is_equal(Vector2(32, 18))
+		assert_object(Catalog.hud_layout().zone_textures[1]).is_same(raw.zone_textures[1])                # (what the pack does not draw is the pack under it's)
+	ModSkinShelf.release(_shelves)
+	assert_that(PicturesShelf.color_of(Catalog.hud_layout().zone_textures[0])).is_not_equal(Color.CYAN)    # (the pack left the chain: its pictures went with it)
 
 
 func test_the_font_is_the_hud_lettering_only_while_the_skin_is_worn() -> void:
@@ -400,11 +381,11 @@ func test_the_font_is_read_from_a_pack_file_and_goes_with_an_export() -> void:
 	PackFiles.remove_tree(stage)
 
 
-func test_a_picture_of_a_pack_wins_over_the_skins() -> void:
+func test_a_pack_above_redraws_what_the_skins_pack_draws() -> void:
 	var shelf := _mount()
-	var above := PackShelf.new(&"", shelf.id)                                                           # (a pack laid over the skin's: its `pictures/` is the content's say, under every skin)
+	var above := PackShelf.new(&"", shelf.id)                                                           # (a pack laid over the skin's: the first pack of the chain with a row for the key draws it, under every skin)
 	_shelves.append(above)
-	above.add_picture("pictures/%s.png" % KEY, Color.MAGENTA, Vector2i(5, 5))
+	above.add_picture_row(KEY, Color.MAGENTA, Vector2i(5, 5))
 	above.mount()
 	Mods.sync()
 	SkinChoice.select_id(shelf.id)

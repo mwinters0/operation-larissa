@@ -12,7 +12,7 @@ const HUD_SCENE := "res://src/ui/hud.tscn"
 const WATER := "skin/water_shimmer.gdshader"
 const WALLS := "skin/sharp_walls.gdshader"
 const FONT := "skin/fonts/Exo2.ttf"
-## The pictures of the console the templates cover (`SkinTemplates`): the manifest maps each key to the template of that name.
+## The pictures of the console the templates cover (`SkinTemplates`): the pack's `pictures.json` has a row for each key, to the template of that name.
 const PICTURE_COUNT := 24
 
 var _shelves: Array[PackShelf] = []
@@ -58,7 +58,8 @@ func test_the_folder_is_a_skin_pack_with_no_script() -> void:
 	assert_bool(pack.mod.render.snap_transforms).is_false()
 	assert_bool(pack.mod.render.snap_vertices).is_false()
 	assert_dict(pack.mod.layers).contains_keys([&"background", &"walls"])
-	assert_int(pack.mod.pictures.size()).is_equal(PICTURE_COUNT)
+	assert_int(pack.picture_table().keys().size()).is_equal(PICTURE_COUNT)
+	assert_array(pack.picture_table().problems).is_empty()
 	assert_str(pack.mod.hud_font_spec.file).is_equal(FONT)
 
 
@@ -68,10 +69,10 @@ func test_the_font_ships_with_its_licence() -> void:
 	assert_str(licence).contains("SIL Open Font License")
 
 
-func test_every_picture_of_the_manifest_is_a_template_file_of_the_folder() -> void:
+func test_every_row_of_the_table_is_a_template_file_of_the_folder() -> void:
 	var pack := Pack.open(_folder())
-	for key: String in pack.mod.pictures:
-		var file: String = pack.mod.pictures[key]
+	for key: String in pack.picture_table().files:
+		var file: String = pack.picture_table().files[key]
 		assert_str(key).starts_with("ui_picture/")
 		assert_str(file).is_equal("skin/ui_picture/%s.png" % key.get_slice("/", 1))
 		var image := Image.load_from_file("%s/%s" % [_folder(), file])
@@ -131,20 +132,19 @@ func test_the_hud_is_lettered_in_exo_2_and_its_boxes_keep_their_rectangles() -> 
 		assert_object(boxes[i].get_rect()).is_equal(plain[i])
 
 
-func test_the_templates_are_worn_only_while_the_skin_is() -> void:
-	var shelf := _mount()
-	var skin := _skin()
-	assert_int(skin.pictures.size()).is_equal(PICTURE_COUNT)
+func test_the_templates_are_the_chains_pictures_while_the_pack_is_in_it() -> void:
+	_mount()
 	var key := "ui_picture/ui_1195"                                                                 # (the first zone's name box of the console)
-	var mapped: Texture2D = skin.pictures[key]
+	var mapped := Assets.picture_by_key(key)
 	var image := Image.load_from_file("%s/skin/ui_picture/ui_1195.png" % _folder())
 	assert_object(mapped.get_size()).is_equal(Vector2(image.get_size()))
-	var plain := Catalog.hud_layout().zone_textures[0]
-	assert_object(plain).is_not_same(mapped)
-	SkinChoice.select_id(shelf.id)
 	assert_object(Catalog.hud_layout().zone_textures[0]).is_same(mapped)
+	SkinChoice.select(_skin())
+	assert_object(Catalog.hud_layout().zone_textures[0]).is_same(mapped)                            # (the pack draws them: the skin worn or not)
 	SkinChoice.select(SkinChoice.original())
-	assert_object(Catalog.hud_layout().zone_textures[0]).is_same(plain)
+	assert_object(Catalog.hud_layout().zone_textures[0]).is_same(mapped)
+	ModSkinShelf.release(_shelves)
+	assert_object(Catalog.hud_layout().zone_textures[0]).is_not_same(mapped)                        # (the pack left the chain: the base pack's picture is back)
 
 
 func _shader_code(node: CanvasItem) -> String:
@@ -250,11 +250,11 @@ func test_the_templates_of_the_problem_screens_frame_are_in_the_folder_and_not_m
 	for file in found:
 		var name := file.get_basename()
 		assert_bool(NameRegistry.original().index_of(&"problem_art", name) >= 0).override_failure_message(file).is_true()
-		assert_bool(pack.mod.pictures.has("problem_art/%s" % name)).override_failure_message(file).is_false()
+		assert_bool(pack.picture_table().has("problem_art/%s" % name)).override_failure_message(file).is_false()
 		var image := Image.load_from_file("%s/skin/problem_art/%s" % [_folder(), file])
 		assert_int(image.get_pixel(0, 0).a8).is_equal(255)
 	for sender in [PromptSender.PICTURE_SHIP, PromptSender.PICTURE_CONTROL_ROOM]:
 		var image := Image.load_from_file("%s/skin/ui_picture/%s.png" % [_folder(), sender])
 		assert_object(Vector2i(image.get_size())).is_equal(PromptSender.PICTURE_SIZE)
-		assert_bool(pack.mod.pictures.has("ui_picture/%s" % sender)).is_false()
+		assert_bool(pack.picture_table().has("ui_picture/%s" % sender)).is_false()
 	assert_bool(FileAccess.file_exists("%s/problems/problem_layer/window.png" % _folder())).is_true()

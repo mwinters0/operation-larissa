@@ -219,14 +219,16 @@ func test_the_row_labels_catch_mouse_clicks() -> void:
 	assert_int(_screen.selected_row()).is_equal(1)
 
 
-## The scanner pictures depend on the skin and the pack chain: nothing keeps them, so a skin chosen later (or a pack) is seen.
-func test_the_scanner_pictures_are_the_skins_in_use() -> void:
-	var original := LogScreen.scan_pictures()                         # (asked first in the original skin)
-	var marker := load("res://tests/skins/tiny/marker.png") as Texture2D
-	var skin := GameSkin.new()
-	skin.pictures = {GameSkin.key_of(Assets.problem_art_path(Assets.number_of(&"problem_art", &"log_scan_0"))): marker}
-	var skinned: Array[Texture2D] = SkinChoice.within(skin, LogScreen.scan_pictures)
-	assert_object(skinned[0]).is_same(marker)
-	assert_object(SkinChoice.within(skin, LogScreen.scan_picture.bind(0))).is_same(marker)
-	assert_object(original[0]).is_not_same(marker)
-	assert_object(LogScreen.scan_pictures()[0]).is_same(original[0])          # (and the original's again outside the skin)
+## The scanner pictures depend on the pack chain: nothing keeps them, so a pack chosen later is seen (and a skin is not).
+func test_the_scanner_pictures_are_the_chains() -> void:
+	var original := LogScreen.scan_pictures()                         # (asked first in the chain of the suite)
+	var shelf := PackShelf.new()
+	shelf.add_picture_row("problem_art/log_scan_0", Color.RED)
+	shelf.mount()
+	var drawn := LogScreen.scan_pictures()
+	assert_that(PicturesShelf.color_of(drawn[0])).is_equal(Color.RED)
+	assert_that(PicturesShelf.color_of(LogScreen.scan_picture(0))).is_equal(Color.RED)
+	assert_object(original[0]).is_not_same(drawn[0])
+	assert_object(SkinChoice.within(SkinChoice.original(), LogScreen.scan_pictures)[0]).is_same(drawn[0])      # (no skin has a part in it)
+	shelf.remove()
+	assert_object(LogScreen.scan_pictures()[0]).is_same(original[0])          # (and the suite's again when the pack goes)

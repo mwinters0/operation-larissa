@@ -1,7 +1,7 @@
 class_name TestSkinTemplates
 extends GdUnitTestSuite
 ## Teaches: a tool whose answer is a list read off the engine's own data. The art templates (`SkinTemplates`, the command line `skin_templates_tool.tscn`) write one flat-colour PNG per picture of the
-## HUD's layout, named by the skin key a skin's `pictures` uses, at the size of the picture in the layout, with the key and the size written on it, and one for each layer of the console a script may draw, at the size of the
+## HUD's layout, named by the picture key a pack's `pictures.json` uses, at the size of the picture in the layout, with the key and the size written on it, and one for each layer of the console a script may draw, at the size of the
 ## layer's rectangle in the layout: so these tests read the layout, ask for the same keys and sizes, and look at the files. Another phase's pictures are one more layout in `SkinTemplates.SOURCES`, and the same tests cover them.
 
 const OUT := "user://test_skin_templates"
@@ -13,7 +13,7 @@ func after_test() -> void:
 	PackFiles.remove_tree(OUT)
 
 
-## key -> size of the entries that are pictures a skin replaces (`ui_picture/...`).
+## key -> size of the entries that are pictures a pack redraws (`ui_picture/...`).
 func _sizes() -> Dictionary:
 	var sizes := {}
 	for entry in SkinTemplates.entries():
@@ -87,7 +87,7 @@ func test_the_keys_are_keys_a_skin_may_name_and_the_game_asks_for() -> void:
 		if entry.key == "%s/%s" % [SkinTemplates.PROBLEM_LAYER_KIND, SkinTemplates.PROBLEM_WINDOW]:
 			continue
 		var kind := entry.key.get_slice("/", 0)
-		assert_bool(ModSpec.is_picture_key(entry.key) if kind == "ui_picture" else ModSpec.is_drawable_key(entry.key)).is_true()
+		assert_bool(PictureTable.is_key(entry.key) if kind == "ui_picture" else ModSpec.is_drawable_key(entry.key)).is_true()
 		assert_bool(kind == "ui_picture" or kind == "problem_art").override_failure_message(entry.key).is_true()
 		assert_bool(NameRegistry.original().index_of(StringName(kind), entry.key.get_slice("/", 1)) >= 0).is_true()
 		assert_bool(seen.has(entry.key)).is_false()
@@ -129,7 +129,7 @@ func test_the_senders_pictures_have_entries_at_the_size_the_screen_stretches_the
 		sizes[entry.key] = entry.size
 	for sender in [PromptSender.PICTURE_SHIP, PromptSender.PICTURE_CONTROL_ROOM]:
 		var key := "ui_picture/%s" % sender
-		assert_bool(ModSpec.is_picture_key(key)).is_true()                                              # (a skin's `pictures` may name it)
+		assert_bool(PictureTable.is_key(key)).is_true()                                                 # (a pack's `pictures.json` may name it)
 		assert_object(sizes[key]).is_equal(PromptSender.PICTURE_SIZE)
 	var icon := (load("res://src/problems/problem_screen.tscn") as PackedScene).instantiate() as ProblemScreen
 	assert_object(Vector2i(icon.get_node("%SenderIcon").size)).is_equal(PromptSender.PICTURE_SIZE)   # (the scene's rectangle is the same number)

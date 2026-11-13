@@ -9,8 +9,8 @@ extends RefCounted
 ##
 ## THE CACHE is per chain: an answer is kept until the chain changes (`forget`, from `Assets.forget_folders` by `Catalog.packs_changed`). `epoch` counts the changes and `events.changed` announces them, so a holder of an answer (`PictureRef`) asks again. A skin changes no picture.
 ##
-## BRIDGE (deleted with the path lookups, when every pack has a table and the skins no longer map pictures): a pack WITHOUT a `pictures.json` answers as it always has, from its `pictures/<kind>/<name>.png` folder and from the files whose names make the key (`Assets.pack_key_files`),
-## and `overlaid` is what the packs laid over another say, for `GameSkin.picture`, which still puts a skin's own pictures between them and the base game. Everything marked BRIDGE goes together.
+## BRIDGE (deleted with the path lookups, when every pack has a table): a complete pack WITHOUT a `pictures.json` (the importer's and the dev pack's data still hold their pictures by file) answers from the files whose names make the key (`Assets.pack_key_files`),
+## and `overlaid` is what the packs laid over another say, for the data that still holds a picture by its file (`PathPictures`). Everything marked BRIDGE goes together.
 ##
 ## Teaches: a layered lookup with a re-entrant step (an alias asks the whole lookup again), a visited list to stop a cycle, and failures that degrade to the next layer and say so once.
 
@@ -51,7 +51,7 @@ static func has(key: String) -> bool:
 	return resolve(key) != null
 
 
-## BRIDGE: what the packs laid over another say for `key` (their rows, or the `pictures/` folder of a pack with no table), before any skin: the first layer of `GameSkin.picture`.
+## BRIDGE: what the packs laid over another say for `key` (their rows): what `PathPictures` puts in the data that holds a picture by its file.
 static func overlaid(key: String) -> Texture2D:
 	if not _overlaid.has(key):
 		_overlaid[key] = _find(key, [], true)
@@ -67,6 +67,36 @@ static func forget() -> void:
 	events.changed.emit()
 
 
+## Why no pack of the chain would give `key` a picture, from the tables alone (no file is read and nothing is told): "" when a row answers (a file the pack holds, or an alias that does), else a clause that says what is wrong with the rows that name it, or that none does. For `PackCheck`.
+static func unanswered(key: String) -> String:
+	return _unanswered(key, [] as Array[String])
+
+
+static func _unanswered(key: String, asking: Array[String]) -> String:
+	var now: Array[String] = asking.duplicate()
+	now.append(key)
+	var reason := "no pack of the chain has a row for it"
+	for each in Packs.chain():
+		var table := each.picture_table()
+		if not table.present:
+			if Assets.pack_key_files(each).has(key):                  # (BRIDGE: a pack with no table answers by the file whose name makes the key)
+				return ""
+		elif table.files.has(key):
+			if each.has(table.files[key]):
+				return ""
+			reason = "its row in pack '%s' names the file %s, which that pack does not hold" % [each.id, table.files[key]]
+		elif table.aliases.has(key):
+			var target: String = table.aliases[key]
+			if now.has(target) or now.size() > MAX_ALIAS_DEPTH:
+				reason = "the aliases %s go round in a circle" % " -> ".join(PackedStringArray(now + [target]))
+				continue
+			var inner := _unanswered(target, now)
+			if inner.is_empty():
+				return ""
+			reason = "its row in pack '%s' is an alias of '%s', and %s" % [each.id, target, inner.replace("no pack of the chain has a row for it", "no pack of the chain has a row for that")]
+	return reason
+
+
 ## The sentence that says no pack holds the picture `key` that data names, for whoever holds it (`PictureRef`).
 static func unheld_line(key: String) -> String:
 	var ids := ", ".join(PackedStringArray(Packs.chain_ids().map(func(id: StringName) -> String: return String(id))))
@@ -76,7 +106,7 @@ static func unheld_line(key: String) -> String:
 # --- the lookup ---------------------------------------------------------------------------------------------------------
 
 ## `key` down the chain; `asking` is the keys whose rows are being followed (an alias asks again from the top and meets a key it is already asking for when the aliases go round).
-## `only_overlays` (BRIDGE): the packs laid over another only, and no files by name.
+## `only_overlays` (BRIDGE): the packs laid over another only, with a table of their own.
 static func _find(key: String, asking: Array[String], only_overlays: bool) -> Texture2D:
 	if key.is_empty():
 		return null
@@ -130,11 +160,10 @@ static func _file_row(pack: Pack, table: PictureTable, key: String) -> Texture2D
 	return _scaled[held]
 
 
-## BRIDGE: a pack with no table: its `pictures/<key>.png`, and (not for `only_overlays`) the file whose name makes `key`.
+## BRIDGE: a pack with no table: (not for `only_overlays`) the file whose name makes `key`.
 static func _bridge_row(pack: Pack, key: String, only_overlays: bool) -> Texture2D:
-	var from_folder := pack.texture("pictures/%s.png" % key)
-	if from_folder != null or only_overlays:
-		return from_folder
+	if only_overlays:
+		return null
 	var rel: String = Assets.pack_key_files(pack).get(key, "")
 	return pack.texture(rel) if not rel.is_empty() else null
 

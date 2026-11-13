@@ -8,12 +8,9 @@ for the skin classes). What a skin author is given is [`../create/SKIN_API.md`](
 
 ## What a skin maps
 
-- **`pictures`**: `<kind>/<registry name>` to a `Texture2D` (`ui_picture/title_sky`, `problem_art/log_scan_0`, `frame/dolphin_swim_0`,
-  `deco/...`, and by file name `tile/zone0_tiles`, `background/bg_s00_00`). `GameSkin.key_of(path)` is the key of a file under a
-  pack's `assets/`, so the `assets` paths inside `data/sprite_frames`, `data/problems`, `data/ui`, the tile set and
-  `ProblemType.art_files` all resolve through one table.
-- **`art_folder` / `art_scale`**: a folder of PNGs named by key, drawn at 1 / `art_scale` of their size (`ScaledTexture` reports the
-  original size), so 4x art is sharp at the original's size. No shipped skin has one.
+- **No picture.** A skin maps no picture: the pictures are the pack layer's, `pictures.json` of each pack of the chain (`Pictures`, [`PACKS.md`](PACKS.md)). A picture a data file still holds by its file path
+  (`data/sprite_frames`, `data/problems`, `data/ui`, the tile set, `ProblemType.art_files`) is shown with the chain's pictures by `PathPictures` and `Assets.texture_at`
+  (`GameSkin.key_of(path)` is the key of a file under a pack's `assets/`).
 - **`resources`**: a whole presentation resource by its path under `data/` (`ui/hud_layout`, `problems/screen_layout`,
   `sprite_frames/foes_zone2`, `neptune_tileset`), for a skin whose pictures have other sizes. Only `GameSkin.REPLACEABLE` keys are
   taken (`ui/`, `sprite_frames/`, the tile set, the problem screen's layout); a key that names rules or content
@@ -22,12 +19,12 @@ for the skin classes). What a skin author is given is [`../create/SKIN_API.md`](
 - **`presenter_scene`** (the root extends `SectorPresenter`), **`render`** (`RenderSettings`), **`hud_labels`** (`HudLabels`),
   **`fallback`** (another skin to build on).
 
-**Resolution.** `Assets` (`ui_picture`, `problem_art`, `background`, `texture_at(path)`) asks the skin for every texture, and `Catalog`
+**Resolution.** `Assets` (`ui_picture`, `problem_art`, `background`, `picture_by_key`, `texture_at(path)`) asks the chain's picture tables for every texture, and `Catalog`
 (`foes_frames`, `decos_frames`, `sub_frames`, `fx_frames`, `pieces_frames`, `station_frames`, `tileset`, `problem_type`,
 `screen_layout`, `hud_layout`, `calculator_layout`, `menu_layout`, `story_layout`, `skinned(resource)`) returns the skin's version: its
-own resource, or the original's with the skin's pictures put in (a copy made once per skin; the file's resource is never written to).
-With the original skin each is the very object loaded from the pack. Catalog asks the skin only for presentation files (a test reads
-its source). A picture that a pack of the chain supplies by skin key wins over every skin ([`PACKS.md`](PACKS.md)).
+own resource, or the pack's resource with the chain's pictures put in where it holds a file path (a copy made once per chain by `PathPictures`; the file's resource is never written to).
+With no pack redrawing a picture each is the very object loaded from the pack. Catalog asks the skin only for presentation files (a test reads
+its source).
 
 ## Choosing and switching
 
@@ -75,7 +72,7 @@ nothing and tells nobody). Tested in `tests/engine/test_skin_compare.gd`; the ga
   original picture rectangle. Run on legacy: `tools/godot.sh --path godot res://src/debug/sector_viewer.tscn -- --pack=legacy
   --skin=creatures --sector=0 --screen=0 --fly` (on dev the fish are in sector 122, `tests/engine/dev_creatures.gd`). Tests: `test_skin_creatures.gd`, and in a window `test_skin_creatures_render.gd`.
 - A skin that needs no node of its own is a skin pack, not a folder of `res://skins/`; the example of one, `modern`, is `examples/packs/modern/` (below, "Skin mods"). An export carries `original` and not `creatures` (`docs/engine/DEVELOPING.md`, "Exporting builds").
-- **`tests/skins/tiny/`** is a test skin, not one of the project's (one square in place of three pictures, linear filtering, HUD words as text).
+- **`tests/skins/tiny/`** is a test skin, not one of the project's (linear filtering, HUD words as text; it maps no picture, as no skin does).
 
 ## Skins do not change the game
 
@@ -100,6 +97,6 @@ A skin from a stranger is not a folder of `res://skins/` but a mod pack ([`PACKS
 (the layouts, the sounds and the rules stay the base game's), and no `presenter_scene`: the original presenter shows the sector of every skin mod. A skin with a script has `script_layers` (or `draws_frame`) and the presenter hands those layers to the script (`ModLayerHost`, [`ARCHITECTURE.md`](ARCHITECTURE.md)); a skin with no script (a manifest with no `entry`) draws nothing by script and needs no Sandbox. `ModHost` makes it when the mod loads and `SkinChoice` offers it with the others, so every path that wears a skin (the command line, F3 then S, `SectorWorld`,
 `skin_compare`) wears it the same way (`OriginalPresenter._dress_layers` asks the skin in use for `GameSkin.layer_material(layer)`, a fresh copy, puts it on the layer's node and `_show_phase` sets its `phase` from `SectorPresenter.game_phase` (the stacks of the layers a script draws get it from `ModLayerHost.show`, through `ModLayerStack.set_phase`; the console's from `Hud.game_phase`); every node inside a layer scene has `use_parent_material` on, so the layer's material reaches the pictures made later, and `Sub` turns it off for the pictures while its dissolve material is on), and `leave_dead_mod_skins` puts the original on when the mod stops. How to write one is [`../create/SKIN_API.md`](../create/SKIN_API.md), "Writing a skin mod".
 
-`SkinState.build` makes the state as plain data. The screen's `background`, `decos`, `anim_decos` and `station` come as skin keys from the copies `SimView` holds (`decorations`, `anim_decorations`, `screen_ticks`, `station`, from `SimWorld.screen_started_tick`; `Assets.background_key`, `Catalog.pack_decos_frames` / `pack_station_frames`), `StationLayout.parts` says where a supply station's pictures go (for `SupplyStation`, `ScreenEditorStation` and the state), and `HudLayout.rect_of(layer)` is a console part's rectangle (`ConsoleState.rects` walks the list of parts). `ModSpec.is_picture_key` judges what a skin may replace (`REPLACEABLE_KINDS`), `ModSpec.is_drawable_key` what a draw list may name (`GameSkin.KEY_KINDS`).
+`SkinState.build` makes the state as plain data. The screen's `background`, `decos`, `anim_decos` and `station` come as skin keys from the copies `SimView` holds (`decorations`, `anim_decorations`, `screen_ticks`, `station`, from `SimWorld.screen_started_tick`; `Assets.background_key`, `Catalog.pack_decos_frames` / `pack_station_frames`), `StationLayout.parts` says where a supply station's pictures go (for `SupplyStation`, `ScreenEditorStation` and the state), and `HudLayout.rect_of(layer)` is a console part's rectangle (`ConsoleState.rects` walks the list of parts). `ModSpec.is_drawable_key` judges what a draw list may name (`GameSkin.KEY_KINDS`); a skin's manifest naming `pictures` is refused (`ModSpec`: they are rows of the pack's `pictures.json`, `PictureTable`).
 
 **The example pack** (`examples/packs/modern/`, a data skin; what it holds is told in [`../create/CONTENT.md`](../create/CONTENT.md), "Skins and packs"): `SkinTemplates` made its templates from the legacy pack's layouts. `mise run examples:pack modern` is `PackExport.archive_folder` (`pack_tool --archive-folder=`: `PackCheck` first, then `PackFiles.zip_folder`, the zipper every pack file goes through) and `mise run examples:install modern` is `PackInstall`. `tests/engine/test_example_pack_modern.gd` mounts the very folder as a scratch pack (`ModSkinShelf.EXAMPLE_MODERN`, over dev, under the id `modern_test` so that an installed copy is not the one found), has `PackCheck` judge it and wears it; `SkinRoster.mount_mod_skins` adds it to every suite that plays the skins.

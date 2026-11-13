@@ -60,7 +60,7 @@ static func run(pack: Pack, options: Options = null) -> PackReport:
 			report.error("layout", message)
 	_chain(pack, report)
 	if pack.sector_ids().is_empty() and pack.campaign_ids().is_empty() and pack.mod == null and report.passes():
-		if not pack.has("texts.json") and pack.folders_in("pictures").is_empty() and pack.folders_in("audio").is_empty() and not pack.has(Durations.PACK_PATH) and not pack.has(Tuning.PACK_PATH):
+		if not pack.has("texts.json") and not pack.has(PictureTable.FILE) and pack.folders_in("audio").is_empty() and not pack.has(Durations.PACK_PATH) and not pack.has(Tuning.PACK_PATH):
 			report.warn("layout", "the pack holds nothing the game reads (no campaign, sector, text, picture, clip, durations, rule values or mod)")
 	_with_chain(pack, func(live: Pack) -> void:
 		_content(live, report, options)
@@ -185,34 +185,15 @@ static func _mod(live: Pack, report: PackReport) -> void:
 			_entry_script(live, report)
 		for message in ModParts.problems(live):
 			report.error("mod", message)
-		var sizes: Dictionary = SkinTemplates.sizes() if not live.mod.pictures.is_empty() else {}
-		for key in live.mod.pictures:
-			if not _game_names_picture(key):
-				report.warn("mod", "the skin's picture %s names no picture of the game: it is never asked for" % key)
-			else:
-				_picture_size(live, key, sizes, report)
 		for key in live.mod.theme_pictures():
-			if ModSpec.is_picture_key(key) and not live.mod.pictures.has(key) and not _game_names_picture(key):
-				report.warn("mod", "the theme's picture %s is neither one the skin maps nor one of the game's: the style is drawn flat" % key)
+			if Assets.picture_by_key(key) == null:
+				report.warn("mod", "the theme's picture %s is held by no pack of the chain (a row of a pictures.json): the style is drawn flat" % key)
 		scripts.erase(live.mod.entry)
 	for rel in live.all_files():
 		if rel.get_extension() == Pack.FONT_EXTENSION and (live.mod == null or not live.mod.font_files().has(rel)):
 			report.warn("mod", "%s is never used: %s" % [rel, "a skin names its font in \"skin\": {\"hud_font\": {\"file\": ...}} or {\"theme\": {\"font\": {\"file\": ...}}}" if live.mod != null and live.mod.is_skin else "a font is read by a skin mod only"])
 	for rel in scripts:
 		report.warn("mod", "%s is never run: %s" % [rel, "a mod pack's manifest names one entry script (\"mod\": {\"entry\": ...})" if live.mod != null else "the manifest has no \"mod\" entry"])
-
-
-## A warning when the skin's PNG for `key` is not the size of the picture it replaces (the game draws it stretched to the place of the original's). `sizes` are the ones the art templates have (`SkinTemplates.sizes`, from the layouts of the pack in use), so the two cannot disagree; a picture no layout holds is not judged.
-static func _picture_size(live: Pack, key: String, sizes: Dictionary, report: PackReport) -> void:
-	var texture := live.texture(live.mod.pictures[key])
-	var wanted: Vector2i = sizes.get(key, Vector2i.ZERO)
-	if texture != null and wanted != Vector2i.ZERO and Vector2i(texture.get_size()) != wanted:
-		report.warn("mod", "the skin's picture %s is %dx%d, and the picture it replaces is %dx%d: it is drawn stretched to that place" % [key, texture.get_width(), texture.get_height(), wanted.x, wanted.y])
-
-
-## Does the game's own registry name the picture a skin key (`<kind>/<name>`) says? A skin that replaces a picture the game never asks for changes nothing.
-static func _game_names_picture(key: String) -> bool:
-	return NameRegistry.original().index_of(StringName(key.get_slice("/", 0)), key.get_slice("/", 1)) >= 0
 
 
 ## The entry script of the mod `live`: in the pack, within the size limit, with `mod_init(api)` and the functions the manifest lists.
@@ -271,19 +252,51 @@ static func _voice_cues(live: Pack, report: PackReport) -> void:
 				report.error("voice cues", "group '%s' names the voice '%s', which is neither one of the game's nor a file of the pack (audio/voice/%s.ogg)" % [group, clip_name, clip_name])
 
 
+## The pack's picture table (`pictures.json`, `PictureTable`): each mistake of the file itself, a row whose file the pack does not hold or the engine cannot decode, an alias that leads to a key no pack of the chain has a picture for (or round in a circle through the chain), a picture the table
+## gives that is not the size of the picture it redraws (a warning: it is drawn stretched), a PNG of the pack no row names (a warning: nothing reads it). A pack with no table is not judged (BRIDGE: a complete pack of the importer names its files in its data).
 static func _pictures(live: Pack, report: PackReport) -> void:
-	for kind in live.folders_in("pictures"):
-		if not GameSkin.KEY_KINDS.has(kind):
-			report.warn("pictures", "pictures/%s: the game looks for pictures in %s only" % [kind, ", ".join(GameSkin.KEY_KINDS)])
-			continue
-		for file in live.files_in("pictures/" + kind):
-			var rel := "pictures/%s/%s" % [kind, file]
-			if file.get_extension() != "png":
-				report.warn("pictures", "%s: only .png pictures are read" % rel)
-			elif live.texture(rel) == null:
-				report.error("pictures", "%s is not a PNG picture the engine can decode" % rel)
-			elif not NameRegistry.is_valid_name(file.get_basename()):
-				report.warn("pictures", "%s: '%s' %s, so no picture key names it" % [rel, file.get_basename(), NameRegistry.name_problem(file.get_basename())])
+	var table := live.picture_table()
+	if not table.present:
+		if not live.folders_in("pictures").is_empty():
+			report.warn("pictures", "the pictures/ folder is not read: the game finds a picture through pictures.json (`pack_tool --pictures-table=<folder>` writes one from a folder of <kind>/<name>.png)")
+		return
+	for message in table.check(live):
+		report.error("pictures", message)
+	var sizes: Dictionary[String, Vector2i] = SkinTemplates.sizes()
+	var named := {}
+	var rows := table.keys()
+	rows.sort()
+	for key in rows:
+		if table.files.has(key):
+			_picture_row(live, table, key, sizes, named, report)
+		elif table.own_loop(key).is_empty():
+			var why := Pictures.unanswered(table.aliases[key])
+			if not why.is_empty():
+				report.error("pictures", "%s: '%s' is an alias of '%s', which no picture answers for: %s" % [PictureTable.FILE, key, table.aliases[key], why])
+	for rel in live.all_files():
+		if rel.get_extension() == "png" and not named.has(rel) and not _is_a_mods_own(live, rel):
+			report.warn("pictures", "%s is named by no row of %s: nothing reads it" % [rel, PictureTable.FILE])
+
+
+## One file row: its file decodes, and its size is the size of the picture the game draws there (when the game's layouts say it).
+static func _picture_row(live: Pack, table: PictureTable, key: String, sizes: Dictionary[String, Vector2i], named: Dictionary, report: PackReport) -> void:
+	var rel: String = table.files[key]
+	named[rel] = true
+	if not live.has(rel):
+		return                                                         # (`PictureTable.check` said so)
+	var texture := live.texture(rel)
+	if texture == null:
+		report.error("pictures", "%s: '%s' names %s, which is not a PNG picture the engine can decode" % [PictureTable.FILE, key, rel])
+		return
+	var wanted: Vector2i = sizes.get(key, Vector2i.ZERO)
+	var drawn := Vector2i(texture.get_size()) / table.scale_of(key)
+	if wanted != Vector2i.ZERO and drawn != wanted:
+		report.warn("pictures", "%s: '%s' is %dx%d%s, and the picture it replaces is %dx%d: it is drawn stretched to that place" % [PictureTable.FILE, key, drawn.x, drawn.y, "" if table.scale_of(key) == 1 else " as drawn (the file is %dx%d)" % [texture.get_width(), texture.get_height()], wanted.x, wanted.y])
+
+
+## Is `rel` a picture a mod's draw list names by its path (`skin/`, `problems/`)? Those are not rows of the table.
+static func _is_a_mods_own(live: Pack, rel: String) -> bool:
+	return live.mod != null and (rel.begins_with(ModSpec.SKIN_FOLDER) or rel.begins_with(ModSpec.PROBLEM_FOLDER))
 
 
 static func _audio(live: Pack, report: PackReport) -> void:

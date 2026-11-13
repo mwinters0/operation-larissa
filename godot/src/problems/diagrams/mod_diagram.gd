@@ -203,7 +203,7 @@ func _attempt() -> int:
 	return 1 if session == null else mini(session.misses, 1) + 1
 
 
-## The last good answer of the script, checked and resolved now (a picture by key is the one the skin in use shows), and shown; a list that is not one leaves what is on.
+## The last good answer of the script, checked and resolved now (a picture by key is the one the chain in use holds), and shown; a list that is not one leaves what is on.
 func _show_answer(screens: ModProblems) -> void:
 	var drawn := ModDraw.validate(_answer, Packs.pack(screens.pack_id), screens.assets)
 	if drawn != null:
@@ -214,8 +214,8 @@ func _show_answer(screens: ModProblems) -> void:
 		_stack.show_drawn(drawn, screens.assets)
 
 
-## The skin in use changed: what the mod drew is resolved under the new skin without asking the script. (The plain diagram hears of the skin itself and looks its pictures up again, whatever it is doing.)
-func _on_skin_changed(_skin: GameSkin) -> void:
+## The chain's pictures changed (`Pictures.events`): what the mod drew is resolved in the new chain without asking the script. (The plain diagram hears of it itself and looks its pictures up again, whatever it is doing.)
+func _on_pictures_changed() -> void:
 	var screens := _screens()
 	if _showing_mod and screens != null:
 		_show_answer(screens)

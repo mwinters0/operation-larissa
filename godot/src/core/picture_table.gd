@@ -128,14 +128,14 @@ func check(pack: Pack) -> Array[String]:
 			if not pack.has(rel):
 				found.append("%s: '%s' names the file %s, which the pack does not hold" % [FILE, key, rel])
 		else:
-			var loop := _own_loop(key)
+			var loop := own_loop(key)
 			if not loop.is_empty():
 				found.append("%s: the aliases %s go round in a circle" % [FILE, loop])
 	return found
 
 
 ## "a -> b -> a" when the aliases from `key` lead back to a key already passed through this pack's rows alone, else "".
-func _own_loop(key: String) -> String:
+func own_loop(key: String) -> String:
 	var seen: Array[String] = [key]
 	var at: String = key
 	while aliases.has(at):

@@ -46,7 +46,7 @@ func _orchard(mounted := true) -> PackShelf:
 	shelf.add_sector_copy(0, 40)
 	shelf.add_sector_copy(1, 41)
 	shelf.add_sector_copy(DevPack.test_sector("e", 0), 42)
-	shelf.add_picture("pictures/ui_picture/orchard_finale.png", Color.ORANGE, Vector2i(8, 4))
+	shelf.add_picture_row("ui_picture/orchard_finale", Color.ORANGE, Vector2i(8, 4))
 	shelf.write_json("texts.json", {"orchard_hello": "Welcome to the orchard."})
 	shelf.write_json("campaigns/%s.json" % ID, {
 		"class": "Campaign", "id": String(ID), "title": "Orchard of Packs", "sectors": [40, 41], "finales": [42],
@@ -72,7 +72,7 @@ func test_a_campaign_of_a_mounted_pack_exports_as_a_folder_that_is_a_sound_pack(
 	assert_bool(result.ok()).override_failure_message(result.text()).is_true()
 	assert_str(result.path).is_equal("%s/%s" % [EXPORTS, ID])
 	for rel in ["pack.json", "campaigns/orchard_pack.json", "sectors/sector_40/sector_40.json", "sectors/sector_40/sector_40.foe", "sectors/sector_41/sector_41.json",
-			"sectors/sector_42/sector_42.foe", "pictures/ui_picture/orchard_finale.png", "texts.json"]:
+			"sectors/sector_42/sector_42.foe", "pictures.json", "art/ui_picture_orchard_finale.png", "texts.json"]:
 		assert_bool(result.files.has(rel)).override_failure_message("%s is missing from %s" % [rel, result.files]).is_true()
 	var pack := Pack.open(result.path)
 	assert_array(pack.errors).is_empty()
@@ -82,7 +82,7 @@ func test_a_campaign_of_a_mounted_pack_exports_as_a_folder_that_is_a_sound_pack(
 	assert_array(pack.sector_ids()).is_equal([40, 41, 42])
 	assert_bool(result.report.passes()).is_true()
 	# the sectors and the campaign are the source's, byte for byte
-	for rel in ["sectors/sector_40/sector_40.json", "sectors/sector_42/sector_42.foe", "campaigns/orchard_pack.json", "pictures/ui_picture/orchard_finale.png"]:
+	for rel in ["sectors/sector_40/sector_40.json", "sectors/sector_42/sector_42.foe", "campaigns/orchard_pack.json", "pictures.json", "art/ui_picture_orchard_finale.png"]:
 		assert_array(Array(FileAccess.get_file_as_bytes("%s/%s" % [result.path, rel]))).is_equal(Array(FileAccess.get_file_as_bytes("%s/%s" % [_shelves[0].root, rel])))
 	assert_bool(FileAccess.file_exists(result.path + "/pack.json")).is_true()
 
@@ -260,20 +260,25 @@ func test_a_campaign_of_the_project_exports_with_its_pictures_and_its_source_fol
 	var source := "user://test_pack_export_source_%d" % Time.get_ticks_msec()
 	_scratch.append(source)
 	DirAccess.make_dir_recursive_absolute(source + "/seaside/audio/voice")
-	DirAccess.make_dir_recursive_absolute(source + "/seaside/pictures/ui_picture")
+	DirAccess.make_dir_recursive_absolute(source + "/seaside/art")
 	FileAccess.open(source + "/seaside/texts.json", FileAccess.WRITE).store_string(JSON.stringify({"seaside_hello": "Ahoy."}))
 	FileAccess.open(source + "/seaside/audio/voice/shanty.ogg", FileAccess.WRITE).store_buffer(FileAccess.get_file_as_bytes(TONE_SHORT))
-	FileAccess.open(source + "/seaside/pictures/ui_picture/shells.png.import", FileAccess.WRITE).store_string("[remap]")      # (the editor's bookkeeping stays behind)
+	FileAccess.open(source + "/seaside/art/shells.png.import", FileAccess.WRITE).store_string("[remap]")      # (the editor's bookkeeping stays behind)
+	FileAccess.open(source + "/seaside/art/shells.png", FileAccess.WRITE).store_buffer(FileAccess.get_file_as_bytes(TINY + "/marker.png"))
+	FileAccess.open(source + "/seaside/pictures.json", FileAccess.WRITE).store_string(JSON.stringify({"format": 1, "pictures": {"ui_picture/shells": "art/shells.png"}}))      # (the designer's own table: the exporter adds the campaign's pictures to it)
 	PackExport.source_dir = source
 	var result := PackExport.campaign(&"seaside", EXPORTS, _quick())
 	assert_bool(result.ok()).override_failure_message(result.text()).is_true()
-	assert_bool(result.files.has("pictures/ui_picture/marker.png")).is_true()           # (the finale picture and the banner are the same file: one copy)
+	assert_bool(result.files.has("ui_picture/marker.png") and result.files.has("pictures.json")).is_true()           # (the finale picture and the banner are the same file: one copy)
 	assert_bool(result.files.has("texts.json")).is_true()
 	assert_bool(result.files.has("audio/voice/shanty.ogg")).is_true()
 	assert_bool(result.files.any(func(f: String) -> bool: return f.ends_with(".import"))).is_false()
 	var written: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(result.path + "/campaigns/seaside.json"))
 	assert_str(written["finale_picture"]).is_equal("marker")
-	assert_str(written["banner"]).is_equal("pictures/ui_picture/marker.png")
+	assert_dict(written["banner"]).is_equal({"$picture": "ui_picture/marker"})
+	var table: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(result.path + "/" + PictureTable.FILE))["pictures"]
+	assert_dict(table).is_equal({"ui_picture/shells": "art/shells.png", "ui_picture/marker": "ui_picture/marker.png"})
+	assert_bool(result.files.has("art/shells.png")).is_true()
 	# and as a pack it stands alone: the project's campaign and sectors are put away and the pack is mounted in their place
 	Catalog.sectors_dir = Catalog.SECTORS_DIR
 	_campaigns.remove()

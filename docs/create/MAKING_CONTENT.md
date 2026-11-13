@@ -325,20 +325,21 @@ Your sectors and campaign, as `.tres` files, are only half of a pack. The game o
 godot/data/campaigns/reef_school/          the PACK SOURCE FOLDER: res://data/campaigns/<campaign id>/
   texts.json                               {"reef_hello": "Hello, diver."}   new texts, or the original's said differently
   voice_cues.json                          {"groups": {"reef_log_1": ["reef_log_1_line"]}}   speech groups a campaign may name
-  pictures/ui_picture/reef_finale.png      a picture by kind and name (the kinds below)
+  pictures.json                            {"format": 1, "pictures": {"ui_picture/reef_finale": "art/reef_finale.png"}}   the picture table: a key (kind/name) to a file of the folder
   audio/voice/reef_log_1_line.ogg          a clip by kind and name: sound, music or voice; Ogg Vorbis
   audio/lengths.json                       {"voice": {"reef_log_1_line": 300}}   lengths stated by hand, in ticks (optional)
   rules/durations.json                     {"fade": {"ticks": 20}}   durations laid over the game's, key by key (optional)
   rules/tuning.json                        {"air": {"max_oxygen": 6}}   rule values laid over the game's, key by key (optional)
 ```
 
-- **Names** are lowercase letters, digits and `_`, starting with a letter, at most 40 characters. A picture or clip named like one in the pack under yours (legacy's or dev's) replaces it; a name of your own adds one.
-  Picture kinds the game looks in: `ui_picture`, `background`, `problem_art`, `frame`, `deco`, `tile`. Clip kinds: `sound`, `music`, `voice`. Only `.png` pictures and `.ogg` clips
-  are read; anything else is a warning from the pack check.
+- **Names** are lowercase letters, digits and `_`, starting with a letter, at most 40 characters. A picture key or clip named like one in the pack under yours (legacy's or dev's) replaces it; a name of your own adds one.
+  Picture kinds a key may have: `ui_picture`, `background`, `problem_art`, `frame`, `deco`, `tile`; the table says which file draws it (or `{"alias": "<another key>"}`), and what the file is called means nothing to the game
+  (`pack_tool --pictures-table=<folder>` writes the table from a folder of `<kind>/<name>.png`). Clip kinds: `sound`, `music`, `voice`. Only `.png` pictures and `.ogg` clips
+  are read; the pack check says what is wrong with the table and warns of a PNG no row names.
 - **The editor's import files** (`.import`, `.uid`) next to your PNG and OGG files are left behind by the exporter.
 - **Where each thing is used.** `finale_picture`: in the Campaign, give it the `res://` path of your PNG in this folder
-  (`res://data/campaigns/reef_school/pictures/ui_picture/reef_finale.png`). The project can load that file, so the campaign is valid before it is exported; the exporter copies it
-  into the pack as `pictures/ui_picture/reef_finale.png` and rewrites the campaign to name it `reef_finale`. A `banner` works the same way. Words are typed into the Campaign directly, or you put a text's *name* in the field and define it in `texts.json` (the name
+  (`res://data/campaigns/reef_school/art/reef_finale.png`). The project can load that file, so the campaign is valid before it is exported; the exporter copies it
+  into the pack as `ui_picture/reef_finale.png`, adds the row `ui_picture/reef_finale` to the pack's `pictures.json` and rewrites the campaign to name it `reef_finale`. A `banner` works the same way. Words are typed into the Campaign directly, or you put a text's *name* in the field and define it in `texts.json` (the name
   only resolves once the pack is in use; in the project the game shows the name itself). Voice: `log_voices` / `supply_voices` take a group name from `voice_cues.json`. A group lists clip names;
   each is a clip of the game or a file `audio/voice/<name>.ogg` in the pack. A song of your own for a sector: `audio/music/<name>.ogg`, and that name in the sector's `music_name`.
 - **You will not see or hear these in the project.** Pictures, clips, texts and durations in the source folder are read only once the pack is installed and chosen with `--pack=` (steps 10-11). Until then
@@ -499,7 +500,7 @@ All from the repository root; the arguments after `--` belong to the scene.
 | --- | --- |
 | `res://src/debug/new_sector.tscn` | `--template` / `--copy=N`, `--index=N`, `--zone=Z`, `--game=G`, `--dir=DIR` (where to write), `--source-dir=DIR` (where `--copy` reads) |
 | `res://src/checks/check_sector.tscn` | `--sector=3,7` / `--file=PATH` / `--all`, `--changes`, `--checks`, `--no-reach`, `--shared`, `--pack=ID` |
-| `res://src/packs/pack_tool.tscn` | `--list`, `--check=WHERE`, `--no-reach`, `--export-campaign=ID`, `--export-pack=ID`, `--archive-folder=DIR`, `--out=DIR`, `--archive`, `--pack-id= --title= --version= --author= --description= --base=ID`, `--install=WHERE`, `--uninstall=ID`, `--new=ID --from=PACK`, `--pack=ID` (`mise run pack:archive <folder> [--out <dir>]` is `--archive-folder` and `mise run pack:install <folder-or-file>` is `--install`, with paths relative to where you are) |
+| `res://src/packs/pack_tool.tscn` | `--list`, `--check=WHERE`, `--no-reach`, `--pictures-table=DIR` (write `DIR/pictures.json` from the `<kind>/<name>.png` files under `DIR`: a row for each file no row names, the rows it holds stay), `--export-campaign=ID`, `--export-pack=ID`, `--archive-folder=DIR`, `--out=DIR`, `--archive`, `--pack-id= --title= --version= --author= --description= --base=ID`, `--install=WHERE`, `--uninstall=ID`, `--new=ID --from=PACK`, `--pack=ID` (`mise run pack:archive <folder> [--out <dir>]` is `--archive-folder` and `mise run pack:install <folder-or-file>` is `--install`, with paths relative to where you are) |
 | `res://src/debug/sector_viewer.tscn` | `--sector= --screen= --fly --currents --collisions --level= --skin= --presenter=debug_rects --overlay --ticks= --snapshot=PATH` |
 | `res://src/debug/sector_overview.tscn` | `--sector= --screen= --zoom= --reach --paths --currents --checks --changed --snapshot=PATH` |
 | `res://src/debug/foe_sandbox.tscn` | `--sector= --screen= --foe=N --pause --fly --touch=N --ticks= --snapshot=` |

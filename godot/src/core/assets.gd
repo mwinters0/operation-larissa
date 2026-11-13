@@ -12,10 +12,8 @@ extends RefCounted
 ## THE PACKS. A picture is found by its KEY, through the chain's picture tables (`Pictures`: `pictures.json` of each pack, the top first); the number-to-path functions below are what a pack with no table is still read by
 ## (BRIDGE: they go when every pack has a table). A `ui_picture` name that only a pack has is found by `ui_picture` itself.
 ##
-## THE SKIN. The path is not the last step: every texture is fetched with `texture_at(path)`, which asks the skin in use
-## (`SkinChoice.current()`, `GameSkin.texture_at`) whether it has its own picture for that file, and loads the file only if it has none.
-## So a skin changes a picture by NAME (`ui_picture/title_sky`) and no scene, layout or data file has to know it. The original skin
-## maps nothing: its answer is always the file.
+## NO SKIN. A skin maps no picture: the pictures are the packs' (`Pictures`). A picture a data file still holds by its file (BRIDGE) is fetched with `texture_at(path)`, which asks the packs laid over another whether they redraw that file's key and loads the file only
+## if none does.
 ##
 ## Teaches: a resolver as a seam. Code that needs a picture holds a name, a small static class owns "name -> number -> file ->
 ## the skin's texture", and a name that means nothing is a loud error with a suggestion instead of a missing texture.
@@ -147,6 +145,7 @@ static func background_path(sector: int, screen: int) -> String:
 ## Forget what was read from the chain's files (`Catalog.packs_changed`: another pack is in use).
 static func forget_folders() -> void:
 	Pictures.forget()
+	PathPictures.forget()
 	_problem_art_folders = {}
 	_key_files = {}
 	_key_files_made = false
@@ -156,10 +155,9 @@ static func forget_folders() -> void:
 # --- a picture by its skin key ------------------------------------------------------------------------------------
 
 ## The picture of the skin key `key` (`frame/sub_00`, `background/bg_s03_07`, `deco/coral_fan_cyan`): what the chain's picture tables say (`Pictures.resolve`); null for a key no pack holds. What a mod's draw list names is
-## resolved here (`ModDraw`), so a mod sees what `OriginalPresenter` would show, and holds no picture itself. BRIDGE: what a skin maps (`GameSkin.picture`) still comes before the base game's pictures.
+## resolved here (`ModDraw`), so a mod sees what `OriginalPresenter` would show, and holds no picture itself.
 static func picture_by_key(key: String) -> Texture2D:
-	var dressed := SkinChoice.current().picture(key)
-	return dressed if dressed != null else Pictures.resolve(key)
+	return Pictures.resolve(key)
 
 
 ## BRIDGE: the picture files of the packs with no table by their skin key: key -> the file as a pack keeps it (`assets/sprites/sub/sub_00.png`), the first pack of the chain having the last word. Made once for the chain in use (`forget_folders`).
@@ -193,10 +191,13 @@ static func pack_key_files(pack: Pack) -> Dictionary:
 
 # --- shared -------------------------------------------------------------------------------------------------------
 
-## The texture of the picture file `path`: the skin's own picture for it, or the file. For the pictures that DATA names by path
-## (`ProblemType.art_files`); the rest of the game says a picture's name instead.
+## BRIDGE: the texture of the picture file `path`: what the packs laid over another say for its key (`Pictures.overlaid`), or the file. For the pictures that DATA names by path
+## (`ProblemType.art_files`); the rest of the game says a picture's key instead. "" gives null.
 static func texture_at(path: String) -> Texture2D:
-	return SkinChoice.current().texture_at(path)
+	if path.is_empty():
+		return null
+	var mapped := Pictures.overlaid(GameSkin.key_of(path))
+	return mapped if mapped != null else Packs.file_at(path) as Texture2D
 
 
 ## The file name (without extension) of picture `number` of `kind`: `<name>_<number>` when somebody named it, else the made-up

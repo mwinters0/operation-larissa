@@ -7,16 +7,15 @@ extends RefCounted
 ##   * WHOLE FILES of a complete pack that `Catalog` (the cutscenes' choreography among it), `Assets`, `SpriteMeta`, `NewsCartoon` and the theme load through `Packs.path`: `FILES` (declared here, one list), the
 ##     sets of each zone (`PER_ZONE`, `PER_TILE_ZONE`) and the problem types (`Catalog.PROBLEM_TYPE_COUNT`; a type is a trusted pack's `.tres` or its `.json` in the data form).
 ##     `tests/engine/test_pack_needs.gd` keeps the list equal to what the dev pack holds under `data/`.
-##   * PICTURES that code asks for by name: every `ui_picture` and `problem_art` name of the registry (`Assets` turns it into a file).
+##   * PICTURES that code asks for by name: every `ui_picture` and `problem_art` name of the registry, as the KEY `Assets` asks for (`ui_picture/title_sky`): a row of some pack's `pictures.json` answers it. (BRIDGE: a pack with no table is asked for the file the importer
+##     wrote, `Assets.ui_picture_rel`, until every complete pack has a table.)
 ##   * THINGS THE DATA NAMES: the pictures, sounds and tiles a required resource refers to (`ResourceLoader.get_dependencies`), the files of a problem type's art, the
 ##     songs of the music catalog, the clips of the voice index. These live inside the pack that holds the resource, so no other pack can fill them in.
 ##   * WHAT THE CONTENT BRINGS: each campaign `Catalog` finds in the chain: its sectors (and what a `.tres` sector refers to, a JSON sector's script), its finale picture, the
 ##     speech groups of its log and supply messages. The tiles, creature pictures and sounds a sector uses are slots of its zone's sets and of the sound catalog, already
 ##     required above; a sector's own background is not (a screen without one is plain black on purpose in the original), nor is a MIDI file (the rendered song plays).
 ##
-## A PICTURE a mounted pack's `pictures/` folder answers, or the skin handed in does (`GameSkin.picture`), counts as present for the pictures that `Assets` asks for by
-## name and for a problem type's art. The skin is a parameter, and neither the start-up check (`Packs.choose`) nor the pack tools pass one (a pack is complete by itself, whatever skin a
-## player turns on). A resource's own pictures are never covered by a skin: Godot loads them with the resource.
+## A PICTURE is answered by the packs' tables alone (a skin maps none): a row for its key in a pack of the chain (`PictureTable.has`; whether the row resolves is `PackCheck`'s and `Pictures`' business). A resource's own pictures are loaded with the resource.
 ##
 ## THE CHAIN is an argument, so a chain that has no `dev` under it can be asked about (`chain_of`); a chain that is not the one in use is lent to `Packs` for the question.
 ##
@@ -138,15 +137,15 @@ static func chain_of(first: Pack) -> Array[Pack]:
 	return Packs.resolve(first, [], false).packs
 
 
-## Everything `chain` cannot answer, in the order of the groups. `skin` (null for none) covers pictures; see the class comment.
-static func gaps(chain: Array[Pack], skin: GameSkin = null) -> Array[Gap]:
-	return _scan(chain, skin).gaps
+## Everything `chain` cannot answer, in the order of the groups.
+static func gaps(chain: Array[Pack]) -> Array[Gap]:
+	return _scan(chain).gaps
 
 
 ## The paths (or names) of `gaps`, each once, sorted.
-static func missing(chain: Array[Pack], skin: GameSkin = null) -> Array[String]:
+static func missing(chain: Array[Pack]) -> Array[String]:
 	var found: Dictionary = {}
-	for gap in gaps(chain, skin):
+	for gap in gaps(chain):
 		found[gap.path] = true
 	var sorted: Array[String] = []
 	sorted.assign(found.keys())
@@ -155,16 +154,16 @@ static func missing(chain: Array[Pack], skin: GameSkin = null) -> Array[String]:
 
 
 ## Every file or thing the closure asks `chain` for, each once, sorted: the set a complete chain answers.
-static func required(chain: Array[Pack], skin: GameSkin = null) -> Array[String]:
+static func required(chain: Array[Pack]) -> Array[String]:
 	var sorted: Array[String] = []
-	sorted.assign(_scan(chain, skin).needed.keys())
+	sorted.assign(_scan(chain).needed.keys())
 	sorted.sort()
 	return sorted
 
 
 ## Does `chain` answer everything?
-static func is_complete(chain: Array[Pack], skin: GameSkin = null) -> bool:
-	return gaps(chain, skin).is_empty()
+static func is_complete(chain: Array[Pack]) -> bool:
+	return gaps(chain).is_empty()
 
 
 ## The gaps the game cannot go on with (not `soft`): what makes a chain incomplete.
@@ -206,7 +205,7 @@ static func summary(found: Array[Gap], limit := 6) -> String:
 
 # --- the walk -------------------------------------------------------------------------------------------------------
 
-static func _scan(chain: Array[Pack], skin: GameSkin) -> Scan:
+static func _scan(chain: Array[Pack]) -> Scan:
 	var scan := Scan.new()
 	_files(chain, scan)
 	_problem_types(chain, scan)
@@ -214,9 +213,9 @@ static func _scan(chain: Array[Pack], skin: GameSkin) -> Scan:
 		return scan
 	var live := _is_live(chain)
 	if live:
-		_content(chain, skin, scan)
+		_content(chain, scan)
 	else:
-		Packs.lend(chain, func() -> void: _content(chain, skin, scan))
+		Packs.lend(chain, func() -> void: _content(chain, scan))
 	return scan
 
 
@@ -268,50 +267,53 @@ static func _problem_types(chain: Array[Pack], scan: Scan) -> void:
 
 
 ## The layers that read the game's own lookups; the chain is the one in use while this runs.
-static func _content(chain: Array[Pack], skin: GameSkin, scan: Scan) -> void:
-	_pictures(chain, skin, scan)
+static func _content(chain: Array[Pack], scan: Scan) -> void:
+	_pictures(chain, scan)
 	_references(chain, scan)
-	_problem_art(chain, skin, scan)
+	_problem_art(chain, scan)
 	_audio(chain, scan)
-	_campaigns(chain, skin, scan)
+	_campaigns(chain, scan)
 
 
-## A picture `Assets` asks for by name: the file, or a picture of a mounted pack or the skin that answers for it.
-static func _picture_present(chain: Array[Pack], rel: String, skin: GameSkin) -> bool:
-	if _holder(chain, rel) != null:
+## Does a pack of the chain have a row for the picture key `key` (`PictureTable.has`)? Not whether the row resolves: `PackCheck` and `Pictures` say that.
+static func _row_for(chain: Array[Pack], key: String) -> bool:
+	return chain.any(func(each: Pack) -> bool: return each.picture_table().has(key))
+
+
+## A picture `Assets` asks for by name, `key`: a row of a table, or (BRIDGE) the file `rel` in a pack with no table.
+static func _picture_present(chain: Array[Pack], key: String, rel: String) -> bool:
+	if _row_for(chain, key):
 		return true
-	return _picture_covered(chain, Packs.PROJECT_PACKS_DIR + "/_/" + rel, skin)
+	var holder := _holder(chain, rel)
+	return holder != null and not holder.picture_table().present
 
 
-## Does a picture of a pack's `pictures/` folder, or the skin, answer for the picture file `path` (a path of the shape `res://packs/<id>/assets/...`)?
-static func _picture_covered(chain: Array[Pack], path: String, skin: GameSkin) -> bool:
+## Does a row of a table answer for the picture file `path` (a path of the shape `res://packs/<id>/assets/...`)? (BRIDGE: the key comes from the file's name, `GameSkin.key_of`, until the data holds keys.)
+static func _picture_covered(chain: Array[Pack], path: String) -> bool:
 	var key := GameSkin.key_of(path)
-	if key.is_empty():
-		return false
-	if chain.any(func(each: Pack) -> bool: return each.has("pictures/%s.png" % key)):
-		return true
-	return skin != null and skin.picture(key) != null
+	return not key.is_empty() and _row_for(chain, key)
 
 
-static func _pictures(chain: Array[Pack], skin: GameSkin, scan: Scan) -> void:
+static func _pictures(chain: Array[Pack], scan: Scan) -> void:
 	var registry := NameRegistry.original()
 	var ui: Dictionary = registry.entries(&"ui_picture")
 	for picture_name: String in ui:
 		var rel := Assets.ui_picture_rel(ui[picture_name])
-		scan.ask(rel)
-		if not _picture_present(chain, rel, skin):
-			scan.lack(GROUP_PICTURES, rel, "ui_picture " + picture_name)
+		scan.ask("ui_picture/" + picture_name)
+		if not _picture_present(chain, "ui_picture/" + picture_name, rel):
+			scan.lack(GROUP_PICTURES, "ui_picture/" + picture_name, "")
 	if _holder(chain, Assets.PROBLEM_ART_INDEX_REL) == null:
 		return                                                       # (the index itself is a gap above, and says which art there is)
 	var art: Dictionary = registry.entries(&"problem_art")
 	for picture_name: String in art:
 		var rel := Assets.problem_art_rel(art[picture_name])
 		if rel.is_empty():
-			scan.lack(GROUP_PICTURES, "problem_art " + picture_name, Assets.PROBLEM_ART_INDEX_REL)
+			if not _row_for(chain, "problem_art/" + picture_name):
+				scan.lack(GROUP_PICTURES, "problem_art/" + picture_name, Assets.PROBLEM_ART_INDEX_REL)
 			continue
-		scan.ask(rel)
-		if not _picture_present(chain, rel, skin):
-			scan.lack(GROUP_PICTURES, rel, "problem_art " + picture_name)
+		scan.ask("problem_art/" + picture_name)
+		if not _picture_present(chain, "problem_art/" + picture_name, rel):
+			scan.lack(GROUP_PICTURES, "problem_art/" + picture_name, "")
 
 
 ## What each required resource names: the pictures, tiles and sounds that Godot loads with a trusted pack's `.tres` (its header lists them), or that the
@@ -330,11 +332,16 @@ static func _references(chain: Array[Pack], scan: Scan) -> void:
 
 ## The files (and folders) the data form of `rel` (`holder`'s `.json`) names, each of which some pack of `chain` from the holder down must provide.
 static func _data_references(chain: Array[Pack], holder: Pack, rel: String, scan: Scan) -> void:
-	for named in ResourceJson.named_files(holder.read_json(Pack.data_rel(rel))):
+	var data: Variant = holder.read_json(Pack.data_rel(rel))
+	var below := chain.slice(maxi(chain.find(holder), 0))
+	for named in ResourceJson.named_files(data):
 		scan.ask(named)
-		var below := chain.slice(maxi(chain.find(holder), 0))
 		if not below.any(func(each: Pack) -> bool: return each.provides(named) or each.has_folder(named)):          # (a `$path` may name a folder: a problem type's `art_dir`)
 			scan.lack(GROUP_REFERENCES, named, rel)
+	for key in ResourceJson.named_pictures(data):                  # (a picture by key: the whole chain looks it up, `Pictures`)
+		scan.ask(key)
+		if not _row_for(chain, key):
+			scan.lack(GROUP_PICTURES, key, rel)
 
 
 ## The files of a pack that the resource at `path` names (the pictures, tiles and sounds Godot loads with it), as `res://packs/...` paths: its header is read, nothing is loaded.
@@ -360,7 +367,7 @@ static func _dependencies(path: String, needed_by: String, scan: Scan) -> void:
 
 
 ## The files of a problem type's art (the types the chain adds too). A type is read (its art is a list of paths inside it); one that is a gap above is left alone.
-static func _problem_art(chain: Array[Pack], skin: GameSkin, scan: Scan) -> void:
+static func _problem_art(chain: Array[Pack], scan: Scan) -> void:
 	for type_id in Catalog.problem_type_ids():
 		var stem := PROBLEM_TYPE_STEM % type_id
 		if not chain.any(func(each: Pack) -> bool: return each.provides(stem + ".tres")):
@@ -370,7 +377,7 @@ static func _problem_art(chain: Array[Pack], skin: GameSkin, scan: Scan) -> void
 			continue
 		for path in problem.art_files:                                 # (whole paths, as the diagrams ask `Assets.texture_at`)
 			scan.ask(path)
-			if not _exists(path) and not _picture_covered(chain, path, skin):
+			if not _exists(path) and not _picture_covered(chain, path):
 				scan.lack(GROUP_REFERENCES, path, stem + ".tres")
 
 
@@ -391,7 +398,7 @@ static func _audio(chain: Array[Pack], scan: Scan) -> void:
 
 
 ## What each campaign of the chain brings.
-static func _campaigns(chain: Array[Pack], skin: GameSkin, scan: Scan) -> void:
+static func _campaigns(chain: Array[Pack], scan: Scan) -> void:
 	var seen_sectors: Dictionary = {}
 	for campaign in Catalog.campaigns():
 		var group := CAMPAIGN_PREFIX + String(campaign.id)
@@ -402,7 +409,7 @@ static func _campaigns(chain: Array[Pack], skin: GameSkin, scan: Scan) -> void:
 			_sector(chain, number, group, scan)
 		if not campaign.finale_picture.is_empty():
 			scan.ask("finale_picture " + campaign.finale_picture)
-			if not _finale_present(chain, campaign.finale_picture, skin):
+			if not _finale_present(chain, campaign.finale_picture):
 				scan.lack(group, "finale_picture " + campaign.finale_picture, "", true)
 		var cues := Catalog.voice_cues()
 		for voice_group: StringName in campaign.log_voices + campaign.supply_voices:
@@ -418,15 +425,14 @@ static func _campaigns(chain: Array[Pack], skin: GameSkin, scan: Scan) -> void:
 					scan.lack(group, "voice " + String(clip), "voice group " + String(voice_group), true)
 
 
-## Is the picture a campaign's `finale_picture` names there? As `Campaign.finale_texture` finds it, but by existence and with no skin asked: a file, a name of the registry
-## (its file in the chain, or a skin's picture when one is handed in) or a name of a pack's own `pictures/ui_picture/`.
-static func _finale_present(chain: Array[Pack], picture: String, skin: GameSkin) -> bool:
+## Is the picture a campaign's `finale_picture` names there? As `Campaign.finale_texture` finds it, but by existence: a file, a name of the registry (a row for its key, or BRIDGE its file in the chain) or a name a pack's table holds as `ui_picture/<name>`.
+static func _finale_present(chain: Array[Pack], picture: String) -> bool:
 	if picture.begins_with("res://"):
 		return Packs.exists_at(picture)
 	var number := NameRegistry.original().index_of(&"ui_picture", picture)
 	if number >= 0:
-		return _picture_present(chain, Assets.ui_picture_rel(number), skin)
-	return chain.any(func(each: Pack) -> bool: return each.has("pictures/ui_picture/%s.png" % picture))
+		return _picture_present(chain, "ui_picture/" + picture, Assets.ui_picture_rel(number))
+	return _row_for(chain, "ui_picture/" + picture)
 
 
 static func _sector(chain: Array[Pack], number: int, group: String, scan: Scan) -> void:

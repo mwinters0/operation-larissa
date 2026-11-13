@@ -15,7 +15,6 @@ extends RefCounted
 ##     texts.json                       {"text name": "the words"}: new texts, or new words for a text of the original
 ##     voice_cues.json                  {"groups": {"group name": ["voice name", ...]}}: the speech groups a campaign names
 ##     pictures.json                    the PICTURE TABLE: a skin key (`ui_picture/title_sky`, `frame/sub_00`) to a file of the pack or to another key (`PictureTable`; `Pictures` follows it down the chain)
-##     pictures/<kind>/<name>.png       a picture by its skin key, for a pack with no picture table (`Packs.picture`)
 ##     audio/sound|music|voice/<name>.ogg   a sound, song or speech clip by its registry name, or a new name
 ##     audio/lengths.json               {"voice": {"name": ticks}}: lengths the pack states for its clips (else they are measured, `ClipLengths`)
 ##     data/problems/problem_type_NN.json   a problem type (ResourceJson)

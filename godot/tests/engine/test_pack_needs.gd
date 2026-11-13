@@ -67,12 +67,15 @@ func test_the_chain_in_use_misses_nothing_and_asking_leaves_it_as_it_was() -> vo
 	assert_array(Packs.chain_ids()).is_equal(before)
 
 
-func test_what_is_required_is_files_the_chain_holds() -> void:
+func test_what_is_required_is_files_and_picture_keys_the_chain_holds() -> void:
 	var required := PackNeeds.required(_dev_chain())
 	assert_array(required).contains(["data/zones.tres", "data/problems/problem_type_33.tres", "data/sprite_frames/foes_zone6.tres", "data/sprite_frames/decos_zone4.tres"])
-	assert_array(required).contains(["assets/ui/title/title_sky_1039.png"])
+	assert_array(required).contains(["ui_picture/title_sky", "problem_art/log_scan_0"])              # (the game asks for pictures by key)
+	assert_array(required).not_contains(["assets/ui/title/title_sky_1039.png"])
 	for item in required:
-		if item.begins_with("data/") or item.begins_with("assets/"):
+		if PictureTable.is_key(item):
+			assert_bool(Pictures.has(item)).override_failure_message("required but the chain holds no picture for " + item).is_true()
+		elif item.begins_with("data/") or item.begins_with("assets/"):
 			assert_bool(Packs.dev().has(item)).override_failure_message("required but dev has no " + item).is_true()
 		elif item.begins_with("res://"):
 			assert_bool(ResourceLoader.exists(item) or FileAccess.file_exists(item)).override_failure_message("required but not there: " + item).is_true()
@@ -118,7 +121,7 @@ func test_a_pack_that_lacks_files_is_reported_as_exactly_those() -> void:
 	shelf.write_text("data/problems/problem_art_index.json", FileAccess.get_file_as_string(Packs.dev().path_of("data/problems/problem_art_index.json")))
 	for type_id in 3:
 		shelf.write_json("data/problems/problem_type_%02d.json" % type_id, ResourceJson.new().data_of(Catalog.problem_type(type_id)))
-	shelf.add_picture("pictures/ui_picture/title_sky.png", Color.BLUE)
+	shelf.add_picture_row("ui_picture/title_sky", Color.BLUE)
 	var chain := _chain_of(shelf.pack)
 	var asked := PackNeeds.required(chain)
 	var missing := PackNeeds.missing(chain)
@@ -128,11 +131,11 @@ func test_a_pack_that_lacks_files_is_reported_as_exactly_those() -> void:
 			held.append(item)
 	held.sort()
 	assert_array(held).is_equal([
-		"assets/ui/title/title_sky_1039.png", "data/problems/problem_art_index.json",
-		"data/problems/problem_type_00.tres", "data/problems/problem_type_01.tres", "data/problems/problem_type_02.tres"])
+		"data/problems/problem_art_index.json",
+		"data/problems/problem_type_00.tres", "data/problems/problem_type_01.tres", "data/problems/problem_type_02.tres", "ui_picture/title_sky"])
 	assert_array(missing).contains(["data/zones.tres", "data/problems/problem_type_03.tres", "data/problems/problem_type_33.tres", "data/story/news_cartoon.tres",
 			"data/story/title_ship.tres", "data/story/story_script.tres", "data/story/voyager_closing_script.tres", "data/story/closing_crew.tres"])
-	assert_array(missing).not_contains(["data/problems/problem_art_index.json", "data/problems/problem_type_02.tres", "assets/ui/title/title_sky_1039.png"])
+	assert_array(missing).not_contains(["data/problems/problem_art_index.json", "data/problems/problem_type_02.tres", "ui_picture/title_sky"])
 	var groups := PackNeeds.by_group(PackNeeds.gaps(chain))
 	assert_array(groups.keys()).contains([PackNeeds.GROUP_FILES, PackNeeds.GROUP_PROBLEMS, PackNeeds.GROUP_PICTURES])
 	assert_int(groups[PackNeeds.GROUP_PROBLEMS].size()).is_equal(Catalog.PROBLEM_TYPE_COUNT - 3)
@@ -220,25 +223,28 @@ func test_a_chain_that_ends_in_dev_by_its_base_is_whole() -> void:
 	assert_array(PackNeeds.gaps(chain)).is_empty()
 
 
-# --- skins and pictures of a pack ----------------------------------------------------------------------------------------------------
+# --- the pictures of a pack ----------------------------------------------------------------------------------------------------------
 
-func test_a_skin_that_maps_a_picture_covers_it_and_no_skin_does_not() -> void:
-	var chain := _chain_of(_shelf().pack)
-	var rel := "assets/ui/title/title_sky_1039.png"
-	assert_array(PackNeeds.missing(chain)).contains([rel])
-	var skin := GameSkin.new()
-	skin.id = &"needs_probe"
-	skin.pictures = {"ui_picture/title_sky": ImageTexture.create_from_image(Image.create(2, 2, false, Image.FORMAT_RGBA8))}
-	assert_array(PackNeeds.missing(chain, skin)).not_contains([rel])
-	assert_array(PackNeeds.missing(chain, skin)).contains(["assets/ui/title/title_cloud_0_1042.png"])        # (it covers what it maps)
-
-
-func test_a_picture_of_a_pack_covers_the_file_it_replaces() -> void:
+func test_a_row_of_a_pictures_table_answers_for_the_key_the_game_asks_for() -> void:
 	var shelf := _shelf()
-	var rel := "assets/ui/title/title_sky_1039.png"
-	assert_array(PackNeeds.missing(_chain_of(shelf.pack))).contains([rel])
-	shelf.add_picture("pictures/ui_picture/title_sky.png", Color.RED)
-	assert_array(PackNeeds.missing(_chain_of(Pack.open(shelf.root)))).not_contains([rel])
+	var chain := _chain_of(shelf.pack)
+	assert_array(PackNeeds.missing(chain)).contains(["ui_picture/title_sky", "ui_picture/title_sea"])               # (the game asks for keys)
+	shelf.add_picture_row("ui_picture/title_sky", Color.RED)
+	shelf.add_row("ui_picture/title_sea", {"alias": "ui_picture/title_sky"})                                         # (a row of any kind is an answer: whether it resolves is `PackCheck`'s)
+	var covered := PackNeeds.missing(_chain_of(Pack.open(shelf.root)))
+	assert_array(covered).not_contains(["ui_picture/title_sky", "ui_picture/title_sea"])
+	assert_array(covered).contains(["ui_picture/title_cloud_0"])                                                      # (what no table says is still missing)
+
+
+func test_a_picture_a_data_file_names_by_key_is_needed_as_a_key() -> void:
+	var shelf := _shelf()
+	shelf.write_json("data/ui/hud_layout.json", {"class": "HudLayout", "bezel": {"$picture": "frame/not_drawn_anywhere"}})
+	var chain := _chain_of(shelf.pack)
+	assert_array(PackNeeds.required(chain)).contains(["frame/not_drawn_anywhere"])
+	assert_array(PackNeeds.missing(chain)).contains(["frame/not_drawn_anywhere"])
+	shelf.add_picture_row("frame/not_drawn_anywhere", Color.RED)
+	assert_array(PackNeeds.missing(_chain_of(Pack.open(shelf.root)))).not_contains(["frame/not_drawn_anywhere"])
+	assert_array(ResourceJson.named_pictures(shelf.pack_json("data/ui/hud_layout.json"))).is_equal(["frame/not_drawn_anywhere"])
 
 
 # --- what a resource names ---------------------------------------------------------------------------------------------------------

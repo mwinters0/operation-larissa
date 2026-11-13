@@ -101,7 +101,7 @@ var _mod_layers: ModLayerHost
 
 
 func _ready() -> void:
-	# The tile set of the pack in use, with the skin's pictures in it (the same set for both layers).
+	# The tile set of the pack in use, with the chain's pictures in it (the same set for both layers).
 	var tiles := Catalog.tileset()
 	walls.tile_set = tiles
 	currents.tile_set = tiles
@@ -411,7 +411,7 @@ func _build_triggers() -> void:
 		triggers_layer.add_child(node)
 
 
-## The picture behind everything (the skin's, else the original's: `Assets.background`). The two finale sectors have unused,
+## The picture behind everything (the chain's: `Assets.background`). The two finale sectors have unused,
 ## completely empty screens (30: 5-11, 31: 11) that never got a background: show plain black.
 func _load_background(index: int) -> Texture2D:
 	return Assets.background(sim.sector_index, index)

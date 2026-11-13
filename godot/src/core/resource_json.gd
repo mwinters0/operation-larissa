@@ -601,6 +601,26 @@ static func script_named(name_of_class: String) -> Script:
 	return load(_classes[name_of_class]) as Script if _classes.has(name_of_class) else null
 
 
+## Every `$picture` in the data of a file (the picture keys it needs some pack's `pictures.json` to hold), each once.
+static func named_pictures(data: Variant) -> Array[String]:
+	var found: Array[String] = []
+	_collect_pictures(data, found)
+	return found
+
+
+static func _collect_pictures(data: Variant, found: Array[String]) -> void:
+	if data is Array:
+		for item in data:
+			_collect_pictures(item, found)
+	elif data is Dictionary:
+		for key: String in data:
+			if key == PICTURE_KEY and data[key] is String:
+				if not found.has(data[key]):
+					found.append(data[key])
+			else:
+				_collect_pictures(data[key], found)
+
+
 ## Every `$ref` and `$path` in the data of a file (what it names: a closure of the files it needs), as the relative paths they hold.
 static func named_files(data: Variant) -> Array[String]:
 	var found: Array[String] = []

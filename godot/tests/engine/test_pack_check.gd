@@ -253,17 +253,16 @@ func test_a_voice_group_names_clips_the_game_or_the_pack_has() -> void:
 	assert_bool(_has(_check(shelf), PackReport.Severity.ERROR, "must be a list of voice names")).is_true()
 
 
-func test_a_picture_that_is_not_a_png_is_an_error_and_odd_files_are_warnings() -> void:
+func test_a_picture_that_is_not_a_png_is_an_error_and_a_file_no_row_names_is_a_warning() -> void:
 	var shelf := _orchard()
-	shelf.add_picture("pictures/ui_picture/fine_one.png", Color.RED)
-	shelf.write_text("pictures/ui_picture/liar.png", "not a picture")
-	shelf.write_text("pictures/ui_picture/notes.txt", "x")
-	shelf.add_picture("pictures/wallpaper/sea.png", Color.BLUE)
+	shelf.add_picture_row("ui_picture/fine_one", Color.RED)
+	shelf.write_text("art/liar.png", "not a picture")
+	shelf.add_row("ui_picture/liar", "art/liar.png")
+	shelf.add_picture("art/stray.png", Color.BLUE)
 	var report := _check(shelf)
-	assert_bool(_has(report, PackReport.Severity.ERROR, "liar.png is not a PNG")).is_true()
+	assert_bool(_has(report, PackReport.Severity.ERROR, "'ui_picture/liar' names art/liar.png, which is not a PNG")).is_true()
 	assert_bool(_has(report, PackReport.Severity.ERROR, "fine_one")).is_false()
-	assert_bool(_has(report, PackReport.Severity.WARNING, "notes.txt: only .png")).is_true()
-	assert_bool(_has(report, PackReport.Severity.WARNING, "pictures/wallpaper")).is_true()
+	assert_bool(_has(report, PackReport.Severity.WARNING, "art/stray.png is named by no row of pictures.json")).is_true()
 
 
 func test_clip_warnings_of_g2a_are_warnings() -> void:
@@ -288,7 +287,7 @@ func test_a_picture_file_that_the_campaign_names_must_exist() -> void:
 	named["finale_picture"] = "orchard_sunset"
 	shelf.write_json("campaigns/%s.json" % ID, named)
 	assert_bool(_has(_check(shelf), PackReport.Severity.ERROR, "finale_picture 'orchard_sunset'")).is_true()
-	shelf.add_picture("pictures/ui_picture/orchard_sunset.png", Color.ORANGE)
+	shelf.add_picture_row("ui_picture/orchard_sunset", Color.ORANGE)
 	assert_bool(_check(shelf).passes()).is_true()
 
 

@@ -15,10 +15,11 @@ extends Node
 ##   --install=<where>         copy a pack (a folder or a .larissa pack file) into user://packs/ (dev included, unless the project has its own)
 ##   --base=<id>               (with --export-campaign) the pack the exported pack is laid over (default: the complete pack at the bottom of the chain in use)
 ##   --uninstall=<id>          delete an installed pack from user://packs/
+##   --pictures-table=<folder> write <folder>/pictures.json from the <kind>/<name>.png files under it (a row for each file no row names; the rows it holds stay), then check it with --check=<folder>
 ##   --new=<id>                start a pack of your own: copy the pack --from (default dev) to res://packs/<id>, with new paths and UIDs and a new pack.json
 ##                             (--title= names it); refuses an id that is taken or reserved (dev). Import it afterwards (`godot --headless --path godot --import`).
 ##   --from=<pack>             (with --new) the pack to copy, a folder of res://packs/ (default dev)
-## Several may be given and run in the order: install, uninstall, new, check, export, archive-folder. Examples:
+## Several may be given and run in the order: install, uninstall, new, pictures-table, check, export, archive-folder. Examples:
 ##   tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --export-campaign=orchard --out=/tmp/packs --archive
 ##   tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --export-pack=legacy --out=/tmp/packs --archive
 ##   tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --check=/tmp/packs/orchard
@@ -35,6 +36,7 @@ func _ready() -> void:
 	var to_install: Array[String] = []
 	var to_uninstall: Array[String] = []
 	var to_check: Array[String] = []
+	var to_tabulate: Array[String] = []
 	var to_make: Array[String] = []
 	var campaigns: Array[String] = []
 	var packs: Array[String] = []
@@ -57,6 +59,7 @@ func _ready() -> void:
 				"uninstall": to_uninstall.append(value)
 				"new": to_make.append(value)
 				"check": to_check.append(value)
+				"pictures-table": to_tabulate.append(value)
 				"export-campaign": campaigns.append(value)
 				"export-pack": packs.append(value)
 				"archive-folder": folders.append(value)
@@ -79,6 +82,10 @@ func _ready() -> void:
 		var made := PackCopy.make(StringName(id), StringName(values.get("from", String(Packs.DEV))), values.get("title", ""))
 		print(made.message if made.ok else "error: " + made.message)
 		_failed += 0 if made.ok else 1
+	for folder in to_tabulate:
+		var written := PackPictures.write(folder)
+		print(written.text())
+		_failed += 0 if written.ok() else 1
 	for where in to_check:
 		_print_report(PackCheck.run(PackCheck.open(where), _check_options(reach)))
 	var options := PackExport.Options.new()

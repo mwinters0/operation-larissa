@@ -56,7 +56,7 @@ func _build_campaign(pack_id: StringName = SOURCE, campaign_id: StringName = ID,
 	shelf.add_sector_copy(0, first)
 	shelf.add_sector_copy(1, first + 1)
 	shelf.add_sector_copy(DevPack.test_sector("e", 0), first + 2)
-	shelf.add_picture("pictures/ui_picture/harvest_finale.png", Color.ORANGE, Vector2i(8, 4))
+	shelf.add_picture_row("ui_picture/harvest_finale", Color.ORANGE, Vector2i(8, 4))
 	shelf.write_json("campaigns/%s.json" % campaign_id, {
 		"class": "Campaign", "id": String(campaign_id), "title": "Harvest Moon", "sectors": [first, first + 1], "finales": [first + 2],
 		"default_edu_levels": [0, 1], "log_unlock_order": [2, 1], "finale_log_counts": [2], "log_texts": ["Apples.", "Pears."], "log_voices": ["", ""],
@@ -104,6 +104,8 @@ func test_a_student_campaign_installs_as_a_separate_pack_and_is_played_to_its_fi
 	Packs.start(PackedStringArray(["--pack=" + String(ID)]))
 	assert_array(Packs.chain_ids()).is_equal([ID, PackShelf.base_id()])
 	assert_object(Packs.fallback_reason()).is_null()
+	assert_bool(FileAccess.file_exists("user://packs/%s/%s" % [ID, PictureTable.FILE])).override_failure_message("the table and the file it names are carried").is_true()
+	assert_vector(Pictures.resolve("ui_picture/harvest_finale").get_size()).is_equal(Vector2(8, 4))
 	assert_bool(PackChoice.entry(ID).in_use()).is_true()
 	var report := PackCheck.run(Packs.chosen(), PackChoice.check_options())
 	assert_bool(report.passes()).override_failure_message(report.text()).is_true()

@@ -62,7 +62,7 @@ static func all() -> Array[GameSkin]:
 
 ## A skin that tries it all: its presenter scribbles over everything the skin API gives it (`SkinVandal`), it maps `resources` for rules and
 ## content (a tuning with a huge wall box, empty tables of zones and triggers, no hit rectangles, a problem without records, sectors
-## with nothing in them, no texts, no bubble rules), and it has pictures, another filter and no pixel snapping. `GameSkin.refused_resources`
+## with nothing in them, no texts, no bubble rules), and it has another filter and no pixel snapping. `GameSkin.refused_resources`
 ## lists those keys: none of them may take effect.
 static func hostile() -> GameSkin:
 	var skin := GameSkin.new()
@@ -74,8 +74,6 @@ static func hostile() -> GameSkin:
 	render.snap_transforms = false
 	render.snap_vertices = false
 	skin.render = render
-	var marker := load("res://tests/skins/tiny/marker.png") as Texture2D
-	skin.pictures = {"background/bg_s00_00": marker, "frame/dolphin_swim_0": marker}
 	var doctored: Dictionary[String, Resource] = {}
 	doctored["zones"] = ZoneTable.new()
 	doctored["trigger_table"] = TriggerTable.new()

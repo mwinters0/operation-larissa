@@ -1,19 +1,14 @@
 class_name GameSkin
 extends Resource
-## A skin: what the game looks like, as DATA. It maps the NAMES of the registry (a picture, a layout, the presenter) to this skin's own
+## A skin: what the game looks like, as DATA. It maps the NAMES of the registry (a layout, the presenter) to this skin's own
 ## resources, and everything it does not map is the original's. The rules and the content know nothing about skins
 ## (`tests/engine/test_rules_are_plain_objects.gd`); everything that draws asks `Assets` / `Catalog`, which ask the current skin
 ## (`SkinChoice.current()`), so one skin file is the whole difference between two looks.
 ##
+## A SKIN MAPS NO PICTURE. Which picture a key (`ui_picture/title_sky`, `frame/sub_00`) shows is the PACK layer's choice (`pictures.json` of each pack of the chain, `Pictures`): a skin dresses the game with shaders, fonts, themes, layouts
+## and a presenter, never with another picture, so a change of skin changes no picture and a pack that redraws one changes it under every skin.
+##
 ## WHAT A SKIN MAPS
-##  * `pictures`: a picture's KEY to a `Texture2D`. A key is `<kind>/<registry name>`: `ui_picture/title_sky`, `problem_art/log_scan_0`,
-##    `frame/dolphin_swim_0` (a creature picture), `deco/coral_fan_cyan`, plus the pictures the registry does not name, which keep the
-##    file's name: `tile/zone0_tiles`, `background/bg_s00_00`, and `frame/sub_00` (the sub, the pieces, the station, the bubbles). `key_of(path)` makes the key of a file under a pack's `assets/` (`Packs.relative`),
-##    so every picture the data files hold by path (the SpriteFrames, the layouts, the tileset, the problems) is resolved through
-##    the same table (`skinned`, `texture_at`).
-##  * `art_folder` / `art_scale`: pictures as FILES instead of entries: `<art_folder>/<key>.png` is this skin's picture for `key`
-##    (`<art_folder>/frame/sub_00.png`), drawn at `1 / art_scale` of its size (`ScaledTexture`), so a folder of 4x art needs no list, and a
-##    picture that is not in the folder is simply the next skin's. `pictures` wins over the folder for a key both have.
 ##  * `resources`: a whole data resource instead of the original's, by its path under the data folder (a pack's `res://packs/<id>/data/`, or the project's `res://data/`) without `.tres`:
 ##    `ui/hud_layout`, `ui/story_layout`, `problems/screen_layout`, `sprite_frames/foes_zone2`, `neptune_tileset`. For a skin whose
 ##    pictures have other sizes or whose HUD is laid out differently (the layouts are data). ONLY presentation data can be
@@ -26,17 +21,14 @@ extends Resource
 ##  * `layer_materials`: a shader (with its uniforms) on a layer of the original presenter, by the layer's name (`SkinLayers.NODES`). Presentation only: the presenter makes its own copy of the material each time it is built (`layer_material`) and
 ##    sets the `phase` uniform itself, so a skin holds no state of a run.
 ## An empty field means "not mine": the lookup goes on to `fallback` (another skin, for a skin that builds on a skin) and ends at the
-## original, which maps nothing at all and keeps today's pictures, files and settings.
+## original, which maps nothing at all and keeps today's resources and settings.
 ##
 ## Teaches: a Resource as a bundle of choices, edited in the Inspector like any other; a Dictionary exported with typed keys and
-## values (`Dictionary[String, Texture2D]`); and an override table with a fallback chain, the same idea as CSS or a theme: the
-## specific thing wins, the general thing answers the rest. Pack roots are one more link, at the FRONT: a mounted pack's picture
-## for a key (`Packs.picture`) wins over every skin, because it is the CONTENT that says what that picture is (a pack that redraws a tile
-## replaces the tile; a skin only dresses the pictures the content has). A skin's own art is for the pictures of the base game.
+## values (`Dictionary[String, Resource]`); and an override table with a fallback chain, the same idea as CSS or a theme: the
+## specific thing wins, the general thing answers the rest. What a picture IS belongs to the content (the packs' tables), not to the skin.
 
 ## The data resources a skin may replace by `resources`, as the start of their key: the layouts, the picture bundles and the tile set. The
-## rest of the data is the rules and the content, which no skin can replace (pictures INSIDE them, such as a problem's art, still
-## map through `pictures`).
+## rest of the data is the rules and the content, which no skin can replace.
 const REPLACEABLE: Array[String] = ["ui/", "sprite_frames/", "neptune_tileset", "problems/screen_layout"]
 
 ## The ONE table of picture kinds: the folder of a picture file below a pack's `assets/` (`sprites/decos`, or the first folder alone when the first two are not a key here) -> the kind of its key (the part of a key before the `/`, `key_of_rel`).
@@ -52,8 +44,7 @@ const KIND_FOLDERS: Dictionary[String, String] = {
 }
 ## The folders whose file names are the key's name as they are. The names of the other folders carry the number the importer appends to a registry name (`_registry_name`).
 const PLAIN_FOLDERS: Array[String] = ["backgrounds", "sprites", "tiles"]
-## The kinds of picture key there are (`KIND_FOLDERS`' values, each once). A pack's `pictures/` folder holds these kinds (`PackCheck`), and a mod's draw list may name a picture of any of them (`ModSpec.is_drawable_key`);
-## a skin mod's `pictures` may replace only `ModSpec.REPLACEABLE_KINDS` of them.
+## The kinds of picture key there are (`KIND_FOLDERS`' values, each once). A pack's `pictures.json` holds keys of these kinds (`PictureTable`, `PackCheck`), and a mod's draw list may name a picture of any of them (`ModSpec.is_drawable_key`).
 static var KEY_KINDS: Array[String] = PictureTable.KINDS
 
 ## The skin's id: the folder name under `res://skins/` and the word of `--skin=<id>`.
@@ -63,11 +54,6 @@ static var KEY_KINDS: Array[String] = PictureTable.KINDS
 ## The skin that answers what this one does not map. Empty means the original (the original itself has none).
 @export var fallback: GameSkin
 
-@export var pictures: Dictionary[String, Texture2D] = {}
-## A folder of picture files named by key (`res://skins/<id>/art`, holding `frame/sub_00.png`, `ui_picture/ui_1189.png` ...), or "".
-@export_dir var art_folder: String = ""
-## How many times larger the files of `art_folder` are than the size they are drawn at: 4 for 4x art, 1 for pictures of the right size.
-@export_range(1, 16) var art_scale: int = 1
 @export var resources: Dictionary[String, Resource] = {}
 @export var presenter_scene: PackedScene
 @export var render: RenderSettings
@@ -77,17 +63,10 @@ static var KEY_KINDS: Array[String] = PictureTable.KINDS
 ## A material for a layer of the original presenter: layer name (`SkinLayers.NODES`) -> a `ShaderMaterial` with the shader and the values of its uniforms. Never put on a node as it is: `layer_material` hands out copies.
 @export var layer_materials: Dictionary[StringName, ShaderMaterial] = {}
 
-## A made-up name of the registry (`ui_1189`, `pa_1780`) already holds its number; a real one is followed by it in the file name.
+## BRIDGE (goes with the path-held pictures of the data): a made-up name of the registry (`ui_1189`, `pa_1780`) already holds its number; a real one is followed by it in the file name.
 static var _trailing_number := RegEx.create_from_string("^(.+)_(\\d+)$")
 ## path -> key, so a picture asked for a hundred times is parsed once.
 static var _keys: Dictionary = {}
-
-## key -> the texture of the file `art_folder/key.png` (a `ScaledTexture` for `art_scale` > 1), or null for a key with no file. A lookup
-## that found nothing is kept too, so the folder is asked about a key once.
-var _art: Dictionary = {}
-
-## original resource (its instance id) -> the same resource with this skin's pictures put in. Filled by `skinned`.
-var _retextured: Dictionary = {}
 
 
 # --- the lookups (each one: this skin, else the next, else the original's) ------------------------------------
@@ -99,24 +78,6 @@ func next_skin() -> GameSkin:
 	if id == SkinChoice.ORIGINAL:
 		return null
 	return SkinChoice.original()
-
-
-## The picture for `key` (see the class comment): what the packs laid over another say (`Pictures.overlaid`), else this skin's, else the next skin's. Null when none maps it. BRIDGE: a skin
-## will not map pictures (the packs' tables choose them), and this is then `Pictures.resolve`.
-func picture(key: String) -> Texture2D:
-	var from_pack := Pictures.overlaid(key)
-	return from_pack if from_pack != null else _skin_picture(key)
-
-
-## This skin's picture for `key`, or the skins behind it, or null: the chain without the packs.
-func _skin_picture(key: String) -> Texture2D:
-	if pictures.has(key):
-		return pictures[key]
-	var from_folder := _art_picture(key)
-	if from_folder != null:
-		return from_folder
-	var next := next_skin()
-	return next._skin_picture(key) if next != null else null
 
 
 ## This skin's data resource for `data_key` (a path under the data folder without `.tres`), or null. Only the keys of `REPLACEABLE` count.
@@ -184,39 +145,9 @@ func menu_theme_in_use() -> SkinTheme:
 	return next.menu_theme_in_use() if next != null else null
 
 
-## Does this skin or one behind it map any picture, or does a mounted pack hold some? (If none does, the original's resources are used as
-## they are.)
-func has_pictures() -> bool:
-	if not pictures.is_empty() or not art_folder.is_empty() or Packs.has_pictures():
-		return true
-	var next := next_skin()
-	return next != null and next.has_pictures()
+# --- pictures by file (BRIDGE: goes when the data holds keys, not paths) ----------------------------------------------
 
-
-## The picture of `key` in `art_folder`, or null. The file is loaded the first time it is asked for, and the same texture answers
-## every time after that.
-func _art_picture(key: String) -> Texture2D:
-	if art_folder.is_empty() or key.is_empty():
-		return null
-	if not _art.has(key):
-		var path := "%s/%s.png" % [art_folder, key]
-		var file := load(path) as Texture2D if ResourceLoader.exists(path) else null
-		_art[key] = ScaledTexture.of(file, art_scale) if file != null and art_scale > 1 else file
-	return _art[key]
-
-
-# --- pictures by file ------------------------------------------------------------------------------------
-
-## The texture of the picture file `path` (under a pack's `assets/`): this skin's picture for it, else the file itself. The ONE
-## place a path becomes a texture, so `Assets` and everything that holds a path in data ask here. "" gives null.
-func texture_at(path: String) -> Texture2D:
-	if path.is_empty():
-		return null
-	var mapped := picture(key_of(path))
-	return mapped if mapped != null else Packs.file_at(path) as Texture2D
-
-
-## The key a picture file has in `pictures`: "ui_picture/title_sky" for "res://packs/legacy/assets/ui/title/title_sky_1039.png". The kind comes
+## BRIDGE (goes when the data holds keys, not paths): the key a picture file has in a pack's table: "ui_picture/title_sky" for "res://packs/legacy/assets/ui/title/title_sky_1039.png". The kind comes
 ## from the folder and the name from the file's, without the number the importer appends to a registry name (a made-up name, which
 ## holds its number already, stays as it is: "ui_picture/ui_1189"). "" for a file that is not a picture of the game.
 static func key_of(path: String) -> String:
@@ -261,30 +192,12 @@ static func _registry_name(kind: StringName, stem: String) -> String:
 # --- data resources --------------------------------------------------------------------------------------
 
 ## `original` (a resource of the data folders, as `Catalog` loads it) as THIS skin shows it: the skin's own resource for it if it has
-## one (`resources`), else the original with this skin's pictures put in place of its textures, else `original` itself. Nothing is
-## written to `original`: the changed copy is made once per skin and kept.
+## one (`resources`), else `original` itself. A skin changes no picture (the packs' tables do, `Pictures`).
 func skinned(original: Resource) -> Resource:
 	if original == null:
 		return null
 	var own := resource_for(_data_key(Packs.source_of(original)))
-	if own != null:
-		return own
-	if not has_pictures():
-		return original                          # (the original skin: the very same object, so nothing about it can differ)
-	var original_id := original.get_instance_id()
-	if not _retextured.has(original_id):
-		_retextured[original_id] = _with_pictures(original)
-	return _retextured[original_id]
-
-
-## Forget the copies `skinned` made: call it after changing `pictures`, `resources` or the files of `art_folder` while the game runs
-## (a tool, a test).
-func forget() -> void:
-	_retextured.clear()
-	_art.clear()
-	var next := next_skin()
-	if next != null:
-		next.forget()
+	return own if own != null else original
 
 
 ## "res://packs/legacy/data/ui/hud_layout.tres" -> "ui/hud_layout" (and "res://data/ui/menu_layout.tres" -> "ui/menu_layout"); "" for a resource that is not a file of
@@ -296,89 +209,3 @@ static func _data_key(path: String) -> String:
 	if path.begins_with("res://data/"):
 		return path.trim_prefix("res://data/").get_basename()
 	return ""
-
-
-## A copy of `original` whose textures are this skin's, or `original` when none of them is mapped.
-func _with_pictures(original: Resource) -> Resource:
-	if original is SpriteFrames:
-		return _frames_with_pictures(original)
-	if original is TileSet:
-		return _tile_set_with_pictures(original)
-	var copy: Resource = null
-	for info in original.get_property_list():
-		if not (info.usage & PROPERTY_USAGE_STORAGE):
-			continue
-		var value: Variant = original.get(info.name)
-		var mapped: Variant = _mapped(value)
-		if not is_same(mapped, value):
-			if copy == null:
-				copy = original.duplicate()      # (a shallow copy: what no picture changed in is shared with the original)
-			copy.set(info.name, mapped)
-	return copy if copy != null else original
-
-
-## `value` with this skin's pictures put in: a texture of a mapped file becomes the skin's, an array, a dictionary or an inner
-## resource (one that lives inside the file, as the data files' sub-resources do) is copied if something in it changed. Anything
-## else, and everything that did not change, comes back as the very same value.
-func _mapped(value: Variant) -> Variant:
-	if value is PictureRef:
-		return value                             # (a key: the chain's tables choose the picture, `Pictures`)
-	if value is Texture2D:
-		var texture: Texture2D = value
-		var mapped := picture(key_of(Packs.source_of(texture)))
-		return mapped if mapped != null else texture
-	if value is Array:
-		var array: Array = value
-		var copy: Array = array.duplicate()      # (typed arrays stay typed)
-		var changed := false
-		for i in array.size():
-			var mapped: Variant = _mapped(array[i])
-			if not is_same(mapped, array[i]):
-				copy[i] = mapped
-				changed = true
-		return copy if changed else array
-	if value is Dictionary:
-		var dictionary: Dictionary = value
-		var copy: Dictionary = dictionary.duplicate()
-		var changed := false
-		for key in dictionary:
-			var mapped: Variant = _mapped(dictionary[key])
-			if not is_same(mapped, dictionary[key]):
-				copy[key] = mapped
-				changed = true
-		return copy if changed else dictionary
-	if value is Resource and _is_inner(value):
-		return _with_pictures(value)
-	return value
-
-
-## Does `resource` live inside the file that holds it ("zones.tres::ZoneData_x") or is it not saved at all, rather than in a file of
-## its own (a script, a font, a picture)? Only those are copied; the others are shared.
-static func _is_inner(resource: Resource) -> bool:
-	var source := Packs.source_of(resource)
-	return source.is_empty() or source.contains("::")
-
-
-func _frames_with_pictures(original: SpriteFrames) -> SpriteFrames:
-	var copy: SpriteFrames = null
-	for animation in original.get_animation_names():
-		for i in original.get_frame_count(animation):
-			var texture := original.get_frame_texture(animation, i)
-			var mapped := _mapped(texture) as Texture2D
-			if mapped != texture:
-				if copy == null:
-					copy = original.duplicate() as SpriteFrames
-				copy.set_frame(animation, i, mapped, original.get_frame_duration(animation, i))
-	return copy if copy != null else original
-
-
-func _tile_set_with_pictures(original: TileSet) -> TileSet:
-	var copy: TileSet = null
-	for i in original.get_source_count():
-		var source := original.get_source(original.get_source_id(i)) as TileSetAtlasSource
-		var mapped := _mapped(source.texture) as Texture2D if source != null else null
-		if mapped != null and mapped != source.texture:
-			if copy == null:
-				copy = original.duplicate(true) as TileSet     # (deep: the sources are part of the set, and must not be shared)
-			(copy.get_source(copy.get_source_id(i)) as TileSetAtlasSource).texture = mapped
-	return copy if copy != null else original

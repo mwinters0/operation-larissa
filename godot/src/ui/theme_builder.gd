@@ -128,15 +128,15 @@ static func apply(skin: GameSkin) -> void:
 	var data := skin.menu_theme_in_use()
 	if data == null and not _worn:
 		return
-	var theme := pristine if data == null else derive(data, skin)
+	var theme := pristine if data == null else derive(data)
 	project.merge_with(theme)                                    # (over the project theme, never after a `clear`: an emptied theme for a moment makes every control size itself by the fallback font, and a control that grew does not shrink back)
 	_worn = data != null
 
 
 ## The engine's theme with `data` laid over it (it only ever changes items the engine's theme has, `COLOR_ITEMS` and `STYLE_ITEMS`, so merging the engine's theme over it again restores every one): the font and its size, the colours by name (`COLOR_ITEMS`) and the styles by name (`STYLE_ITEMS`), each style the engine's own with the fields it says changed or, with a
-## `picture`, a texture box from the picture `skin` shows for that key (`Assets.picture_by_key`, the lookup a mod's draw list makes) whose content margins stay the engine's unless the style says `margin`. A picture that no
-## pack or skin holds leaves the style's other fields to do.
-static func derive(data: SkinTheme, skin: GameSkin) -> Theme:
+## `picture`, a texture box from the picture the chain holds for that key (`Assets.picture_by_key`, the lookup a mod's draw list makes) whose content margins stay the engine's unless the style says `margin`. A picture that no
+## pack holds leaves the style's other fields to do.
+static func derive(data: SkinTheme) -> Theme:
 	var theme := Theme.new()
 	theme.merge_with(engine())
 	if data.font != null:
@@ -149,15 +149,15 @@ static func derive(data: SkinTheme, skin: GameSkin) -> Theme:
 	for name in data.styles:
 		for item: Array in STYLE_ITEMS[name]:
 			var base := theme.get_stylebox(item[1], item[0]) if theme.has_stylebox(item[1], item[0]) else null
-			theme.set_stylebox(item[1], item[0], _styled(base, data.styles[name], skin))
+			theme.set_stylebox(item[1], item[0], _styled(base, data.styles[name]))
 	return theme
 
 
 ## `base` (a style of the engine's theme, or null) with the fields of `fields` (`SkinTheme.FIELDS`) laid over it.
-static func _styled(base: StyleBox, fields: Dictionary, skin: GameSkin) -> StyleBox:
+static func _styled(base: StyleBox, fields: Dictionary) -> StyleBox:
 	var margin: Vector2i = fields.get("margin", Vector2i(-1, -1))
 	if fields.has("picture"):
-		var texture := SkinChoice.within(skin, Assets.picture_by_key.bind(fields["picture"])) as Texture2D
+		var texture := Assets.picture_by_key(fields["picture"])
 		if texture != null:
 			var slice: Vector4i = fields["slice"]
 			var box := StyleBoxTexture.new()

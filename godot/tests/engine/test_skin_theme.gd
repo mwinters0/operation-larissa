@@ -292,7 +292,7 @@ func test_every_item_a_skin_may_say_is_one_the_engine_has() -> void:
 func test_the_skin_lays_only_what_it_says_over_the_engines_theme() -> void:
 	var shelf := _mount()
 	var engine := ThemeBuilder.engine()
-	var derived := ThemeBuilder.derive(_skin(shelf).menu_theme_in_use(), _skin(shelf))
+	var derived := ThemeBuilder.derive(_skin(shelf).menu_theme_in_use())
 	assert_str(derived.get_color("font_color", "ConsoleTitle").to_html(false)).is_equal("9fe8ff")                  # (said)
 	assert_str(derived.get_color("font_color", "Hint").to_html(false)).is_equal("9fe8ff")
 	assert_str(derived.get_color("font_color", "Label").to_html(false)).is_equal("ddeeff")
@@ -314,7 +314,7 @@ func test_the_skin_lays_only_what_it_says_over_the_engines_theme() -> void:
 	assert_object(engine_hover).override_failure_message("the engine's own style is never changed").is_not_same(hover)
 	var pressed := derived.get_stylebox("pressed", "Button") as StyleBoxTexture                                     # (a picture by key)
 	assert_object(pressed).is_not_null()
-	assert_object(pressed.texture).is_same(_skin(shelf).pictures[KEY])
+	assert_object(pressed.texture).is_same(Assets.picture_by_key(KEY))
 	assert_float(pressed.texture_margin_left).is_equal(4.0)
 	var engine_pressed := engine.get_stylebox("pressed", "Button") as StyleBoxFlat
 	assert_float(pressed.content_margin_left).override_failure_message("a picture keeps the engine's content margins").is_equal(engine_pressed.content_margin_left)
@@ -326,7 +326,7 @@ func test_the_skin_lays_only_what_it_says_over_the_engines_theme() -> void:
 func test_a_style_whose_picture_nothing_holds_is_drawn_flat() -> void:
 	var data := SkinTheme.new()
 	data.styles["panel"] = {"picture": "ui_picture/no_such_picture", "slice": Vector4i(2, 2, 2, 2), "fill": Color.RED}
-	var derived := ThemeBuilder.derive(data, SkinChoice.original())
+	var derived := ThemeBuilder.derive(data)
 	var panel := derived.get_stylebox("panel", "Panel") as StyleBoxFlat
 	assert_object(panel).is_not_null()
 	assert_str(panel.bg_color.to_html(false)).is_equal("ff0000")

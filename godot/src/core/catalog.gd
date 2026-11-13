@@ -10,7 +10,7 @@ extends RefCounted
 ##
 ## SKINS. The data that holds PICTURES (the sprite sets, the tileset, the problem types and layouts, the layouts of `data/ui/`) is
 ## asked for through `_skinned`: the original's resource as the pack holds it is made and cached once (`_door`), and the skin in use
-## (`SkinChoice.current()`) says what to show instead (`GameSkin.skinned`): its own resource, or the same one with its pictures put in.
+## (`SkinChoice.current()`) says what to show instead (`GameSkin.skinned`): its own resource, or the same one.
 ## The rules' data (sectors, zones, triggers, tuning, texts) never goes through a skin. With the original skin every `_skinned` is
 ## the very object `_door` gives.
 ##
@@ -91,12 +91,12 @@ static func _door(rel: String) -> Resource:
 
 ## The resource `rel` as the skin in use shows it (see the class comment).
 static func _skinned(rel: String) -> Resource:
-	return SkinChoice.current().skinned(_door(rel))
+	return _shown(_door(rel))
 
 
 ## The file `file` of the project's own data folder (`res://data/`) as the skin in use shows it.
 static func _skinned_project(file: String) -> Resource:
-	return SkinChoice.current().skinned(_load(PROJECT_DATA_DIR + file))
+	return _shown(_load(PROJECT_DATA_DIR + file))
 
 
 ## The resource `rel` ("data/ui/hud_layout.tres") of the first pack of the chain that provides it, as the pack holds it (no skin). For a scene that holds a layout
@@ -108,7 +108,18 @@ static func pack_resource(rel: String) -> Resource:
 ## `resource` (one a scene or a script holds by itself, such as the HUD's layout) as the skin in use shows it. The same object with
 ## the original skin; for a scene that keeps its own reference to a layout and asks again when the skin changes.
 static func skinned(resource: Resource) -> Resource:
-	return SkinChoice.current().skinned(resource)
+	return _shown(resource)
+
+
+## `resource` as the skin in use shows it: the skin's own resource for it, else the resource with the chain's pictures put in where it holds a file (BRIDGE: `PathPictures`).
+static func _shown(resource: Resource) -> Resource:
+	return shown_by(SkinChoice.current(), resource)
+
+
+## `resource` as the skin `skin` shows it (a presenter or a HUD with a skin of its own): the skin's own resource for it, else the resource with the chain's pictures put in (BRIDGE: `PathPictures`).
+static func shown_by(skin: GameSkin, resource: Resource) -> Resource:
+	var own := skin.skinned(resource)
+	return own if own != resource else PathPictures.dress(resource)
 
 
 ## `dir`, or `sectors_dir` when none is given: the folder that holds the sector folders.
@@ -430,7 +441,7 @@ static func packs_changed() -> void:
 	for path: String in _cache.keys():
 		if _cache[path] is Campaign:
 			_cache.erase(path)
-	SkinChoice.forget_all()
+	SkinChoice.chain_changed()
 
 
 ## What is wrong with the set of campaigns: each one's `problems()` and a sector claimed by two (the rule that lets a sector find its campaign).

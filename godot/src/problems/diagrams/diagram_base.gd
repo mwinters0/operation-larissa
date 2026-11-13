@@ -92,31 +92,31 @@ func _init() -> void:
 
 
 func _enter_tree() -> void:
-	if not SkinChoice.events.changed.is_connected(_on_skin_changed):
-		SkinChoice.events.changed.connect(_on_skin_changed)
+	if not Pictures.events.changed.is_connected(_on_pictures_changed):
+		Pictures.events.changed.connect(_on_pictures_changed)
 
 
 func _exit_tree() -> void:
-	if SkinChoice.events.changed.is_connected(_on_skin_changed):
-		SkinChoice.events.changed.disconnect(_on_skin_changed)
+	if Pictures.events.changed.is_connected(_on_pictures_changed):
+		Pictures.events.changed.disconnect(_on_pictures_changed)
 
 
-## The skin in use is another: the pictures are looked up again (an item holds the number of its picture, never the picture) and drawn again, wherever the animation is.
-func _on_skin_changed(_skin: GameSkin) -> void:
+## The chain's pictures may be other ones (a pack was chosen, `Pictures.events`): they are looked up again (an item holds the number of its picture, never the picture) and drawn again, wherever the animation is.
+func _on_pictures_changed() -> void:
 	if type == null:
 		return
 	_resolve_textures()
 	queue_redraw()
 
 
-## The pictures of the type's art bundle as the skin in use shows them (the skin's picture for the file, else the file): the one place `_textures` is made, by `setup` and by a skin put on.
+## The pictures of the type's art bundle as the chain shows them (a pack's picture for the file's key, else the file): the one place `_textures` is made, by `setup` and when the chain's pictures change.
 func _resolve_textures() -> void:
 	_textures.clear()
 	for path in type.art_files:
 		_textures.append(Assets.texture_at(path))
 
 
-## The texture of a picture item under the skin in use.
+## The texture of a picture item in the chain in use.
 func texture_of(item: DiagramItem) -> Texture2D:
 	return _textures[item.pic]
 

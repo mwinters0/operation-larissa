@@ -84,7 +84,7 @@ in the order of the keys, each with the sentence that says what it does and the 
 | `theme` | the look of the menus (sign-in, the dialogs, the message box) and of the problem screen's text and calculator keys: a font, colours, panel and button styles, pictures by key (step 5) | "The menus' theme" |
 | `shaders` | the list of shader files (text) of `skin/` the skin uses | `layers` bullet, "Shaders" |
 | `layers` | a shader on a layer of the picture of a sector: `background`, `walls`, `foes`, and the others the reference lists, with values for the shader's `uniforms` (step 6) | `layers` bullet |
-| `pictures` | a PNG of the pack for each picture of the console the skin redraws, by the picture's key (step 4) | `pictures` bullet |
+| (`pictures.json`) | not a key of the manifest but a file of the pack: a row for each picture of the console the pack redraws, by the picture's key (step 4) | the `pictures.json` bullet |
 
 The files sit in the pack under `skin/`: `skin/fonts/`, `skin/*.gdshader`, `skin/ui_picture/`. A file the manifest does not name is a
 warning when you check the pack (step 7), and one it names that is not there is an error, so a typo does not go unnoticed.
@@ -94,7 +94,7 @@ tests that play every skin against the original fail if one ever changed them ([
 
 ## 4. The art templates, and a picture of your own
 
-The example's `pictures` list holds 24 pictures: the console's. Each is a **template**, a flat colour at the original's size with the
+The example's `pictures.json` has 24 rows: the console's pictures. Each is a **template**, a flat colour at the original's size with the
 picture's key and size written on it, so you can draw the real art at the right size without opening the original's files. (The
 templates carry nothing of the original: the sizes come from the layouts, the lettering is made by the tool.)
 
@@ -126,24 +126,23 @@ Which key is what (the key is `ui_picture/` and the name; the sizes are the orig
 | `ui_1200` to `ui_1203` | 84 x 20 | the sector label boxes |
 
 (That is the fields of `HudLayout` as the legacy pack sets them. The numbers are the importer's names for pictures the original never
-gave a name; `pictures` takes them as they stand.) While `hud_font` is set, the label boxes are lettered as text instead
+gave a name; `pictures.json` takes them as they stand.) While `hud_font` is set, the label boxes are lettered as text instead
 ([`SKIN_API.md`](SKIN_API.md), "A skin with no script"): their pictures `ui_1190` to `ui_1203` matter when you take `hud_font` out.
 
 **Draw one.** Start with the bezel: open `godot/packs/reef/skin/ui_picture/ui_1189.png` in your editor and paint over it. Keep the file's name and its size. A picture of another size is
 drawn into the place the original's had (stretched to it, so a drawing at twice the size fills the same place); keep the proportions. The pack check (step 7) warns of a picture whose size is not the template's, so a stretched picture is not a surprise. Save as PNG, in the same place under the same name. Start the game again (step 2): the new bezel is there.
 
-**Keep only what you drew.** The example maps all 24 templates, so every picture you have not drawn yet shows its flat colour with its
-key on it. Open `pictures` and remove the keys you have not drawn: a picture the skin does not map is the original's. Add a key as
+**Keep only what you drew.** The example has a row for all 24 templates, so every picture you have not drawn yet shows its flat colour with its
+key on it. Open `pictures.json` and remove the rows of the pictures you have not drawn: a picture the pack has no row for is the pack under it's (the original's). Add a row as
 you finish a picture.
 
 ```json
-"pictures": {
+{"format": 1, "pictures": {
   "ui_picture/ui_1189": "skin/ui_picture/ui_1189.png"
-}
+}}
 ```
 
-The value is a path under `skin/`; the key is the picture's, `ui_picture/` and the name. A key the game never asks for (`ui_picture/ui_9999`) is a
-**warning** when you check the pack, and the picture is never drawn: it is the first thing to look for when a picture does not appear.
+The value is a file of the pack (what it is called and where it lies is yours to choose); the key is the picture's, `ui_picture/` and the name. A file under a folder named after a kind, `ui_picture/ui_1189.png`, becomes its row with `pack_tool --pictures-table=<folder>`. A row whose file is not there is an **error** when you check the pack, and a PNG no row names a **warning**: the first things to look for when a picture does not appear.
 
 Draw only your own art. A picture made by tracing or editing the original's is the original's, and it does not belong in a pack you
 give away.
@@ -178,12 +177,12 @@ font, named colours, and the styles of panels and buttons, each field optional a
 
 Put it in, start the game and open a dialog: the message box, with its title in your colour and its
 frame in your fill, is the quickest look. Leave `hud_font`'s `file` out and the console's boxes use the theme's font, so one font dresses the console and the menus.
-A style may also be a picture of yours: `"pressed": { "picture": "ui_picture/button_pressed", "slice": [4, 4, 4, 4] }` (map the key in `pictures`; `slice` is
+A style may also be a picture of yours: `"pressed": { "picture": "ui_picture/button_pressed", "slice": [4, 4, 4, 4] }` (give the key a row in `pictures.json`; `slice` is
 the margins of the picture that stay unstretched). The controls keep their places and what they do: only fonts, colours, borders and pictures change.
 The problem screen wears the same theme: its text takes the `text` colour and the font, the glass that lights a calculator key is the `key` style
 (`"key": { "hover": { "fill": "#5fd0f038" }, "pressed": { "fill": "#ffe27a60" } }`) and `display` is the colour of the field behind the calculator's digits (these
 two are in the same manifest). Its frame is pictures: the screen, the calculator and the "Ans:" panel are `problem_art/pa_1780`, `pa_1781` and `pa_1802`
-in `pictures`, drawn over the templates in `skin/problem_art/` (step 4's tool writes them with the console's; the example ships them unmapped, since a flat
+in `pictures.json`, drawn over the templates in `skin/problem_art/` (step 4's tool writes them with the console's; the example ships them without a row, since a flat
 calculator has no key faces). The diagrams' text stays the engine's font. All of it is in [`SKIN_API.md`](SKIN_API.md), "The menus' theme" and "The problem screen's frame".
 The keys, their bounds and what each name dresses are in the same place.
 
@@ -255,7 +254,7 @@ tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --check
 ```
 
 (`--no-reach` skips the reachability search of a pack's sectors, which a skin has none of.) It prints `reef: no problems`, or the warnings and errors, and the exit
-code is 1 when there is an error. What it says of a skin: the manifest, the pictures named and where they are, the font and the theme, a file
+code is 1 when there is an error. What it says of a skin: the manifest, the pictures `pictures.json` names and where they are, the font and the theme, a file
 the manifest never names, the shaders as text, and the uniforms. Examples of what it prints:
 
 ```
@@ -300,7 +299,7 @@ file beside the font, and nothing in `skin/` that is not yours to share.
 
 ## 9. Where to go next
 
-- Redraw more pictures: the same steps, one key at a time. The templates tool writes one template for every picture a skin with no script may replace
+- Redraw more pictures: the same steps, one key at a time. The templates tool writes one template for every picture of the console a pack may redraw
   (the console's); what is planned beyond it is in [`ROADMAP.md`](../ROADMAP.md).
 - A shader on the sub, the pellets or the decorations: the layers are listed in `SKIN_API.md`; a new layer is one more line of `layers`.
 - Compare your skin with the original, side by side, and see the rectangles the rules test: `res://src/debug/skin_compare.tscn` and the **O** key

@@ -756,13 +756,15 @@ func test_home_and_end_with_an_empty_list_do_nothing() -> void:
 	assert_bool(screen.start_button.disabled).is_true()
 
 
-## The scanner pictures depend on the skin and the pack chain: nothing keeps them, so a skin chosen later (or a pack) is seen.
-func test_the_scanner_pictures_are_the_skins_in_use() -> void:
-	var original := SignIn.scan_pictures()                            # (asked first in the original skin)
-	var marker := load("res://tests/skins/tiny/marker.png") as Texture2D
-	var skin := GameSkin.new()
-	skin.pictures = {GameSkin.key_of(Assets.ui_picture_path(Assets.number_of(&"ui_picture", &"scanner_strip_0"))): marker}
-	var skinned: Array[Texture2D] = SkinChoice.within(skin, SignIn.scan_pictures)
-	assert_object(skinned[0]).is_same(marker)
-	assert_object(original[0]).is_not_same(marker)
-	assert_object(SignIn.scan_pictures()[0]).is_same(original[0])             # (and the original's again outside the skin)
+## The scanner pictures depend on the pack chain: nothing keeps them, so a pack chosen later is seen (and a skin is not).
+func test_the_scanner_pictures_are_the_chains() -> void:
+	var original := SignIn.scan_pictures()                            # (asked first in the chain of the suite)
+	var shelf := PackShelf.new()
+	shelf.add_picture_row("ui_picture/scanner_strip_0", Color.RED)
+	shelf.mount()
+	var drawn := SignIn.scan_pictures()
+	assert_that(PicturesShelf.color_of(drawn[0])).is_equal(Color.RED)
+	assert_object(original[0]).is_not_same(drawn[0])
+	assert_object(SkinChoice.within(SkinChoice.original(), SignIn.scan_pictures)[0]).is_same(drawn[0])      # (no skin has a part in it)
+	shelf.remove()
+	assert_object(SignIn.scan_pictures()[0]).is_same(original[0])             # (and the suite's again when the pack goes)

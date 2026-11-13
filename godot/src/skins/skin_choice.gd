@@ -140,13 +140,10 @@ static func select_id(id: StringName) -> void:
 	select(load_skin(id))
 
 
-## Makes the skins in use forget the changed copies of data resources they made (`GameSkin.forget`): the packs' pictures changed (a pack was
-## mounted or removed), and a copy made before still holds the old ones. Nothing is selected and nothing is announced.
-static func forget_all() -> void:
-	if _original != null:
-		_original.forget()
+## The chain of packs changed (`Catalog.packs_changed`): the pictures a theme names by key (a style's `picture`) may be other ones, so the theme of the skin in use is made again from the skin's data and the chain.
+static func chain_changed() -> void:
 	if _current != null:
-		_current.forget()
+		ThemeBuilder.apply(_current)
 
 
 ## Runs `action` (a Callable that returns at once: no `await` inside, a coroutine would leave the scope at its first wait) with `skin` as the

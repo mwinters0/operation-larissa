@@ -941,7 +941,7 @@ func _textures(diagram: ModDiagram) -> Array[Texture2D]:
 	return found
 
 
-func test_a_skin_changed_in_the_middle_of_a_problem_is_what_the_pictures_by_key_show() -> void:
+func test_a_chain_changed_in_the_middle_of_a_problem_is_what_the_pictures_by_key_show() -> void:
 	var tides := _mount(["tides"] as Array[String])
 	var screen := _original_screen()
 	var diagram := screen.diagram as ModDiagram
@@ -950,27 +950,24 @@ func test_a_skin_changed_in_the_middle_of_a_problem_is_what_the_pictures_by_key_
 	var before := _textures(diagram)
 	assert_object(before[0]).is_same(Assets.picture_by_key(key))
 	var asked: int = ModHost.mod(String(tides.id)).call("times_asked")
-	var skin := GameSkin.new()
-	skin.id = &"test_problem_pictures"
-	var worn := ImageTexture.create_from_image(Image.create_empty(9, 9, false, Image.FORMAT_RGBA8))
-	skin.pictures = {key: worn}
-	SkinChoice.select(skin)
+	tides.add_picture_row(key, Color.RED, Vector2i(9, 9))                                           # (the mod's own pack redraws the picture: a row of its pictures.json)
+	Packs.refresh()
 	var after := _textures(diagram)
 	assert_int(after.size()).is_equal(before.size())
-	assert_object(after[0]).override_failure_message("the picture is the one of the skin that was in use when it was drawn").is_same(worn)
+	assert_that(PicturesShelf.color_of(after[0])).override_failure_message("the picture is the one of the chain in use when it was drawn").is_equal(Color.RED)
 	assert_object(after[0]).is_same(Assets.picture_by_key(key))
-	assert_int(ModHost.mod(String(tides.id)).call("times_asked")).override_failure_message("a skin change asks the script nothing").is_equal(asked)
+	assert_int(ModHost.mod(String(tides.id)).call("times_asked")).override_failure_message("a chain change asks the script nothing").is_equal(asked)
 	var plain_pictures := diagram.plain().pictures(0)
-	assert_object(diagram.plain().texture_of(plain_pictures[0])).override_failure_message("the plain picture is resolved under the new skin too").is_same(worn)
-	SkinChoice.select(SkinChoice.original())
-	assert_object(_textures(diagram)[0]).is_same(before[0])
-	var opened_late := _original_screen()                                                       # (a screen opened under the skin shows what the changed one shows)
-	SkinChoice.select(skin)
+	assert_object(diagram.plain().texture_of(plain_pictures[0])).override_failure_message("the plain picture is resolved in the new chain too").is_same(after[0])
+	var opened_late := _original_screen()                                                       # (a screen opened in the chain shows what the changed one shows)
 	var late := _textures(opened_late.diagram as ModDiagram)
 	var changed := _textures(diagram)
 	assert_int(late.size()).is_equal(changed.size())
 	for i in late.size():
 		assert_object(late[i]).is_same(changed[i])
+	tides.write_json(PictureTable.FILE, {"format": PictureTable.FORMAT, "pictures": {}})
+	Packs.refresh()
+	assert_object(_textures(diagram)[0]).is_same(before[0])
 	opened_late.free()
 	screen.free()
 

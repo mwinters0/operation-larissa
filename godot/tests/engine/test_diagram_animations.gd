@@ -331,13 +331,18 @@ func test_dev_type_3_builds_up_in_the_steps_its_data_names() -> void:
 	assert_bool(quiet.has_intro()).is_false()                                     # the other types draw at once
 
 
-# --- a skin put on in the middle of an animation ---------------------------------------------------------------------------
+# --- a pack put on in the middle of an animation ---------------------------------------------------------------------------
+
+var _shelf: PackShelf
 
 func after_test() -> void:
 	SkinChoice.select(SkinChoice.original())
+	if _shelf != null:
+		_shelf.remove()
+		_shelf = null
 
 
-func test_a_skin_put_on_in_the_middle_of_an_animation_shows_its_pictures_at_the_same_tick() -> void:
+func test_a_pack_put_on_in_the_middle_of_an_animation_shows_its_pictures_at_the_same_tick() -> void:
 	var problem := ProblemFactory.make(3, 0, null, 0)
 	var diagram := auto_free(DiagramFactory.create(problem)) as DiagramBase
 	add_child(diagram)
@@ -346,17 +351,18 @@ func test_a_skin_put_on_in_the_middle_of_an_animation_shows_its_pictures_at_the_
 	diagram.animate_to(length / 2)
 	var item := diagram.items.filter(func(each: DiagramItem) -> bool: return each.kind == DiagramItem.Kind.PICTURE)[0] as DiagramItem
 	var before := diagram.texture_of(item)
-	var worn := ImageTexture.create_from_image(Image.create_empty(9, 9, false, Image.FORMAT_RGBA8))
-	var skin := GameSkin.new()
-	skin.id = &"test_diagram_pictures"
-	skin.pictures = {GameSkin.key_of(problem.type.art_files[item.pic]): worn}
-	SkinChoice.select(skin)
-	assert_object(diagram.texture_of(item)).override_failure_message("the item holds the number of its picture, not the picture").is_same(worn)
+	_shelf = PackShelf.new()
+	_shelf.add_picture_row(GameSkin.key_of(problem.type.art_files[item.pic]), Color.RED, Vector2i(9, 9))
+	_shelf.mount()                                                                                   # (the chain changes: the packs' tables answer for the picture)
+	var worn := diagram.texture_of(item)
+	assert_vector(worn.get_size()).override_failure_message("the item holds the number of its picture, not the picture").is_equal(Vector2(9, 9))
+	assert_that(PicturesShelf.color_of(worn)).is_equal(Color.RED)
 	assert_object(before).is_not_same(worn)
 	assert_bool(diagram.is_playing()).is_true()
 	assert_int(diagram.animation_tick()).is_equal(length / 2)
 	assert_int(diagram.intro_length()).is_equal(length)
 	diagram.animate_to(length)
 	assert_bool(diagram.is_playing()).is_false()
-	SkinChoice.select(SkinChoice.original())
+	_shelf.remove()
+	_shelf = null
 	assert_object(diagram.texture_of(item)).is_same(before)
