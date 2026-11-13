@@ -323,13 +323,18 @@ func test_the_skin_lays_only_what_it_says_over_the_engines_theme() -> void:
 	assert_bool(derived.is_type_variation("ConsolePanel", "PanelContainer")).is_true()
 
 
-func test_a_style_whose_picture_nothing_holds_is_drawn_flat() -> void:
+func test_a_style_whose_picture_nothing_holds_is_drawn_flat_and_the_player_is_told_once() -> void:
+	GameState.reset()                                                                                    # (a run begins: the session's log is a new one)
 	var data := SkinTheme.new()
 	data.styles["panel"] = {"picture": "ui_picture/no_such_picture", "slice": Vector4i(2, 2, 2, 2), "fill": Color.RED}
-	var derived := ThemeBuilder.derive(data)
+	var derived := ThemeBuilder.derive(data, &"zz_skin")
 	var panel := derived.get_stylebox("panel", "Panel") as StyleBoxFlat
 	assert_object(panel).is_not_null()
 	assert_str(panel.bg_color.to_html(false)).is_equal("ff0000")
+	ThemeBuilder.derive(data, &"zz_skin")                                                                # (the theme is made again with each chain: the line is not)
+	var told := TroubleLog.session.told.filter(func(line: String) -> bool: return line.contains("ui_picture/no_such_picture"))
+	assert_array(told).has_size(1)
+	assert_str(told[0]).contains("[theme]").contains("skin 'zz_skin'").contains("style 'panel'").contains("which no pack of the chain holds").contains("drawn flat")
 
 
 # --- what the screens show ---------------------------------------------------------------------------------------------------

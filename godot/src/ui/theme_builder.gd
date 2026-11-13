@@ -128,15 +128,15 @@ static func apply(skin: GameSkin) -> void:
 	var data := skin.menu_theme_in_use()
 	if data == null and not _worn:
 		return
-	var theme := pristine if data == null else derive(data)
+	var theme := pristine if data == null else derive(data, skin.id)
 	project.merge_with(theme)                                    # (over the project theme, never after a `clear`: an emptied theme for a moment makes every control size itself by the fallback font, and a control that grew does not shrink back)
 	_worn = data != null
 
 
 ## The engine's theme with `data` laid over it (it only ever changes items the engine's theme has, `COLOR_ITEMS` and `STYLE_ITEMS`, so merging the engine's theme over it again restores every one): the font and its size, the colours by name (`COLOR_ITEMS`) and the styles by name (`STYLE_ITEMS`), each style the engine's own with the fields it says changed or, with a
 ## `picture`, a texture box from the picture the chain holds for that key (`Assets.picture_by_key`, the lookup a mod's draw list makes) whose content margins stay the engine's unless the style says `margin`. A picture that no
-## pack holds leaves the style's other fields to do.
-static func derive(data: SkinTheme) -> Theme:
+## pack holds leaves the style's other fields to do, and the player is told (once per run, naming `owner`, the skin whose theme it is, the style and the key).
+static func derive(data: SkinTheme, owner: StringName = &"") -> Theme:
 	var theme := Theme.new()
 	theme.merge_with(engine())
 	if data.font != null:
@@ -149,15 +149,18 @@ static func derive(data: SkinTheme) -> Theme:
 	for name in data.styles:
 		for item: Array in STYLE_ITEMS[name]:
 			var base := theme.get_stylebox(item[1], item[0]) if theme.has_stylebox(item[1], item[0]) else null
-			theme.set_stylebox(item[1], item[0], _styled(base, data.styles[name]))
+			theme.set_stylebox(item[1], item[0], _styled(base, data.styles[name], owner, name))
 	return theme
 
 
 ## `base` (a style of the engine's theme, or null) with the fields of `fields` (`SkinTheme.FIELDS`) laid over it.
-static func _styled(base: StyleBox, fields: Dictionary) -> StyleBox:
+static func _styled(base: StyleBox, fields: Dictionary, owner: StringName, style: String) -> StyleBox:
 	var margin: Vector2i = fields.get("margin", Vector2i(-1, -1))
 	if fields.has("picture"):
-		var texture: Texture2D = Assets.picture_by_key(fields["picture"]) if Assets.holds(fields["picture"]) else null
+		var held := Assets.holds(fields["picture"])
+		if not held:
+			TroubleLog.session.tell("[theme] skin '%s': its theme's style '%s' names the picture '%s', which no pack of the chain holds, so that style is drawn flat (the fields it says besides the picture, else the engine's own style)" % [owner, style, fields["picture"]])
+		var texture: Texture2D = Assets.picture_by_key(fields["picture"]) if held else null
 		if texture != null:
 			var slice: Vector4i = fields["slice"]
 			var box := StyleBoxTexture.new()

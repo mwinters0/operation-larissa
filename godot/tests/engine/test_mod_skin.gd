@@ -505,6 +505,20 @@ func test_a_key_the_game_cannot_resolve_or_that_has_a_wrong_shape_draws_nothing(
 		assert_bool(ModSpec.is_drawable_key("%s/x" % kind)).is_true()
 
 
+## A mistyped key is no silent fallback: the command is dropped, counted, and the first one dropped is told, naming the mod and the key.
+func test_a_key_nothing_holds_is_dropped_and_told_naming_the_mod_and_the_key() -> void:
+	GameState.reset()                                                                                    # (a run begins: the session's log is a new one)
+	var skinny := _mount(["skinny"] as Array[String])
+	var skin := SkinChoice.load_skin(skinny.id) as ModSkin
+	var drawn := ModDraw.validate([["picture", "frame/sub_0o", Vector2(0, 0)], ["rect", Rect2(0, 0, 1, 1), Color.RED]], skinny.pack, skin.assets)
+	assert_int(drawn.dropped).is_equal(1)
+	ModDraw.report(drawn, skinny.id, "skin")
+	ModDraw.report(drawn, skinny.id, "skin")
+	var told := TroubleLog.session.told.filter(func(line: String) -> bool: return line.contains("frame/sub_0o"))
+	assert_array(told).has_size(1)
+	assert_str(told[0]).contains("mod '%s'" % skinny.id).contains("picture \"frame/sub_0o\"")
+
+
 func test_a_picture_by_key_asks_the_chain_once_for_a_whole_list() -> void:
 	var skinny := _mount(["skinny"] as Array[String])
 	var skin := SkinChoice.load_skin(skinny.id) as ModSkin

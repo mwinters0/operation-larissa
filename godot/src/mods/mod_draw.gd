@@ -14,8 +14,8 @@ extends RefCounted
 ##
 ## `mirrored` is a bool, the Color after it a modulate. The list starts in an unshaded layer. At most `MAX_LAYERS` layers, places and sizes finite and within `LIMIT`, and the uniforms of a layer as `ModShader.check_uniforms` judges them (the shader must declare each, a value of its type, `phase` is the game's). A picture is a PNG under the
 ## folder of `ModAssets` (`skin/` or `problems/`) of THE MOD'S OWN PACK (`Pack.texture`, never the chain's lookup), so a path that names another pack, a folder above, or a file the pack lacks draws nothing. A name that is not under that folder but
-## is a SKIN KEY (`<kind>/<name>`, a kind of `PictureTable.KINDS`: `ModSpec.is_drawable_key`) names a picture of the game: the game resolves it (`Assets.picture_by_key`, the lookup `OriginalPresenter` makes: a pack's picture for the key, else the
-## skin in use's, else the chain's file), the mod never holds it, and a key nothing holds draws nothing. A layer
+## is a SKIN KEY (`<kind>/<name>`, a kind of `PictureTable.KINDS`: `ModSpec.is_drawable_key`) names a picture of the game: the game resolves it (`Assets.picture_by_key`, the lookup `OriginalPresenter` makes: the picture the chain's tables give the key), the mod never holds it,
+## and a key nothing holds is a dropped command, told by `report`. A layer
 ## whose shader the manifest does not list draws nothing (it is never drawn unshaded). A text is cut to `MAX_TEXT` characters (a control character becomes a space), its size held to `MIN_FONT_SIZE`..`MAX_FONT_SIZE`, at
 ## most `MAX_TEXTS` of them in a list; there is one font, the theme in use's (`ModLayer.theme_font`), so a mod names none. With a `width` the line is aligned in that width and clipped to it. Nothing here asks the script anything or runs its code.
 ##
