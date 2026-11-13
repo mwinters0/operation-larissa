@@ -435,7 +435,6 @@ static func packs_changed() -> void:
 	for path: String in _cache.keys():
 		if _cache[path] is Campaign:
 			_cache.erase(path)
-	SkinChoice.chain_changed()
 
 
 ## What is wrong with the set of campaigns: each one's `problems()` and a sector claimed by two (the rule that lets a sector find its campaign).

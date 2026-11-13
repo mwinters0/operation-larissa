@@ -10,7 +10,7 @@ extends Node
 ## `ModDiagram`) or, when it says `rules`, add gameplay at the hook points of the rules (`RuleHooks`) for a campaign that declares it. The rules never ask this node anything: a campaign's run resolves the mods it
 ## declares once, when it begins (`ModHooks.resolve`, which asks `rule_mod`), and the rules hold the table that came out.
 ## Each running mod has ONE record, its `ModParts` (made by `ModParts.make` from what the pack holds, kept while the mod runs). A SKIN mod's `ModSkin` is asked for by `SkinChoice` (`skin_ids`, `skin`), and when the mod goes
-## (unloaded: the skin is not `alive` any more; or quarantined: it is not offered) the skin in use falls back to the original (`SkinChoice.leave_dead_mod_skins`). The `ModProblems` of a mod that draws problem screens is asked
+## (unloaded: the skin is not `alive` any more; or quarantined: it is not offered) the skin in use falls back to the original (`SkinChoice.leave_dead_mod_skins`), and otherwise the theme of the skin in use is made again for the new chain (`SkinChoice.chain_changed`), once, after the mods are the chain's. The `ModProblems` of a mod that draws problem screens is asked
 ## for with `problem_screen` (the mod that draws a type, only while it runs and is not quarantined, so a screen without one shows the plain diagram its data describes). A mod whose pack `ModParts.make` refuses, or whose script
 ## lacks a function its manifest lists (`ModSpec.functions`), is refused with the reason, like a script that does not compile.
 ## A build without the godot-sandbox extension never gets a mod pack with a script into its chain (`Pack` refuses its manifest); a DATA skin (no `entry`) needs no script, so it runs there too and `mod` has no node for it.
@@ -91,6 +91,7 @@ static func key_of(pack: Pack) -> String:
 
 ## Makes the loaded mods the chain's. Cheap when nothing changed.
 func sync() -> void:
+	var chain_changed := _stale
 	_stale = false
 	var changed := false
 	var packs := wanted()
@@ -129,8 +130,10 @@ func sync() -> void:
 		parts.key = wanted_keys[id]
 		_parts[id] = parts
 		changed = true
+	var left := changed and SkinChoice.leave_dead_mod_skins()
+	if chain_changed and not left:
+		SkinChoice.chain_changed()                       # (the mods are the chain's now: a theme made before would have named the pictures of a skin that may have just stopped)
 	if changed:
-		SkinChoice.leave_dead_mod_skins()
 		mods_changed.emit()
 
 

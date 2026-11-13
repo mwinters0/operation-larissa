@@ -512,6 +512,23 @@ func test_the_huds_lettering_without_a_font_of_its_own_takes_the_themes() -> voi
 		assert_int(text.get_theme_font_size(&"font_size")).is_equal(12)
 
 
+## The theme is made again once the mods are the chain's (`ModHost.sync` asks `SkinChoice.chain_changed`), not by the change of the chain itself: a chain borrowed twice by a check, or a skin whose pack just left, makes it once.
+func test_a_change_of_the_chain_makes_the_theme_again_once_the_mods_have_settled() -> void:
+	var shelf := _mount()
+	SkinChoice.select(_skin(shelf))
+	var pressed_before := ThemeDB.get_project_theme().get_stylebox("pressed", "Button")
+	var over := PackShelf.new(&"", shelf.id)                                                              # (a pack over the skin's that redraws the picture its theme names)
+	_shelves.append(over)
+	over.add_picture_row(KEY, Color.RED, Vector2i(5, 5))
+	over.mount()
+	assert_object(ThemeDB.get_project_theme().get_stylebox("pressed", "Button")).override_failure_message("the change of the chain made the theme itself").is_same(pressed_before)
+	Mods.sync()
+	var pressed := ThemeDB.get_project_theme().get_stylebox("pressed", "Button") as StyleBoxTexture
+	assert_object(pressed).is_not_same(pressed_before)
+	assert_that(PicturesShelf.color_of(pressed.texture)).is_equal(Color.RED)
+	assert_object(SkinChoice.current()).override_failure_message("the skin's pack is still in the chain").is_same(_skin(shelf))
+
+
 func test_the_fixture_under_the_modern_pack_does_not_leave_a_theme_behind() -> void:
 	var shelf := _mount()
 	SkinChoice.select(_skin(shelf))

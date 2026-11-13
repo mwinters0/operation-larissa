@@ -129,10 +129,12 @@ static func select(skin: GameSkin) -> void:
 
 
 ## The skin in use was the skin of a mod that has stopped (unloaded with its pack, or quarantined for faulting): the original is put on, as a user choosing it would. `ModHost` calls this whenever
-## the running mods change or one is quarantined; it does nothing while the skin in use is one that ships or a mod skin that runs.
-static func leave_dead_mod_skins() -> void:
+## the running mods change or one is quarantined; it does nothing while the skin in use is one that ships or a mod skin that runs. True when it put the original on.
+static func leave_dead_mod_skins() -> bool:
 	if _current is ModSkin and ModHost.skin(_current.id) != _current:
 		select(original())
+		return true
+	return false
 
 
 ## `select(load_skin(id))`.
@@ -140,7 +142,8 @@ static func select_id(id: StringName) -> void:
 	select(load_skin(id))
 
 
-## The chain of packs changed (`Catalog.packs_changed`): the pictures a theme names by key (a style's `picture`) may be other ones, so the theme of the skin in use is made again from the skin's data and the chain.
+## The chain of packs changed and the mods are the chain's again (`ModHost.sync`, which runs once after any number of changes of the chain, a borrow of it by a check included): the pictures a theme names by key (a style's
+## `picture`) may be other ones, so the theme of the skin in use is made again from the skin's data and the chain. A skin put on by `select` has made its theme already.
 static func chain_changed() -> void:
 	if _current != null:
 		ThemeBuilder.apply(_current)
