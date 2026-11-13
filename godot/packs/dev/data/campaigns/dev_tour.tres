@@ -22,4 +22,4 @@ supply_voices = Array[StringName]([&"supply_0", &"supply_1", &"supply_2", &"supp
 fallback_song = &"sector_song_1"
 closing_scene = &""
 finale_text = "The dev tour is done. Nothing of the original is in this game."
-finale_picture = "title_sky"
+finale_picture = "ui_picture/title_sky"

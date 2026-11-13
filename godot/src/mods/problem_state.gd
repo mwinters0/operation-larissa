@@ -43,10 +43,7 @@ static func idle_clock() -> Dictionary:
 	return clock("", 0, 0, -1)
 
 
-## The skin keys (`problem_art/pa_1843`) of the pictures of `type`'s art bundle, in the order the diagram spec numbers them (`pic`): what a script names to draw one of them. "" for a file that has no key.
+## The keys (`problem_art/pa_1843`) of the pictures of `type`'s panel, in the order the diagram spec numbers them (`pic`): what a script names to draw one of them.
 static func art_keys(type: ProblemType) -> Array:
-	var keys: Array = []
-	for path in type.art_files:
-		keys.append(GameSkin.key_of(path))
-	return keys
+	return Array(type.art_keys)
 

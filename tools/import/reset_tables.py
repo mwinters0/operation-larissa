@@ -264,7 +264,7 @@ class Problems:
             "field_kinds": tres.s(kinds),
             "records": tres.array("PackedInt64Array", ["PackedInt64Array(%s)" % ", ".join(map(str, r)) for r in records]),
             "record_levels": tres.packed_ints(levels)},
-            {"levels_available": "uses_calculator", "field_kinds": "art_files", "records": "field_kinds", "record_levels": "records"})
+            {"levels_available": "uses_calculator", "field_kinds": "art_keys", "records": "field_kinds", "record_levels": "records"})
 
 
 KINDS = {kind.name: kind for kind in (SpriteMeta, TriggerTable, ZoneLevels, Problems)}

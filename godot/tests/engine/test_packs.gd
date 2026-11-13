@@ -299,7 +299,7 @@ func test_a_packs_picture_replaces_the_originals_and_a_new_name_is_found() -> vo
 	assert_vector(Assets.ui_picture(&"garden_gate").get_size()).is_equal(Vector2(7, 2))         # a name only the pack has
 	assert_vector(Assets.background(40, 0).get_size()).is_equal(Vector2(6, 6))                    # the picture behind a screen of a pack's sector
 	assert_object(Assets.background(40, 1)).is_null()
-	assert_vector(Assets.background(0, 0).get_size()).is_equal(Assets.texture_at(DevPack.path("assets/backgrounds/bg_s00_00.png")).get_size())
+	assert_vector(Assets.background(0, 0).get_size()).is_equal(Assets.picture_by_key("background/bg_s00_00").get_size())
 	Packs.start()
 	assert_vector(Assets.ui_picture(&"title_sky").get_size()).is_equal(original_size)
 	assert_object(Assets.background(40, 0)).is_null()
@@ -307,19 +307,18 @@ func test_a_packs_picture_replaces_the_originals_and_a_new_name_is_found() -> vo
 
 func test_a_packs_picture_reaches_the_pictures_data_holds_and_goes_away_with_the_pack() -> void:
 	var before := Catalog.hud_layout()
-	var path := DevPack.path("assets/ui/hud/")
 	var some_key := ""
 	for property in before.get_property_list():                       # any picture of the HUD layout: its key is what a pack redraws
 		var value: Variant = before.get(property.name)
-		if value is Texture2D and (value as Texture2D).resource_path.begins_with(path):
-			some_key = GameSkin.key_of(value.resource_path)
+		if value is PictureRef:
+			some_key = (value as PictureRef).key
 			break
 	assert_str(some_key).is_not_empty()
 	var shelf := _shelf(&"hud")
 	shelf.add_picture_row(some_key, Color.RED, Vector2i(2, 2))
 	shelf.mount()
 	var during := Catalog.hud_layout()
-	assert_object(during).is_not_same(before)                          # a copy with the pack's picture put in
+	assert_object(during).is_same(before)                              # the data holds the key: the same resource, the pack's picture in it
 	var replaced := 0
 	for property in during.get_property_list():
 		var value: Variant = during.get(property.name)
@@ -327,7 +326,11 @@ func test_a_packs_picture_reaches_the_pictures_data_holds_and_goes_away_with_the
 			replaced += 1
 	assert_int(replaced).is_greater_equal(1)
 	Packs.start()
-	assert_object(Catalog.hud_layout()).is_same(before)                # the very object again: no copy, no pack
+	assert_object(Catalog.hud_layout()).is_same(before)
+	for property in before.get_property_list():
+		var value: Variant = before.get(property.name)
+		if value is Texture2D:
+			assert_vector((value as Texture2D).get_size()).is_not_equal(Vector2(2, 2))        # (no pack, no redrawn picture)
 
 
 # --- sounds ---------------------------------------------------------------------------------------------------------------------------

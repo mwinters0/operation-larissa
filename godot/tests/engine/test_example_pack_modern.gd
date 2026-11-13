@@ -138,13 +138,14 @@ func test_the_templates_are_the_chains_pictures_while_the_pack_is_in_it() -> voi
 	var mapped := Assets.picture_by_key(key)
 	var image := Image.load_from_file("%s/skin/ui_picture/ui_1195.png" % _folder())
 	assert_object(mapped.get_size()).is_equal(Vector2(image.get_size()))
-	assert_object(Catalog.hud_layout().zone_textures[0]).is_same(mapped)
+	assert_str(PictureRef.key_of(Catalog.hud_layout().zone_textures[0])).is_equal(key)
+	assert_object((Catalog.hud_layout().zone_textures[0] as PictureRef).resolved()).is_same(mapped)
 	SkinChoice.select(_skin())
-	assert_object(Catalog.hud_layout().zone_textures[0]).is_same(mapped)                            # (the pack draws them: the skin worn or not)
+	assert_object((Catalog.hud_layout().zone_textures[0] as PictureRef).resolved()).is_same(mapped)   # (the pack draws them: the skin worn or not)
 	SkinChoice.select(SkinChoice.original())
-	assert_object(Catalog.hud_layout().zone_textures[0]).is_same(mapped)
+	assert_object((Catalog.hud_layout().zone_textures[0] as PictureRef).resolved()).is_same(mapped)
 	ModSkinShelf.release(_shelves)
-	assert_object(Catalog.hud_layout().zone_textures[0]).is_not_same(mapped)                        # (the pack left the chain: the base pack's picture is back)
+	assert_object((Catalog.hud_layout().zone_textures[0] as PictureRef).resolved()).is_not_same(mapped)   # (the pack left the chain: the base pack's picture is back)
 
 
 func _shader_code(node: CanvasItem) -> String:

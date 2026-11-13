@@ -34,6 +34,7 @@ import math
 from collections.abc import Sequence
 from functools import cache
 
+import asset_names
 import foe_names
 import step_problems
 import tres
@@ -711,10 +712,11 @@ def build_voyager_script() -> str:
 
 def build_closing_crew() -> str:
     """The six sailors of the Expert closing's deck shot (CLOSING.C), from extracted/tables/expert_closing.json. Each script is stored flat: 4 numbers
-    [op, item, mirror, delay] per record. `ClosingCrewActor` (src/story/closing_crew_actor.gd) runs them."""
+    [op, item, mirror, delay] per record; `pictures` holds the key of item i (the original's picture first_picture + i). `ClosingCrewActor` (src/story/closing_crew_actor.gd) runs them."""
     data = load_json(TABLES / "expert_closing.json")
     t = tres.Tres("Resource", "ClosingCrewScripts", SCRIPTS + "closing_crew_scripts.gd")
-    t.set("first_picture", str(data["first_picture"]))
+    items = max(record[1] for script in data["scripts"] for record in script) + 1
+    t.set("pictures", tres.packed_strings([asset_names.ui_key(data["first_picture"] + i) for i in range(items)]))    # item i of a record is this picture
     t.set("start_x", tres.packed_ints([p[0] for p in data["start_positions"]]))
     t.set("start_y", tres.packed_ints([p[1] for p in data["start_positions"]]))
     t.set("scripts", tres.array("PackedInt32Array",

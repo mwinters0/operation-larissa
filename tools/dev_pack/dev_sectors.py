@@ -265,7 +265,7 @@ def campaign_tres(id: str, title: str, sectors: list[int], finales: list[int], e
     t.set("fallback_song", '&"sector_song_1"')
     t.set("closing_scene", '&""')
     t.set("finale_text", tres.s(finale_text))
-    t.set("finale_picture", tres.s("title_sky"))
+    t.set("finale_picture", tres.s("ui_picture/title_sky"))
     return t.render()
 
 

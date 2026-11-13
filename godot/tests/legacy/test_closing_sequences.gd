@@ -211,7 +211,7 @@ func test_expert_hoisted_object_is_the_zone_foe_bundle_pair_at_x_200() -> void:
 	var frames := closing.artifact.sprite_frames
 	assert_vector(Vector2(frames.get_frame_texture(&"all", 35).get_size())).is_equal(Vector2(84, 72))
 	assert_vector(Vector2(frames.get_frame_texture(&"all", 36).get_size())).is_equal(Vector2(84, 72))
-	assert_str(Packs.source_of(frames.get_frame_texture(&"all", 35))).ends_with("foe_z6_alien_artifact_0_35.png")
+	assert_str((frames.get_frame_texture(&"all", 35) as PictureRef).key).is_equal("frame/foe_z6_alien_artifact_0")
 	_at_step(closing, &"hoist", 0)
 	assert_int(closing.artifact.frame).is_equal(35)
 	assert_vector(closing.artifact.position).is_equal(Vector2(200 - 16, 0xe8 - 32))
@@ -298,12 +298,12 @@ func test_expert_crew_programs_come_from_the_data() -> void:
 		assert_int(program[program.size() - 4]).is_equal(ClosingCrewActor.Op.END)       # every program ends with the end op
 		for r in actor.record_count():
 			if program[r * 4] != ClosingCrewActor.Op.WAIT and program[r * 4] != ClosingCrewActor.Op.END:   # draws or moves
-				pictures[crew.first_picture + program[r * 4 + 1]] = true
+				pictures[crew.pictures[program[r * 4 + 1]]] = true
 	assert_array(counts).is_equal([38, 47, 47, 50, 28, 26])
-	# the sailors use all 17 pictures 2022-2038, every one imported
-	assert_array(pictures.keys()).contains_exactly_in_any_order(range(2022, 2039))
-	for id: int in pictures:
-		assert_object(Assets.ui_picture_by_number(id)).is_not_null()
+	# the sailors use all 17 pictures 2022-2038 (the story's, by key), every one imported
+	assert_array(pictures.keys()).contains_exactly_in_any_order(range(2022, 2039).map(func(id: int) -> String: return "ui_picture/" + NameRegistry.original().name_of(&"ui_picture", id)))
+	for key: String in pictures:
+		assert_object(Assets.picture_by_key(key)).override_failure_message(key).is_not_null()
 
 
 func test_expert_crew_actor_runs_the_step_rules() -> void:
@@ -313,11 +313,11 @@ func test_expert_crew_actor_runs_the_step_rules() -> void:
 		assert_bool(actor.visible).is_false()
 	actor.step()                                                                       # then a draw, then 28 moves of 4 px left
 	assert_bool(actor.visible).is_true()
-	assert_int(actor.picture).is_equal(2025)
+	assert_str(actor.picture).is_equal("ui_picture/ui_2025")
 	assert_int(actor.x).is_equal(496)
 	actor.step()
 	assert_int(actor.x).is_equal(492)
-	assert_int(actor.picture).is_equal(2024)
+	assert_str(actor.picture).is_equal("ui_picture/ui_2024")
 	# the last step of the deck shot (step 145 counted from 0): every sailor stands still
 	var crew := Catalog.closing_crew()
 	var all: Array[ClosingCrewActor] = []

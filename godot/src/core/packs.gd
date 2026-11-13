@@ -804,7 +804,7 @@ static func source_of(resource: Resource) -> String:
 	return resource.resource_path if not resource.resource_path.is_empty() else String(resource.get_meta(Pack.SOURCE_META, ""))
 
 
-## THE DOOR for a path STRING held in data (`VoiceIndex.paths`, `MusicCatalog.gm_paths`, `ProblemType.art_files`: `res://packs/dev/assets/...`): the pack whose folder
+## THE DOOR for a path STRING held in data (`VoiceIndex.paths`, `MusicCatalog.gm_paths`, `res://packs/dev/assets/...`): the pack whose folder
 ## it is under answers by the extension of the file (`Pack.file`); a path of the project itself (`res://data/...`) is project code and is loaded. A path under
 ## `user://`, or in a pack that is not in the chain, gives null: nothing outside the project reaches `ResourceLoader`.
 static func file_at(path: String) -> Resource:

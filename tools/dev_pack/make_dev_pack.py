@@ -1,4 +1,4 @@
-"""Makes the dev pack, godot/packs/dev: the developers' own pack, one file for every file of the legacy pack, with values of its own.
+"""Makes the dev pack, godot/packs/dev: the developers' own pack: a data file for every data file of the legacy pack and a picture for every picture key of its table, with values of its own.
 
     uv run tools/dev_pack/make_dev_pack.py                      # everything (pictures, data, and audio when audio.py is there)
     uv run tools/dev_pack/make_dev_pack.py --only pictures,data
@@ -17,8 +17,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import devlib
+import picture_table as picture_table_module
 from devlib import DEV, write_text
 
+import dev_pictures
 import inventory
 
 STAGES = ("pictures", "data", "audio")
@@ -27,24 +29,25 @@ PACK_JSON = {"id": "dev", "title": "Dev pack", "version": "1", "format": 1,
              "description": "The developers' own pack: coloured shapes with their asset name written on them, speech that says its own "
                             "name, sounds that say \"bang\". Complete, and not meant for play. Copy it to start a game of your own."}
 
-AUTHORING_TOOL_README = """# Authoring-tool pictures (dev pack)
 
-One picture for every picture of the original level editor's interface, so that a copy of this pack has the same files. Nothing
-in the game uses them. Written by tools/dev_pack/make_dev_pack.py.
-"""
-
-PROBLEM_ART_SINGLE_README = """# Loose problem-screen pictures (dev pack)
-
-`pa_1780.png` is the problem screen's background, `pa_1803.png` the combination lock's face, `pa_1864.png` and `surface_ship_1979.png`
-panels. The `bNNN` folders next to this one hold the pictures of one problem type each (the first picture is its panel).
-Written by tools/dev_pack/make_dev_pack.py.
-"""
+def picture_table() -> dict:
+    """dev's `pictures.json`: a row to the file of each key of the inventory (`assets/pictures/<kind>/<name>.png`) and an alias row for each alias."""
+    inv = inventory.load()
+    rows: dict = {key: dev_pictures.rel_of(key) for key in inv["pictures"]}
+    rows.update({key: {"alias": target} for key, target in inv["picture_aliases"].items()})
+    return rows
 
 
 def pictures() -> None:
-    import dev_pictures
-    n = dev_pictures.write_all(inventory.load()["files"])
-    print("  pictures: %d" % n)
+    inv = inventory.load()
+    n = dev_pictures.write_all(list(inv["pictures"]))
+    wanted = {dev_pictures.rel_of(key) for key in inv["pictures"]}
+    for stale in sorted(p for p in (DEV / "assets" / "pictures").rglob("*") if p.is_file()):          # (a key that is not in the inventory any more)
+        rel = stale.relative_to(DEV).as_posix()
+        if rel.removesuffix(".import") not in wanted:
+            stale.unlink()
+    write_text(DEV / picture_table_module.FILE, picture_table_module.render(picture_table()))
+    print("  pictures: %d, aliases: %d" % (n, len(inv["picture_aliases"])))
 
 
 def data() -> None:
@@ -58,8 +61,6 @@ def data() -> None:
     import dev_ui
     import test_sectors
     write_text(DEV / "pack.json", json.dumps(PACK_JSON, indent=2) + "\n")
-    write_text(DEV / "assets" / "authoring_tool" / "README.md", AUTHORING_TOOL_README)
-    write_text(DEV / "assets" / "problem_art" / "single" / "README.md", PROBLEM_ART_SINGLE_README)
     counts = {"sprites": dev_sprites.write_all(), "tiles": dev_tiles.write_all(), "tables": dev_tables.write_all(), "ui": dev_ui.write_all(), "story": dev_story.write_all(),
               "problems": dev_problems.write_all(), "rules": dev_rules.write_all(), "sectors and campaign": dev_sectors.write_all(), "test sectors": test_sectors.write_all(DEV)}
     print("  data: " + ", ".join("%s %d" % kv for kv in counts.items()))
@@ -74,9 +75,9 @@ def audio() -> None:
 
 
 def missing_files() -> list[str]:
-    """Files of the inventory that the pack does not have (the audio ones only when the audio builder has run)."""
+    """Files of the inventory that the pack does not have (the audio ones only when the audio builder has run): its data files, its pictures, its table."""
     inv = inventory.load()
-    wanted = list(inv["files"])
+    wanted = list(inv["files"]) + [dev_pictures.rel_of(key) for key in inv["pictures"]] + [picture_table_module.FILE]
     return [f for f in wanted if not (DEV / f).exists()]
 
 

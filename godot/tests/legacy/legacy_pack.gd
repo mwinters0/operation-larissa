@@ -53,6 +53,7 @@ const WITNESSES: Array[String] = [
 	"res://packs/legacy/data/sprite_frames/sub_frames.tres",
 	"res://packs/legacy/data/problems/problem_type_00.tres",
 	"res://packs/legacy/data/ui/hud_layout.tres",
+	"res://packs/legacy/pictures.json",
 	"res://packs/legacy/data/sfx_catalog.tres",
 	"res://packs/legacy/data/music_catalog.tres",
 	"res://packs/legacy/data/voice_index.tres",

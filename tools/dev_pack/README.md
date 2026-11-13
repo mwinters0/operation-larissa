@@ -1,8 +1,8 @@
 # The dev pack generator
 
 `godot/packs/dev/` is the developers' own pack: coloured shapes with their asset name written on them, text that says its own
-name, sounds that say "bang", and a short playable game (`dev_tour`). It has one file for every file of the legacy pack (the original
-game, made by the importer) and nothing of the original's content: its numbers and pictures are its own. A copy of it is a complete game
+name, sounds that say "bang", and a short playable game (`dev_tour`). It has a file for every data file of the legacy pack (the original
+game, made by the importer) and a picture for every picture key of the legacy pack's table, and nothing of the original's content: its numbers and pictures are its own. A copy of it is a complete game
 (`pack_tool --new=<id> --from=dev`, [`docs/create/MAKING_CONTENT.md`](../../docs/create/MAKING_CONTENT.md) B4). The engine's tests (`godot/tests/engine/`) run on it, with `-- --pack=dev`.
 What the engine still assumes about the original, and so what dev cannot yet be free of, is in [`docs/engine/HARD_CODED.md`](../../docs/engine/HARD_CODED.md).
 
@@ -18,6 +18,11 @@ tools/godot.sh --headless --path godot -s ../tools/dev_pack/godot/check_dev_pack
 downloads its voice the first time), then the Godot import (it writes the `.import` files and `.godot/imported` copies of new pictures and sounds), then the check and the tests, and commit the files the generator and the import
 changed. `--refresh-inventory` rebuilds `inventory.json` from the file names of the legacy pack and is the one step that needs legacy; without legacy the committed list is the inventory, and `test_dev_pack.py` compares the pack with it.
 
+**Pictures.** The pack names a picture by its KEY (`<kind>/<name>`, `ui_picture/title_sky`, `frame/sub_00`, `tile/zone0_tiles`), and `pictures.json` at the pack's root says which file draws it. Dev keeps the file of a key at `assets/pictures/<kind>/<name>.png`
+(`dev_pictures.rel_of`), so no file name carries a number or a folder of the original; a key with no file of its own (a problem-art id whose picture another part of the game keeps once) is an alias row of the key that has one. The data holds keys,
+never files: a `PictureRef` sub-resource in the sprite frames, the tile set, the layouts and the zone banners (`Tres.picture`, `tools/import/tres.py`), `art_keys` of a problem type, `pictures` of the closing crew, `finale_picture` of a campaign. The keys are the legacy pack's, by the importer's own naming rule
+(`tools/import/picture_table.py`, `asset_names.py`).
+
 The generator reads nothing the importer writes (`extracted/`, so no `GENERATED_TABLES` of `tools/import/common.py`), only the committed analysis in `tools/analysis/data/` (`problem_layouts32.json`, `problem_fields.json`, `sprite_slots.json`), so it runs on a checkout with no ISO.
 
 The output is committed and the generator is deterministic (Piper aside): run it again and `git status` stays clean. A file you edit by
@@ -27,8 +32,8 @@ hand is yours until the next run, so change the generator too. `test_dev_pack.py
 
 | Module | Makes |
 |---|---|
-| `inventory.json`, `inventory.py` | The list of files the pack must have (from the legacy pack's file NAMES; `make_dev_pack.py --refresh-inventory` rebuilds it, needs legacy). |
-| `dev_pictures.py` | Every PNG (flat shape, 1 px outline, its name written on it) and its `.import` stub (path-derived uid). Sizes are in `spec()`. |
+| `inventory.json`, `inventory.py` | The data files the pack must have, and its picture keys (`pictures`: key -> the number the legacy file of that key ends with; `picture_aliases`), from the legacy pack's file NAMES; `make_dev_pack.py --refresh-inventory` rebuilds it, needs legacy. |
+| `dev_pictures.py` | Every PNG (flat shape, 1 px outline, its key's name written on it) at `assets/pictures/<kind>/<name>.png` and its `.import` stub (path-derived uid). Sizes are in `spec(key)`. `make_dev_pack.py` writes `pictures.json`. |
 | `dev_tiles.py`, `dev_tables.py` | The tile set; zones and the trigger table. |
 | `dev_sprites.py` | Sprite frames (the pieces' animations are `CANISTER_PICTURES` and `ROCK_PICTURES`), sprite metadata (box hit rectangles that match the pictures), bubble rules. |
 | `dev_ui.py` | HUD, calculator and story layouts, the news cartoon. |
@@ -37,7 +42,7 @@ hand is yours until the next run, so change the generator too. `test_dev_pack.py
 | `dev_sectors.py` | Sectors, campaigns, and the `dev_tour` campaign. |
 | `dev_rules.py` | `rules/tuning.json`: dev's rule values (below). |
 | `test_sectors/` | The test sectors (100 and up), one module per area: `batch_a.py` ... `batch_e.py` (see "Test sectors"). |
-| `problem_art.json` | Which art folder each of the 34 problem types draws from (the pack's file layout). |
+| `problem_art.json` | Which art bundle each of the 34 problem types draws from (a bundle of `inventory.json`'s `problem_art_index`, or one loose picture). |
 | `audio.py`, `audio_*.py` | The sounds, speech, songs, MIDI and the sound catalogs (the ten songs are `SONGS`: the ids the engine looks up and the pack's file names). |
 | `godot/check_dev_pack.gd` | A Godot script that loads the pack with the engine's own classes and asks each resource if it is sound (see below). |
 

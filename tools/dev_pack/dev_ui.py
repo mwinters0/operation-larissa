@@ -1,16 +1,13 @@
 """Dev layouts (HUD, calculator, story) and the dev news cartoon: dev's own rectangles on the 640 x 400 window.
 
-The pictures that play each role are named by their number in the console bundles (the order of the picture files, as in the
+The pictures that play each role are held by key, the key of their number in the console bundles (the order of the pictures, as in the
 importer); where they go and how big they are is dev's own, and `dev_pictures` draws them with the sizes used here.
 """
 from __future__ import annotations
 
-import devlib
 from devlib import DEV, SCRIPTS, write_text, tres
 
-import common as importer
-from asset_names import ui_file
-from pictures import problem_art_file
+from asset_names import problem_art_key, ui_key
 
 import dev_pictures as dp
 
@@ -18,12 +15,12 @@ BEZEL_FIRST_ID = 1189
 CALC_FIRST_ID = 1781
 
 
-def hud_rel(item: int) -> str:
-    return ui_file("hud", BEZEL_FIRST_ID + item).relative_to(importer.LEGACY).as_posix()
+def hud_key(item: int) -> str:
+    return ui_key(BEZEL_FIRST_ID + item)
 
 
-def calc_rel(item: int) -> str:
-    return problem_art_file("b041", CALC_FIRST_ID + item).relative_to(importer.LEGACY).as_posix()
+def calc_key(item: int) -> str:
+    return problem_art_key(CALC_FIRST_ID + item)
 
 
 def vecs(points) -> str:
@@ -32,7 +29,7 @@ def vecs(points) -> str:
 
 def hud_layout_tres() -> str:
     t = tres.Tres("Resource", "HudLayout", SCRIPTS + "hud_layout.gd")
-    tx = lambda item: devlib.tex(t, hud_rel(item))
+    tx = lambda item: t.picture(hud_key(item))
     t.set("playfield", tres.rect2i(16, 32, 608, 288))      # 38 x 18 tiles of 16 px: the engine's playfield
     t.set("bezel", tx(0))
     t.set("bezel_position", tres.vec2i(12, 324))
@@ -88,7 +85,7 @@ def key_rects() -> list[tuple[int, int, int, int]]:
 
 def calculator_layout_tres() -> str:
     t = tres.Tres("Resource", "CalculatorLayout", SCRIPTS + "calculator_layout.gd")
-    tx = lambda item: devlib.tex(t, calc_rel(item))
+    tx = lambda item: t.picture(calc_key(item))
     t.set("picture", tx(0))
     t.set("picture_position", tres.vec2i(*CALC_AT))
     t.set("picture_size", tres.vec2i(*dp.CALCULATOR))

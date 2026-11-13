@@ -51,7 +51,7 @@ func _orchard(mounted := true) -> PackShelf:
 	shelf.write_json("campaigns/%s.json" % ID, {
 		"class": "Campaign", "id": String(ID), "title": "Orchard of Packs", "sectors": [40, 41], "finales": [42],
 		"default_edu_levels": [0, 1], "log_unlock_order": [2, 1], "finale_log_counts": [2], "log_texts": ["Apples.", "Pears."], "log_voices": ["", ""],
-		"supply_texts": ["Well picked.", "Well picked again."], "supply_voices": ["", ""], "finale_text": "The orchard is yours.", "finale_picture": "orchard_finale",
+		"supply_texts": ["Well picked.", "Well picked again."], "supply_voices": ["", ""], "finale_text": "The orchard is yours.", "finale_picture": "ui_picture/orchard_finale",
 	})
 	if mounted:
 		assert_object(shelf.mount()).override_failure_message(str(Packs.fallback_reason())).is_not_null()
@@ -253,7 +253,7 @@ func test_a_campaign_of_the_project_exports_with_its_pictures_and_its_source_fol
 	campaign.supply_texts = [&"One.", &"Two."]
 	campaign.supply_voices = [&"", &""]
 	campaign.finale_text = "The tide comes in."
-	campaign.finale_picture = TINY + "/marker.png"                                       # a file of the project, not a name
+	campaign.finale_picture = "ui_picture/shells"                                      # a key: the row is in the source folder's table
 	campaign.banner_index = -1
 	campaign.banner = load(TINY + "/marker.png")
 	_campaigns = CampaignShelf.new([campaign])
@@ -269,12 +269,12 @@ func test_a_campaign_of_the_project_exports_with_its_pictures_and_its_source_fol
 	PackExport.source_dir = source
 	var result := PackExport.campaign(&"seaside", EXPORTS, _quick())
 	assert_bool(result.ok()).override_failure_message(result.text()).is_true()
-	assert_bool(result.files.has("ui_picture/marker.png") and result.files.has("pictures.json")).is_true()           # (the finale picture and the banner are the same file: one copy)
+	assert_bool(result.files.has("ui_picture/marker.png") and result.files.has("pictures.json")).is_true()           # (the banner is a file of the project: it goes in with a row)
 	assert_bool(result.files.has("texts.json")).is_true()
 	assert_bool(result.files.has("audio/voice/shanty.ogg")).is_true()
 	assert_bool(result.files.any(func(f: String) -> bool: return f.ends_with(".import"))).is_false()
 	var written: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(result.path + "/campaigns/seaside.json"))
-	assert_str(written["finale_picture"]).is_equal("marker")
+	assert_str(written["finale_picture"]).is_equal("ui_picture/shells")
 	assert_dict(written["banner"]).is_equal({"$picture": "ui_picture/marker"})
 	var table: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(result.path + "/" + PictureTable.FILE))["pictures"]
 	assert_dict(table).is_equal({"ui_picture/shells": "art/shells.png", "ui_picture/marker": "ui_picture/marker.png"})

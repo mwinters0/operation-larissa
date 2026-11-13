@@ -528,10 +528,7 @@ func _foe_frames() -> SpriteFrames:
 
 
 func _background(screen: int) -> Texture2D:
-	var path := Assets.background_path(model.sector.index, screen)
-	if not Packs.exists_at(path):
-		return null
-	return Packs.file_at(path) as Texture2D if Engine.is_editor_hint() else Assets.background(model.sector.index, screen)
+	return Assets.background(model.sector.index, screen)
 
 
 # --- the mouse -------------------------------------------------------------------------------------------------------------------

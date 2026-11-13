@@ -61,7 +61,7 @@ func _exists(kind: StringName, scope: int, index: int) -> bool:
 		&"voice":
 			return Catalog.voice_index().ids.has(index)
 		&"ui_picture":
-			return Packs.has_file_at(Assets.ui_picture_path(index))
+			return Pictures.has("ui_picture/" + _names.name_of(&"ui_picture", index))
 		&"problem_art":
 			return index >= PROBLEM_ART_IDS.x and index <= PROBLEM_ART_IDS.y
 		&"text":

@@ -27,12 +27,9 @@ extends Resource
 @export var uses_calculator: bool = true
 ## Which of the 4 educational levels contain this type (index = level).
 @export var levels_available: PackedInt32Array = PackedInt32Array()
-## The bundle's own folder (res://), and the files in display order. Use `art_files`: a picture that the story, title or
-## finale-creature code owns is kept once, in its own folder, and listed here with that path.
-@export var art_dir: String = ""
-@export var art_files: PackedStringArray = PackedStringArray()
-## (`art_dir` and `art_files` are paths into a pack: how the data form of a pack writes them, `ResourceJson`.)
-const JSON_PATH_FIELDS: Array[String] = ["art_dir", "art_files"]
+## The pictures of the type's panel in display order, as KEYS (`problem_art/log_scan_0`, `Assets.picture_by_key`): the packs' picture tables say which file each is. A picture that the story, title or
+## finale-creature code owns is kept once, and the table says its key is an alias of the owner's.
+@export var art_keys: PackedStringArray = PackedStringArray()
 
 ## One character per stored field: 'c' u8, 'b' signed byte, 'w' u16, 'n' number
 ## (decimal or fraction, four ints in the flat record). See `ProblemRecord`.

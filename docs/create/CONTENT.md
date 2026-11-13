@@ -736,7 +736,7 @@ content.
 | `assets/` | pictures and sounds (`sprites/`, `tiles/`, `backgrounds/`, `ui/`, `problem_art/`, `authoring_tool/`, `audio/`), each with a stub `.import` file |
 | `data/sectors/sector_00` ... `sector_31` | the original's sectors 0-31 |
 | `data/campaigns/{voyager,expert}.tres` | the original's two campaigns |
-| `data/problems/`, `sprite_frames/`, `sprite_meta/` | problem types, text tables, the problem screen's layout (`screen_layout.tres`) and art index (`problem_art_index.json`), creature and deco frames, hit rectangles |
+| `data/problems/`, `sprite_frames/`, `sprite_meta/` | problem types, text tables, the problem screen's layout (`screen_layout.tres`), creature and deco frames, hit rectangles |
 | `data/zones.tres`, `trigger_table.tres`, `neptune_tileset.tres`, `bubble_rules.tres` | the rules' tables and the tile set |
 | `data/{sfx,music}_catalog.tres`, `voice_index.tres`, `voice_cues.tres` | what the sounds and speech groups are |
 | `data/ui/{hud,calculator,story}_layout.tres`, `data/story/*.tres` | interface layout and the cutscenes' choreography (the news cartoon, the title, the closings, the story pages) |

@@ -11,7 +11,7 @@ A program that is there but not the version the project pins (Godot: mise.toml; 
 the run goes on. Then, from that ISO alone: "extract" unpacks it into extracted/ (tools/extract/), "tables"
 dumps the game's data tables to extracted/tables/ (step_extract.py), and the other steps write the legacy pack: loose files in the folder
 godot/packs/legacy (common.legacy_root; res://packs/legacy/), holding pack.json, assets/, data/ and midi/. The importer makes that
-folder and its pack.json first, then writes the asset manifest (tools/import/asset_manifest.json: where each file under assets/ comes from), the fixtures of the original
+folder and its pack.json first, then writes the asset manifest (tools/import/asset_manifest.json: where each file under assets/ comes from), the pack's picture table (`pictures.json`: the key of every picture to its file, picture_table.py), the fixtures of the original
 (godot/tests/fixtures/*.json: provenance and SHA-256 hashes, committed; godot/tests/fixtures/original/: the original bytes, not
 committed) and a stub `.import` file with a stable uid beside every picture and sound (import_uids.py). The legacy pack is everything of
 the pack's folder: none of it is in git. The last step, "godot", has Godot import the project (it completes the .import files)
@@ -40,6 +40,7 @@ import asset_manifest
 import common
 import godot
 import import_uids
+import picture_table
 import source_files
 import tool_check
 import transcripts
@@ -183,6 +184,9 @@ def main() -> int:
         print("import files with a stable uid written: %d" % stubs)
     total = asset_manifest.write(owned)
     print("asset manifest: %d files" % total)
+    table = picture_table.rows(asset_manifest.load(), step_images.problem_art_index())       # the manifest holds every asset file, also those of steps that did not run
+    picture_table.write(common.legacy_root(), table)
+    print("picture table: %d rows (%d aliases)" % (len(table), sum(isinstance(row, dict) for row in table.values())))
     print("files written: %d, unchanged: %d" % (common.Stats.written, common.Stats.unchanged))
 
     if "godot" in names:

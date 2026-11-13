@@ -352,7 +352,7 @@ func test_a_pack_put_on_in_the_middle_of_an_animation_shows_its_pictures_at_the_
 	var item := diagram.items.filter(func(each: DiagramItem) -> bool: return each.kind == DiagramItem.Kind.PICTURE)[0] as DiagramItem
 	var before := diagram.texture_of(item)
 	_shelf = PackShelf.new()
-	_shelf.add_picture_row(GameSkin.key_of(problem.type.art_files[item.pic]), Color.RED, Vector2i(9, 9))
+	_shelf.add_picture_row(problem.type.art_keys[item.pic], Color.RED, Vector2i(9, 9))
 	_shelf.mount()                                                                                   # (the chain changes: the packs' tables answer for the picture)
 	var worn := diagram.texture_of(item)
 	assert_vector(worn.get_size()).override_failure_message("the item holds the number of its picture, not the picture").is_equal(Vector2(9, 9))

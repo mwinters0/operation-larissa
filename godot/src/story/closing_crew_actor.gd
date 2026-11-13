@@ -26,11 +26,12 @@ var x: int
 var y: int
 ## What the last `step()` drew: `visible` is false for a step in which nothing was drawn.
 var visible: bool = false
-var picture: int = 0
+## The KEY of the picture the last step drew (`ClosingCrewScripts.pictures`).
+var picture: String = ""
 var mirrored: bool = false
 
 var _program: PackedInt32Array
-var _first_picture: int
+var _pictures: PackedStringArray
 var _record: int = -1                  # the original's ExpertClosingCrewScriptPos / 4 (-1 = not started)
 var _delay: int = 0                    # the original's ExpertClosingCrewDelay
 
@@ -38,7 +39,7 @@ var _delay: int = 0                    # the original's ExpertClosingCrewDelay
 ## Sailor number `index` (0-5) of `crew`.
 func _init(crew: ClosingCrewScripts, index: int) -> void:
 	_program = crew.scripts[index]
-	_first_picture = crew.first_picture
+	_pictures = crew.pictures
 	x = crew.start_x[index]
 	y = crew.start_y[index]
 
@@ -82,5 +83,5 @@ func step() -> void:
 
 func _draw(base: int) -> void:
 	visible = true
-	picture = _first_picture + _program[base + 1]
+	picture = _pictures[_program[base + 1]]
 	mirrored = _program[base + 2] != 0

@@ -15,6 +15,7 @@ from __future__ import annotations
 from devlib import DEV, SCRIPTS, write_text, tres
 
 import step_story as st
+from asset_names import ui_key
 
 STEP = 12                                   # ticks of the expert closing's and the ship scene's step: ours
 SHIP_FRAMES = 36
@@ -22,6 +23,7 @@ SHIP_STOPS_AT_FRAME = 15
 SHIP_STOPS_AT_X = 40
 REVEAL_HOLD = 100                           # ticks of one hold of the title
 CREW_FIRST_PICTURE = 2012                   # the sailors' items count from this picture of the registry
+CREW_ITEMS = 4                              # the items 0-3 the sailors' programs draw
 
 
 def timeline(length: float, why: str, loop: bool = False) -> st.Timeline:
@@ -175,7 +177,7 @@ def closing_crew() -> str:
                    (LEFT, 2, 1, 1), (LEFT, 3, 1, 1), (WAIT, 0, 0, 3), (END, 0, 0, 0)]
         scripts.append([v for record in records for v in record])
     t = tres.Tres("Resource", "ClosingCrewScripts", SCRIPTS + "closing_crew_scripts.gd")
-    t.set("first_picture", str(CREW_FIRST_PICTURE))
+    t.set("pictures", tres.packed_strings(ui_key(CREW_FIRST_PICTURE + item) for item in range(CREW_ITEMS)))
     t.set("start_x", tres.packed_ints([300 + 40 * m for m in range(6)]))
     t.set("start_y", tres.packed_ints([214] * 6))
     t.set("scripts", tres.array("PackedInt32Array", [tres.packed_ints(s) for s in scripts]))

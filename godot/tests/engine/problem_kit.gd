@@ -77,8 +77,7 @@ static func with_records(type_id: int, records: Array, level: int = 0) -> Proble
 static func diagram_of(spec: Dictionary, numbers: Array = [0, 0, 0], level: int = 0, places: int = 0) -> DiagramBase:
 	var type := Catalog.problem_type(6).duplicate() as ProblemType
 	type.diagram = spec
-	type.art_dir = Catalog.problem_type(3).art_dir
-	type.art_files = Catalog.problem_type(3).art_files
+	type.art_keys = Catalog.problem_type(3).art_keys
 	var record := PackedInt64Array()
 	for number: float in numbers:
 		record.append_array(PackedInt64Array(decimal(number, places)))

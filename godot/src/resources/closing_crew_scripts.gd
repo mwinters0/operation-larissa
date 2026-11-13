@@ -7,8 +7,8 @@ extends Resource
 ## Despite its name the original table is not a crane script: it holds one small program per sailor. A program is
 ## a list of 4-number records `[op, item, mirror, delay]`, stored flat. `ClosingCrewActor` runs one.
 
-## Item `i` of a record is the loose picture `first_picture + i` (bundle 0x1d1 of the original).
-@export var first_picture: int = 0          # (the data file holds the number; `Assets.ui_picture_by_number(first_picture + item)`)
+## Item `i` of a record is the picture `pictures[i]`, a KEY (`ui_picture/<name>`, `Assets.picture_by_key`): the loose pictures of bundle 0x1d1 of the original, in the order of the original's numbers.
+@export var pictures: PackedStringArray = PackedStringArray()
 ## Where sailor `n` starts, in window pixels (the original's `ExpertClosingCrewPos`).
 @export var start_x: PackedInt32Array = PackedInt32Array()
 @export var start_y: PackedInt32Array = PackedInt32Array()

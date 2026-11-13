@@ -60,8 +60,7 @@ running). Paths are under `godot/`. A pack on the chain inherits whatever is pro
 - `src/gameplay/foe.gd:25` `HOPPING_PICTURES` is zone 0's `jellyfish_tentacle`.
 - `src/skins/hud_labels.gd`: the default zone words are the original's ("Dragon Reef").
 - The tiny test skin (`tests/skins/tiny/`) maps registry keys (`ui_picture/title_sky`, a creature picture, the first zone's name box), which dev has
-  because it follows the original's registry. `tests/engine/test_assets.gd:21`, `test_no_asset_numbers.gd` and `test_skin.gd` name dev's
-  `assets/ui/title/title_sky_1039.png`, which works only because dev's inventory has the original's file names.
+  because it follows the original's registry.
 
 **Problems**
 - `src/problems/prompt_sender.gd:23-28` sender picture position and header/body x/y are absolute original coordinates; `:35` ship slots `2..19` and `>= 60`.

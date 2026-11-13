@@ -111,10 +111,10 @@ func test_a_ref_is_a_sub_resource_with_a_key_in_a_tres() -> void:
 	DirAccess.remove_absolute(path)
 
 
-func test_a_pack_with_no_table_is_still_read_by_its_files() -> void:
-	_shelf.remove()                                                                         # (the chain is the dev pack again: no picture table)
+func test_a_ref_is_read_from_the_dev_packs_table() -> void:
+	_shelf.remove()                                                                         # (the chain is the dev pack again)
 	_shelf = PicturesShelf.new()
-	assert_bool(Packs.dev().picture_table().present).is_false()
+	assert_bool(Packs.dev().picture_table().present).is_true()
 	var ref := PictureRef.of("frame/sub_00")
 	assert_object(ref.resolved()).is_not_null()
 	assert_object(ref.resolved()).is_same(Assets.picture_by_key("frame/sub_00"))

@@ -181,8 +181,8 @@ The numbers of the original are an implementation detail of the registry; the re
   `text`: `Catalog.text(name)`; `ui_picture` and `problem_art`: `Assets.ui_picture(name)` and `Assets.problem_art(name)` (`src/core/assets.gd`),
   which turn the name into the number (registry) and the number into a path (`Assets.ui_picture_path`, `Assets.problem_art_path`: the
   only places that know the folders); creature pictures: `NameRegistry.index_of(&"frame", name, zone)`. The asset files carry the name and the number
-  (`lock_tick_38.wav`, "Asset file names" below), and `Assets.file_stem` is where the game knows that. A number that a data file holds
-  (the closing crew's pictures) goes through `Assets.ui_picture_by_number`; code never writes one.
+  (`lock_tick_38.wav`, "Asset file names" below), and `Assets.file_stem` is where the game knows that. The closing crew's pictures are `ui_picture` keys
+  (`ClosingCrewScripts.pictures`); no data file holds a picture's number.
 * **Cutscene timelines hold names, not numbers.** The tracks of a cutscene (`data/story/*.tres`) say
   `ship_radar_1`, `opening_scene`, `news_bulletin_0`, `alien_artifact_0`: the importer finds each name from the original's number (`step_story.py`,
   `picture()`, `sound()`, `text_name()`, `frame_name()`) and the view turns it into a texture, a sound or a text with the usual resolver

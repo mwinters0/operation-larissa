@@ -7,8 +7,9 @@ extends RefCounted
 ## `.foe`), and the pictures, clips, texts, speech groups, problem
 ## types and durations that are the designer's own. Those come from the PACK SOURCE FOLDER `res://data/campaigns/<id>/`, laid out as a pack
 ## (`pictures.json` with the files it names, `audio/voice/line_a.ogg`, `texts.json`, `rules/durations.json` ...) and copied as they are; a campaign that
-## already comes from an untrusted pack of the chain (an installed one, or a student's scratch pack) is exported from that pack's files instead. A picture the
-## campaign names by a `res://` path (`finale_picture`, `banner`) is copied into the pack as `ui_picture/<name>.png`, becomes the row `ui_picture/<name>` of the pack's `pictures.json` and is named by that key.
+## already comes from an untrusted pack of the chain (an installed one, or a student's scratch pack) is exported from that pack's files instead. A `banner` that
+## is a PNG file of the project is copied into the pack as `ui_picture/<name>.png`, becomes the row `ui_picture/<name>` of the pack's `pictures.json` and is named by that key; one that is a `PictureRef` is written as its key.
+## The `finale_picture` is a key already (its row is in the source folder's `pictures.json`).
 ## The sectors are exported from the game's own reader (`Catalog.sector`), whether they are `.tres` files or a pack's JSON.
 ##
 ## A COMPLETE pack (`complete`) is written the way a pack that leaves the project is held: every `.tres` of `data/` as the JSON that `ResourceJson` describes it with, the
@@ -239,15 +240,10 @@ static func _copy_from(from: Pack, rel: String, stage: String) -> Error:
 	return PackFiles.write_bytes("%s/%s" % [stage, rel], from.read_bytes(rel))
 
 
-## A picture of the campaign that is a `res://` file (`finale_picture`, `banner`) goes into the pack as `ui_picture/<name>.png` with a row `ui_picture/<name>` in `rows`, and the
-## JSON names it by that key. "" or what went wrong.
+## The campaign's banner: a PNG file of the project goes into the pack as `ui_picture/<name>.png` with a row `ui_picture/<name>` in `rows`, and the JSON names it by that key (a `PictureRef` already is one:
+## `ResourceJson` wrote its key). "" or what went wrong.
 static func _pictures_by_name(source: Campaign, data: Dictionary, stage: String, rows: Dictionary) -> String:
-	if source.finale_picture.begins_with("res://"):
-		var picture_name := _picture_into(source.finale_picture, "%s_finale" % source.id, stage, rows)
-		if picture_name.is_empty():
-			return "finale_picture %s is not a PNG file" % source.finale_picture
-		data["finale_picture"] = picture_name
-	if source.banner != null:
+	if source.banner != null and not source.banner is PictureRef:
 		var from := source.banner.resource_path
 		var banner_name := _picture_into(from, "%s_banner" % source.id, stage, rows) if from.begins_with("res://") else ""
 		if banner_name.is_empty():

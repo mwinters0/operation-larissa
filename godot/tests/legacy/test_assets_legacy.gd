@@ -1,10 +1,10 @@
 class_name TestAssetsLegacy
 extends GdUnitTestSuite
-## Teaches: testing a resolver from the file side (a path is compared by what follows the pack's folder, `Packs.relative`: the pack played may be the project's folder or its data-form export). Every FILE the importer wrote for the original game must be found again by the rule that turns its
-## number into a path, so a renamed folder or a missing picture fails here, not on the title screen. (The names and strings side, on any pack, is in
-## tests/engine/test_assets.gd.)
+## Teaches: testing a picture lookup from the file side. Every picture FILE the importer wrote for the original game must be named by a row of the pack's `pictures.json`, and every row must
+## answer with a picture, so a missing file or a row that names nothing fails here, not on the title screen. (The names and strings side, on any pack, is in tests/engine/test_assets.gd; the
+## table against every key the data holds is `test_picture_keys_legacy.gd`.)
 
-const UI_ROOT := LegacyPack.ROOT + "assets/ui"
+const PICTURE_FOLDERS: Array[String] = ["ui", "problem_art", "sprites", "tiles", "backgrounds"]
 
 
 ## Without the legacy pack (the original game, made by the importer from your own copy) this suite skips.
@@ -12,34 +12,41 @@ func before(do_skip := not LegacyPack.present(), skip_reason := "run the importe
 	pass
 
 
-## The folder rule of `Assets.ui_picture_path` against the folders the importer really filled.
-func test_the_folder_rule_finds_every_ui_picture_where_the_importer_put_it() -> void:
+func _table() -> PictureTable:
+	return Pack.open(LegacyPack.root()).picture_table()
+
+
+func test_the_table_names_every_picture_file_the_importer_wrote() -> void:
+	var table := _table()
+	var named := {}
+	for key in table.files:
+		named[table.files[key]] = key
 	var checked := 0
-	for folder in DirAccess.get_directories_at(UI_ROOT):
-		for file in DirAccess.get_files_at(UI_ROOT.path_join(folder)):
-			if file.ends_with(".png"):
-				var number := int(file.get_basename().rsplit("_", true, 1)[1])
-				assert_str(Packs.relative(Assets.ui_picture_path(number))).is_equal("assets/ui/%s/%s" % [folder, file])
+	var pack := Pack.open(LegacyPack.root())
+	for folder in PICTURE_FOLDERS:
+		for rel in pack.all_files():
+			if rel.begins_with("assets/%s/" % folder) and rel.get_extension() == "png":
+				assert_bool(named.has(rel)).override_failure_message("%s is named by no row of pictures.json" % rel).is_true()
 				checked += 1
-	assert_int(checked).is_greater(100)
+	assert_int(checked).is_greater(1000)
 
 
-func test_the_problem_art_index_finds_every_picture_of_its_own_folder() -> void:
-	var checked := 0
-	for folder in DirAccess.get_directories_at(LegacyPack.ROOT + "assets/problem_art"):
-		for file in DirAccess.get_files_at((LegacyPack.ROOT + "assets/problem_art").path_join(folder)):
-			if file.ends_with(".png"):
-				assert_str(Packs.relative(Assets.problem_art_path(int(file.get_basename().rsplit("_", true, 1)[1])))).is_equal("assets/problem_art/%s/%s" % [folder, file])
-				checked += 1
-	assert_int(checked).is_greater(100)
+func test_every_row_answers_with_a_picture() -> void:
+	var table := _table()
+	for key in table.keys():
+		assert_object(Pictures.resolve(key)).override_failure_message("%s: no picture" % key).is_not_null()
 
 
-func test_the_original_pictures_are_where_their_numbers_say() -> void:
-	assert_str(Packs.relative(Assets.ui_picture_path(1039))).is_equal("assets/ui/title/title_sky_1039.png")     # a named picture: <name>_<number>
-	assert_str(Packs.relative(Assets.ui_picture_path(1000))).is_equal("assets/ui/map/radar_map_1000.png")
-	assert_str(Packs.relative(Assets.ui_picture_path(2025))).is_equal("assets/ui/story/ui_2025.png")           # nobody named it: the old name
-	assert_str(Packs.relative(Assets.problem_art_path(2046))).is_equal("assets/problem_art/b116/log_scan_0_2046.png")
-	assert_str(Packs.relative(Assets.problem_art_path(1780))).is_equal("assets/problem_art/single/pa_1780.png")
+func test_the_original_pictures_are_under_their_keys() -> void:
+	var table := _table()
+	assert_str(table.files["ui_picture/title_sky"]).is_equal("assets/ui/title/title_sky_1039.png")        # a named picture: <name>_<number>
+	assert_str(table.files["ui_picture/radar_map"]).is_equal("assets/ui/map/radar_map_1000.png")
+	assert_str(table.files["ui_picture/ui_2025"]).is_equal("assets/ui/story/ui_2025.png")                  # nobody named it: the made-up name has the number
+	assert_str(table.files["problem_art/log_scan_0"]).is_equal("assets/problem_art/b116/log_scan_0_2046.png")
+	assert_str(table.files["problem_art/pa_1780"]).is_equal("assets/problem_art/single/pa_1780.png")
+	assert_str(table.aliases["problem_art/pa_2012"]).is_equal("ui_picture/ui_2012")                         # a picture the story keeps: the problem art id is its alias
+	assert_str(table.files["tile/zone0_tiles"]).is_equal("assets/tiles/zone0_tiles.png")
+	assert_str(table.files["background/bg_s03_07"]).is_equal("assets/backgrounds/bg_s03_07.png")
 
 
 func test_the_original_texts_say_what_they_said() -> void:

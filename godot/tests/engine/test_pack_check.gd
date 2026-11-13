@@ -281,12 +281,12 @@ func test_clip_warnings_of_g2a_are_warnings() -> void:
 	assert_bool(_has(report, PackReport.Severity.WARNING, "audio/jingles")).is_true()
 
 
-func test_a_picture_file_that_the_campaign_names_must_exist() -> void:
+func test_a_picture_key_that_the_campaign_names_must_have_a_row() -> void:
 	var shelf := _orchard()
 	var named: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("%s/campaigns/%s.json" % [shelf.root, ID]))
-	named["finale_picture"] = "orchard_sunset"
+	named["finale_picture"] = "ui_picture/orchard_sunset"
 	shelf.write_json("campaigns/%s.json" % ID, named)
-	assert_bool(_has(_check(shelf), PackReport.Severity.ERROR, "finale_picture 'orchard_sunset'")).is_true()
+	assert_bool(_has(_check(shelf), PackReport.Severity.ERROR, "finale_picture 'ui_picture/orchard_sunset'")).is_true()
 	shelf.add_picture_row("ui_picture/orchard_sunset", Color.ORANGE)
 	assert_bool(_check(shelf).passes()).is_true()
 

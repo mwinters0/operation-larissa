@@ -25,6 +25,11 @@ var _epoch := -1
 var _image: Image
 
 
+## The key `texture` holds when it is a `PictureRef` ("" for any other texture, or none): what data that holds pictures says a texture is.
+static func key_of(texture: Texture2D) -> String:
+	return (texture as PictureRef).key if texture is PictureRef else ""
+
+
 ## The reference to the picture `picture_key`.
 static func of(picture_key: String) -> PictureRef:
 	var made := PictureRef.new()

@@ -55,7 +55,7 @@ static func garden() -> Campaign:
 	garden.supply_texts = [&"Mission control: the first bed is planted.", &"Mission control: the second bed is planted."]
 	garden.supply_voices = [&"", &"no_such_group"]
 	garden.finale_text = "The garden is in bloom. Well done, gardeners!"
-	garden.finale_picture = "title_sky"
+	garden.finale_picture = "ui_picture/title_sky"
 	return garden
 
 
@@ -76,5 +76,5 @@ static func orchard() -> Campaign:
 	orchard.supply_texts = [&"Well picked.", &"Well picked again."]
 	orchard.supply_voices = [&"", &""]
 	orchard.finale_text = "The orchard is yours."
-	orchard.finale_picture = "title_sky"
+	orchard.finale_picture = "ui_picture/title_sky"
 	return orchard

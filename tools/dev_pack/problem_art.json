@@ -1,5 +1,5 @@
 {
- "note": "Which art folder each problem type 0-33 draws from: a number below 900 is the folder assets/problem_art/bNNN (the pictures in id order, the first is the panel), a number of 1000 and up is the loose picture assets/problem_art/single/pa_<number>.png. This is the layout of the pack's files (folder and file names, as the dev pack's inventory has them), committed so that the dev generator needs no importer output (extracted/ is not committed). Two types may share a folder.",
+ "note": "Which art each problem type 0-33 draws from: a number below 900 is the bundle bNNN of inventory.json's problem_art_index (its pictures in id order, the first is the panel; the type's art_keys are their problem_art keys), a number of 1000 and up is the one loose picture with that id (problem_art/pa_<number> or its name). Committed so that the dev generator needs no importer output (extracted/ is not committed). Two types may share a bundle.",
  "art": [
   77, 79, 80, 81, 82, 83, 84, 85, 86, 87,
   1864, 88, 89, 89, 90, 91, 92, 93, 94, 95,

@@ -50,12 +50,12 @@ func test_the_two_engine_classes_are_described_and_built_from_a_whitelist() -> v
 	var dev := _dev()
 	var frames_data := ResourceJson.new(dev).data_of(dev.resource("data/sprite_frames/sub_frames.tres"))
 	assert_str(frames_data["class"]).is_equal("SpriteFrames")
-	assert_str(frames_data["animations"][0]["frames"][0]["texture"]["$ref"]).is_equal("assets/sprites/sub/sub_00.png")
+	assert_str(frames_data["animations"][0]["frames"][0]["texture"]["$picture"]).is_equal("frame/sub_00")
 	var tile_data := ResourceJson.new(dev).data_of(dev.resource("data/neptune_tileset.tres"))
 	assert_str(tile_data["class"]).is_equal("TileSet")
 	assert_array(tile_data["custom_data_layers"]).has_size(2)
 	assert_int(tile_data["sources"][0]["tiles"].size()).is_greater(0)
-	assert_str(tile_data["sources"][0]["texture"]["$ref"]).starts_with("assets/tiles/")
+	assert_str(tile_data["sources"][0]["texture"]["$picture"]).starts_with("tile/")
 	# any other engine class is a problem, never an instance
 	for other in ["Node", "AudioStreamPlayer", "GDScript", "Environment"]:
 		var reader := ResourceJson.new(dev)
@@ -220,7 +220,7 @@ func test_a_ref_looks_in_its_own_pack_and_then_down_the_chain_never_up() -> void
 	assert_array(Packs.chain_ids()).is_equal([shelf.id, PackShelf.base_id()])
 	# a file of the pack on top, and a file only the pack below has (dev's tile picture)
 	var reader := ResourceJson.new(pack)
-	var holder := reader.resource_from({"class": "HudLayout", "bezel": {"$ref": "assets/only_up_here.png"}, "tank_full": {"$ref": "assets/tiles/zone0_tiles.png"}}) as HudLayout
+	var holder := reader.resource_from({"class": "HudLayout", "bezel": {"$ref": "assets/only_up_here.png"}, "tank_full": {"$ref": DevPack.picture_rel("tile/zone0_tiles")}}) as HudLayout
 	assert_array(reader.problems).is_empty()
 	assert_str(Packs.source_of(holder.bezel)).is_equal(shelf.root + "/assets/only_up_here.png")
 	assert_str(Packs.source_of(holder.tank_full)).starts_with(_dev().root)

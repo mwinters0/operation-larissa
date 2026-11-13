@@ -39,7 +39,7 @@ func test_the_unskinned_problem_type_is_the_type_the_skin_starts_from() -> void:
 		var plain := Catalog.problem_type_unskinned(index)
 		assert_object(plain).is_not_null()
 		assert_str(Catalog.problem_type(index).title).is_equal(plain.title)
-		assert_array(Catalog.problem_type(index).art_files).is_equal(plain.art_files)
+		assert_array(Catalog.problem_type(index).art_keys).is_equal(plain.art_keys)
 
 
 ## Every resource script whose methods the start-up check calls is a tool script (a placeholder in the editor refuses the call).

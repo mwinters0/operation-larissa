@@ -1,15 +1,14 @@
-"""Dev pictures: flat shapes in the dev palette with a 1 px outline and the asset's own name written on them.
+"""Dev pictures: flat shapes in the dev palette with a 1 px outline and the picture's own key name written on them.
 
 One colour per kind (sprite, deco, tile, UI, background, problem art). The sizes are dev's own: arbitrary, even, easy to read; a
 few are the size the ENGINE assumes (the sub, a piece, the playfield, the prompt's sender icon), listed in `ENGINE_SIZES`.
-Nothing here reads a picture of the legacy pack.
+Each lies in `assets/pictures/<kind>/<name>.png` for its key `<kind>/<name>` (`rel_of`), and `pictures.json` says so. Nothing here reads a picture of the legacy pack.
 """
 from __future__ import annotations
 
 import io
 import re
 from functools import cache
-from pathlib import PurePosixPath
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -52,15 +51,25 @@ PANEL = (292, 296)                                  # the diagram panel: the fir
 
 
 @cache
-def _bundle_first_ids() -> dict[str, int]:
-    """folder -> the smallest picture id in it (its picture 0), and the folders that hold the panels of problem types."""
+def _numbers() -> dict[str, int | None]:
+    """key -> the number the picture has in the inventory (a picture id, a creature or deco slot), None for a key of a plain set."""
     import inventory
-    first: dict[str, int] = {}
-    for f in inventory.load()["files"]:
-        parts = f.split("/")
-        if len(parts) == 4 and parts[1] == "problem_art" and f.endswith(".png"):
-            first[parts[2]] = min(first.get(parts[2], 10**9), int(_match(r"(\d+)\.png$", f).group(1)))
-    return first
+    return inventory.load()["pictures"]
+
+
+@cache
+def _bundle_first_ids() -> dict[str, int]:
+    """problem art folder -> the smallest picture id in it that has a picture of its own (its picture 0)."""
+    import inventory
+    import pictures
+    return {folder: min(i for i in ids if pictures.home(i) is None) for folder, ids in inventory.load()["problem_art_index"].items()
+            if any(pictures.home(i) is None for i in ids)}
+
+
+@cache
+def _folder_of_art(pid: int) -> str:
+    import inventory
+    return next(folder for folder, ids in inventory.load()["problem_art_index"].items() if pid in ids)
 
 
 @cache
@@ -68,7 +77,7 @@ def _panel_folders() -> set[str]:
     return {"b%03d" % r for r in devlib.problem_art() if r < 900}
 
 
-def _problem_art_size(folder: str, n: int, name: str) -> tuple[int, int]:
+def _problem_art_size(folder: str, n: int) -> tuple[int, int]:
     index = n - _bundle_first_ids().get(folder, n)
     if folder == "b078":
         return 240, 240                               # the lock's answer wheel (no problem type has the folder as its own art)
@@ -97,67 +106,69 @@ def _required(n: int | None, name: str) -> int:
     return n
 
 
-def _number(name: str) -> int | None:
-    m = re.search(r"(\d+)\.png$", name)
-    return int(m.group(1)) if m else None
-
-
 def _slot_size(slot: int, wide: int, high: int) -> tuple[int, int]:
     """A deterministic even size that varies a little with the slot, so that a mix-up of pictures shows."""
     return wide + 8 * (slot % 4), high + 8 * (slot % 3)
 
 
-def spec(rel: str) -> tuple[str, int, int]:
-    """(kind, width, height) of the picture `rel` (a path below the pack, "assets/...png")."""
-    p = PurePosixPath(rel)
-    parts = p.parts
-    name = p.name
-    n = _number(name)
-    folder = parts[1]
-    if folder == "backgrounds":
+def _ui_folder(pid: int) -> str:
+    """Which role a picture of the interface has (the importer's folders of assets/ui/, pictures.UI_FOLDERS): it decides the size."""
+    import pictures
+    return next(folder for folder, ids in pictures.UI_FOLDERS.items() if pid in ids)
+
+
+def name_of(key: str) -> str:
+    return key.split("/", 1)[1]
+
+
+def rel_of(key: str) -> str:
+    """Where dev keeps the picture of `key`: `assets/pictures/<kind>/<name>.png`, so the file is named by its key and by nothing else."""
+    return "assets/pictures/%s.png" % key
+
+
+def spec(key: str) -> tuple[str, int, int]:
+    """(kind, width, height) of the picture of `key`."""
+    kind, name = key.split("/", 1)
+    n = _numbers().get(key)
+    if kind == "background":
         return "background", 640, 400
-    if folder == "tiles":
-        if name == "invisible_wall.png":
-            return "tile", 16, 16
-        return "tile", 128, 128                                  # 8 x 8 cells of 16 x 16
-    if folder == "sprites":
-        sub = parts[2]
-        if sub == "foes":
-            slot = n or 0
-            if slot < 28:
-                return "sprite", *_slot_size(slot, 32, 24)
-            if slot < 35:
-                side = 16 + 8 * (slot - 28)                       # the ink burst grows
-                return "sprite", side, side
-            return "sprite", *_slot_size(slot, 40, 32)
-        if sub == "decos":
-            slot = n or 0
-            if "_z" in name and name.startswith("deco_z"):
-                pass
-            return "deco", *_slot_size(slot, 24, 32)
-        if sub == "pieces":
-            return "sprite", *PIECE
-        if sub == "station":
-            return "sprite", 64, 64
-        if sub == "sub":
-            index = int(_match(r"sub_(\d+)", name).group(1))
+    if kind == "tile":
+        return ("tile", 16, 16) if name == "invisible_wall" else ("tile", 128, 128)      # 8 x 8 cells of 16 x 16
+    if kind == "frame":
+        if name.startswith("sub_"):
+            index = int(name[len("sub_"):])
             if index <= 7:
                 return "sprite", *SUB
             if index == 8:
                 return "sprite", 16, 8
             return "sprite", 12, 12
-        if sub == "fx":
-            return "sprite", 8 + 2 * int(_match(r"(\d+)\.png$", name).group(1)), 8 + 2 * int(_match(r"(\d+)\.png$", name).group(1))
-    if folder == "ui":
-        sub = parts[2]
-        if sub == "hud":
-            return "ui", *HUD_SIZES.get(_required(n, name) - 1189, LABEL)
-        if sub == "prompt":
+        if name.startswith("piece_"):
+            return "sprite", *PIECE
+        if name.startswith("station_"):
+            return "sprite", 64, 64
+        if name.startswith("fx_"):
+            side = 8 + 2 * int(_match(r"(\d+)$", name).group(1))
+            return "sprite", side, side
+        slot = _required(n, key)
+        if slot < 28:
+            return "sprite", *_slot_size(slot, 32, 24)
+        if slot < 35:
+            side = 16 + 8 * (slot - 28)                       # the ink burst grows
+            return "sprite", side, side
+        return "sprite", *_slot_size(slot, 40, 32)
+    if kind == "deco":
+        return "deco", *_slot_size(_required(n, key), 24, 32)
+    if kind == "ui_picture":
+        pid = _required(n, key)
+        folder = _ui_folder(pid)
+        if folder == "hud":
+            return "ui", *HUD_SIZES.get(pid - 1189, LABEL)
+        if folder == "prompt":
             return "ui", *SENDER
-        if sub == "map":
+        if folder == "map":
             return "ui", 640, 400
-        if sub == "title":
-            if "sky" in name or "ui_1039" in name:
+        if folder == "title":
+            if "sky" in name or name == "ui_1039":
                 return "ui", 640, 200
             if "sea" in name:
                 return "ui", 640, 120
@@ -168,35 +179,33 @@ def spec(rel: str) -> tuple[str, int, int]:
             if "scanner" in name:
                 return "ui", 100, 22
             return "ui", 160, 32
-        if sub == "story":
-            big = ("background", "sky", "sea", "frame_", "americas", "cloud_swirl", "galaxy", "earth")
-            if any(b in name for b in big):
-                return "ui", 320, 200
-            if "ship_mini_sub" in name:
-                return "ui", *MINI_SUB
-            if "ship_" in name or "heli_body" in name or "deck_ship" in name:
-                return "ui", 160, 64
-            if "caption" in name or "heading" in name:
-                return "ui", 240, 24
-            if "button" in name:
-                return "ui", 96, 24
-            if "console" in name:
-                return "ui", 120, 80
-            if "light" in name:
-                return "ui", 16, 16
-            return "ui", 48, 48
-    if folder == "authoring_tool":
-        return "ui", 96, 24
-    if folder == "problem_art":
-        sub = parts[2]
-        if sub == "single":
-            return "problem", *{1780: PROBLEM_BACKGROUND, 1803: PANEL, 1864: PANEL, 1979: (640, 400)}.get(n or 0, (64, 32))
-        if sub == "b041":
-            return "problem", *CALC_SIZES.get(_required(n, name) - 1781, (14, 20))
+        big = ("background", "sky", "sea", "frame_", "americas", "cloud_swirl", "galaxy", "earth")
+        if any(b in name for b in big):
+            return "ui", 320, 200
+        if "ship_mini_sub" in name:
+            return "ui", *MINI_SUB
+        if "ship_" in name or "heli_body" in name or "deck_ship" in name:
+            return "ui", 160, 64
+        if "caption" in name or "heading" in name:
+            return "ui", 240, 24
+        if "button" in name:
+            return "ui", 96, 24
+        if "console" in name:
+            return "ui", 120, 80
+        if "light" in name:
+            return "ui", 16, 16
+        return "ui", 48, 48
+    if kind == "problem_art":
+        pid = _required(n, key)
+        folder = _folder_of_art(pid)
+        if folder == "single":
+            return "problem", *{1780: PROBLEM_BACKGROUND, 1803: PANEL, 1864: PANEL, 1979: (640, 400)}.get(pid, (64, 32))
+        if folder == "b041":
+            return "problem", *CALC_SIZES.get(pid - 1781, (14, 20))
         if "log_scan" in name:
             return "problem", *LOG_ROW
-        return "problem", *_problem_art_size(sub, _required(n, name), name)
-    raise ValueError("no picture rule for " + rel)
+        return "problem", *_problem_art_size(folder, pid)
+    raise ValueError("no picture rule for " + key)
 
 
 @cache
@@ -223,16 +232,15 @@ def _fit(draw: ImageDraw.ImageDraw, label: str, width: int, height: int) -> tupl
     return _font(6), [label]
 
 
-def draw_picture(rel: str) -> bytes:
-    kind, w, h = spec(rel)
-    p = PurePosixPath(rel)
-    stem = p.stem
+def draw_picture(key: str) -> bytes:
+    kind, w, h = spec(key)
+    stem = name_of(key)
     fill, outline, ink = PALETTE[kind]
     if kind == "tile":
-        return _tile_png(rel, w, h)
+        return _tile_png(stem, w, h)
     img = Image.new("RGBA", (w, h), fill + (255,))
     d = ImageDraw.Draw(img)
-    if kind == "sprite" and p.parts[2] in ("pieces",) or (kind == "sprite" and p.parts[2] == "fx") or kind == "sprite" and "bubble" in stem:
+    if kind == "sprite" and stem.startswith(("piece_", "fx_")) or kind == "sprite" and "bubble" in stem:
         d.rectangle([0, 0, w - 1, h - 1], fill=(0, 0, 0, 0))
         d.ellipse([0, 0, w - 1, h - 1], fill=fill + (255,), outline=outline + (255,))
     else:
@@ -255,15 +263,14 @@ DIRECTIONS = ["NW", "N", "NE", "W", "E", "SW", "S", "SE"]               # the or
 ZONE_WALLS = [(150, 110, 70), (120, 120, 150), (170, 150, 110), (90, 140, 90), (140, 90, 90)]
 
 
-def _tile_png(rel: str, w: int, h: int) -> bytes:
-    name = PurePosixPath(rel).name
+def _tile_png(name: str, w: int, h: int) -> bytes:
     img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     font = _font(9)
-    if name == "invisible_wall.png":
+    if name == "invisible_wall":
         d.rectangle([0, 0, 15, 15], fill=(255, 40, 160, 90), outline=(255, 40, 160, 255))
         d.text((5, 1), "I", font=font, fill=(255, 255, 255, 255))
-    elif name == "currents.png":
+    elif name == "currents":
         for strength in range(8):
             for direction, text in enumerate(DIRECTIONS):
                 x0, y0 = direction * 16, strength * 16
@@ -283,12 +290,10 @@ def _tile_png(rel: str, w: int, h: int) -> bytes:
     return buf.getvalue()
 
 
-def write_all(files: list[str]) -> int:
-    count = 0
-    for rel in files:
-        if rel.endswith(".png"):
-            path = devlib.DEV / rel
-            devlib.write_bytes(path, draw_picture(rel))
-            devlib.write_sidecar(path)
-            count += 1
-    return count
+def write_all(keys: list[str]) -> int:
+    """The picture of every key, at `rel_of(key)`, each with its `.import` stub."""
+    for key in keys:
+        path = devlib.DEV / rel_of(key)
+        devlib.write_bytes(path, draw_picture(key))
+        devlib.write_sidecar(path)
+    return len(keys)

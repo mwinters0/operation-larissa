@@ -32,7 +32,7 @@ func _layer_sizes() -> Dictionary:
 
 
 func _key_of(texture: Texture2D) -> String:
-	return GameSkin.key_of(Packs.source_of(texture))
+	return PictureRef.key_of(texture)
 
 
 ## The pixels of a PNG file, read the way a pack's picture is.

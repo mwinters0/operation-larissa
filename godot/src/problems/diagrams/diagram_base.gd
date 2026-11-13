@@ -109,11 +109,11 @@ func _on_pictures_changed() -> void:
 	queue_redraw()
 
 
-## The pictures of the type's art bundle as the chain shows them (a pack's picture for the file's key, else the file): the one place `_textures` is made, by `setup` and when the chain's pictures change.
+## The pictures of the type's panel as the chain shows them (`ProblemType.art_keys`, asked of the packs' tables): the one place `_textures` is made, by `setup` and when the chain's pictures change.
 func _resolve_textures() -> void:
 	_textures.clear()
-	for path in type.art_files:
-		_textures.append(Assets.texture_at(path))
+	for key in type.art_keys:
+		_textures.append(Assets.picture_by_key(key))
 
 
 ## The texture of a picture item in the chain in use.

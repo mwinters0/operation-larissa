@@ -1,18 +1,18 @@
 """Dev sprite frames, sprite metadata (box hit rectangles that match the dev pictures) and bubble rules.
 
-The file NAMES come from the importer's own naming code (asset_names, pictures.home) and the slot tables of tools/analysis/data/sprite_slots.json;
-the sizes come from dev_pictures. Nothing is read from the legacy pack.
+The pictures are held by KEY (`PictureRef`, `Tres.picture`): the keys come from the importer's own naming code (asset_names, pictures.home, picture_table) and the slot
+tables of tools/analysis/data/sprite_slots.json; the sizes come from dev_pictures. Nothing is read from the legacy pack.
 """
 from __future__ import annotations
 
 from pathlib import Path
 
-import devlib                                    # first: it puts tools/import on the path
 from devlib import DEV, SCRIPTS, write_text, tres
 
 import animation_map as amap
 import common as importer
 from asset_names import deco_file, foe_file
+from picture_table import key_of_rel
 from pictures import home
 
 import dev_pictures
@@ -30,84 +30,87 @@ def _rel(path: Path) -> str:
     return path.relative_to(importer.LEGACY).as_posix()
 
 
-def _slot_paths(ids: list[int], file) -> list[str]:
+def _slot_keys(ids: list[int], file) -> list[str]:
+    """The key of the picture in each slot: the slot's own, or the key of the role that keeps the picture once (pictures.home)."""
     out = []
     for i, pid in enumerate(ids):
         dest = file(i, pid)
         owner = home(pid)
-        out.append(_rel(dest if owner is None or owner == dest else owner))
+        out.append(key_of_rel(_rel(dest if owner is None or owner == dest else owner)))
     return out
 
 
-def deco_paths(zone: int) -> list[str]:
-    return _slot_paths(importer.deco_slots(zone), lambda slot, pid: deco_file(zone, slot))
+def deco_keys(zone: int) -> list[str]:
+    return _slot_keys(importer.deco_slots(zone), lambda slot, pid: deco_file(zone, slot))
 
 
-def foe_paths(zone: int) -> list[str]:
-    return _slot_paths(importer.foe_slots(zone), lambda slot, pid: foe_file(zone, slot))
+def foe_keys(zone: int) -> list[str]:
+    return _slot_keys(importer.foe_slots(zone), lambda slot, pid: foe_file(zone, slot))
 
 
-def numbered(folder: str, stem: str, count: int) -> list[str]:
-    return ["assets/sprites/%s/%s_%02d.png" % (folder, stem, i) for i in range(count)]
+def numbered(stem: str, count: int) -> list[str]:
+    """The keys `frame/<stem>_00` ... of a set the importer numbers by position (the sub, the pieces, the station, the bubbles)."""
+    return ["frame/%s_%02d" % (stem, i) for i in range(count)]
 
 
-def frames_tres(paths: list[str], extra: list[tuple[str, list[str], bool]] | None = None) -> str:
+def frames_tres(keys: list[str], extra: list[tuple[str, list[str], bool]] | None = None) -> str:
     """SpriteFrames with the indexed animation "all" (frame i = slot i, speed 0) plus named animations at the game tick rate."""
     t = tres.Tres("SpriteFrames")
 
     def anim(name: str, items: list[str], speed: float, loop: bool) -> str:
-        frames = ", ".join('{"duration": 1.0, "texture": %s}' % devlib.tex(t, p) for p in items)
+        frames = ", ".join('{"duration": 1.0, "texture": %s}' % t.picture(key) for key in items)
         return '{"frames": [%s], "loop": %s, "name": &"%s", "speed": %s}' % (frames, tres.b(loop), name, tres.f(speed))
 
-    anims = [anim("all", paths, 0.0, False)]
+    anims = [anim("all", keys, 0.0, False)]
     for name, items, loop in extra or []:
         anims.append(anim(name, items, SPEED, loop))
     t.set("animations", "[%s]" % ", ".join(anims))
     return t.render()
 
 
-def pick(paths: list[str], indices: list[int]) -> list[str]:
-    return [paths[i] for i in indices]
+def pick(keys: list[str], indices: list[int]) -> list[str]:
+    return [keys[i] for i in indices]
 
 
 def frame_sets() -> dict[str, tuple[list[str], list]]:
-    """data/sprite_frames/<name>.tres -> (the pictures by slot, the named animations)."""
+    """data/sprite_frames/<name>.tres -> (the keys of the pictures by slot, the named animations)."""
     sets: dict[str, tuple[list[str], list]] = {}
     for z in range(5):
-        sets["decos_zone%d" % z] = (deco_paths(z), [])
+        sets["decos_zone%d" % z] = (deco_keys(z), [])
     for z in range(7):
-        paths = foe_paths(z)
-        sets["foes_zone%d" % z] = (paths, [(n, pick(paths, idx), loop) for n, idx, loop in amap.FOE_COMMON])
-    sub = numbered("sub", "sub", 13)
+        keys = foe_keys(z)
+        sets["foes_zone%d" % z] = (keys, [(n, pick(keys, idx), loop) for n, idx, loop in amap.FOE_COMMON])
+    sub = numbered("sub", 13)
     sets["sub_frames"] = (sub, [(n, pick(sub, idx), loop) for n, idx, loop in amap.SUB])
-    pieces = numbered("pieces", "piece", 5)
+    pieces = numbered("piece", 5)
     sets["pieces_frames"] = (pieces, [("canister", pick(pieces, CANISTER_PICTURES), True),
                                       ("rock", pick(pieces, ROCK_PICTURES), True)])
-    station = numbered("station", "station", 7)
+    station = numbered("station", 7)
     sets["station_frames"] = (station, [(n, pick(station, idx), loop) for n, idx, loop in amap.STATION])
-    bubbles = numbered("fx", "fx_bubbles", 8)
+    bubbles = numbered("fx_bubbles", 8)
     extra = [("bubble_columns", bubbles, True)]
     for name, (ids, loop) in amap.FX_SETS.items():
-        extra.append((name, _slot_paths(ids, lambda i, pid: Path("/nowhere")), loop))
+        extra.append((name, _slot_keys(ids, lambda i, pid: Path("/nowhere")), loop))
     sets["fx_frames"] = (bubbles, extra)
     return sets
 
 
 def meta_sets() -> dict[str, list[str]]:
     """sprite_meta_<name> -> the picture of each of its sprites: the common creatures, the ink bursts, the creatures of each zone."""
-    common_foes = foe_paths(0)
+    common_foes = foe_keys(0)
     first, ink = importer.COMMON_CREATURES, importer.INK_FRAMES
     sets = {"common": common_foes[:first], "ink": common_foes[first:first + ink]}
     for z in range(7):
-        sets["zone%d" % z] = foe_paths(z)[importer.FOE_ZONE_BASE:]
+        sets["zone%d" % z] = foe_keys(z)[importer.FOE_ZONE_BASE:]
     return sets
 
 
 def meta_tres(pictures: list[str]) -> str:
+    """The sizes and hit boxes of the sprites whose pictures have the keys `pictures`."""
     t = tres.Tres("Resource", "SpriteMetaTable", SCRIPTS + "sprite_meta_table.gd")
     sizes, rects = [], []
-    for rel in pictures:
-        _kind, w, h = dev_pictures.spec(rel)
+    for key in pictures:
+        _kind, w, h = dev_pictures.spec(key)
         sizes.append((w, h))
         rects.append((2, 2, w - 4, h - 4))                            # the box: the picture inset by 2 px on every side
     t.set("sizes", tres.array("Vector2i", [tres.vec2i(*v) for v in sizes]))
@@ -136,8 +139,8 @@ def bubble_rules_tres() -> str:
 
 def write_all() -> int:
     n = 0
-    for name, (paths, extra) in frame_sets().items():
-        write_text(DEV / "data" / "sprite_frames" / (name + ".tres"), frames_tres(paths, extra))
+    for name, (keys, extra) in frame_sets().items():
+        write_text(DEV / "data" / "sprite_frames" / (name + ".tres"), frames_tres(keys, extra))
         n += 1
     for name, pictures in meta_sets().items():
         write_text(DEV / "data" / "sprite_meta" / ("sprite_meta_%s.tres" % name), meta_tres(pictures))

@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 import animation_map as amap
+import picture_table
 from asset_manifest import copy_picture
 from common import (ASSETS, PACK_DATA, TABLES, TICK_HZ, bundle_ids, deco_slots, foe_slots,
-                    load_json, out_text, res_path)
+                    load_json, out_text)
 import sprite_meta
 import tres
 from asset_names import deco_file, foe_file
@@ -17,37 +18,37 @@ SCRIPTS = "res://src/resources/"
 
 # ---- SpriteFrames ---------------------------------------------------------
 
-def sprite_frames_tres(all_paths: list[str], extra: list[tuple[str, list[str], bool]] | None = None) -> str:
+def sprite_frames_tres(all_keys: list[str], extra: list[tuple[str, list[str], bool]] | None = None) -> str:
     """SpriteFrames with the indexed animation "all" (frame i = slot i) plus named animations.
 
-    `extra` entries are (name, [res:// paths], loop). Named animations play at
+    The frames are pictures held by KEY (`all_keys`: `frame/sub_00`; a PictureRef each, `Tres.picture`). `extra` entries are (name, [keys], loop). Named animations play at
     the original game tick rate; "all" has speed 0 so it never advances by itself.
     """
     t = tres.Tres("SpriteFrames")
 
-    def anim(name: str, paths: list[str], speed: float, loop: bool) -> str:
-        frames = ", ".join('{"duration": 1.0, "texture": %s}' % t.ext_ref("Texture2D", p) for p in paths)
+    def anim(name: str, keys: list[str], speed: float, loop: bool) -> str:
+        frames = ", ".join('{"duration": 1.0, "texture": %s}' % t.picture(k) for k in keys)
         return '{"frames": [%s], "loop": %s, "name": &"%s", "speed": %s}' % (
             frames, tres.b(loop), name, tres.f(speed))
 
-    anims = [anim("all", all_paths, 0.0, False)]
-    for name, paths, loop in extra or []:
-        anims.append(anim(name, paths, TICK_HZ, loop))
+    anims = [anim("all", all_keys, 0.0, False)]
+    for name, keys, loop in extra or []:
+        anims.append(anim(name, keys, TICK_HZ, loop))
     t.set("animations", "[%s]" % ", ".join(anims))
     return t.render()
 
 
-def pick(paths: list[str], indices: list[int]) -> list[str]:
-    return [paths[i] for i in indices]
+def pick(keys: list[str], indices: list[int]) -> list[str]:
+    return [keys[i] for i in indices]
 
 
 # ---- copying sprites ------------------------------------------------------
 
 def copy_ids(ids: list[int], file) -> list[str]:
-    """Copy NEP256 sprites to the file `file(i, id)` (a Path; `sprite_in` makes one for the sets without registry names); returns res:// paths.
+    """Copy NEP256 sprites to the file `file(i, id)` (a Path; `sprite_in` makes one for the sets without registry names); returns their keys.
 
     A picture is stored once (pictures.py): an id that another role owns (the story art, the finale creatures) is not
-    copied again, the returned path is that role's file."""
+    copied again, the returned key is that role's picture."""
     out = []
     for i, pid in enumerate(ids):
         dest = file(i, pid)
@@ -56,7 +57,7 @@ def copy_ids(ids: list[int], file) -> list[str]:
             copy_picture(pid, dest)
         else:
             dest = owner
-        out.append(res_path(dest))
+        out.append(picture_table.key_of_file(dest))
     return out
 
 
@@ -65,13 +66,13 @@ def sprite_in(folder: str, pattern: str):
     return lambda i, pid: ASSETS / "sprites" / folder / ((pattern % {"i": i, "id": pid}) + ".png")
 
 
-def deco_paths(zone: int) -> list[str]:
-    """The files of deco slots 0-69 (common) and the zone's own, from the slot table tools/analysis/data/sprite_slots.json."""
+def deco_keys(zone: int) -> list[str]:
+    """The keys of deco slots 0-69 (common) and the zone's own, from the slot table tools/analysis/data/sprite_slots.json."""
     return copy_ids(deco_slots(zone), lambda slot, pid: deco_file(zone, slot))
 
 
-def foe_paths(zone: int) -> list[str]:
-    """The files of creature slots 0-27 (common), 28-34 (ink) and 35+ (the zone's own), from tools/analysis/data/sprite_slots.json."""
+def foe_keys(zone: int) -> list[str]:
+    """The keys of creature slots 0-27 (common), 28-34 (ink) and 35+ (the zone's own), from tools/analysis/data/sprite_slots.json."""
     return copy_ids(foe_slots(zone), lambda slot, pid: foe_file(zone, slot))
 
 
@@ -120,11 +121,11 @@ def write_bubble_rules() -> None:
 
 def run() -> None:
     for z in range(5):
-        out_text(SPRITE_FRAMES_DIR / ("decos_zone%d.tres" % z), sprite_frames_tres(deco_paths(z)))
+        out_text(SPRITE_FRAMES_DIR / ("decos_zone%d.tres" % z), sprite_frames_tres(deco_keys(z)))
     for z in range(7):
-        paths = foe_paths(z)
-        extra = [(n, pick(paths, idx), loop) for n, idx, loop in amap.FOE_COMMON]
-        out_text(SPRITE_FRAMES_DIR / ("foes_zone%d.tres" % z), sprite_frames_tres(paths, extra))
+        keys = foe_keys(z)
+        extra = [(n, pick(keys, idx), loop) for n, idx, loop in amap.FOE_COMMON]
+        out_text(SPRITE_FRAMES_DIR / ("foes_zone%d.tres" % z), sprite_frames_tres(keys, extra))
 
     sub = copy_ids(bundle_ids(15), sprite_in("sub", "sub_%(i)02d"))
     out_text(SPRITE_FRAMES_DIR / "sub_frames.tres",

@@ -290,15 +290,14 @@ A campaign is one `Campaign` resource (`godot/src/resources/campaign.gd`), a `.t
    | Music and closing: `fallback_song` | the song for a sector whose own `music_name` is empty or not a song | leave `sector_song_1` |
    | `closing_scene` | leave **empty** for the generic finale (`voyager` and `expert` are the two original closings) | empty |
    | `finale_text` | the words on the generic finale screen | "Reef School is charted. Thank you, explorer." |
-   | `finale_picture` | the picture on it: a registry `ui_picture` name (`title_sky`), a picture name from a pack, or a `res://` path to a PNG | `title_sky` for now |
+   | `finale_picture` | the picture on it, as a key (`ui_picture/title_sky`): a row of the `pictures.json` of a pack of the chain | `ui_picture/title_sky` for now |
 
    **Texts are a registry name or your own words.** A value that is a known text name (`game_voyager`, `log_entry_3`) is looked up in the game's strings; anything else is shown as written.
    So a student types sentences straight into the Inspector. The one trap: a sentence that is *exactly* a text name shows the original's string instead. Voices: a voice group is a name from
    a pack's `voice_cues.json` (step 9); leave it empty to have no speech. Then the supply screen only plays its jingle, and its 20 seconds start when that is over; the durations are the
    data's, never the clip's.
 3. **Know what will be checked.** `Campaign.problems()` is the list the pack check reports as errors: no id, no name, no sectors, a sector listed twice or both played and a finale, an empty `default_edu_levels`,
-   a level outside 0-3, log lists that do not match each other or are shorter than the list of sectors, a number of supply texts that is not the number of sectors, a `finale_picture` that is neither a name nor a file
-   that exists, `banner_index` -1 with no banner. A sector belongs to **one** campaign: 32-34 must not appear in another.
+   a level outside 0-3, log lists that do not match each other or are shorter than the list of sectors, a number of supply texts that is not the number of sectors, a `finale_picture` that is no key a pack of the chain holds a picture for, `banner_index` -1 with no banner. A sector belongs to **one** campaign: 32-34 must not appear in another.
 
 > **No tool for this step.** Making and editing a campaign is the Inspector on a `.tres` file, with no wizard and no "check campaign" menu. The first place `Campaign.problems()` is printed for you is
 > the pack check in step 10.
@@ -337,9 +336,7 @@ godot/data/campaigns/reef_school/          the PACK SOURCE FOLDER: res://data/ca
   (`pack_tool --pictures-table=<folder>` writes the table from a folder of `<kind>/<name>.png`). Clip kinds: `sound`, `music`, `voice`. Only `.png` pictures and `.ogg` clips
   are read; the pack check says what is wrong with the table and warns of a PNG no row names.
 - **The editor's import files** (`.import`, `.uid`) next to your PNG and OGG files are left behind by the exporter.
-- **Where each thing is used.** `finale_picture`: in the Campaign, give it the `res://` path of your PNG in this folder
-  (`res://data/campaigns/reef_school/art/reef_finale.png`). The project can load that file, so the campaign is valid before it is exported; the exporter copies it
-  into the pack as `ui_picture/reef_finale.png`, adds the row `ui_picture/reef_finale` to the pack's `pictures.json` and rewrites the campaign to name it `reef_finale`. A `banner` works the same way. Words are typed into the Campaign directly, or you put a text's *name* in the field and define it in `texts.json` (the name
+- **Where each thing is used.** `finale_picture`: in the Campaign, give it the key of your picture (`ui_picture/reef_finale`) and put the row in this folder's `pictures.json` (`"ui_picture/reef_finale": "art/reef_finale.png"`); the pack check and the exporter find the row there, and the exporter copies the file into the pack with it. A `banner` that is a PNG of the project is copied in as `ui_picture/<name>.png` with a row of its own. Words are typed into the Campaign directly, or you put a text's *name* in the field and define it in `texts.json` (the name
   only resolves once the pack is in use; in the project the game shows the name itself). Voice: `log_voices` / `supply_voices` take a group name from `voice_cues.json`. A group lists clip names;
   each is a clip of the game or a file `audio/voice/<name>.ogg` in the pack. A song of your own for a sector: `audio/music/<name>.ogg`, and that name in the sector's `music_name`.
 - **You will not see or hear these in the project.** Pictures, clips, texts and durations in the source folder are read only once the pack is installed and chosen with `--pack=` (steps 10-11). Until then

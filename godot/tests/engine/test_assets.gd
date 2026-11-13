@@ -15,12 +15,11 @@ func test_every_named_problem_art_loads() -> void:
 		assert_object(Assets.problem_art(StringName(picture_name))).override_failure_message("problem_art '%s'" % picture_name).is_not_null()
 
 
-func test_a_made_up_name_and_a_real_name_give_the_same_picture() -> void:
-	assert_object(Assets.ui_picture(&"title_sky")).is_same(Assets.ui_picture(&"ui_1039"))
-	assert_object(Assets.ui_picture(&"title_sky")).is_same(Assets.ui_picture_by_number(1039))
-	assert_str(Assets.ui_picture_path(1039)).is_equal(DevPack.path("assets/ui/title/title_sky_1039.png"))     # a named picture: <name>_<number>
-	assert_str(Assets.ui_picture_path(2025)).is_equal(DevPack.path("assets/ui/story/ui_2025.png"))           # nobody named it: the old name
-	assert_str(Assets.ui_picture_path(-1)).is_empty()
+func test_a_name_is_the_name_of_a_key() -> void:
+	assert_object(Assets.ui_picture(&"title_sky")).is_same(Assets.picture_by_key("ui_picture/title_sky"))
+	assert_object(Assets.problem_art(&"log_scan_0")).is_same(Assets.picture_by_key("problem_art/log_scan_0"))
+	assert_object(Assets.ui_picture(&"ui_2025")).override_failure_message("a picture nobody named is held by its made-up name").is_same(Assets.picture_by_key("ui_picture/ui_2025"))
+	assert_object(Assets.ui_picture(&"ui_1039")).override_failure_message("the made-up name of a picture that has a name is no key").is_null()
 
 
 # --- strings, songs, speech and sounds by name ---------------------------------------------------------------

@@ -522,7 +522,7 @@ func test_a_picture_key_is_found_in_the_chain_nearest_the_top_and_forgotten_with
 	assert_object(Assets.picture_by_key("frame/only_in_the_top_pack")).is_null()
 	var above := PackShelf.new(&"", below.id)
 	_shelves.append(above)
-	above.add_picture("assets/sprites/fx/only_in_the_top_pack.png", Color.GREEN, Vector2i(6, 6))
+	above.add_picture_row("frame/only_in_the_top_pack", Color.GREEN, Vector2i(6, 6))
 	above.mount()
 	var found := Assets.picture_by_key("frame/only_in_the_top_pack")
 	assert_object(found).override_failure_message("a pack laid over the chain has its pictures by key").is_not_null()
@@ -611,7 +611,7 @@ func test_the_state_names_the_background_the_decorations_and_the_station_of_the_
 			assert_int(columns["slot"][i]).is_equal(placement.slot)
 			assert_that(columns["position"][i]).is_equal(Vector2(placement.pos) - SubModel.PLAYFIELD_ORIGIN)
 			assert_bool(columns["mirrored"][i]).is_equal(placement.flag)
-			assert_str(columns["key"][i]).is_equal(GameSkin.key_of(Packs.source_of(picture)))
+			assert_str(columns["key"][i]).is_equal(PictureRef.key_of(picture))
 			assert_str(columns["key"][i]).starts_with("deco/")
 			assert_that(columns["size"][i]).is_equal(Vector2(picture.get_size()))
 	var records := screen.anim_decos
@@ -770,6 +770,11 @@ func _the_original_look(sim: SimWorld, skin: GameSkin) -> OriginalPresenter:
 	return original
 
 
+## The picture a texture of the original look is: a `PictureRef` holds a key, a draw list holds the picture the chain gives it.
+func _shown(texture: Texture2D) -> Texture2D:
+	return (texture as PictureRef).resolved() if texture is PictureRef else texture
+
+
 func test_the_skin_draws_the_screen_by_the_keys_the_state_tells_and_shows_what_the_original_look_shows() -> void:
 	var shelf := _mount(["skinny"] as Array[String])
 	var skin := SkinChoice.load_skin(shelf.id)
@@ -784,7 +789,7 @@ func test_the_skin_draws_the_screen_by_the_keys_the_state_tells_and_shows_what_t
 	var swaying: Dictionary = state["anim_decos"]                                                           # (the swaying ones are drawn last, the picture of the entry they are at)
 	assert_int(drawn.size() - (swaying["key"] as Array).size()).override_failure_message("a picture for each decoration the original look shows").is_equal(expected.size())
 	for i in expected.size():
-		assert_object(drawn[i][1]).override_failure_message("decoration %d is the texture the original look shows (%s)" % [i, ModDraw.describe(drawn[i])]).is_same(expected[i][0])
+		assert_object(drawn[i][1]).override_failure_message("decoration %d is the texture the original look shows (%s)" % [i, ModDraw.describe(drawn[i])]).is_same(_shown(expected[i][0]))
 		assert_that(drawn[i][2]).is_equal(expected[i][1])
 		assert_bool(drawn[i][3]).is_equal(expected[i][2])
 	assert_array(swaying["key"]).is_not_empty()
@@ -800,12 +805,12 @@ func test_the_skin_draws_the_screen_by_the_keys_the_state_tells_and_shows_what_t
 	var station_original := _the_original_look(arena, skin)
 	var station_drawn := _game_pictures(with_station, shelf)
 	assert_object(station_original.background.texture).is_not_null()
-	assert_object(station_drawn[0][1]).override_failure_message("the first picture is the background").is_same(station_original.background.texture)
+	assert_object(station_drawn[0][1]).override_failure_message("the first picture is the background").is_same(_shown(station_original.background.texture))
 	assert_that(station_drawn[0][2]).is_equal(Vector2.ZERO)
 	var parts := (SkinState.build(with_station.view)["station"]["parts"] as Array).filter(func(part: Dictionary) -> bool: return part["shown"])
 	var door := parts.filter(func(part: Dictionary) -> bool: return part["name"] == "door")[0] as Dictionary
 	assert_object(station_original.station.door.texture).is_not_null()
-	assert_array(station_drawn.filter(func(c: Array) -> bool: return c[1] == station_original.station.door.texture and c[2] == door["position"])).has_size(1)
+	assert_array(station_drawn.filter(func(c: Array) -> bool: return c[1] == _shown(station_original.station.door.texture) and c[2] == door["position"])).has_size(1)
 
 
 func test_a_picture_named_by_key_is_the_chains_picture_and_the_original_look_shows_the_same() -> void:

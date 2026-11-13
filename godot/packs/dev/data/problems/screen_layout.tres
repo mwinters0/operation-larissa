@@ -1,11 +1,15 @@
 [gd_resource type="Resource" script_class="ProblemScreenLayout" format=3]
 
 [ext_resource type="Script" path="res://src/resources/problem_screen_layout.gd" id="1_problem_screen_layout"]
-[ext_resource type="Texture2D" uid="uid://cka52bfxxl2x" path="res://packs/dev/assets/problem_art/single/pa_1780.png" id="2_pa_1780"]
+[ext_resource type="Script" path="res://src/core/picture_ref.gd" id="2_picture_ref"]
+
+[sub_resource type="Texture2D" id="Texture2D_1"]
+script = ExtResource("2_picture_ref")
+key = "problem_art/pa_1780"
 
 [resource]
 script = ExtResource("1_problem_screen_layout")
-background = ExtResource("2_pa_1780")
+background = SubResource("Texture2D_1")
 background_position = Vector2i(12, 30)
 background_size = Vector2i(616, 340)
 title_box_x = 20

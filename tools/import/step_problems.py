@@ -3,8 +3,11 @@ from __future__ import annotations
 
 import copy
 
-from common import ASSETS, PACK_DATA, ANALYSIS_DATA, TABLES, EXTRACTED, bundle_ids, load_json, out_text, png_size, raw_table, res_path
+from common import PACK_DATA, ANALYSIS_DATA, TABLES, EXTRACTED, bundle_ids, load_json, out_text, png_size, raw_table, res_path
 from pictures import problem_art_file
+from step_images import problem_art_index
+import asset_names
+import picture_table
 import problem_tables
 import tres
 
@@ -22,22 +25,21 @@ def clean(text: str) -> str:
     return text.split("\x00")[0].rstrip("\x1a")
 
 
-def art_files(real_id: int) -> tuple[str, list[str]]:
-    """(folder, files) of the panel art for a problem type. A picture another part of the port owns (pictures.py)
-    is listed with the path of that file, so `files` is the truth and `folder` only the bundle's own folder."""
-    if real_id < 900:                                            # a bundle of pictures
-        folder = ASSETS / "problem_art" / ("b%03d" % real_id)
-        return res_path(folder), [res_path(problem_art_file("b%03d" % real_id, i)) for i in bundle_ids(real_id)]
-    folder = ASSETS / "problem_art" / "single"                   # one loose picture
-    return res_path(folder), [res_path(problem_art_file("single", real_id))]
+def art_ids(real_id: int) -> list[int]:
+    """The picture ids of the panel art for a problem type: the pictures of a bundle (`real_id` below 900), or the one loose picture `real_id`."""
+    return bundle_ids(real_id) if real_id < 900 else [real_id]
 
 
-def extra_art(t_id: int) -> list[str]:
-    """Pictures a type's drawing uses that are not in its own bundle (appended to `art_files`).
+def extra_art(t_id: int) -> list[int]:
+    """Pictures a type's drawing uses that are not in its own bundle (appended to the type's art).
     The combination lock draws its face (loose picture 1803) and its answer wheel (bundle 78)."""
-    if t_id != 0:
-        return []
-    return [res_path(problem_art_file("single", 1803))] + [res_path(problem_art_file("b078", i)) for i in bundle_ids(78)]
+    return [1803] + bundle_ids(78) if t_id == 0 else []
+
+
+def art_files(ids: list[int]) -> list[str]:
+    """The files (res:// paths) of the pictures `ids`, for the sizes `with_picture_sizes` reads. A picture another part of the port owns (pictures.py) is that part's file."""
+    folders = problem_art_index()
+    return [res_path(problem_art_file(next(f for f, held in folders.items() if i in held), i)) for i in ids]
 
 
 # How a typed answer is compared, per type (DESIGN 5.2 item 7 / tools/analysis/data/problem_fields.json):
@@ -113,7 +115,7 @@ def with_picture_sizes(spec: dict, files: list[str]) -> dict:
     """The type's `diagram` spec plus the sizes of the pictures that hit areas and centring are measured from:
     the ballast panel's weight button and Done button (`weights.slot_size`, `total.size`: the clickable rectangles and the width
     the labels are centred in) and the lock's answer wheel (`answer_wheel.size`: its centre and radius for clicks). `files` is
-    the type's `art_files`; the size is read from the PNG the importer wrote, so it is the original's size."""
+    the type's art (the files of its `art_keys`); the size is read from the PNG the importer wrote, so it is the original's size."""
     spec = copy.deepcopy(spec)
     if spec.get("family") == "ballast_panel":
         spec["weights"]["slot_size"] = list(png_size(files[spec["weights"]["slot_pic"]]))
@@ -193,8 +195,8 @@ def extras_for(t_id: int) -> str:
 def build_problem_type(t_id: int, ctx: dict) -> str:
     texts, text_ids = positional_texts(t_id, ctx["bundles"], ctx["texts_by_bundle"])
     levels = [1 if raw_table(10512 + 4 * t_id + lv)[:1] not in (b"", b"\x00") else 0 for lv in range(4)]
-    folder, files = art_files(ctx["gfx_real"][t_id])
-    files = files + extra_art(t_id)
+    ids = art_ids(ctx["gfx_real"][t_id]) + extra_art(t_id)
+    files = art_files(ids)
     kinds, records, record_levels = stored_records(t_id)
     assert [record_levels.count(lv) > 0 for lv in range(4)] == [bool(v) for v in levels], t_id
     mode, tolerances, kind_levels = COMPARE.get(t_id, ("exact", (0, 0, 0, 0), ()))
@@ -208,8 +210,7 @@ def build_problem_type(t_id: int, ctx: dict) -> str:
     t.set("text_ids", tres.packed_ints(text_ids))
     t.set("uses_calculator", tres.b(t_id not in NO_CALCULATOR))
     t.set("levels_available", tres.packed_ints(levels))
-    t.set("art_dir", tres.s(folder))
-    t.set("art_files", tres.packed_strings(files))
+    t.set("art_keys", tres.packed_strings([asset_names.problem_art_key(i) for i in ids]))     # the pack's pictures.json says where each is
     t.set("field_kinds", tres.s(kinds))
     t.set("records", tres.array("PackedInt64Array", ["PackedInt64Array(%s)" % ", ".join(map(str, r)) for r in records]))
     t.set("record_levels", tres.packed_ints(record_levels))
@@ -228,7 +229,7 @@ def build_screen_layout(diagrams: dict) -> str:
     t = tres.Tres("Resource", "ProblemScreenLayout", SCRIPTS + "problem_screen_layout.gd")
     bg = screen["background"]
     background = res_path(problem_art_file("single", bg["single_pic_id"]))
-    t.set("background", t.ext_ref("Texture2D", background))
+    t.set("background", t.picture(picture_table.key_of_file(problem_art_file("single", bg["single_pic_id"]))))
     t.set("background_position", tres.vec2i(*bg["pos"]))
     t.set("background_size", tres.vec2i(*png_size(background)))
     t.set("title_box_x", str(screen["title"]["box"][0]))

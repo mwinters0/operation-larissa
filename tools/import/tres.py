@@ -114,6 +114,9 @@ def dictionary(pairs: Iterable[tuple[str, str]]) -> str:
     return "{%s}" % body if body else "{}"
 
 
+PICTURE_REF_SCRIPT = "res://src/core/picture_ref.gd"
+
+
 # ---- the writer -----------------------------------------------------------
 
 class Tres:
@@ -134,6 +137,7 @@ class Tres:
         self.subs: list[str] = []                       # rendered blocks
         self.props: list[tuple[str, str]] = []
         self._counter = 0
+        self._pictures: dict[str, str] = {}             # key -> the `SubResource("...")` that holds it (one per key in a file)
         self._script_ref = self.ext_ref("Script", script) if script else None
         if self._script_ref:
             self.props.append(("script", self._script_ref))
@@ -164,6 +168,13 @@ class Tres:
             lines.append("%s = %s" % (k, v))
         self.subs.append("\n".join(lines))
         return 'SubResource("%s")' % rid
+
+    def picture(self, key: str) -> str:
+        """A picture held by KEY: a sub-resource of `PictureRef` (godot/src/core/picture_ref.gd) that says `key`, the same one every time the file names the key.
+        The picture is whatever the packs' `pictures.json` tables give the key; the file names no picture file."""
+        if key not in self._pictures:
+            self._pictures[key] = self.sub("Texture2D", [("key", s(key))], script=PICTURE_REF_SCRIPT)
+        return self._pictures[key]
 
     def set(self, key: str, value: str) -> None:
         self.props.append((key, value))

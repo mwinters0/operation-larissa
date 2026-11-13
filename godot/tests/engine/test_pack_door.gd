@@ -75,33 +75,31 @@ func test_the_kinds_come_out_equal_to_dev_and_with_their_pictures_from_the_scrat
 		ResourceCompare.same(checks[what][0], checks[what][1], what, differences)
 		assert_array(differences).override_failure_message("%s: %s" % [what, "\n".join(differences.slice(0, 5))]).is_empty()
 	var sub_picture := Catalog.sub_frames().get_frame_texture(&"all", 0)
-	assert_bool(Packs.source_of(sub_picture).begins_with(_shelf.root + "/assets/sprites/sub/")).is_true()
+	assert_str(PictureRef.key_of(sub_picture)).is_equal("frame/sub_00")                    # (the data holds the key, the scratch pack's table says the file)
+	assert_bool(Packs.source_of(Pictures.resolve("frame/sub_00")).begins_with(_shelf.root + "/assets/")).is_true()
 	var tile_source := Catalog.tileset().get_source(0) as TileSetAtlasSource
-	assert_bool(Packs.source_of(tile_source.texture).begins_with(_shelf.root + "/assets/tiles/")).is_true()
+	assert_str(PictureRef.key_of(tile_source.texture)).is_equal("tile/zone0_tiles")
+	assert_bool(Packs.source_of(Pictures.resolve("tile/zone0_tiles")).begins_with(_shelf.root + "/assets/")).is_true()
 	assert_bool(Packs.source_of(Catalog.sfx_catalog().streams[0]).begins_with(_shelf.root + "/assets/audio/sfx/")).is_true()
-	# a `$path` is read in the pack that holds the file: the problem type is dev's, its picture files are the scratch pack's
+	# the problem type holds the keys of its pictures: the scratch pack's table says the files
 	var type := Catalog.problem_type(3)
 	var type_in_dev := dev.resource("data/problems/problem_type_03.tres") as ProblemType
-	assert_int(type.art_files.size()).is_equal(type_in_dev.art_files.size())
-	for i in type.art_files.size():
-		assert_str(type.art_files[i]).starts_with(_shelf.root + "/assets/")
-		assert_str(Packs.relative(type.art_files[i])).is_equal(Packs.relative(type_in_dev.art_files[i]))
-	var like_it := type_in_dev.duplicate() as ProblemType                             # (a copy: dev's own resource is shared)
-	like_it.art_files = type.art_files
-	like_it.art_dir = type.art_dir
+	assert_array(Array(type.art_keys)).is_equal(Array(type_in_dev.art_keys))
+	for key in type.art_keys:
+		assert_str(Packs.source_of(Assets.picture_by_key(key))).starts_with(_shelf.root + "/assets/")
 	var differences: Array[String] = []
-	ResourceCompare.same(type, like_it, "problem type", differences)
+	ResourceCompare.same(type, type_in_dev, "problem type", differences)
 	assert_array(differences).is_empty()
 
 
 func test_the_pictures_the_game_asks_for_by_name_come_from_the_scratch_pack() -> void:
 	var title := Assets.ui_picture(&"title_sky")
 	assert_object(title).is_not_null()
-	assert_bool(Packs.source_of(title).begins_with(_shelf.root + "/assets/ui/")).is_true()
+	assert_bool(Packs.source_of(title).begins_with(_shelf.root + "/assets/")).is_true()
 	var background := Assets.background(0, 0)
 	assert_object(background).is_not_null()
-	assert_bool(Packs.source_of(background).begins_with(_shelf.root + "/assets/backgrounds/")).is_true()
-	var art := Assets.texture_at(Catalog.problem_type(3).art_files[0])
+	assert_bool(Packs.source_of(background).begins_with(_shelf.root + "/assets/")).is_true()
+	var art := Assets.picture_by_key(Catalog.problem_type(3).art_keys[0])
 	assert_bool(Packs.source_of(art).begins_with(_shelf.root + "/")).is_true()
 
 
@@ -139,11 +137,11 @@ func test_nothing_of_the_scratch_pack_reached_the_resource_loader() -> void:
 	Assets.ui_picture(&"title_sky")
 	for rel in _shelf.pack.all_files():
 		assert_bool(ResourceLoader.has_cached(_shelf.pack.path_of(rel))).override_failure_message(rel).is_false()
-	assert_bool(ResourceLoader.exists(_shelf.pack.path_of("assets/ui/title/%s" % _shelf.pack.files_in("assets/ui/title", "png")[0]))).is_false()   # (no import: Godot could not load it)
+	assert_bool(ResourceLoader.exists(_shelf.pack.path_of(_shelf.pack.picture_table().files["ui_picture/title_sky"]))).is_false()   # (no import: Godot could not load it)
 
 
 func test_a_path_outside_every_pack_gives_nothing() -> void:
 	assert_object(Packs.file_at("user://nowhere/x.png")).is_null()
 	assert_object(Packs.file_at("/etc/hostname")).is_null()
 	assert_bool(Packs.exists_at("user://nowhere/x.png")).is_false()
-	assert_object(Packs.file_at("res://packs/dev/assets/ui/title/%s" % Packs.dev().files_in("assets/ui/title", "png")[0])).is_instanceof(Texture2D)   # (dev is trusted)
+	assert_object(Packs.file_at(DevPack.picture_file("ui_picture/title_sky"))).is_instanceof(Texture2D)   # (dev is trusted)

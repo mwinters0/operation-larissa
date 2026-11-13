@@ -53,9 +53,7 @@ func _build() -> void:
 	# Draw order = node order (docs/engine/ARCHITECTURE.md): background, back decos, tiles, mid decos, foes, front decos.
 	var bg := Sprite2D.new()
 	bg.centered = false
-	var bg_path := Assets.background_path(sector_index, screen_index)
-	if Packs.exists_at(bg_path):
-		bg.texture = Packs.file_at(bg_path) as Texture2D
+	bg.texture = Assets.background(sector_index, screen_index)
 	_world.add_child(bg)
 
 	_add_decos(screen.bg_decos, Catalog.decos_frames(sector.zone))

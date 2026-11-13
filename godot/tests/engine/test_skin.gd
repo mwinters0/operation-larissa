@@ -71,11 +71,10 @@ func test_with_the_original_skin_every_resource_is_the_very_object_on_disk() -> 
 
 
 func test_with_the_original_skin_a_picture_is_the_file() -> void:
-	assert_str(Assets.ui_picture(&"title_sky").resource_path).is_equal(DevPack.ROOT + "assets/ui/title/title_sky_1039.png")
-	assert_str(Assets.problem_art(&"log_scan_0").resource_path).starts_with(DevPack.ROOT + "assets/problem_art/")
-	assert_str(Assets.background(0, 0).resource_path).is_equal(DevPack.ROOT + "assets/backgrounds/bg_s00_00.png")
+	assert_str(Assets.ui_picture(&"title_sky").resource_path).is_equal(DevPack.picture_file("ui_picture/title_sky"))
+	assert_str(Assets.problem_art(&"log_scan_0").resource_path).is_equal(DevPack.picture_file("problem_art/log_scan_0"))
+	assert_str(Assets.background(0, 0).resource_path).is_equal(DevPack.picture_file("background/bg_s00_00"))
 	assert_object(Assets.background(30, 11)).is_null()                  # (a finale screen without a picture stays without)
-	assert_object(Assets.texture_at("")).is_null()
 
 
 func test_the_original_skin_is_what_a_run_asks_for_by_default() -> void:
@@ -86,39 +85,6 @@ func test_the_original_skin_is_what_a_run_asks_for_by_default() -> void:
 		assert_str(String(SkinChoice.load_skin(id).id)).is_equal(String(id))     # (a skin's id is its folder's name)
 
 
-# --- the key of a picture file ---------------------------------------------------------------------
-
-func test_the_key_of_a_file_is_its_kind_and_its_registry_name() -> void:
-	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/ui/title/title_sky_1039.png")).is_equal("ui_picture/title_sky")
-	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/ui/hud/ui_1189.png")).is_equal("ui_picture/ui_1189")        # (nobody named it: the made-up name has the number)
-	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/problem_art/single/pa_1780.png")).is_equal("problem_art/pa_1780")
-	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/sprites/foes/dolphin_swim_0_0.png")).is_equal("frame/dolphin_swim_0")
-	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/sprites/decos/anemone_blue_37.png")).is_equal("deco/anemone_blue")
-	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/sprites/sub/sub_00.png")).is_equal("frame/sub_00")        # (no registry name: "sub_00" stays)
-	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/tiles/zone0_tiles.png")).is_equal("tile/zone0_tiles")
-	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/backgrounds/bg_s00_00.png")).is_equal("background/bg_s00_00")
-	assert_str(GameSkin.key_of(DevPack.ROOT + "assets/audio/sfx/lock_tick_3.ogg")).is_equal("")        # (not a picture)
-	assert_str(GameSkin.key_of("res://somewhere/else.png")).is_equal("")
-	var kinds := {}                                                                                              # (the kinds are the table's values, each once: one table, read twice)
-	for kind: String in GameSkin.KIND_FOLDERS.values():
-		kinds[kind] = true
-	assert_array(GameSkin.KEY_KINDS).contains_exactly_in_any_order(kinds.keys())
-
-
-func test_the_key_of_every_ui_and_problem_picture_is_its_registry_name() -> void:
-	# `Assets` goes from a name to a file; the key must go back from the file to the same name, for every file there is
-	var registry := NameRegistry.original()
-	var checked := 0
-	for kind: StringName in [&"ui_picture", &"problem_art"]:
-		for number in range(1000, 3000):
-			var path := Assets.ui_picture_path(number) if kind == &"ui_picture" else Assets.problem_art_path(number)
-			if path.is_empty() or not ResourceLoader.exists(path):
-				continue
-			assert_str(GameSkin.key_of(path)).override_failure_message(path).is_equal("%s/%s" % [kind, registry.name_of(kind, number)])
-			checked += 1
-	assert_int(checked).is_greater(300)
-
-
 # --- the pictures are the packs', not the skin's ------------------------------------------------------------
 
 func test_a_skin_changes_no_picture() -> void:
@@ -126,7 +92,7 @@ func test_a_skin_changes_no_picture() -> void:
 	var frames := Catalog.foes_frames(0)
 	SkinChoice.select(_tiny)
 	assert_object(Assets.ui_picture(&"title_sky")).is_same(sky)
-	assert_str(sky.resource_path).is_equal(DevPack.ROOT + "assets/ui/title/title_sky_1039.png")
+	assert_str(sky.resource_path).is_equal(DevPack.picture_file("ui_picture/title_sky"))
 	assert_object(Catalog.foes_frames(0)).is_same(frames)
 
 
@@ -135,64 +101,57 @@ func test_a_pack_changes_a_picture_by_key_under_every_skin() -> void:
 	for skin in [SkinChoice.original(), _tiny]:
 		SkinChoice.select(skin)
 		assert_that(_color(Assets.ui_picture(&"title_sky"))).is_equal(Color.RED)
-		assert_str(Assets.ui_picture(&"title_sea").resource_path).is_equal(DevPack.ROOT + "assets/ui/title/title_sea_1040.png")      # (not drawn: the pack under it answers)
+		assert_str(Assets.ui_picture(&"title_sea").resource_path).is_equal(DevPack.picture_file("ui_picture/title_sea"))      # (not drawn: the pack under it answers)
 
 
-func test_the_pictures_a_data_file_holds_by_path_come_through_the_packs_tables() -> void:
+func test_the_pictures_a_data_file_holds_come_through_the_packs_tables() -> void:
 	var raw := load(DevPack.ROOT + "data/sprite_frames/foes_zone0.tres") as SpriteFrames
 	_redraw({"frame/dolphin_swim_0": Color.RED})
 	var frames := Catalog.foes_frames(0)
 	assert_that(_color(frames.get_frame_texture(&"all", 0))).is_equal(Color.RED)               # dolphin_swim_0 is slot 0 of the creature sets
 	assert_int(frames.get_frame_count(&"all")).is_equal(raw.get_frame_count(&"all"))
-	for slot in range(1, raw.get_frame_count(&"all")):
-		assert_object(frames.get_frame_texture(&"all", slot)).is_same(raw.get_frame_texture(&"all", slot))
-	assert_that(_color(raw.get_frame_texture(&"all", 0))).is_not_equal(Color.RED)              # (the original's resource is not touched)
-	assert_object(Catalog.foes_frames(0)).is_same(frames)                                       # (one copy per chain, not one per call)
+	assert_object(frames).is_same(raw)                                                          # (the data holds the key: the very resource, whatever the chain)
+	assert_str(PictureRef.key_of(frames.get_frame_texture(&"all", 0))).is_equal("frame/dolphin_swim_0")
 	SkinChoice.select(_tiny)
 	assert_object(Catalog.foes_frames(0)).is_same(frames)                                       # (and no skin has a part in it)
 
 
-func test_a_layout_keeps_everything_but_the_redrawn_picture() -> void:
+func test_a_layout_is_the_same_resource_and_shows_the_redrawn_picture() -> void:
 	var raw := load(DevPack.ROOT + "data/ui/hud_layout.tres") as HudLayout
+	var before := _color(raw.zone_textures[0])
 	_redraw({"ui_picture/ui_1195": Color.RED})
 	var layout := Catalog.hud_layout()
-	assert_object(layout).is_not_same(raw)
+	assert_object(layout).is_same(raw)                                                        # (it holds the key, not the picture)
 	assert_that(_color(layout.zone_textures[0])).is_equal(Color.RED)                          # ui_1195: the first zone's name box
-	assert_object(layout.zone_textures[1]).is_same(raw.zone_textures[1])
-	assert_object(layout.bezel).is_same(raw.bezel)
-	assert_object(layout.zone_position).is_equal(raw.zone_position)
-	assert_object(layout.zone_size).is_equal(raw.zone_size)
-	assert_array(layout.frame_rects).is_equal(raw.frame_rects)
-	assert_that(_color(raw.zone_textures[0])).is_not_equal(Color.RED)
-	assert_int(layout.zone_textures.size()).is_equal(raw.zone_textures.size())
+	assert_str(PictureRef.key_of(layout.zone_textures[0])).is_equal("ui_picture/ui_1195")
+	assert_that(_color(layout.zone_textures[1])).is_not_equal(Color.RED)
+	_shelf.remove()
+	_shelf = null
+	assert_that(_color(layout.zone_textures[0])).is_equal(before)                             # (and the pack taken away, it shows the pack under it again)
 
 
-func test_the_tileset_the_problems_and_the_paths_in_data_come_through_the_packs_tables() -> void:
+func test_the_tileset_the_problems_and_the_keys_in_data_come_through_the_packs_tables() -> void:
 	_redraw({"tile/zone0_tiles": Color.RED, "problem_art/pa_1780": Color.RED})
 	var atlas := Catalog.tileset().get_source(0) as TileSetAtlasSource
 	assert_that(_color(atlas.texture)).is_equal(Color.RED)
-	var raw := load(DevPack.ROOT + "data/neptune_tileset.tres") as TileSet
-	assert_that(_color((raw.get_source(0) as TileSetAtlasSource).texture)).is_not_equal(Color.RED)
-	assert_int(Catalog.tileset().get_source_count()).is_equal(raw.get_source_count())
-	assert_object((Catalog.tileset().get_source(1) as TileSetAtlasSource).texture).is_same((raw.get_source(1) as TileSetAtlasSource).texture)
+	assert_that(_color((Catalog.tileset().get_source(1) as TileSetAtlasSource).texture)).is_not_equal(Color.RED)
 	assert_that(_color(Catalog.screen_layout().background)).is_equal(Color.RED)               # the problem screen's panel (`problem_art/pa_1780`)
-	assert_int(Catalog.screen_layout().line_height).is_equal((load(DevPack.ROOT + "data/problems/screen_layout.tres") as ProblemScreenLayout).line_height)
-	var type := Catalog.problem_type(0)                                              # art_files holds PATHS; the tables answer for each
-	assert_object(Assets.texture_at(type.art_files[0])).is_not_null()
+	var type := Catalog.problem_type(0)                                              # art_keys holds KEYS; the tables answer for each
+	assert_object(Assets.picture_by_key(type.art_keys[0])).is_not_null()
 
 
-func test_a_picture_named_by_a_problem_types_path_is_the_packs_too() -> void:
+func test_a_picture_named_by_a_problem_types_key_is_the_packs_too() -> void:
 	var type := Catalog.problem_type(0)
-	var path := type.art_files[0]
-	_redraw({GameSkin.key_of(path): Color.RED})
-	assert_that(_color(Assets.texture_at(path))).is_equal(Color.RED)
-	assert_that(_color(Assets.texture_at(type.art_files[1]))).is_not_equal(Color.RED)
+	var key := type.art_keys[0]
+	_redraw({key: Color.RED})
+	assert_that(_color(Assets.picture_by_key(key))).is_equal(Color.RED)
+	assert_that(_color(Assets.picture_by_key(type.art_keys[1]))).is_not_equal(Color.RED)
 
 
 func test_a_background_comes_through_the_packs_tables() -> void:
 	_redraw({"background/bg_s00_00": Color.RED})
 	assert_that(_color(Assets.background(0, 0))).is_equal(Color.RED)
-	assert_str(Assets.background(0, 1).resource_path).is_equal(DevPack.ROOT + "assets/backgrounds/bg_s00_01.png")
+	assert_str(Assets.background(0, 1).resource_path).is_equal(DevPack.picture_file("background/bg_s00_01"))
 
 
 # --- falling back to the original ----------------------------------------------------------------------
@@ -203,7 +162,7 @@ func test_what_a_skin_does_not_map_falls_back_to_the_original() -> void:
 	SkinChoice.select(empty)
 	assert_object(Catalog.hud_layout()).is_same(load(DevPack.ROOT + "data/ui/hud_layout.tres"))
 	assert_object(Catalog.foes_frames(1)).is_same(load(DevPack.ROOT + "data/sprite_frames/foes_zone1.tres"))
-	assert_str(Assets.ui_picture(&"title_sky").resource_path).is_equal(DevPack.ROOT + "assets/ui/title/title_sky_1039.png")
+	assert_str(Assets.ui_picture(&"title_sky").resource_path).is_equal(DevPack.picture_file("ui_picture/title_sky"))
 	assert_int(empty.render_settings().texture_filter).is_equal(Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST)
 	assert_object(empty.labels()).is_null()
 	assert_object(empty.presenter_scene_or_null()).is_null()
@@ -232,13 +191,13 @@ func test_a_skin_can_bring_a_whole_resource_instead_of_the_originals() -> void:
 	assert_object(Catalog.calculator_layout()).is_same(load(DevPack.ROOT + "data/ui/calculator_layout.tres"))
 
 
-func test_a_resource_that_is_not_a_file_of_the_data_is_only_given_the_pictures() -> void:
+func test_a_resource_that_is_not_a_file_of_the_data_is_given_no_skin() -> void:
 	var layout := HudLayout.new()                                 # (made in code: no path, so no skin can replace it as a whole)
-	layout.zone_textures = [load(DevPack.ROOT + "assets/ui/hud/ui_1195.png") as Texture2D]
+	layout.zone_textures = [PictureRef.of("ui_picture/ui_1195")]
 	_redraw({"ui_picture/ui_1195": Color.RED})
 	var shown := Catalog.skinned(layout) as HudLayout
+	assert_object(shown).is_same(layout)
 	assert_that(_color(shown.zone_textures[0])).is_equal(Color.RED)
-	assert_that(_color(layout.zone_textures[0])).is_not_equal(Color.RED)
 
 
 # --- choosing and switching ------------------------------------------------------------------------------
@@ -254,7 +213,7 @@ func test_a_switch_is_announced_and_goes_both_ways() -> void:
 	assert_array(heard).has_size(2)
 	assert_object(heard[0]).is_same(_tiny)
 	assert_object(heard[1]).is_same(SkinChoice.original())
-	assert_str(Assets.ui_picture(&"title_sky").resource_path).is_equal(DevPack.ROOT + "assets/ui/title/title_sky_1039.png")
+	assert_str(Assets.ui_picture(&"title_sky").resource_path).is_equal(DevPack.picture_file("ui_picture/title_sky"))
 
 
 func test_a_forced_choice_wins_and_a_skin_is_found_by_its_id() -> void:

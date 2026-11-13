@@ -192,7 +192,7 @@ static func pack_key_files(pack: Pack) -> Dictionary:
 # --- shared -------------------------------------------------------------------------------------------------------
 
 ## BRIDGE: the texture of the picture file `path`: what the packs laid over another say for its key (`Pictures.overlaid`), or the file. For the pictures that DATA names by path
-## (`ProblemType.art_files`); the rest of the game says a picture's key instead. "" gives null.
+## (nothing in the data of the dev and legacy packs now); the rest of the game says a picture's key instead. "" gives null.
 static func texture_at(path: String) -> Texture2D:
 	if path.is_empty():
 		return null

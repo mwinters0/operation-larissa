@@ -13,6 +13,11 @@ const VOICE_OLD := LegacyPack.ROOT + "assets/audio/voice/voice_%d.wav"
 var _registry := NameRegistry.original()
 
 
+## The legacy pack's picture table (`pictures.json`): the one place that says which file holds a picture.
+func _table() -> PictureTable:
+	return Pack.open(LegacyPack.root()).picture_table()
+
+
 ## Without the legacy pack (the original game, made by the importer from your own copy) this suite skips.
 func before(do_skip := not LegacyPack.present(), skip_reason := "run the importer on your copy of the game (uv run tools/import/import_all.py)") -> void:
 	pass
@@ -59,37 +64,50 @@ func test_every_song_file_is_called_after_its_name_and_number() -> void:
 
 
 func test_every_named_picture_has_its_file_and_not_the_old_one() -> void:
+	var table := _table()
 	for kind: StringName in [&"ui_picture", &"problem_art"]:
 		var entries: Dictionary = _registry.entries(kind)
 		for picture_name: String in entries:
 			var number: int = entries[picture_name]
-			var path: String = Assets.ui_picture_path(number) if kind == &"ui_picture" else Assets.problem_art_path(number)
-			assert_str(path.get_file()).is_equal("%s_%d.png" % [picture_name, number])
-			assert_bool(FileAccess.file_exists(path)).override_failure_message(path).is_true()
-			assert_bool(FileAccess.file_exists(path.get_base_dir().path_join("%s.png" % _registry.fallback_name(kind, number)))).is_false()
+			var key := "%s/%s" % [kind, picture_name]
+			assert_bool(table.has(key)).override_failure_message("%s is no row of the table" % key).is_true()
+			if table.files.has(key):                                   # (a picture another role keeps is an alias: its owner's row has the file)
+				var path: String = LegacyPack.root().path_join(table.files[key])
+				assert_str(path.get_file()).is_equal("%s_%d.png" % [picture_name, number])
+				assert_bool(FileAccess.file_exists(path)).override_failure_message(path).is_true()
+				assert_bool(FileAccess.file_exists(path.get_base_dir().path_join("%s.png" % _registry.fallback_name(kind, number)))).is_false()
 
 
 func test_every_named_creature_picture_has_its_file_with_the_zone_in_front_of_a_zones_own_slot() -> void:
+	var table := _table()
 	for zone in 7:
 		var frames := Catalog.foes_frames(zone)
 		for slot in frames.get_frame_count(&"all"):
-			var path := Packs.source_of(frames.get_frame_texture(&"all", slot))
-			assert_bool(FileAccess.file_exists(path)).override_failure_message(path).is_true()
+			var key := (frames.get_frame_texture(&"all", slot) as PictureRef).key
+			var path: String = table.files[key]
+			assert_bool(FileAccess.file_exists(LegacyPack.root().path_join(path))).override_failure_message(path).is_true()
 			if _registry.is_named(&"frame", slot, zone):
 				var prefix := "foe_z%d_" % zone if slot >= FOE_ZONE_BASE else ""
 				assert_str(path.get_file()).is_equal("%s%s_%d.png" % [prefix, _registry.name_of(&"frame", slot, zone), slot])
+				assert_str(key).is_equal("frame/%s%s" % [prefix, _registry.name_of(&"frame", slot, zone)])
 			else:
 				assert_str(path.get_file()).is_equal("foe_z%d_%03d.png" % [zone, slot] if slot >= FOE_ZONE_BASE else "foe_%03d.png" % slot)
+				assert_str(key).is_equal("frame/" + path.get_file().get_basename())
 
 
 func test_every_named_decoration_has_its_file_with_the_art_zone_in_front_of_a_zones_own_slot() -> void:
+	var table := _table()
 	for zone in 5:
 		var frames := Catalog.decos_frames(zone)
 		for slot in frames.get_frame_count(&"all"):
-			var path := Packs.source_of(frames.get_frame_texture(&"all", slot))
-			assert_bool(FileAccess.file_exists(path)).override_failure_message(path).is_true()
+			var key := (frames.get_frame_texture(&"all", slot) as PictureRef).key
+			var path: String = table.files[key]
+			assert_bool(FileAccess.file_exists(LegacyPack.root().path_join(path))).override_failure_message(path).is_true()
 			if _registry.is_named(&"deco", slot, zone):
 				var prefix := "deco_z%d_" % zone if slot >= COMMON_DECOS else ""
 				assert_str(path.get_file()).is_equal("%s%s_%d.png" % [prefix, _registry.name_of(&"deco", slot, zone), slot])
+				assert_str(key).is_equal("deco/%s%s" % [prefix, _registry.name_of(&"deco", slot, zone)])
 			else:
 				assert_str(path.get_file()).is_equal("deco_z%d_%03d.png" % [zone, slot] if slot >= COMMON_DECOS else "deco_%03d.png" % slot)
+				assert_str(key).is_equal("deco/" + path.get_file().get_basename())
+

@@ -72,9 +72,9 @@ def test_piece_animation_matches_the_decompiled_tables():
     for name, pictures in (("canister", anim["canister_pictures"]), ("rock", anim["rock_pictures"])):
         block = re.search(rf'\{{"frames": \[([^\]]*)\], "loop": true, "name": &"{name}"', text)
         assert block, name
-        ids = re.findall(r'ExtResource\("([^"]+)"\)', block.group(1))
-        order = re.findall(r'\[ext_resource [^\n]*id="([^"]+)"\]', text)
-        assert [order.index(i) for i in ids] == pictures
+        ids = re.findall(r'SubResource\("([^"]+)"\)', block.group(1))
+        keys = dict(re.findall(r'\[sub_resource type="Texture2D" id="([^"]+)"\]\nscript = [^\n]*\nkey = "([^"]+)"', text))
+        assert [keys[i] for i in ids] == ["frame/piece_%02d" % n for n in pictures]
 
 
 @pytest.mark.legacy
@@ -129,16 +129,15 @@ def test_the_project_tuning_file_matches_the_decompiled_tables():
 def test_tileset_is_written_in_godots_own_text_format():
     """A Ctrl+S in the editor re-saves a loaded tileset; that must not change the committed file (docs/create/SCREEN_EDITOR.md, "Ctrl+S and Save All are safe").
 
-    So the generator writes what Godot writes: a uid in the header and on every picture (the one in the picture's .import file),
-    and no property that has its default value. Verified once by saving the file in a headless editor: byte for byte the same."""
+    So the generator writes what Godot writes: a uid in the header and no property that has its default value; the atlases hold their pictures by key
+    (a PictureRef each, `tile/zone0_tiles`), no file."""
     import re
     import step_tiles
     text = (common.PACK_DATA / "neptune_tileset.tres").read_text()
     assert text.startswith('[gd_resource type="TileSet" format=3 uid="%s"]\n' % step_tiles.TILESET_UID)
-    textures = re.findall(r'^\[ext_resource type="Texture2D" uid="(uid://\w+)" path="res://packs/legacy/(assets/tiles/\w+\.png)"', text, re.MULTILINE)
-    assert len(textures) == 7 == text.count("[ext_resource")
-    for uid, png in textures:
-        assert 'uid="%s"' % uid in (common.LEGACY / (png + ".import")).read_text()
+    assert "Texture2D\" uid" not in text and text.count("[ext_resource") == 1       # the one script of the pictures held by key
+    keys = re.findall(r'^key = "(tile/\w+)"$', text, re.MULTILINE)
+    assert keys == ["tile/zone%d_tiles" % z for z in range(5)] + ["tile/currents", "tile/invisible_wall"]
     assert "texture_region_size" not in text and "\ntile_size" not in text           # 16 x 16 is the default: Godot leaves it out
     assert re.search(r"Vector2\(-?\d+\.", text) is None                            # whole numbers print without ".0"
 
@@ -189,11 +188,11 @@ def test_every_picture_is_stored_once():
 @pytest.mark.legacy
 def test_pictures_have_one_home_and_the_problem_art_index_resolves():
     """`pictures.home` names an existing file for every owned id, and every id the index lists has a file somewhere."""
-    import json
     import pictures
+    import step_images
     for pid, path in pictures.homes().items():
         assert path.exists(), (pid, path)
-    index = json.loads((common.PACK_DATA / "problems" / "problem_art_index.json").read_text())
+    index = step_images.problem_art_index()
     assert pictures.home(2005) == asset_names.foe_file(6, 38)       # finale creature, listed in b112
     assert 2005 in index["b112"] and pictures.home(2060) == pictures.ui_file("story", 2060) and 2060 in index["single"]
     for folder, ids in index.items():

@@ -27,7 +27,7 @@ func test_nothing_is_missing_from_a_list_of_files_that_are_there() -> void:
 
 func test_the_witnesses_are_paths_of_the_importers_outputs() -> void:
 	for path in LegacyPack.WITNESSES:
-		assert_bool(path.begins_with(LegacyPack.ROOT + "data/") or path.begins_with(LegacyPack.ROOT + "assets/")).is_true()
+		assert_bool(path.begins_with(LegacyPack.ROOT + "data/") or path.begins_with(LegacyPack.ROOT + "assets/") or path == LegacyPack.ROOT + "pictures.json").is_true()
 
 
 func test_the_legacy_pack_has_one_root_and_every_path_is_made_from_it() -> void:

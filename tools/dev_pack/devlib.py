@@ -18,7 +18,7 @@ if str(IMPORT) not in sys.path:
     sys.path.insert(0, str(IMPORT))
 
 import import_uids
-import tres
+import tres  # noqa: F401  (the dev modules take it from here, after the path above is set)
 
 DEV_ID = "dev"
 DEV = GODOT / "packs" / DEV_ID
@@ -61,11 +61,6 @@ def res(path: Path | str) -> str:
 
 def uid_of(rel: str) -> str:
     return import_uids.uid_of(DEV_RES + rel)
-
-
-def tex(t: tres.Tres, rel: str) -> str:
-    """ExtResource of a dev picture, with the uid the importer's rule gives its path (the `.import` sidecar holds the same)."""
-    return t.ext_ref("Texture2D", DEV_RES + rel, uid_of(rel))
 
 
 def write_sidecar(png: Path) -> None:

@@ -9,6 +9,8 @@ var problems: Array[String] = []
 
 func _init() -> void:
 	ResourceLoader.add_resource_format_loader(FoeScriptLoader.new())     # a -s script does not get the project's custom loaders
+	Packs.start(PackedStringArray(["--pack=dev"]))                      # (the pictures are found by key through the chain's tables)
+	_pictures()
 	_load_everything(ROOT + "data")
 	_sprites()
 	_layouts()
@@ -43,6 +45,36 @@ func _load_everything(dir: String) -> void:
 		var res := load(path)
 		if res == null:
 			_fail("%s does not load" % path)
+
+
+## The picture table is sound, and every key the data holds (a `PictureRef`, a problem type's art, the closing crew's pictures) is a row that gives a picture.
+func _pictures() -> void:
+	var dev := Packs.dev()
+	var table := dev.picture_table()
+	if not table.present:
+		_fail("the pack has no pictures.json")
+		return
+	for message in table.problems + table.check(dev):
+		_fail("pictures.json: " + message)
+	var held := {}
+	var pattern := RegEx.create_from_string("(?m)^key = \"([^\"]+)\"")
+	var lists := RegEx.create_from_string("(?m)^(?:art_keys|pictures) = PackedStringArray\\(([^)]*)\\)")
+	var quoted := RegEx.create_from_string("\"([^\"]+)\"")
+	for path in _files(ROOT + "data", "tres"):
+		var text := FileAccess.get_file_as_string(path)
+		for found in pattern.search_all(text):
+			held[found.get_string(1)] = path
+		for found in lists.search_all(text):
+			for each in quoted.search_all(found.get_string(1)):
+				held[each.get_string(1)] = path
+	for key: String in held:
+		if not table.has(key):
+			_fail("%s holds the picture key %s, which pictures.json has no row for" % [held[key], key])
+		elif Pictures.resolve(key) == null:
+			_fail("%s holds the picture key %s, which gives no picture" % [held[key], key])
+	for key in table.keys():
+		if Pictures.resolve(key) == null:
+			_fail("pictures.json: the row %s gives no picture" % key)
 
 
 func _tex_size(path: String) -> Vector2i:
@@ -167,9 +199,9 @@ func _problem_types() -> void:
 					_fail("problem type %d level %d record %d: unfilled slot in the prompt: %s" % [t, level, n, instance.prompt])
 				if instance != null:
 					_answer_and_diagram(type, level, n, instance)
-		for path in type.art_files:
-			if not ResourceLoader.exists(path):
-				_fail("problem type %d: art file %s is missing" % [t, path])
+		for key in type.art_keys:
+			if Assets.picture_by_key(key) == null:
+				_fail("problem type %d: the art %s gives no picture" % [t, key])
 
 
 ## The stored answer must be accepted, and the diagram of the record must build items.

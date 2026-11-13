@@ -292,7 +292,7 @@ func test_the_deck_sailors_are_what_closing_crew_actor_draws() -> void:
 			assert_bool(_at(DECK, name, CutsceneTrack.PROP_VISIBLE, tick)).is_equal(actor.visible)
 			if actor.visible:
 				assert_vector(_at(DECK, name, CutsceneTrack.PROP_POSITION, tick)).is_equal(Vector2(actor.x, actor.y))
-				assert_str(_at(DECK, name, CutsceneTrack.PROP_PICTURE, tick)).is_equal(_name(actor.picture))
+				assert_str(_at(DECK, name, CutsceneTrack.PROP_PICTURE, tick)).is_equal(StringName(actor.picture.trim_prefix("ui_picture/")))
 				assert_bool(_at(DECK, name, CutsceneTrack.PROP_MIRROR, tick)).is_equal(actor.mirrored)
 
 

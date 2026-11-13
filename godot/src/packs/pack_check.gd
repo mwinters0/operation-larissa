@@ -142,15 +142,13 @@ static func _json(live: Pack, rel: String, report: PackReport, area: String) -> 
 
 
 ## The resources a pack holds in the data form (`data/**/*.json`, the data form of `data/**/*.tres`): each parses, says the class its place calls for (`PackNeeds.class_of`;
-## elsewhere any class of the game's) and has no field the class lacks and no value of the wrong kind. The plain data file `problem_art_index.json` is only parsed.
+## elsewhere any class of the game's) and has no field the class lacks and no value of the wrong kind.
 static func _data_files(live: Pack, report: PackReport) -> void:
 	for rel in live.all_files():
 		if not rel.begins_with("data/") or rel.get_extension() != "json":
 			continue
 		var raw: Variant = _json(live, rel, report, "data")
 		if raw == null:
-			continue
-		if rel == Assets.PROBLEM_ART_INDEX_REL:
 			continue
 		if not raw is Dictionary:
 			report.error("data", "%s must be a JSON object" % rel)

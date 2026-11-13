@@ -1,11 +1,10 @@
 """Dev zones and trigger table: dev's own numbers, round and easy to read."""
 from __future__ import annotations
 
-import devlib
 from devlib import DEV, SCRIPTS, write_text, tres
 
 import common as importer
-from asset_names import ui_file
+from asset_names import ui_key
 
 ZONE_TITLES = ["Dev zone 0", "Dev zone 1", "Dev zone 2", "Dev zone 3", "Dev zone 4", "Dev finale A", "Dev finale B"]
 EDU_VOYAGER = [0, 1, 1, 2, 2]               # the educational level (0-3) of each zone when the player did not customise the game
@@ -28,8 +27,7 @@ def zones_tres() -> str:
         props = [("index", str(z)), ("title", tres.s(ZONE_TITLES[z])), ("tile_zone", str(art)), ("tile_source_id", str(art)),
                  ("deco_count", str(importer.ZONE_DECO_COUNTS[art])), ("foe_count", str(importer.ZONE_FOE_COUNTS[z]))]
         if z < 5:                                              # the zone banners are the HUD pictures 1195-1199
-            banner = ui_file("hud", importer.ZONE_BANNER_IDS[z]).relative_to(importer.LEGACY).as_posix()
-            props.append(("banner_texture", devlib.tex(t, banner)))
+            props.append(("banner_texture", t.picture(ui_key(importer.ZONE_BANNER_IDS[z]))))
         props.append(("default_edu_level_voyager", str(EDU_VOYAGER[art])))
         props.append(("default_edu_level_expert", str(EDU_EXPERT[art])))
         zones.append(t.sub("Resource", props, script=SCRIPTS + "zone_data.gd", prefix="Zone"))

@@ -14,10 +14,10 @@ import common
 import foe_names
 import pictures
 import step_audio
+import step_images
 
 STORE = json.loads(foe_names.STORE.read_text())["names"]
-INDEX_FILE = common.PACK_DATA / "problems" / "problem_art_index.json"
-INDEX = json.loads(INDEX_FILE.read_text()) if INDEX_FILE.exists() else {}      # the legacy pack: the tests that need it are marked legacy
+INDEX = step_images.problem_art_index() if (common.EXTRACTED / "images" / "manifest.json").exists() else {}      # the tests that need it are marked legacy
 
 
 def _flat(kind: str):

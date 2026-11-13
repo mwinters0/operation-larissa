@@ -97,9 +97,8 @@ const DEFAULT_SONG := &"sector_song_1"
 @export var closing_scene: StringName = &""
 ## The generic finale's words: a `text` name or the words themselves (see `text`). Empty shows no text.
 @export_multiline var finale_text: String = ""
-## The generic finale's picture: the name of a `ui_picture` of the registry ("title_sky"), the name of a picture of a pack (the file
-## `pictures/ui_picture/<name>.png` of a mounted pack), or a path to a picture of the campaign's own ("res://campaigns/mine/finale.png").
-## Empty (or a name / path that is nothing) shows no picture.
+## The generic finale's picture: its KEY (`ui_picture/title_sky`), the picture the chain's tables hold for it (`Assets.picture_by_key`).
+## Empty (or a key no pack holds) shows no picture.
 @export var finale_picture: String = ""
 
 
@@ -255,16 +254,9 @@ func finale_message() -> String:
 	return text(finale_text)
 
 
-## The generic finale's picture, or null (none named, or the name / file does not exist). A name of the registry's `ui_picture` kind goes
-## through `Assets` (a skin may redraw it); a "res://" path is loaded as a file, through the skin's `texture_at` like every picture file.
+## The generic finale's picture, or null (none named, or no pack of the chain holds a picture for the key).
 func finale_texture() -> Texture2D:
-	if finale_picture.is_empty():
-		return null
-	if finale_picture.begins_with("res://"):
-		return Assets.texture_at(finale_picture) if Packs.exists_at(finale_picture) else null
-	if NameRegistry.original().index_of(&"ui_picture", finale_picture) >= 0 or Pictures.has("ui_picture/" + finale_picture):
-		return Assets.ui_picture(StringName(finale_picture))
-	return null
+	return Assets.picture_by_key(finale_picture) if not finale_picture.is_empty() else null
 
 
 # --- music ------------------------------------------------------------------------------------------------------------------------
@@ -316,7 +308,7 @@ func problems() -> Array[String]:
 	if supply_texts.size() != sectors.size() or supply_voices.size() != sectors.size():
 		found.append("%d sectors but %d supply texts and %d supply voice groups" % [sectors.size(), supply_texts.size(), supply_voices.size()])
 	if not finale_picture.is_empty() and finale_texture() == null:
-		found.append("finale_picture '%s' is neither a picture name (of the registry or of a pack) nor a file that exists" % finale_picture)
+		found.append("finale_picture '%s' is not a key (<kind>/<name>) that a pack of the chain holds a picture for" % finale_picture)
 	if banner_index < 0 and banner == null:
 		found.append("banner_index is -1, so the campaign needs its own banner picture")
 	var declared := {}

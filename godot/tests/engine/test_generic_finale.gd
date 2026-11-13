@@ -88,18 +88,18 @@ func test_a_campaign_may_use_registry_names_or_words() -> void:
 	assert_array(garden.problems()).is_empty()
 
 
-func test_the_finale_picture_is_a_registry_name_a_file_or_nothing() -> void:
+func test_the_finale_picture_is_a_key_a_pack_holds_or_nothing() -> void:
 	var garden := CampaignShelf.garden()
 	assert_object(garden.finale_texture()).is_same(Assets.ui_picture(&"title_sky"))
-	garden.finale_picture = "res://icon.svg"
-	assert_object(garden.finale_texture()).is_not_null()
+	garden.finale_picture = "frame/sub_00"                                   # (a key of any kind: the table answers)
+	assert_object(garden.finale_texture()).is_same(Assets.picture_by_key("frame/sub_00"))
 	garden.finale_picture = ""
 	assert_object(garden.finale_texture()).is_null()
 	assert_array(garden.problems()).is_empty()
-	garden.finale_picture = "no_such_picture"
+	garden.finale_picture = "ui_picture/no_such_picture"
 	assert_object(garden.finale_texture()).is_null()
-	assert_str("\n".join(garden.problems())).contains("finale_picture 'no_such_picture'")
-	garden.finale_picture = "res://nowhere/finale.png"
+	assert_str("\n".join(garden.problems())).contains("finale_picture 'ui_picture/no_such_picture'")
+	garden.finale_picture = "title_sky"                                      # (a name is not a key)
 	assert_object(garden.finale_texture()).is_null()
 
 

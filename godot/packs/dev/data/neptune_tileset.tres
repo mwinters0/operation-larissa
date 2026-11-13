@@ -1,16 +1,14 @@
 [gd_resource type="TileSet" format=3 uid="uid://c02hhrg4blvfx"]
 
-[ext_resource type="Texture2D" uid="uid://d01uxcsve62n0" path="res://packs/dev/assets/tiles/zone0_tiles.png" id="1_zone0_tiles"]
-[ext_resource type="Texture2D" uid="uid://odfpbne8i5cp" path="res://packs/dev/assets/tiles/zone1_tiles.png" id="2_zone1_tiles"]
-[ext_resource type="Texture2D" uid="uid://dfobb0xo7g8mw" path="res://packs/dev/assets/tiles/zone2_tiles.png" id="3_zone2_tiles"]
-[ext_resource type="Texture2D" uid="uid://dklkuap2yomlw" path="res://packs/dev/assets/tiles/zone3_tiles.png" id="4_zone3_tiles"]
-[ext_resource type="Texture2D" uid="uid://wxlo3fabeoiy" path="res://packs/dev/assets/tiles/zone4_tiles.png" id="5_zone4_tiles"]
-[ext_resource type="Texture2D" uid="uid://ct14pjgadubgc" path="res://packs/dev/assets/tiles/currents.png" id="6_currents"]
-[ext_resource type="Texture2D" uid="uid://btceld324nydo" path="res://packs/dev/assets/tiles/invisible_wall.png" id="7_invisible_wall"]
+[ext_resource type="Script" path="res://src/core/picture_ref.gd" id="1_picture_ref"]
 
-[sub_resource type="TileSetAtlasSource" id="Zone0_1"]
+[sub_resource type="Texture2D" id="Texture2D_1"]
+script = ExtResource("1_picture_ref")
+key = "tile/zone0_tiles"
+
+[sub_resource type="TileSetAtlasSource" id="Zone0_2"]
 resource_name = "Dev zone 0"
-texture = ExtResource("1_zone0_tiles")
+texture = SubResource("Texture2D_1")
 use_texture_padding = false
 0:0/0 = 0
 0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
@@ -205,9 +203,13 @@ use_texture_padding = false
 7:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 7:7/0/custom_data_1 = 127
 
-[sub_resource type="TileSetAtlasSource" id="Zone1_2"]
+[sub_resource type="Texture2D" id="Texture2D_3"]
+script = ExtResource("1_picture_ref")
+key = "tile/zone1_tiles"
+
+[sub_resource type="TileSetAtlasSource" id="Zone1_4"]
 resource_name = "Dev zone 1"
-texture = ExtResource("2_zone1_tiles")
+texture = SubResource("Texture2D_3")
 use_texture_padding = false
 0:0/0 = 0
 0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
@@ -402,9 +404,13 @@ use_texture_padding = false
 7:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 7:7/0/custom_data_1 = 127
 
-[sub_resource type="TileSetAtlasSource" id="Zone2_3"]
+[sub_resource type="Texture2D" id="Texture2D_5"]
+script = ExtResource("1_picture_ref")
+key = "tile/zone2_tiles"
+
+[sub_resource type="TileSetAtlasSource" id="Zone2_6"]
 resource_name = "Dev zone 2"
-texture = ExtResource("3_zone2_tiles")
+texture = SubResource("Texture2D_5")
 use_texture_padding = false
 0:0/0 = 0
 0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
@@ -599,9 +605,13 @@ use_texture_padding = false
 7:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 7:7/0/custom_data_1 = 127
 
-[sub_resource type="TileSetAtlasSource" id="Zone3_4"]
+[sub_resource type="Texture2D" id="Texture2D_7"]
+script = ExtResource("1_picture_ref")
+key = "tile/zone3_tiles"
+
+[sub_resource type="TileSetAtlasSource" id="Zone3_8"]
 resource_name = "Dev zone 3"
-texture = ExtResource("4_zone3_tiles")
+texture = SubResource("Texture2D_7")
 use_texture_padding = false
 0:0/0 = 0
 0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
@@ -796,9 +806,13 @@ use_texture_padding = false
 7:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 7:7/0/custom_data_1 = 127
 
-[sub_resource type="TileSetAtlasSource" id="Zone4_5"]
+[sub_resource type="Texture2D" id="Texture2D_9"]
+script = ExtResource("1_picture_ref")
+key = "tile/zone4_tiles"
+
+[sub_resource type="TileSetAtlasSource" id="Zone4_10"]
 resource_name = "Dev zone 4 (also the finales)"
-texture = ExtResource("5_zone4_tiles")
+texture = SubResource("Texture2D_9")
 use_texture_padding = false
 0:0/0 = 0
 0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
@@ -993,9 +1007,13 @@ use_texture_padding = false
 7:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 7:7/0/custom_data_1 = 127
 
-[sub_resource type="TileSetAtlasSource" id="Currents_6"]
+[sub_resource type="Texture2D" id="Texture2D_11"]
+script = ExtResource("1_picture_ref")
+key = "tile/currents"
+
+[sub_resource type="TileSetAtlasSource" id="Currents_12"]
 resource_name = "Currents (letters, not drawn in the game)"
-texture = ExtResource("6_currents")
+texture = SubResource("Texture2D_11")
 use_texture_padding = false
 0:0/0 = 0
 0:0/0/custom_data_0 = Vector2(-2, -2)
@@ -1190,9 +1208,13 @@ use_texture_padding = false
 7:7/0/custom_data_0 = Vector2(16, 16)
 7:7/0/custom_data_1 = 191
 
-[sub_resource type="TileSetAtlasSource" id="InvisibleWall_7"]
+[sub_resource type="Texture2D" id="Texture2D_13"]
+script = ExtResource("1_picture_ref")
+key = "tile/invisible_wall"
+
+[sub_resource type="TileSetAtlasSource" id="InvisibleWall_14"]
 resource_name = "Invisible wall (editor only)"
-texture = ExtResource("7_invisible_wall")
+texture = SubResource("Texture2D_13")
 use_texture_padding = false
 0:0/0 = 0
 0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
@@ -1204,10 +1226,10 @@ custom_data_layer_0/name = "current"
 custom_data_layer_0/type = 5
 custom_data_layer_1/name = "tile_byte"
 custom_data_layer_1/type = 2
-sources/0 = SubResource("Zone0_1")
-sources/1 = SubResource("Zone1_2")
-sources/2 = SubResource("Zone2_3")
-sources/3 = SubResource("Zone3_4")
-sources/4 = SubResource("Zone4_5")
-sources/5 = SubResource("Currents_6")
-sources/6 = SubResource("InvisibleWall_7")
+sources/0 = SubResource("Zone0_2")
+sources/1 = SubResource("Zone1_4")
+sources/2 = SubResource("Zone2_6")
+sources/3 = SubResource("Zone3_8")
+sources/4 = SubResource("Zone4_10")
+sources/5 = SubResource("Currents_12")
+sources/6 = SubResource("InvisibleWall_14")

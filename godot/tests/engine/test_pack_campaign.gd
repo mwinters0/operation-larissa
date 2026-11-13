@@ -38,7 +38,7 @@ func before_test() -> void:
 		"supply_texts": ["Well picked.", "Well picked again."],
 		"supply_voices": ["", ""],
 		"finale_text": "The orchard is yours.",
-		"finale_picture": "orchard_finale",
+		"finale_picture": "ui_picture/orchard_finale",
 		"provenance": "test data: copies of dev sectors 0, 1 and 180",
 	})
 	assert_object(_shelf.mount()).override_failure_message(str(Packs.fallback_reason())).is_not_null()

@@ -16,6 +16,7 @@ from pathlib import Path
 from common import (PACK_DATA, TABLES, ORIGINAL_SECTOR_COUNT, ZONE_BANNER_IDS,
                     SCREENS, ZONE_DECO_COUNTS, ZONE_FOE_COUNTS, ZONE_TITLES, load_json, out_text, res_path, sector_file)
 from pictures import ui_file
+import picture_table
 import foe_annotations
 import foe_record
 import foe_script
@@ -137,8 +138,7 @@ def build_zones() -> str:
                  ("tile_zone", str(art)), ("tile_source_id", str(art)),
                  ("deco_count", str(ZONE_DECO_COUNTS[art])), ("foe_count", str(ZONE_FOE_COUNTS[z]))]
         if z < 5:
-            banner = res_path(ui_file("hud", ZONE_BANNER_IDS[z]))
-            props.append(("banner_texture", t.ext_ref("Texture2D", banner)))
+            props.append(("banner_texture", t.picture(picture_table.key_of_file(ui_file("hud", ZONE_BANNER_IDS[z])))))
         # The original keeps 10 levels, indexed game * 5 + zone (ds_tables.py). A finale has no row of its own: the game
         # uses the last zone's level (Progression.default_edu_level), so its entries are zone 4's.
         props.append(("default_edu_level_voyager", str(edu[art])))

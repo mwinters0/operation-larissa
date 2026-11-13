@@ -60,7 +60,7 @@ func _build_campaign(pack_id: StringName = SOURCE, campaign_id: StringName = ID,
 	shelf.write_json("campaigns/%s.json" % campaign_id, {
 		"class": "Campaign", "id": String(campaign_id), "title": "Harvest Moon", "sectors": [first, first + 1], "finales": [first + 2],
 		"default_edu_levels": [0, 1], "log_unlock_order": [2, 1], "finale_log_counts": [2], "log_texts": ["Apples.", "Pears."], "log_voices": ["", ""],
-		"supply_texts": ["Well picked.", "Well picked again."], "supply_voices": ["", ""], "finale_text": "The harvest is in.", "finale_picture": "harvest_finale",
+		"supply_texts": ["Well picked.", "Well picked again."], "supply_voices": ["", ""], "finale_text": "The harvest is in.", "finale_picture": "ui_picture/harvest_finale",
 	})
 	if mount:
 		assert_object(shelf.mount()).override_failure_message(str(Packs.fallback_reason())).is_not_null()

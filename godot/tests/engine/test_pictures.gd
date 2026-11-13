@@ -40,7 +40,6 @@ func test_a_table_is_read_through_the_pack() -> void:
 	assert_int(table.scale_of("frame/sub_00")).is_equal(4)
 	assert_int(table.scale_of("ui_picture/title_sky")).is_equal(1)
 	assert_dict(PictureTable.read(Pack.open(_shelf.base.root)).to_data()["pictures"]).is_equal(table.to_data()["pictures"])
-	assert_bool(Packs.dev().picture_table().present).is_false()                 # (a pack with no pictures.json has an empty table)
 
 
 func test_a_table_names_each_of_its_mistakes_and_keeps_the_good_rows() -> void:

@@ -94,3 +94,5 @@ func test_the_sailors_of_the_deck_shot_are_six_programs_that_end_and_run() -> vo
 			actor.step()
 			drew = drew or actor.visible
 		assert_bool(drew).override_failure_message("sailor %d never draws" % member).is_true()
+	for key in crew.pictures:
+		assert_object(Assets.picture_by_key(key)).override_failure_message("the crew's picture %s" % key).is_not_null()

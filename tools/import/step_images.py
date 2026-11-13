@@ -1,10 +1,11 @@
 """Step 'images': backgrounds, UI art and problem-panel art (plain PNG copies)."""
 from __future__ import annotations
 
+from functools import cache
+
 from asset_manifest import copy_picture, put_port
-from common import ASSETS, EXTRACTED, PACK_DATA, ORIGINAL_SECTOR_COUNT, SCREENS, bundles, load_json, manifest, out_text
+from common import ASSETS, EXTRACTED, ORIGINAL_SECTOR_COUNT, SCREENS, bundles, load_json, manifest, out_text
 from pictures import UI_FOLDERS, home, problem_art_file, ui_file
-import json
 
 # 2081-2090 (logical ids 863-872) are the original LEVEL EDITOR's interface art, not problem art: the toolbar (Tiles /
 # Foes / Currnt / DAnim / MathTr, Bkgrd / Midgrd / Forgrd, Save / Egg / Done), the foe-script instruction palette
@@ -41,12 +42,27 @@ Expert finale creatures in `assets/sprites/foes/foe_z5_*` and `foe_z6_*`. `tools
 lives. 2080 is a red "CRASH SITE" arrow nobody has placed yet. The level editor's interface art (2081-2090) is in
 `assets/authoring_tool/` (`docs/port/DESIGN.md` section 16).
 
-`../../../data/problems/problem_art_index.json` lists the picture ids of every folder, including those whose file is kept elsewhere.
+The pack's `pictures.json` names every one of them by key, including the ids whose file is kept elsewhere (an alias of the owner's key).
 """
 
 
 def background_dll(bg_id: int) -> str:
     return "NEPBG1" if bg_id < 3180 else "NEPBG2"
+
+
+@cache
+def problem_art_index() -> dict[str, list[int]]:
+    """Folder (`b041` ... `b118`, `single`) -> the picture ids of the problem art, including those whose file another role keeps (pictures.py). The bundles are 41 and
+    77-118; `single` is every other picture of ids 1780-2138 (but the authoring tool's). Nothing is written: a pack names these pictures by key (picture_table.py)."""
+    index: dict[str, list[int]] = {}
+    in_bundle: set[int] = set()
+    for b in [41] + list(range(77, 119)):
+        ids = bundles()[str(b)]["frame_ids"] if str(b) in bundles() else []
+        index["b%03d" % b] = ids
+        in_bundle.update(ids)
+    index["single"] = [i for i in range(1780, 2139)
+                       if i not in AUTHORING_TOOL_IDS and i not in in_bundle and "NEP256:%d" % i in load_json(EXTRACTED / "images" / "manifest.json")]
+    return index
 
 
 def run() -> None:
@@ -67,31 +83,16 @@ def run() -> None:
             copy_picture(i, ui_file(folder, i))
         print("  ui/%s: %d" % (folder, len(ids)))
 
-    # Problem panel art: bundles 41 and 77-118 (picture ids 1780-2138) plus
-    # loose pictures in that id range that belong to no bundle. The index lists every id of every folder; the
-    # PNG of an id that the story, title or finale-creature code owns (pictures.home) is not written again here.
-    index: dict[str, list[int]] = {}
-    in_bundle: set[int] = set()
-    for b in [41] + list(range(77, 119)):
-        ids = bundles()[str(b)]["frame_ids"] if str(b) in bundles() else []
-        index["b%03d" % b] = ids
+    # Problem panel art: bundles 41 and 77-118 (picture ids 1780-2138) plus loose pictures in that id range that belong to no bundle
+    # (`problem_art_index`). The PNG of an id that the story, title or finale-creature code owns (pictures.home) is not written again here.
+    index = problem_art_index()
+    for folder, ids in index.items():
         for i in ids:
-            in_bundle.add(i)
             if home(i) is None:
-                copy_picture(i, problem_art_file("b%03d" % b, i))
-    singles = []
-    for i in range(1780, 2139):
-        if i in AUTHORING_TOOL_IDS:
-            continue
-        if i not in in_bundle and "NEP256:%d" % i in load_json(EXTRACTED / "images" / "manifest.json"):
-            if home(i) is None:
-                copy_picture(i, problem_art_file("single", i))
-            singles.append(i)
-    index["single"] = singles
+                copy_picture(i, problem_art_file(folder, i))
     out_text(ASSETS / "problem_art" / "single" / "README.md", PROBLEM_ART_SINGLE_README)
     put_port(ASSETS / "problem_art" / "single" / "README.md", "tools/import/step_images.py", "text")
-    out_text(PACK_DATA / "problems" / "problem_art_index.json", json.dumps(index, indent=1, sort_keys=True) + "\n")
-    print("  problem art: %d pictures in %d folders" % (len(in_bundle) + len(singles), len(index)))
+    print("  problem art: %d pictures in %d folders" % (sum(len(ids) for ids in index.values()), len(index)))
 
     for i in AUTHORING_TOOL_IDS:
         copy_picture(i, ASSETS / "authoring_tool" / ("editor_%d.png" % i))

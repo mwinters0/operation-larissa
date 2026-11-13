@@ -93,12 +93,12 @@ func test_the_copy_has_new_paths_new_uids_and_a_manifest_of_its_own() -> void:
 		for found in mention.search_all(text):
 			assert_bool(dev_uids.has(found.get_string())).override_failure_message("%s mentions dev's uid %s" % [rel, found.get_string()]).is_false()
 	# an .import file points at the cache name of its new path, not at dev's cached picture
-	var dev_import := FileAccess.get_file_as_string(DEV_ROOT + "/assets/authoring_tool/editor_2081.png.import")
-	var copy_import := FileAccess.get_file_as_string(ROOT + "/assets/authoring_tool/editor_2081.png.import")
+	var dev_import := FileAccess.get_file_as_string(DEV_ROOT + "/" + DevPack.picture_rel("ui_picture/title_sky") + ".import")
+	var copy_import := FileAccess.get_file_as_string(ROOT + "/" + DevPack.picture_rel("ui_picture/title_sky") + ".import")
 	var dev_cache := RegEx.create_from_string("path=\"(res://\\.godot/imported/[^\"]+)\"").search(dev_import).get_string(1)
 	var copy_cache := RegEx.create_from_string("path=\"(res://\\.godot/imported/[^\"]+)\"").search(copy_import).get_string(1)
-	assert_str(dev_cache).contains((DEV_ROOT + "/assets/authoring_tool/editor_2081.png").md5_text())     # (the name is the md5 of the source path)
-	assert_str(copy_cache).contains((ROOT + "/assets/authoring_tool/editor_2081.png").md5_text())
+	assert_str(dev_cache).contains((DEV_ROOT + "/" + DevPack.picture_rel("ui_picture/title_sky")).md5_text())     # (the name is the md5 of the source path)
+	assert_str(copy_cache).contains((ROOT + "/" + DevPack.picture_rel("ui_picture/title_sky")).md5_text())
 	assert_str(copy_cache).is_not_equal(dev_cache)
 
 
@@ -141,9 +141,9 @@ func test_the_imported_copy_loads_and_its_uids_clash_with_nothing() -> void:
 	assert_int(sector.screens.size()).is_greater(0)
 	Packs.choose(Packs.DEV)
 	assert_int(Catalog.sector(0).screens.size()).is_equal(sector.screens.size())       # the same sector, from dev's own files
-	var picture := load(ROOT + "/assets/authoring_tool/editor_2081.png") as Texture2D
+	var picture := load(ROOT + "/" + DevPack.picture_rel("ui_picture/title_sky")) as Texture2D
 	assert_object(picture).is_not_null()
-	assert_int(picture.get_width()).is_equal((load(DEV_ROOT + "/assets/authoring_tool/editor_2081.png") as Texture2D).get_width())
+	assert_int(picture.get_width()).is_equal((load(DEV_ROOT + "/" + DevPack.picture_rel("ui_picture/title_sky")) as Texture2D).get_width())
 	# the engine's own check: a file that shares a uid with another is reported as a duplicate while it scans (a plain copy of dev gives one for every uid)
 	assert_str(log_text).not_contains("UID duplicate")
 

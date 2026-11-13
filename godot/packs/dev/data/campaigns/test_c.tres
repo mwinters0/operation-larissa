@@ -22,4 +22,4 @@ supply_voices = Array[StringName]([&"", &"", &"", &"", &"", &"", &"", &"", &""])
 fallback_song = &"sector_song_1"
 closing_scene = &""
 finale_text = "Test C is done."
-finale_picture = "title_sky"
+finale_picture = "ui_picture/title_sky"

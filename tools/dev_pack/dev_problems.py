@@ -14,6 +14,8 @@ import math
 import devlib
 from devlib import DEV, SCRIPTS, write_text, tres
 
+from asset_names import problem_art_key
+
 import dev_pictures as dp
 import problem_tables
 import step_problems
@@ -35,21 +37,12 @@ NO_RECORDS = {3: (2,)}
 SONAR_STEP_TICKS = 20                                  # type 3: its three pictures come 20 ticks apart (dev's build-up, 60 ticks in all)
 
 
-def art_for(t: int, files: list[str]) -> tuple[str, list[str]]:
-    """(art_dir, art_files) of type `t` from the pack's own file list: the pictures of its bundle folder in id order (or its single picture)."""
+def art_for(t: int, index: dict[str, list[int]]) -> list[str]:
+    """The art keys of type `t`: the pictures of its bundle in id order (the first is its panel), or its one loose picture (`problem_art.json`)."""
     real = devlib.problem_art()[t]
-    if real >= 900:
-        folder = "assets/problem_art/single"
-        picked = [f for f in files if f.startswith(folder + "/") and f.endswith("_%d.png" % real)]
-    else:
-        folder = "assets/problem_art/b%03d" % real
-        picked = sorted((f for f in files if f.startswith(folder + "/") and f.endswith(".png")), key=_id_of)
-    assert picked, "no art for type %d" % t
-    return devlib.DEV_RES + folder, [devlib.DEV_RES + f for f in picked]
-
-
-def _id_of(rel: str) -> int:
-    return int(rel.rsplit("_", 1)[1].split(".")[0])
+    ids = [real] if real >= 900 else index["b%03d" % real]
+    assert ids, "no art for type %d" % t
+    return [problem_art_key(pid) for pid in ids]
 
 
 # --- records --------------------------------------------------------------------------------------------------------
@@ -194,12 +187,11 @@ def extras_for(t: int) -> str:
     return "{}"
 
 
-def problem_type_tres(t: int, files: list[str], fields_json: dict) -> str:
+def problem_type_tres(t: int, index: dict[str, list[int]], fields_json: dict) -> str:
     kinds = problem_tables.field_kinds(t)
-    folder, art = art_for(t, files)
+    art = art_for(t, index)
     if t == 0:                                          # the lock also draws the face (single 1803) and the answer wheel (bundle 78)
-        art += [devlib.DEV_RES + "assets/problem_art/single/pa_1803.png"] + \
-               [devlib.DEV_RES + f for f in sorted((f for f in files if f.startswith("assets/problem_art/b078/") and f.endswith(".png")), key=_id_of)]
+        art += [problem_art_key(1803)] + [problem_art_key(pid) for pid in index["b078"]]
     records, levels = records_for(t, kinds)
     mode, tolerances, kind_levels = step_problems.COMPARE.get(t, ("exact", (0, 0, 0, 0), ()))
     title = "Dev problem %02d" % t
@@ -211,8 +203,7 @@ def problem_type_tres(t: int, files: list[str], fields_json: dict) -> str:
     o.set("text_ids", tres.packed_ints([0] * TEXT_POSITIONS))
     o.set("uses_calculator", tres.b(t not in step_problems.NO_CALCULATOR))
     o.set("levels_available", tres.packed_ints([0 if level in NO_RECORDS.get(t, ()) else 1 for level in range(4)]))
-    o.set("art_dir", tres.s(folder))
-    o.set("art_files", tres.packed_strings(art))
+    o.set("art_keys", tres.packed_strings(art))
     o.set("field_kinds", tres.s(kinds))
     o.set("records", tres.array("PackedInt64Array", ["PackedInt64Array(%s)" % ", ".join(map(str, r)) for r in records]))
     o.set("record_levels", tres.packed_ints(levels))
@@ -228,7 +219,7 @@ def problem_type_tres(t: int, files: list[str], fields_json: dict) -> str:
 def screen_layout_tres() -> str:
     """The parts of the problem screen all types share, on dev's own problem background (616 x 340 at (12, 30))."""
     t = tres.Tres("Resource", "ProblemScreenLayout", SCRIPTS + "problem_screen_layout.gd")
-    t.set("background", devlib.tex(t, "assets/problem_art/single/pa_1780.png"))
+    t.set("background", t.picture(problem_art_key(1780)))
     t.set("background_position", tres.vec2i(12, 30))
     t.set("background_size", tres.vec2i(*dp.PROBLEM_BACKGROUND))
     t.set("title_box_x", "20")
@@ -262,20 +253,14 @@ def text_table_tres(ids: list[int], names: dict[int, str], overrides: dict[int, 
     return t.render()
 
 
-def problem_art_index(inv: dict) -> str:
-    return json.dumps(inv["problem_art_index"], indent=1, sort_keys=True) + "\n"
-
-
 def write_all() -> int:
     inv = inventory.load()
     fields_json = json.loads((devlib.ROOT / "tools" / "analysis" / "data" / "problem_fields.json").read_text())
-    files = inv["files"]
     for t in range(TYPES):
-        write_text(DEV / "data" / "problems" / ("problem_type_%02d.tres" % t), problem_type_tres(t, files, fields_json))
+        write_text(DEV / "data" / "problems" / ("problem_type_%02d.tres" % t), problem_type_tres(t, inv["problem_art_index"], fields_json))
     write_text(DEV / "data" / "problems" / "screen_layout.tres", screen_layout_tres())
     names = text_names()
     from test_sectors import batch_d                  # (batch D keeps the structured texts: the menus' lines, the Hall of Fame's headings, ...)
     for table, ids in inv["text_tables"].items():
         write_text(DEV / "data" / "problems" / (table + ".tres"), text_table_tres(ids, names, batch_d.STRUCTURED_TEXTS.get(table)))
-    write_text(DEV / "data" / "problems" / "problem_art_index.json", problem_art_index(inv))
-    return TYPES + 2 + len(inv["text_tables"])
+    return TYPES + 1 + len(inv["text_tables"])

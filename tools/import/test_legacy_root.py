@@ -61,8 +61,8 @@ def test_no_trace_is_left_of_the_user_data_dir_logic():
 
 
 def test_the_importer_lists_the_pack_files_its_steps_write_inside_the_pack():
-    """The witnesses (what 'the game is there' means) are all below the pack's assets/ or data/."""
-    assert all(name.startswith(("assets/", "data/")) for name in common.LEGACY_WITNESSES)
+    """The witnesses (what 'the game is there' means) are all below the pack's assets/ or data/, or the pack's picture table."""
+    assert all(name.startswith(("assets/", "data/")) or name == "pictures.json" for name in common.LEGACY_WITNESSES)
     assert common.LEGACY_MANIFEST["id"] == common.LEGACY_ID == "legacy"
 
 

@@ -539,6 +539,7 @@ packs/legacy/
 | `extracted/tables/` the files of `GENERATED_TABLES` (`tools/import/common.py`) | The game's data tables (our own analysis, which is committed, is in `tools/analysis/data/`). | `tables` |
 | `<legacy>/pack.json` | The pack's manifest. | the importer, before any step |
 | `<legacy>/assets/` | Pictures, sounds, speech, music, each with a stub `.import` file. | `images`, `tiles`, `sprites`, `problems`, `audio` |
+| `<legacy>/pictures.json` | The picture table: the key of every picture (`ui_picture/title_sky`) to its file, or to the key of the picture it shares a file with. Written after the last step, from the asset manifest. | every run |
 | `<legacy>/data/sectors/sector_00..31/` | The original sectors. Sectors of your own, 32 and up, go to `godot/data/sectors/` in the project and are committed. | `sectors` |
 | `<legacy>/data/problems/`, `sprite_frames/`, `sprite_meta/` | Problem types, sprite frames, sprite sizes and hit rectangles. | `problems`, `sprites` |
 | `<legacy>/data/zones.tres`, `trigger_table.tres`, `neptune_tileset.tres`, `bubble_rules.tres` | Zones, triggers, tileset, bubble rules. | `sectors`, `tiles`, `sprites` |

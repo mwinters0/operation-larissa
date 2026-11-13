@@ -7,10 +7,9 @@ extends RefCounted
 ##   * WHOLE FILES of a complete pack that `Catalog` (the cutscenes' choreography among it), `Assets`, `SpriteMeta`, `NewsCartoon` and the theme load through `Packs.path`: `FILES` (declared here, one list), the
 ##     sets of each zone (`PER_ZONE`, `PER_TILE_ZONE`) and the problem types (`Catalog.PROBLEM_TYPE_COUNT`; a type is a trusted pack's `.tres` or its `.json` in the data form).
 ##     `tests/engine/test_pack_needs.gd` keeps the list equal to what the dev pack holds under `data/`.
-##   * PICTURES that code asks for by name: every `ui_picture` and `problem_art` name of the registry, as the KEY `Assets` asks for (`ui_picture/title_sky`): a row of some pack's `pictures.json` answers it. (BRIDGE: a pack with no table is asked for the file the importer
-##     wrote, `Assets.ui_picture_rel`, until every complete pack has a table.)
-##   * THINGS THE DATA NAMES: the pictures, sounds and tiles a required resource refers to (`ResourceLoader.get_dependencies`), the files of a problem type's art, the
-##     songs of the music catalog, the clips of the voice index. These live inside the pack that holds the resource, so no other pack can fill them in.
+##   * PICTURES that code asks for by name: every `ui_picture` and `problem_art` name of the registry, as the KEY `Assets` asks for (`ui_picture/title_sky`): a row of some pack's `pictures.json` answers it.
+##   * THINGS THE DATA NAMES: the sounds a required resource refers to (`ResourceLoader.get_dependencies`), the keys of the pictures it holds (a `PictureRef` of a `.tres`, `{"$picture": key}` of the data form, a problem type's `art_keys`: each needs a row
+##     in some pack of the chain), the songs of the music catalog, the clips of the voice index. The files live inside the pack that holds the resource, so no other pack can fill them in; a key is answered by the whole chain.
 ##   * WHAT THE CONTENT BRINGS: each campaign `Catalog` finds in the chain: its sectors (and what a `.tres` sector refers to, a JSON sector's script), its finale picture, the
 ##     speech groups of its log and supply messages. The tiles, creature pictures and sounds a sector uses are slots of its zone's sets and of the sound catalog, already
 ##     required above; a sector's own background is not (a screen without one is plain black on purpose in the original), nor is a MIDI file (the rendered song plays).
@@ -55,7 +54,6 @@ const FILES: Dictionary = {
 	"data/ui/calculator_layout.tres": "CalculatorLayout",
 	"data/ui/story_layout.tres": "StoryLayout",
 	"data/problems/screen_layout.tres": "ProblemScreenLayout",
-	"data/problems/problem_art_index.json": "",
 	"data/sprite_frames/sub_frames.tres": "SpriteFrames",
 	"data/sprite_frames/fx_frames.tres": "SpriteFrames",
 	"data/sprite_frames/pieces_frames.tres": "SpriteFrames",
@@ -280,40 +278,14 @@ static func _row_for(chain: Array[Pack], key: String) -> bool:
 	return chain.any(func(each: Pack) -> bool: return each.picture_table().has(key))
 
 
-## A picture `Assets` asks for by name, `key`: a row of a table, or (BRIDGE) the file `rel` in a pack with no table.
-static func _picture_present(chain: Array[Pack], key: String, rel: String) -> bool:
-	if _row_for(chain, key):
-		return true
-	var holder := _holder(chain, rel)
-	return holder != null and not holder.picture_table().present
-
-
-## Does a row of a table answer for the picture file `path` (a path of the shape `res://packs/<id>/assets/...`)? (BRIDGE: the key comes from the file's name, `GameSkin.key_of`, until the data holds keys.)
-static func _picture_covered(chain: Array[Pack], path: String) -> bool:
-	var key := GameSkin.key_of(path)
-	return not key.is_empty() and _row_for(chain, key)
-
-
 static func _pictures(chain: Array[Pack], scan: Scan) -> void:
 	var registry := NameRegistry.original()
-	var ui: Dictionary = registry.entries(&"ui_picture")
-	for picture_name: String in ui:
-		var rel := Assets.ui_picture_rel(ui[picture_name])
-		scan.ask("ui_picture/" + picture_name)
-		if not _picture_present(chain, "ui_picture/" + picture_name, rel):
-			scan.lack(GROUP_PICTURES, "ui_picture/" + picture_name, "")
-	if _holder(chain, Assets.PROBLEM_ART_INDEX_REL) == null:
-		return                                                       # (the index itself is a gap above, and says which art there is)
-	var art: Dictionary = registry.entries(&"problem_art")
-	for picture_name: String in art:
-		var rel := Assets.problem_art_rel(art[picture_name])
-		if rel.is_empty():
-			if not _row_for(chain, "problem_art/" + picture_name):
-				scan.lack(GROUP_PICTURES, "problem_art/" + picture_name, Assets.PROBLEM_ART_INDEX_REL)
-			continue
-		scan.ask("problem_art/" + picture_name)
-		if not _picture_present(chain, "problem_art/" + picture_name, rel):
-			scan.lack(GROUP_PICTURES, "problem_art/" + picture_name, "")
+	for kind: StringName in [&"ui_picture", &"problem_art"]:
+		for picture_name: String in registry.entries(kind):
+			var key := "%s/%s" % [kind, picture_name]
+			scan.ask(key)
+			if not _row_for(chain, key):
+				scan.lack(GROUP_PICTURES, key, "")
 
 
 ## What each required resource names: the pictures, tiles and sounds that Godot loads with a trusted pack's `.tres` (its header lists them), or that the
@@ -326,8 +298,22 @@ static func _references(chain: Array[Pack], scan: Scan) -> void:
 				continue
 			if holder.trusted and holder.has(rel):
 				_dependencies(holder.path_of(rel), rel, scan)
+				_tres_pictures(chain, holder, rel, scan)
 			else:
 				_data_references(chain, holder, rel, scan)
+
+
+## The picture keys a trusted `.tres` holds (the `key` of each `PictureRef` sub-resource: a `Texture2D` block with the script of `PictureRef`), each of which a row of some pack of the chain must answer. The text is read, nothing is loaded.
+static func _tres_pictures(chain: Array[Pack], holder: Pack, rel: String, scan: Scan) -> void:
+	for block in holder.read_text(rel).split("\n\n"):
+		if not block.begins_with('[sub_resource type="Texture2D"'):
+			continue
+		for line in block.split("\n"):
+			if line.begins_with('key = "') and line.ends_with('"'):
+				var key := line.trim_prefix('key = "').trim_suffix('"')
+				scan.ask(key)
+				if not _row_for(chain, key):
+					scan.lack(GROUP_PICTURES, key, rel)
 
 
 ## The files (and folders) the data form of `rel` (`holder`'s `.json`) names, each of which some pack of `chain` from the holder down must provide.
@@ -336,7 +322,7 @@ static func _data_references(chain: Array[Pack], holder: Pack, rel: String, scan
 	var below := chain.slice(maxi(chain.find(holder), 0))
 	for named in ResourceJson.named_files(data):
 		scan.ask(named)
-		if not below.any(func(each: Pack) -> bool: return each.provides(named) or each.has_folder(named)):          # (a `$path` may name a folder: a problem type's `art_dir`)
+		if not below.any(func(each: Pack) -> bool: return each.provides(named) or each.has_folder(named)):          # (a `$path` may name a folder)
 			scan.lack(GROUP_REFERENCES, named, rel)
 	for key in ResourceJson.named_pictures(data):                  # (a picture by key: the whole chain looks it up, `Pictures`)
 		scan.ask(key)
@@ -366,7 +352,7 @@ static func _dependencies(path: String, needed_by: String, scan: Scan) -> void:
 			scan.lack(GROUP_REFERENCES, named, needed_by)
 
 
-## The files of a problem type's art (the types the chain adds too). A type is read (its art is a list of paths inside it); one that is a gap above is left alone.
+## The pictures of a problem type's panel (the types the chain adds too): the keys of `art_keys`, each of which a row of some pack of the chain must answer. A type is read; one that is a gap above is left alone.
 static func _problem_art(chain: Array[Pack], scan: Scan) -> void:
 	for type_id in Catalog.problem_type_ids():
 		var stem := PROBLEM_TYPE_STEM % type_id
@@ -375,10 +361,10 @@ static func _problem_art(chain: Array[Pack], scan: Scan) -> void:
 		var problem := Catalog.problem_type_unskinned(type_id)
 		if problem == null:
 			continue
-		for path in problem.art_files:                                 # (whole paths, as the diagrams ask `Assets.texture_at`)
-			scan.ask(path)
-			if not _exists(path) and not _picture_covered(chain, path):
-				scan.lack(GROUP_REFERENCES, path, stem + ".tres")
+		for key in problem.art_keys:
+			scan.ask(key)
+			if not _row_for(chain, key):
+				scan.lack(GROUP_PICTURES, key, stem + ".tres")
 
 
 ## The songs of the music catalog (the General MIDI set; the AdLib set falls back to it) and the clips of the voice index.
@@ -409,7 +395,7 @@ static func _campaigns(chain: Array[Pack], scan: Scan) -> void:
 			_sector(chain, number, group, scan)
 		if not campaign.finale_picture.is_empty():
 			scan.ask("finale_picture " + campaign.finale_picture)
-			if not _finale_present(chain, campaign.finale_picture):
+			if not _row_for(chain, campaign.finale_picture):
 				scan.lack(group, "finale_picture " + campaign.finale_picture, "", true)
 		var cues := Catalog.voice_cues()
 		for voice_group: StringName in campaign.log_voices + campaign.supply_voices:
@@ -423,16 +409,6 @@ static func _campaigns(chain: Array[Pack], scan: Scan) -> void:
 			for clip in clips:
 				if not NameRegistry.original().has_name(&"voice", String(clip)) and not chain.any(func(each: Pack) -> bool: return each.has("audio/voice/%s.ogg" % clip)):
 					scan.lack(group, "voice " + String(clip), "voice group " + String(voice_group), true)
-
-
-## Is the picture a campaign's `finale_picture` names there? As `Campaign.finale_texture` finds it, but by existence: a file, a name of the registry (a row for its key, or BRIDGE its file in the chain) or a name a pack's table holds as `ui_picture/<name>`.
-static func _finale_present(chain: Array[Pack], picture: String) -> bool:
-	if picture.begins_with("res://"):
-		return Packs.exists_at(picture)
-	var number := NameRegistry.original().index_of(&"ui_picture", picture)
-	if number >= 0:
-		return _picture_present(chain, "ui_picture/" + picture, Assets.ui_picture_rel(number))
-	return _row_for(chain, "ui_picture/" + picture)
 
 
 static func _sector(chain: Array[Pack], number: int, group: String, scan: Scan) -> void:

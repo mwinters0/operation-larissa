@@ -8,7 +8,8 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 from asset_manifest import put_atlas, put_port
-from common import ASSETS, PACK_DATA, ZONE_TITLES, bundle_ids, out_text, res_path, sprite_file, Stats, write_bytes
+from common import ASSETS, PACK_DATA, ZONE_TITLES, bundle_ids, out_text, sprite_file, Stats, write_bytes
+import picture_table
 import tres
 
 TILE = 16
@@ -94,7 +95,7 @@ def zone_source_name(zone: int) -> str:
 
 
 # The tileset is written in the text Godot itself writes (see the note on build_tileset), so a Ctrl+S in the editor, which saves
-# every resource it thinks was edited, leaves the committed file as it is. This is the uid Godot gave it the first time.
+# every resource it thinks was edited, changes as little as it can. This is the uid Godot gave it the first time.
 TILESET_UID = "uid://c7w78wbxveog0"
 
 
@@ -104,12 +105,12 @@ def godot_vec2(x: int, y: int) -> str:
 
 
 def tile_texture(t: tres.Tres, png: Path) -> str:
-    """ExtResource of an atlas picture, with the uid Godot keeps for it in the .import file."""
-    return t.ext_ref("Texture2D", res_path(png), tres.import_uid(png))
+    """The atlas picture, held by its key (`tile/zone0_tiles`: a PictureRef)."""
+    return t.picture(picture_table.key_of_file(png))
 
 
 def build_tileset() -> None:
-    """neptune_tileset.tres, in GODOT'S OWN text format: a uid in the header and on every picture, and none of the properties
+    """neptune_tileset.tres, in the text Godot itself writes (as far as the pictures allow: each atlas holds its picture by KEY, a PictureRef): a uid in the header, and none of the properties
     that have their default value (texture_region_size and tile_size are 16 x 16, which is what the editor leaves out). The editor
     loads this file for the screen editor's tile painting and would rewrite it on Ctrl+S; with this text that save is a no-op
     (checked by saving it in a headless editor: the result is byte for byte this file)."""
@@ -142,7 +143,7 @@ def build_tileset() -> None:
              "0:0/0 = 0", "0:0/0/physics_layer_0/polygon_0/points = " + SQUARE, "0:0/0/custom_data_1 = %d" % 0x40]
     t.sub("TileSetAtlasSource", [("resource_name", tres.s("Invisible wall (editor only)"))], prefix="InvisibleWall")
     t.subs[-1] += "\n" + "\n".join(lines)
-    ids = [s.split('id="')[1].split('"')[0] for s in t.subs]
+    ids = [s.split('id="')[1].split('"')[0] for s in t.subs if s.startswith('[sub_resource type="TileSetAtlasSource"')]
     assert len(ids) == INVISIBLE_WALL_SOURCE + 1 and ids[CURRENTS_SOURCE].startswith("Currents")
     t.set("physics_layer_0/collision_layer", "1")
     t.set("custom_data_layer_0/name", '"current"')

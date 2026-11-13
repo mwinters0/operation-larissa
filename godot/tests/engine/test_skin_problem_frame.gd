@@ -207,7 +207,7 @@ func test_the_frame_pictures_are_the_chains_in_the_layouts_rectangles() -> void:
 	for picture: TextureRect in [made.background, made.calculator.picture, made.answer_box.picture]:
 		assert_vector(picture.texture.get_size()).is_equal(Vector2(32, 18))
 		assert_that(PicturesShelf.color_of(picture.texture)).is_equal(Color.CYAN)
-	assert_object(made.background.texture).is_same(Assets.picture_by_key("problem_art/pa_1780"))
+	assert_object((made.background.texture as PictureRef).resolved()).is_same(Assets.picture_by_key("problem_art/pa_1780"))
 	assert_array(_order(made)).is_equal(plain_order)
 	assert_array(_rects(made)).is_equal(plain_rects)                                                   # (not one rectangle moved)
 	var before := made.background.texture

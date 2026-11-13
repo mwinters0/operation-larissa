@@ -54,6 +54,35 @@ def music_file(song_id: int, midi_stem: str, adlib: bool = False) -> Path:
     return AUDIO / "music" / ("adlib" if adlib else "") / (stem("music", song_id, midi_stem) + ".ogg")
 
 
+def key_name(kind: str, number: int, unnamed: str, scope: int = NO_SCOPE, prefix: str = "") -> str:
+    """The name part of the picture KEY of `number`: `<prefix><name>` when somebody named it, else `unnamed` (the file name of an unnamed picture is its key's name,
+    one that carries the number already). `stem` is this plus `_<number>`."""
+    name = original().real_name(kind, number, scope)
+    return prefix + name if name else unnamed
+
+
+def ui_key(pid: int) -> str:
+    """`ui_picture/title_sky`: the key of picture `pid` of the interface, the story and the console (the pack's `pictures.json` names it)."""
+    return "ui_picture/" + key_name("ui_picture", pid, "ui_%d" % pid)
+
+
+def problem_art_key(pid: int) -> str:
+    return "problem_art/" + key_name("problem_art", pid, "pa_%d" % pid)
+
+
+def foe_key(zone: int, slot: int) -> str:
+    """The key of creature slot `slot` of `zone`: `frame/eel_swim_0` for a common slot, `frame/foe_z1_eel_swim_0` for the zone's own."""
+    if slot < FOE_ZONE_BASE:
+        return "frame/" + key_name("frame", slot, "foe_%03d" % slot)
+    return "frame/" + key_name("frame", slot, "foe_z%d_%03d" % (zone, slot), zone, "foe_z%d_" % zone)
+
+
+def deco_key(zone: int, slot: int) -> str:
+    if slot < COMMON_DECOS:
+        return "deco/" + key_name("deco", slot, "deco_%03d" % slot)
+    return "deco/" + key_name("deco", slot, "deco_z%d_%03d" % (zone, slot), zone, "deco_z%d_" % zone)
+
+
 def ui_file(folder: str, pid: int) -> Path:
     return ASSETS / "ui" / folder / (stem("ui_picture", pid, "ui_%d" % pid) + ".png")
 

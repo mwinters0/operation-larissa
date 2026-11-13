@@ -52,7 +52,6 @@ const DATA_DIR := ""
 ## The files the editor draws with, in the pack that has them (`Packs.path`).
 const TILESET_REL := "data/neptune_tileset.tres"
 const ZONES_REL := "data/zones.tres"
-const BACKGROUND_REL := Assets.BACKGROUND_REL
 const DECO_FRAMES_REL := "data/sprite_frames/decos_zone%d.tres"
 const FOE_FRAMES_REL := "data/sprite_frames/foes_zone%d.tres"
 const PIECE_FRAMES_REL := "data/sprite_frames/pieces_frames.tres"
@@ -323,9 +322,7 @@ func _build_layers() -> void:
 	background.name = "Background"
 	background.centered = false
 	background.position = Vector2(PLAYFIELD_ORIGIN)
-	var picture := Packs.path(BACKGROUND_REL % [sector, screen])
-	if Packs.exists_at(picture):
-		background.texture = Packs.file_at(picture) as Texture2D
+	background.texture = Assets.background(sector, screen)
 	add_child(background)                                                            # no owner: not editable, not saved
 
 	var tile_set := Packs.resource(TILESET_REL) as TileSet

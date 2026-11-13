@@ -105,7 +105,7 @@ LEGACY_WITNESSES = [
     "data/sectors/sector_00/sector_00.tres", "data/sectors/sector_31/sector_31.tres", "data/campaigns/voyager.tres",
     "data/campaigns/expert.tres", "data/zones.tres", "data/trigger_table.tres", "data/neptune_tileset.tres",
     "data/sprite_meta/sprite_meta_common.tres", "data/sprite_frames/sub_frames.tres", "data/problems/problem_type_00.tres",
-    "data/ui/hud_layout.tres", "data/sfx_catalog.tres", "data/music_catalog.tres", "data/voice_index.tres",
+    "data/ui/hud_layout.tres", "pictures.json", "data/sfx_catalog.tres", "data/music_catalog.tres", "data/voice_index.tres",
     "data/story/news_cartoon.tres", "assets/tiles/zone0_tiles.png", "assets/tiles/invisible_wall.png",
 ]
 # The tables the importer's "tables" step (step_extract.py) writes from the CD into extracted/tables/ (TABLES): the game's own data, git-ignored with

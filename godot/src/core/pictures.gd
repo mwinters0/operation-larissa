@@ -46,6 +46,17 @@ static func resolve(key: String) -> Texture2D:
 	return _answers[key]
 
 
+## The picture `pack` itself holds for `key`: its own file row, or an alias followed inside its own table; null when it has none. What a pack draws there whatever the packs laid over it redraw (the size a redrawing pack is judged by, `SkinTemplates`).
+static func in_pack(pack: Pack, key: String) -> Texture2D:
+	var table := pack.picture_table()
+	var seen: Array[String] = []
+	var at := key
+	while table.aliases.has(at) and not seen.has(at):
+		seen.append(at)
+		at = table.aliases[at]
+	return _file_row(pack, table, at) if table.files.has(at) else null
+
+
 ## Does a pack of the chain hold a picture for `key`?
 static func has(key: String) -> bool:
 	return resolve(key) != null

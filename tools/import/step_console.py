@@ -2,7 +2,7 @@
 
 Reads extracted/tables/hud_gauges.json (gauges, from export_constants.py) and console_layout.json (labels, lights, frame,
 calculator keys, from tools/analysis/ghidra/export_console.py) and writes two settings Resources, so that no
-position is typed into a GDScript file. The pictures are the ones step 'images' already copied.
+position is typed into a GDScript file. The pictures are the ones step 'images' already copied, held by their keys (a PictureRef each).
 """
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from pathlib import Path
 
 from common import PACK_DATA, PROJECT_DATA, ANALYSIS_DATA, TABLES, load_json, out_text, png_size, raw_table, res_path
 from pictures import problem_art_file, ui_file
+import picture_table
 import tres
 
 SCRIPTS = "res://src/resources/"
@@ -24,7 +25,7 @@ CALC_FIRST_ID = 1781           # calculator bundle (41) picture i = id 1781 + i
 
 
 def _hud_tex(t: tres.Tres, item: int) -> str:
-    return t.ext_ref("Texture2D", res_path(ui_file("hud", BEZEL_FIRST_ID + item)))
+    return t.picture(picture_table.key_of_file(ui_file("hud", BEZEL_FIRST_ID + item)))
 
 
 def _label_size(items) -> tuple[int, int]:
@@ -35,7 +36,7 @@ def _label_size(items) -> tuple[int, int]:
 
 
 def _calc_tex(t: tres.Tres, item: int) -> str:
-    return t.ext_ref("Texture2D", res_path(problem_art_file("b041", CALC_FIRST_ID + item)))
+    return t.picture(picture_table.key_of_file(problem_art_file("b041", CALC_FIRST_ID + item)))
 
 
 def _calc_size(item: int) -> tuple[int, int]:

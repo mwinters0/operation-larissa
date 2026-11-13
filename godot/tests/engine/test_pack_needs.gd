@@ -71,7 +71,8 @@ func test_what_is_required_is_files_and_picture_keys_the_chain_holds() -> void:
 	var required := PackNeeds.required(_dev_chain())
 	assert_array(required).contains(["data/zones.tres", "data/problems/problem_type_33.tres", "data/sprite_frames/foes_zone6.tres", "data/sprite_frames/decos_zone4.tres"])
 	assert_array(required).contains(["ui_picture/title_sky", "problem_art/log_scan_0"])              # (the game asks for pictures by key)
-	assert_array(required).not_contains(["assets/ui/title/title_sky_1039.png"])
+	assert_array(required).contains(["frame/sub_00", "tile/zone0_tiles", Catalog.problem_type(3).art_keys[0]])      # (and the data names its pictures by key: a `.tres` holds `PictureRef`s, a problem type its `art_keys`)
+	assert_array(required.filter(func(item: String) -> bool: return item.begins_with("assets/"))).is_empty()      # (a file's place in a pack is the pack's: the tables name the pictures)
 	for item in required:
 		if PictureTable.is_key(item):
 			assert_bool(Pictures.has(item)).override_failure_message("required but the chain holds no picture for " + item).is_true()
@@ -118,7 +119,6 @@ func test_every_problem_type_dev_holds_is_required_and_no_more() -> void:
 ## A pack on its own in the data form serves no resource, so it lacks every `.tres`; what it does hold is not reported.
 func test_a_pack_that_lacks_files_is_reported_as_exactly_those() -> void:
 	var shelf := _shelf()
-	shelf.write_text("data/problems/problem_art_index.json", FileAccess.get_file_as_string(Packs.dev().path_of("data/problems/problem_art_index.json")))
 	for type_id in 3:
 		shelf.write_json("data/problems/problem_type_%02d.json" % type_id, ResourceJson.new().data_of(Catalog.problem_type(type_id)))
 	shelf.add_picture_row("ui_picture/title_sky", Color.BLUE)
@@ -131,11 +131,11 @@ func test_a_pack_that_lacks_files_is_reported_as_exactly_those() -> void:
 			held.append(item)
 	held.sort()
 	assert_array(held).is_equal([
-		"data/problems/problem_art_index.json",
 		"data/problems/problem_type_00.tres", "data/problems/problem_type_01.tres", "data/problems/problem_type_02.tres", "ui_picture/title_sky"])
 	assert_array(missing).contains(["data/zones.tres", "data/problems/problem_type_03.tres", "data/problems/problem_type_33.tres", "data/story/news_cartoon.tres",
 			"data/story/title_ship.tres", "data/story/story_script.tres", "data/story/voyager_closing_script.tres", "data/story/closing_crew.tres"])
-	assert_array(missing).not_contains(["data/problems/problem_art_index.json", "data/problems/problem_type_02.tres", "ui_picture/title_sky"])
+	assert_array(missing).not_contains(["data/problems/problem_type_02.tres", "ui_picture/title_sky"])
+	assert_array(missing).contains([Catalog.problem_type(0).art_keys[0]])                  # (the types of the pack name pictures the pack's table does not hold)
 	var groups := PackNeeds.by_group(PackNeeds.gaps(chain))
 	assert_array(groups.keys()).contains([PackNeeds.GROUP_FILES, PackNeeds.GROUP_PROBLEMS, PackNeeds.GROUP_PICTURES])
 	assert_int(groups[PackNeeds.GROUP_PROBLEMS].size()).is_equal(Catalog.PROBLEM_TYPE_COUNT - 3)
@@ -181,16 +181,16 @@ func test_a_data_pack_over_dev_misses_nothing() -> void:
 
 func test_the_campaigns_of_a_chain_bring_their_sectors_a_finale_picture_and_speech() -> void:
 	var shelf := _shelf(Packs.DEV)
-	_mini_campaign(shelf, [77], {"finale_picture": "no_such_picture", "log_voices": ["no_such_group"]})
+	_mini_campaign(shelf, [77], {"finale_picture": "ui_picture/no_such_picture", "log_voices": ["no_such_group"]})
 	var chain: Array[Pack] = [shelf.pack, Packs.dev()]
 	var gaps := PackNeeds.gaps(chain)
 	var by_path := {}
 	for gap in gaps:
 		by_path[gap.path] = gap
-	assert_array(by_path.keys()).contains_exactly(["sector 77", "finale_picture no_such_picture", "voice group no_such_group"])
+	assert_array(by_path.keys()).contains_exactly(["sector 77", "finale_picture ui_picture/no_such_picture", "voice group no_such_group"])
 	assert_str(by_path["sector 77"].group).is_equal("campaign mini")
 	assert_bool(by_path["sector 77"].soft).is_false()                                     # the game cannot start the campaign
-	assert_bool(by_path["finale_picture no_such_picture"].soft).is_true()                 # it plays on without a picture, and without a spoken line
+	assert_bool(by_path["finale_picture ui_picture/no_such_picture"].soft).is_true()                 # it plays on without a picture, and without a spoken line
 	assert_bool(by_path["voice group no_such_group"].soft).is_true()
 
 

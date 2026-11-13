@@ -4,7 +4,7 @@ extends RefCounted
 ## for a person to draw the real art over (`docs/create/SKIN_API.md` "Art templates"; the command line is `skin_templates_tool.tscn`). The folder it fills, `<kind>/<name>.png`, is what `pack_tool --pictures-table` turns into the pack's `pictures.json`.
 ##
 ## TWO LISTS, never mixed. THE PICTURES A PACK MAY REDRAW (`pictures`, of the kinds `TEMPLATE_KINDS`): `SOURCES` is the table of the layout files (of the pack in use, as the pack holds them, no skin) whose pictures they are. Each texture a layout holds is a
-## picture of its own, whose key and size are read off the texture: the key is the one `GameSkin.key_of` makes, which is the key a pack's `pictures.json` names, and the size is the texture's. The sizes come from the layout, so a
+## picture of its own, whose key and size are read off the texture: the key is the one the `PictureRef` holds, which is the key a pack's `pictures.json` names, and the size is the texture's. The sizes come from the layout, so a
 ## template has nothing of any picture in it, only its key and its size. `PromptSender.picture_keys` adds the two pictures beside the first line of a prompt, which no layout holds (their size is `PromptSender.PICTURE_SIZE`, which the screen stretches to).
 ## The frame of the problem screen is among them: the screen picture (`problem_art/pa_1780`), the calculator (`pa_1781`), the "Ans:" panel (`pa_1802`) and the calculator's digits and signs are in the layouts of the screen and of the calculator.
 ## THE PICTURES A SCRIPT DRAWS, whole-part pictures of a screen (`layers`), not pictures a pack redraws (no `pictures.json` row names them; they are drawn over and put in the skin's `skin/` folder, or in the `problems/` folder of a problem mod, named in a draw list):
@@ -78,13 +78,20 @@ static func pictures() -> Array[Entry]:
 		if layout == null:
 			continue
 		for texture in _textures_in(layout):
-			var key := GameSkin.key_of(Packs.source_of(texture))
+			var key := PictureRef.key_of(texture)
 			if not key.is_empty() and not seen.has(key) and TEMPLATE_KINDS.has(key.get_slice("/", 0)):
 				seen[key] = true
-				found.append(Entry.new(key, Vector2i(texture.get_size())))
+				found.append(Entry.new(key, _size_in_base(key, texture)))
 	for key in PromptSender.picture_keys():
 		found.append(Entry.new(key, PromptSender.PICTURE_SIZE))
 	return found
+
+
+## The size of the picture `key` has in the pack at the bottom of the chain (what a pack above it redraws), else `texture`'s: a layout holds the key, and its texture is whatever the top of the chain draws.
+static func _size_in_base(key: String, texture: Texture2D) -> Vector2i:
+	var chain := Packs.chain()
+	var base := Pictures.in_pack(chain.back(), key) if not chain.is_empty() else null
+	return Vector2i((base if base != null else texture).get_size())
 
 
 ## The size of each picture a pack may redraw in the pack in use, by key (`pictures`). What `PackCheck` compares a table's PNG with.

@@ -2,7 +2,7 @@
 
     uv run pytest tools/dev_pack -q
 
-The inventory (inventory.json) is the list of files a dev pack must have: one per file of the legacy pack. These tests run on a checkout
+The inventory (inventory.json) is the list of files and picture keys a dev pack must have: one per file of the legacy pack, and a row of `pictures.json` per key of its table. These tests run on a checkout
 without the legacy pack; the ones marked `legacy` also compare with its file list and check that nothing was copied from it.
 """
 from __future__ import annotations
@@ -28,9 +28,59 @@ DEV = devlib.DEV
 INV = inventory.load()
 
 
+def table() -> dict:
+    return json.loads((DEV / "pictures.json").read_text())["pictures"]
+
+
 def test_every_file_of_the_inventory_is_in_the_pack():
     missing = [f for f in INV["files"] if not (DEV / f).is_file()]
     assert not missing, "%d files are missing, for example %s" % (len(missing), missing[:3])
+
+
+def test_the_pictures_table_has_a_row_for_every_key_of_the_inventory():
+    rows = table()
+    assert set(rows) == set(INV["pictures"]) | set(INV["picture_aliases"])
+    for key in INV["pictures"]:
+        assert rows[key] == "assets/pictures/%s.png" % key and (DEV / rows[key]).is_file(), key
+    for key, target in INV["picture_aliases"].items():
+        assert rows[key] == {"alias": target}, key
+        assert target in rows, "%s is an alias of %s, which has no row" % (key, target)
+
+
+def test_a_picture_file_is_named_by_its_key_and_the_pack_holds_no_other():
+    on_disk = {p.relative_to(DEV).as_posix() for p in DEV.rglob("*.png")}
+    assert on_disk == {"assets/pictures/%s.png" % key for key in INV["pictures"]}
+    assert sorted(p.name for p in (DEV / "assets").iterdir()) == ["audio", "pictures"], "the pictures are in assets/pictures/<kind>/<name>.png and nowhere else"
+    assert sorted(p.name for p in (DEV / "assets" / "pictures").iterdir()) == ["background", "deco", "frame", "problem_art", "tile", "ui_picture"]
+
+
+def test_every_picture_key_the_data_holds_is_a_row_of_the_table():
+    rows = table()
+    wrong = []
+    for tres in sorted(DEV.rglob("*.tres")):
+        text = tres.read_text()
+        keys = re.findall(r'^key = "([^"]+)"', text, re.MULTILINE)
+        for match in re.findall(r'^art_keys = PackedStringArray\(([^)]*)\)', text, re.MULTILINE):
+            keys += re.findall(r'"([^"]+)"', match)
+        for match in re.findall(r'^pictures = PackedStringArray\(([^)]*)\)', text, re.MULTILINE):
+            keys += re.findall(r'"([^"]+)"', match)
+        wrong += ["%s: %s is no row of pictures.json" % (tres.relative_to(DEV), k) for k in keys if k not in rows]
+    assert not wrong, wrong[:3]
+
+
+def test_every_row_of_the_table_is_used_by_the_data_or_asked_for_by_name():
+    """A picture the pack draws is held by key in its data, or asked for by name: a registry name (`Assets.ui_picture`), a background by sector and screen,
+    a skin key. The rows nothing in the data holds are the registry's (the engine looks them up by name), the backgrounds and the aliases of problem art."""
+    held = set()
+    for tres in DEV.rglob("*.tres"):
+        text = tres.read_text()
+        held.update(re.findall(r'^key = "([^"]+)"', text, re.MULTILINE))
+        for match in re.findall(r'^(?:art_keys|pictures) = PackedStringArray\(([^)]*)\)', text, re.MULTILINE):
+            held.update(re.findall(r'"([^"]+)"', match))
+    names = json.loads((devlib.GODOT / "names" / "original.json").read_text())["names"]
+    asked = {"ui_picture/" + n for n in names["ui_picture"]} | {"problem_art/" + n for n in names["problem_art"]}
+    unused = [k for k in table() if k not in held and k not in asked and not k.startswith(("background/", "problem_art/pa_", "ui_picture/ui_", "frame/foe_z", "deco/deco_z"))]
+    assert not unused, unused[:5]
 
 
 def test_the_audio_files_of_the_inventory_are_in_the_pack():
@@ -61,27 +111,26 @@ def test_every_picture_has_its_sidecar_with_the_uid_of_its_path():
 
 def test_pictures_have_the_size_the_generator_specifies():
     wrong = []
-    for rel in INV["files"]:
-        if rel.endswith(".png"):
-            _kind, w, h = dev_pictures.spec(rel)
-            with Image.open(DEV / rel) as img:
-                if img.size != (w, h):
-                    wrong.append("%s is %s, the spec says %s" % (rel, img.size, (w, h)))
+    for key in INV["pictures"]:
+        _kind, w, h = dev_pictures.spec(key)
+        with Image.open(DEV / dev_pictures.rel_of(key)) as img:
+            if img.size != (w, h):
+                wrong.append("%s is %s, the spec says %s" % (key, img.size, (w, h)))
     assert not wrong, wrong[:3]
 
 
 def test_backgrounds_are_640_by_400():
-    for rel in INV["files"]:
-        if rel.startswith("assets/backgrounds/"):
-            with Image.open(DEV / rel) as img:
-                assert img.size == (640, 400), rel
+    for key in INV["pictures"]:
+        if key.startswith("background/"):
+            with Image.open(DEV / dev_pictures.rel_of(key)) as img:
+                assert img.size == (640, 400), key
 
 
 def test_sprite_sizes_are_even_so_the_sprite_tables_can_hold_them():
-    for rel in INV["files"]:
-        if rel.startswith("assets/sprites/") and rel.endswith(".png"):
-            with Image.open(DEV / rel) as img:
-                assert img.size[0] % 2 == 0 and img.size[1] % 2 == 0, rel
+    for key in INV["pictures"]:
+        if key.startswith("frame/"):
+            with Image.open(DEV / dev_pictures.rel_of(key)) as img:
+                assert img.size[0] % 2 == 0 and img.size[1] % 2 == 0, key
 
 
 def test_every_resource_a_file_of_the_pack_points_at_is_there():
@@ -181,16 +230,25 @@ def test_a_new_sector_is_made_by_the_generator_in_a_few_lines(tmp_path, monkeypa
 def test_the_inventory_is_the_legacy_packs_file_list():
     legacy = devlib.LEGACY
     everything = ["pack.json"] + inventory._tree(legacy, "assets") + inventory._tree(legacy, "data") + inventory._tree(legacy, "midi")
-    files = sorted(f for f in everything if not inventory.is_audio(f) and not f.startswith(("data/sectors/", "data/campaigns/")))
+    files = sorted(f for f in everything if not inventory.is_audio(f) and not f.startswith(("assets/", "data/sectors/", "data/campaigns/"))
+                   and f != "data/problems/problem_art_index.json")
     assert files == INV["files"]
     assert sorted(f for f in everything if inventory.is_audio(f)) == INV["audio"]
+    pictures, aliases = inventory.pictures_of(inventory._tree(legacy, "assets", ".png"), INV["problem_art_index"])
+    assert pictures == INV["pictures"] and aliases == INV["picture_aliases"]
     for table, ids in INV["text_tables"].items():
         assert inventory.table_ids((legacy / "data" / "problems" / (table + ".tres")).read_text()) == ids
 
 
 @pytest.mark.legacy
 def test_nothing_of_the_original_was_copied_into_the_pack():
-    """No dev file is byte for byte a legacy file of the same name (a copied picture, table or text). The exception is the problem-art
-    index: it lists picture ids, which are names (like the file names), and has no content of the original."""
-    same = [f for f in INV["files"] if f not in ("pack.json", "data/problems/problem_art_index.json") and (devlib.LEGACY / f).is_file() and (DEV / f).read_bytes() == (devlib.LEGACY / f).read_bytes()]
+    """No dev file is byte for byte a legacy file of the same name (a copied picture, table or text). The pictures are named by key in dev and by
+    the importer's file names in legacy, so they are compared through the two tables. The sprite frames hold keys and nothing else, the same keys as the
+    slot tables of the analysis make for both packs, so they are the same text."""
+    same = [f for f in INV["files"] if f != "pack.json" and not f.startswith("data/sprite_frames/") and (devlib.LEGACY / f).is_file() and (DEV / f).read_bytes() == (devlib.LEGACY / f).read_bytes()]
+    legacy_table = devlib.LEGACY / "pictures.json"
+    if legacy_table.is_file():
+        theirs = json.loads(legacy_table.read_text())["pictures"]
+        same += [key for key, rel in table().items() if isinstance(rel, str) and isinstance(theirs.get(key), str)
+                 and (DEV / rel).read_bytes() == (devlib.LEGACY / theirs[key]).read_bytes()]
     assert not same, same[:3]

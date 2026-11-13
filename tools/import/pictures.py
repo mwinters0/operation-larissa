@@ -7,11 +7,11 @@ id would be written to more than one folder. This module is that rule, and the o
   * a picture a role owns lives in that role's folder: `assets/ui/<folder>/<name>_<id>.png` (story, title, hud, map, prompt)
     or, for the finale zones' creatures, `assets/sprites/foes/foe_z<zone>_<name>_<slot>.png` (an unnamed picture: `ui_<id>.png`,
     `foe_z<zone>_<slot>.png`; asset_names.py has the rule for the file names);
-  * every other consumer (a SpriteFrames set, a problem type's `art_files`, a bundle folder of the problem art)
-    points at that file instead of keeping a copy: `home(id)` says where it is, None if no role owns the id;
+  * every other consumer (a SpriteFrames set, a problem type's `art_keys`, a bundle folder of the problem art)
+    holds the key of that file's picture instead of keeping a copy: `home(id)` says where it is, None if no role owns the id;
   * the problem art (`assets/problem_art/bNNN/<name>_<id>.png`, `.../single/...`; unnamed `pa_<id>.png`) is a blanket sweep of an id
-    range, so it only holds the pictures nobody else owns. `data/problems/problem_art_index.json` still lists every
-    id of every bundle; `problem_art_file` turns an id into the path.
+    range, so it only holds the pictures nobody else owns. `step_images.problem_art_index` lists every
+    id of every bundle (the pack's `pictures.json` makes the others aliases of the owner's key, picture_table.py); `problem_art_file` turns an id into the path.
 
 The rule depends on the ids only, never on the order the steps run in, so `import_all.py --only <step>` agrees with a
 full run. Claiming one id for two roles is an error (`homes` raises).

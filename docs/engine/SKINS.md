@@ -8,9 +8,7 @@ for the skin classes). What a skin author is given is [`../create/SKIN_API.md`](
 
 ## What a skin maps
 
-- **No picture.** A skin maps no picture: the pictures are the pack layer's, `pictures.json` of each pack of the chain (`Pictures`, [`PACKS.md`](PACKS.md)). A picture a data file still holds by its file path
-  (`data/sprite_frames`, `data/problems`, `data/ui`, the tile set, `ProblemType.art_files`) is shown with the chain's pictures by `PathPictures` and `Assets.texture_at`
-  (`GameSkin.key_of(path)` is the key of a file under a pack's `assets/`).
+- **No picture.** A skin maps no picture: the pictures are the pack layer's, `pictures.json` of each pack of the chain (`Pictures`, [`PACKS.md`](PACKS.md)). The data holds pictures by key (`PictureRef` in `data/sprite_frames`, `data/ui`, the tile set; `ProblemType.art_keys`), so no skin and no copy of the data has a part in which picture shows.
 - **`resources`**: a whole presentation resource by its path under `data/` (`ui/hud_layout`, `problems/screen_layout`,
   `sprite_frames/foes_zone2`, `neptune_tileset`), for a skin whose pictures have other sizes. Only `GameSkin.REPLACEABLE` keys are
   taken (`ui/`, `sprite_frames/`, the tile set, the problem screen's layout); a key that names rules or content

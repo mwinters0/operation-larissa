@@ -126,7 +126,7 @@ scene or script inside a pack that is not trusted).
 - **The door.** A file of a pack becomes an object in one place, `Pack.resource(rel)` / `texture(rel)` / `stream(rel)` / `font(rel)`, and the lookups reach it
   through the chain: `Packs.resource(rel)`, `Packs.texture(rel)`, `Packs.stream(rel)` give the object the first pack that *provides* the file
   makes (`Pack.provides`, `Packs.holder`). `rel` is the authoring path (`data/zones.tres`, `assets/tiles/zone0_tiles.png`). `Packs.file_at(path)`
-  does the same for a path *string* held in data (`VoiceIndex.paths`, `MusicCatalog.gm_paths`, `ProblemType.art_files`): the pack whose folder (or pack file's virtual path) the
+  does the same for a path *string* held in data (`VoiceIndex.paths`, `MusicCatalog.gm_paths`): the pack whose folder (or pack file's virtual path) the
   path is under answers by the file's extension; a path of the project itself (`res://data/...`) is project code and is loaded; a path under
   `user://` or in no pack of the chain gives null. `Packs.exists_at(path)` is the question without the answer. `Packs.provider_below(pack, rel)` is
   where a `$ref` of `pack` is looked for: the pack, then the packs under it, never above. `Packs.source_of(resource)` is the file a picture, sound or
@@ -179,7 +179,7 @@ What the data form adds to hold every kind a pack has (`data/` of dev and legacy
   of a PNG in the pack (a campaign by hand); a script resource is always inline.
 - **`{"$picture": "frame/sub_00"}`**: a Texture2D field (or a list element or a Dictionary value) that holds a picture by its skin key: a `PictureRef`, whatever the chain's picture tables give that key (`Pictures.resolve`), so the data names no file.
 - **`{"$path": "assets/audio/voice/x.wav"}`**: a String (or PackedStringArray element) of a field the class lists in `JSON_PATH_FIELDS`
-  (`VoiceIndex.paths`, `MusicCatalog.gm_paths` / `adlib_paths`, `ProblemType.art_dir` / `art_files`). Written relative to the pack, read back as the
+  (`VoiceIndex.paths`, `MusicCatalog.gm_paths` / `adlib_paths`). Written relative to the pack, read back as the
   full path of the file in the pack that holds it (`res://packs/dev/assets/...`, `user://packs/x/assets/...`), which `Packs.file_at` serves.
 - **`{"$id": "r1", ...fields}`** for a sub-resource the file holds more than once, and `{"$id": "r1"}` for each later use (the same object).
 - **`SpriteFrames` and `TileSet`** (`EngineJson`, the only engine classes in the data form; any other is a problem, never a `ClassDB.instantiate`).
@@ -263,13 +263,13 @@ group `files` missing they are not run on the pack's sectors: the `needs` error 
 **Exporting a campaign.** The campaign (a `.tres` of the project, or one from a pack of the chain), its own sectors as JSON + `.foe`, and
 what it uses that the game does not have: the **pack source folder** `res://data/campaigns/<id>/`, laid out as a pack
 (`pictures.json` and the files it names, `audio/voice/line.ogg`, `texts.json`, `voice_cues.json`, `rules/durations.json`,
-`data/problems/*.json`; `.import` and `.uid` files are left behind), or a pack's own files. A picture named by a `res://` path
-(`finale_picture`, `banner`) is copied in as `ui_picture/<name>.png` and gets the row `ui_picture/<name>` of the pack's `pictures.json`. The export is checked and a failed one is removed.
+`data/problems/*.json`; `.import` and `.uid` files are left behind), or a pack's own files. A `banner` that is a PNG of the project
+is copied in as `ui_picture/<name>.png` and gets the row `ui_picture/<name>` of the pack's `pictures.json`; a `finale_picture` is a key already. The export is checked and a failed one is removed.
 
 **Exporting a complete pack.** `PackExport.complete(id, out_dir, options)` (`id`: `dev`, `legacy`, a copy of dev, an installed complete pack) writes
 `<out>/<pack id>/` (or a `.larissa` pack file) in the data form, so that nothing of it is a `.tres`, a scene or a script: `pack.json` with no `base`,
 every `data/**.tres` as the `.json` `ResourceJson` / `EngineJson` describe at the same place, each sector as `sectors/sector_NN/` (`SectorJson`: JSON and `.foe`),
-each campaign as `campaigns/<id>.json`, and every other file the pack holds (`assets/`, `midi/`, `rules/`, `data/problems/problem_art_index.json`) as it is, but for
+each campaign as `campaigns/<id>.json`, and every other file the pack holds (`assets/`, `midi/`, `rules/`, `pictures.json`) as it is, but for
 the editor's `.import` and `.uid` files. `options.pack_id`, `title`, `version`, `author` and `description` set the manifest (the source's by default; `base` is refused).
 The result is checked like any export, with the pack alone in its chain: the data files parse to their classes, the closure (`PackNeeds`) holds, and a `.tres`,
 scene or script is refused. The export can be chosen (`--pack=<id>` after it is installed or in `user://packs/`, or `Packs.use`) and the game plays from it.

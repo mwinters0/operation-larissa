@@ -52,6 +52,17 @@ static func path(rel: String) -> String:
 	return ROOT + rel
 
 
+## The file of dev's picture for `key` (`ui_picture/title_sky`), as the path the picture's texture says it was read from: what dev's own `pictures.json` names for the key ("" for a key it has no file for, an alias).
+static func picture_file(key: String) -> String:
+	var rel := picture_rel(key)
+	return ROOT + rel if not rel.is_empty() else ""
+
+
+## The same, relative to the pack (`assets/pictures/ui_picture/title_sky.png`).
+static func picture_rel(key: String) -> String:
+	return Packs.dev().picture_table().files.get(key, "")
+
+
 ## The inclusive range of sector numbers of a batch (`"a"` ... `"e"`).
 static func batch_range(batch: String) -> Vector2i:
 	match batch.to_lower():
