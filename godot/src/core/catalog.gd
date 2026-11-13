@@ -8,10 +8,9 @@ extends RefCounted
 ##
 ## Usage:  var sector := Catalog.sector(0)
 ##
-## SKINS. The data that holds PICTURES (the sprite sets, the tileset, the problem types and layouts, the layouts of `data/ui/`) is
-## asked for through `_skinned`: the original's resource as the pack holds it is made and cached once (`_door`), and the skin in use
-## (`SkinChoice.current()`) says what to show instead (`GameSkin.skinned`): its own resource, or the same one.
-## The rules' data (sectors, zones, triggers, tuning, texts) never goes through a skin. With the original skin every `_skinned` is
+## SKINS. The LAYOUTS (`data/ui/`, the problem screen's) are asked for through `_skinned`: the original's resource as the pack holds it is made and cached once (`_door`), and the skin in use
+## (`SkinChoice.current()`) says what to show instead (`GameSkin.skinned`): its own resource, or the same one. The pictures a layout holds are keys (`PictureRef`), and a skin maps no picture.
+## The sprite sets, the tile set and the rules' data (sectors, zones, triggers, tuning, texts) never go through a skin. With the original skin every `_skinned` is
 ## the very object `_door` gives.
 ##
 ## PACKS. The game is made of a chain of packs (`Packs.chain()`: the chosen pack, the pack it is laid over, and so on). Every resource named here
@@ -524,17 +523,12 @@ static func story_layout() -> StoryLayout:
 
 
 static func tileset() -> TileSet:
-	return _skinned("data/neptune_tileset.tres") as TileSet
+	return _door("data/neptune_tileset.tres") as TileSet
 
 
 ## SpriteFrames of the zone's decorations (slot == frame index, animation "all").
 ## Finale zones share the decos of art zone 4.
 static func decos_frames(zone_index: int) -> SpriteFrames:
-	return _skinned(_decos_rel(zone_index)) as SpriteFrames
-
-
-## The decorations' frames as the pack in use holds them, whatever skin is worn (a skin may replace `decos_frames` with a set of its own): what the keys told to a mod are made from (the frames hold keys: `PictureRef.key_of`).
-static func pack_decos_frames(zone_index: int) -> SpriteFrames:
 	return _door(_decos_rel(zone_index)) as SpriteFrames
 
 
@@ -544,15 +538,15 @@ static func _decos_rel(zone_index: int) -> String:
 
 ## SpriteFrames of the zone's creatures (slot == frame index, animation "all").
 static func foes_frames(zone_index: int) -> SpriteFrames:
-	return _skinned("data/sprite_frames/foes_zone%d.tres" % zone_index) as SpriteFrames
+	return _door("data/sprite_frames/foes_zone%d.tres" % zone_index) as SpriteFrames
 
 
 static func sub_frames() -> SpriteFrames:
-	return _skinned("data/sprite_frames/sub_frames.tres") as SpriteFrames
+	return _door("data/sprite_frames/sub_frames.tres") as SpriteFrames
 
 
 static func fx_frames() -> SpriteFrames:
-	return _skinned("data/sprite_frames/fx_frames.tres") as SpriteFrames
+	return _door("data/sprite_frames/fx_frames.tres") as SpriteFrames
 
 
 static func bubble_rules() -> BubbleRules:
@@ -587,15 +581,10 @@ static func voyager_closing_script() -> VoyagerClosingScript:
 
 
 static func pieces_frames() -> SpriteFrames:
-	return _skinned("data/sprite_frames/pieces_frames.tres") as SpriteFrames
+	return _door("data/sprite_frames/pieces_frames.tres") as SpriteFrames
 
 
 static func station_frames() -> SpriteFrames:
-	return _skinned("data/sprite_frames/station_frames.tres") as SpriteFrames
-
-
-## The station's pictures as the pack in use holds them (no skin), for their skin keys.
-static func pack_station_frames() -> SpriteFrames:
 	return _door("data/sprite_frames/station_frames.tres") as SpriteFrames
 
 

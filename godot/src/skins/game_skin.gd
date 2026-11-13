@@ -9,12 +9,11 @@ extends Resource
 ## and a presenter, never with another picture, so a change of skin changes no picture and a pack that redraws one changes it under every skin.
 ##
 ## WHAT A SKIN MAPS
-##  * `resources`: a whole data resource instead of the original's, by its path under the data folder (a pack's `res://packs/<id>/data/`, or the project's `res://data/`) without `.tres`:
-##    `ui/hud_layout`, `ui/story_layout`, `problems/screen_layout`, `sprite_frames/foes_zone2`, `neptune_tileset`. For a skin whose
-##    pictures have other sizes or whose HUD is laid out differently (the layouts are data). ONLY presentation data can be
+##  * `resources`: a whole LAYOUT instead of the original's, by its path under the data folder (a pack's `res://packs/<id>/data/`, or the project's `res://data/`) without `.tres`:
+##    `ui/hud_layout`, `ui/story_layout`, `problems/screen_layout`. For a skin whose HUD or screens are laid out differently (the layouts are data). ONLY layouts can be
 ##    replaced (`REPLACEABLE`): a key that names rules or content (`zones`, `trigger_table`, `problems/problem_type_07` with
-##    its records and answers, `sprite_meta/...` with the hit rectangles, a sector) is ignored, so a skin cannot change what the game
-##    does by dressing up as a data file (`refused_resources` lists such keys for the author; `test_skins_dont_change_the_game.gd`).
+##    its records and answers, `sprite_meta/...` with the hit rectangles, a sector) is ignored, and so is one that names a picture bundle (`sprite_frames/...`, `neptune_tileset`: the pictures are the packs'), so a skin cannot change what the game
+##    does by dressing up as a data file; and a layout that holds a picture of its own, a `Texture2D` that is not a `PictureRef`, is ignored too (`refused_resources` lists such keys for the author; `test_skins_dont_change_the_game.gd`, `test_skin.gd`).
 ##  * `presenter_scene`: the scene that shows a sector (`PresenterChoice.ORIGINAL_SCENE` is the original's); its root extends
 ##    `SectorPresenter`.
 ##  * `render`: filter and pixel snapping (`RenderSettings`); `hud_labels`: the HUD's zone / sector / game lettering as text; `menu_theme`: the look of the menus (`SkinTheme`, put on by `ThemeBuilder`).
@@ -27,9 +26,9 @@ extends Resource
 ## values (`Dictionary[String, Resource]`); and an override table with a fallback chain, the same idea as CSS or a theme: the
 ## specific thing wins, the general thing answers the rest. What a picture IS belongs to the content (the packs' tables), not to the skin.
 
-## The data resources a skin may replace by `resources`, as the start of their key: the layouts, the picture bundles and the tile set. The
-## rest of the data is the rules and the content, which no skin can replace.
-const REPLACEABLE: Array[String] = ["ui/", "sprite_frames/", "neptune_tileset", "problems/screen_layout"]
+## The data resources a skin may replace by `resources`, as the start of their key: the layouts. The rest of the data is the rules, the content and the picture bundles
+## (the sprite sets and the tile set hold keys, and a pack's picture table says what each key shows), which no skin can replace.
+const REPLACEABLE: Array[String] = ["ui/", "problems/screen_layout"]
 
 ## The skin's id: the folder name under `res://skins/` and the word of `--skin=<id>`.
 @export var id: StringName = &""
@@ -58,9 +57,9 @@ func next_skin() -> GameSkin:
 	return SkinChoice.original()
 
 
-## This skin's data resource for `data_key` (a path under the data folder without `.tres`), or null. Only the keys of `REPLACEABLE` count.
+## This skin's data resource for `data_key` (a path under the data folder without `.tres`), or null. Only the keys of `REPLACEABLE` count, and not a resource that holds a picture of its own.
 func resource_for(data_key: String) -> Resource:
-	if resources.has(data_key) and is_replaceable(data_key):
+	if resources.has(data_key) and is_replaceable(data_key) and not holds_a_picture(resources[data_key]):
 		return resources[data_key]
 	var next := next_skin()
 	return next.resource_for(data_key) if next != null else null
@@ -74,13 +73,37 @@ static func is_replaceable(data_key: String) -> bool:
 	return false
 
 
-## The keys of `resources` that are ignored because they name rules or content, not presentation. An authoring check: it should be empty.
+## The keys of `resources` that are ignored because they name rules, content or a picture bundle, not a layout, or because the layout holds a picture of its own. An authoring check: it should be empty.
 func refused_resources() -> Array[String]:
 	var refused: Array[String] = []
 	for data_key in resources:
-		if not is_replaceable(data_key):
+		if not is_replaceable(data_key) or holds_a_picture(resources[data_key]):
 			refused.append(data_key)
 	return refused
+
+
+## Does `value` hold a picture of its own: a `Texture2D` that is not a `PictureRef` (a key), itself or in a resource, array or dictionary it holds? A skin maps no picture: the pictures are the packs'
+## (`Pictures`), so a layout that carries one is not shown. (A resource is looked into by the properties it stores; each is looked into once.)
+static func holds_a_picture(value: Variant, seen: Dictionary = {}) -> bool:
+	if value is PictureRef:
+		return false
+	if value is Texture2D:
+		return true
+	if value is Resource:
+		var resource := value as Resource
+		if seen.has(resource):
+			return false
+		seen[resource] = true
+		for property: Dictionary in resource.get_property_list():
+			if (int(property["usage"]) & PROPERTY_USAGE_STORAGE) != 0 and property["name"] != "script" and holds_a_picture(resource.get(property["name"]), seen):
+				return true
+	elif value is Array:
+		return (value as Array).any(func(each: Variant) -> bool: return holds_a_picture(each, seen))
+	elif value is Dictionary:
+		for key: Variant in value:
+			if holds_a_picture(key, seen) or holds_a_picture(value[key], seen):
+				return true
+	return false
 
 
 ## The scene of this skin's sector presenter, or null: the original's.

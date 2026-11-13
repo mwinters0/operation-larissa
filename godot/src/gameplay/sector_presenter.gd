@@ -60,8 +60,8 @@ var sim: SimWorld
 var view: SimView
 ## The skin this presenter is dressed in, or null: whichever skin is in use (`SkinChoice.current()`) when it builds what it shows. The
 ## game never sets it. The tool that shows TWO skins at once (`src/debug/skin_compare.tscn`) does, before the presenter enters the
-## tree: from then on everything the presenter fetches through `Assets` / `Catalog` - when it is built, when an event makes it build
-## a creature or a piece, in a frame - comes from this skin, whichever one the rest of the game wears. See `run_in_skin`.
+## tree: from then on what the presenter dresses itself with (the shaders of its layers) and everything it fetches through `Catalog` that a skin maps (the layouts) - when it is built, when an event
+## makes it build something, in a frame - comes from this skin, whichever one the rest of the game wears. See `run_in_skin`.
 var skin: GameSkin
 
 # The connections `_listen` made, to take them back in `unbind`.

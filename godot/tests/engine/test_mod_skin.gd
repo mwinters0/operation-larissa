@@ -611,7 +611,7 @@ func test_the_state_names_the_background_the_decorations_and_the_station_of_the_
 	var sim := _decorated_sim(DECORATED_SCREEN, 5)
 	var state := SkinState.build(SimView.new(sim))
 	var screen := sim.sector.screens[DECORATED_SCREEN]
-	var frames := Catalog.pack_decos_frames(sim.sector.zone)
+	var frames := Catalog.decos_frames(sim.sector.zone)
 	var layers := {"back_decos": screen.bg_decos, "mid_decos": screen.mid_decos, "front_decos": screen.fg_decos}
 	assert_array(state["decos"].keys()).is_equal(layers.keys())                                           # (the layers in the order they are drawn)
 	for layer: String in layers:
@@ -659,7 +659,7 @@ func test_the_station_is_told_part_by_part_as_the_trip_has_it() -> void:
 	for part: Dictionary in station["parts"]:
 		parts[part["name"]] = part
 		assert_str(part["key"]).starts_with("frame/station_")
-		assert_that(part["size"]).is_equal(Vector2(Catalog.pack_station_frames().get_frame_texture(&"all", part["picture"]).get_size()))
+		assert_that(part["size"]).is_equal(Vector2(Catalog.station_frames().get_frame_texture(&"all", part["picture"]).get_size()))
 	assert_bool(parts["balloon"]["shown"]).is_false()
 	assert_bool(parts["door"]["shown"]).is_true()
 	assert_int(parts["door"]["picture"]).is_equal(StationLayout.DOOR_CLOSED)

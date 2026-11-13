@@ -8,20 +8,19 @@ for the skin classes). What a skin author is given is [`../create/SKIN_API.md`](
 
 ## What a skin maps
 
-- **No picture.** A skin maps no picture: the pictures are the pack layer's, `pictures.json` of each pack of the chain (`Pictures`, [`PACKS.md`](PACKS.md)). The data holds pictures by key (`PictureRef` in `data/sprite_frames`, `data/ui`, the tile set; `ProblemType.art_keys`), so no skin and no copy of the data has a part in which picture shows.
-- **`resources`**: a whole presentation resource by its path under `data/` (`ui/hud_layout`, `problems/screen_layout`,
-  `sprite_frames/foes_zone2`, `neptune_tileset`), for a skin whose pictures have other sizes. Only `GameSkin.REPLACEABLE` keys are
-  taken (`ui/`, `sprite_frames/`, the tile set, the problem screen's layout); a key that names rules or content
-  (`zones`, `trigger_table`, `problems/problem_type_NN`, `sprite_meta/*`, a sector, the texts) is ignored and listed by
-  `GameSkin.refused_resources()`.
+- **No picture.** A skin maps no picture: the pictures are the pack layer's, `pictures.json` of each pack of the chain (`Pictures`, [`PACKS.md`](PACKS.md)). The data holds pictures by key (`PictureRef` in `data/sprite_frames`, `data/ui`, the tile set; `ProblemType.art_keys`), so no skin and no copy of the data has a part in which picture shows: a skin cannot even carry a picture, `resources` takes layouts only and not one that holds a texture of its own.
+- **`resources`**: a whole layout by its path under `data/` (`ui/hud_layout`, `ui/story_layout`, `problems/screen_layout`), for a skin that lays the screens out differently. Only `GameSkin.REPLACEABLE` keys are
+  taken (`ui/`, the problem screen's layout); a key that names rules, content or a picture bundle
+  (`zones`, `trigger_table`, `problems/problem_type_NN`, `sprite_meta/*`, a sector, the texts, `sprite_frames/*`, `neptune_tileset`) is ignored, and so is a layout that carries a picture of its own (a `Texture2D` that is not a `PictureRef`,
+  `GameSkin.holds_a_picture`); they are listed by `GameSkin.refused_resources()`. The sprite sets and the tile set are the pack's, whatever skin is worn.
 - **`presenter_scene`** (the root extends `SectorPresenter`), **`render`** (`RenderSettings`), **`hud_labels`** (`HudLabels`),
   **`fallback`** (another skin to build on).
 
-**Resolution.** `Assets` (`ui_picture`, `problem_art`, `background`, `picture_by_key`) asks the chain's picture tables for every texture, and `Catalog`
-(`foes_frames`, `decos_frames`, `sub_frames`, `fx_frames`, `pieces_frames`, `station_frames`, `tileset`, `problem_type`,
-`screen_layout`, `hud_layout`, `calculator_layout`, `menu_layout`, `story_layout`, `skinned(resource)`) returns the skin's version: its
+**Resolution.** `Assets` (`ui_picture`, `problem_art`, `background`, `picture_by_key`) hands out the chain's pictures by key, and `Catalog`
+(`screen_layout`, `hud_layout`, `calculator_layout`, `menu_layout`, `story_layout`, `skinned(resource)`) returns the skin's version of a layout: its
 own resource, or the pack's resource as loaded (it holds its pictures by key, `PictureRef`, so the chain's pictures show through it).
-Catalog asks the skin only for presentation files (a test reads
+The sprite sets and the tile set (`foes_frames`, `decos_frames`, `sub_frames`, `fx_frames`, `pieces_frames`, `station_frames`, `tileset`) are the pack's: a skin has no say in them, and the state a mod is told (`SkinState`) and the
+presenter that draws read the same set. Catalog asks the skin only for layouts (a test reads
 its source).
 
 ## Choosing and switching
@@ -55,7 +54,7 @@ tools/godot.sh --path godot res://src/debug/skin_compare.tscn -- --ticks=40 --sn
 ```
 
 The seam that makes it possible: `SkinChoice.current()` is one global, so a presenter carries its skin (`SectorPresenter.skin`,
-`PresenterChoice.make_presenter_for(skin)`; so can the `Hud`), and everything it fetches through `Assets` / `Catalog` - when it is
+`PresenterChoice.make_presenter_for(skin)`; so can the `Hud`), and what it dresses itself with (`layer_materials`) and everything it fetches through `Catalog` that a skin maps (the layouts) - when it is
 built, in an event (`_listen` wraps the handlers), in a frame (`run_in_skin`) - comes from that skin (`SkinChoice.within`, which selects
 nothing and tells nobody). Tested in `tests/engine/test_skin_compare.gd`; the game itself never sets it.
 
@@ -95,6 +94,6 @@ A skin from a stranger is not a folder of `res://skins/` but a mod pack ([`PACKS
 (the layouts, the sounds and the rules stay the base game's), and no `presenter_scene`: the original presenter shows the sector of every skin mod. A skin with a script has `script_layers` (or `draws_frame`) and the presenter hands those layers to the script (`ModLayerHost`, [`ARCHITECTURE.md`](ARCHITECTURE.md)); a skin with no script (a manifest with no `entry`) draws nothing by script and needs no Sandbox. `ModHost` makes it when the mod loads and `SkinChoice` offers it with the others, so every path that wears a skin (the command line, F3 then S, `SectorWorld`,
 `skin_compare`) wears it the same way (`OriginalPresenter._dress_layers` asks the skin in use for `GameSkin.layer_material(layer)`, a fresh copy, puts it on the layer's node and `_show_phase` sets its `phase` from `SectorPresenter.game_phase` (the stacks of the layers a script draws get it from `ModLayerHost.show`, through `ModLayerStack.set_phase`; the console's from `Hud.game_phase`); every node inside a layer scene has `use_parent_material` on, so the layer's material reaches the pictures made later, and `Sub` turns it off for the pictures while its dissolve material is on), and `leave_dead_mod_skins` puts the original on when the mod stops. How to write one is [`../create/SKIN_API.md`](../create/SKIN_API.md), "Writing a skin mod".
 
-`SkinState.build` makes the state as plain data. The screen's `background`, `decos`, `anim_decos` and `station` come as skin keys from the copies `SimView` holds (`decorations`, `anim_decorations`, `screen_ticks`, `station`, from `SimWorld.screen_started_tick`; `Assets.background_key`, `Catalog.pack_decos_frames` / `pack_station_frames`), `StationLayout.parts` says where a supply station's pictures go (for `SupplyStation`, `ScreenEditorStation` and the state), and `HudLayout.rect_of(layer)` is a console part's rectangle (`ConsoleState.rects` walks the list of parts). `ModSpec.is_drawable_key` judges what a draw list may name (`PictureTable.KINDS`); a skin's manifest naming `pictures` is refused (`ModSpec`: they are rows of the pack's `pictures.json`, `PictureTable`).
+`SkinState.build` makes the state as plain data. The screen's `background`, `decos`, `anim_decos` and `station` come as skin keys from the copies `SimView` holds (`decorations`, `anim_decorations`, `screen_ticks`, `station`, from `SimWorld.screen_started_tick`; `Assets.background_key`, `Catalog.decos_frames` / `station_frames`), `StationLayout.parts` says where a supply station's pictures go (for `SupplyStation`, `ScreenEditorStation` and the state), and `HudLayout.rect_of(layer)` is a console part's rectangle (`ConsoleState.rects` walks the list of parts). `ModSpec.is_drawable_key` judges what a draw list may name (`PictureTable.KINDS`); a skin's manifest naming `pictures` is refused (`ModSpec`: they are rows of the pack's `pictures.json`, `PictureTable`).
 
 **The example pack** (`examples/packs/modern/`, a data skin; what it holds is told in [`../create/CONTENT.md`](../create/CONTENT.md), "Skins and packs"): `SkinTemplates` made its templates from the legacy pack's layouts. `mise run examples:pack modern` is `PackExport.archive_folder` (`pack_tool --archive-folder=`: `PackCheck` first, then `PackFiles.zip_folder`, the zipper every pack file goes through) and `mise run examples:install modern` is `PackInstall`. `tests/engine/test_example_pack_modern.gd` mounts the very folder as a scratch pack (`ModSkinShelf.EXAMPLE_MODERN`, over dev, under the id `modern_test` so that an installed copy is not the one found), has `PackCheck` judge it and wears it; `SkinRoster.mount_mod_skins` adds it to every suite that plays the skins.

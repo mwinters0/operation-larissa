@@ -164,18 +164,18 @@ func test_choosing_a_skin_never_changes_the_rules_data() -> void:
 
 
 func test_the_loaders_that_ask_the_skin_are_presentation_only() -> void:
-	# `Catalog` asks the skin (`_skinned`) only for these files: the pictures, layouts, picture bundles and the tile set. A new rules file that
+	# `Catalog` asks the skin (`_skinned`) only for the layouts. A new rules file, or a picture bundle (the sprite sets and the tile set hold keys the packs answer), that
 	# went through `_skinned` would let a skin replace it, so it fails here until somebody decides it should not.
 	var source := FileAccess.get_file_as_string(CATALOG_SOURCE)
 	var asked := RegEx.create_from_string("_skinned(?:_project)?\\(\"(?:data/)?([^\"]+)\"").search_all(source)
-	assert_int(asked.size()).is_greater(8)
+	assert_int(asked.size()).is_greater(4)
 	for found in asked:
 		var path := found.get_string(1)
 		var data_key := path.get_basename().replace("%02d", "00").replace("%d", "0")
 		var presentation := GameSkin.is_replaceable(data_key) or data_key.begins_with("problems/problem_type_")     # (a problem type is copied with the skin's pictures only)
 		assert_bool(presentation).override_failure_message("Catalog asks the skin for '%s', which is rules or content" % path).is_true()
 	# the rules' own files are loaded without it
-	for file in ["sectors", "zones.tres", "trigger_table.tres", "bubble_rules.tres"]:
+	for file in ["sectors", "zones.tres", "trigger_table.tres", "bubble_rules.tres", "sprite_frames", "neptune_tileset"]:
 		assert_bool(source.contains("_skinned(\"data/%s" % file)).override_failure_message("%s goes through the skin" % file).is_false()
 
 

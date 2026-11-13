@@ -2,20 +2,25 @@ class_name TestSkinCompare
 extends GdUnitTestSuite
 ## Teaches: the tools of skin authoring and the one seam they need. `SkinChoice.current()` is global, but the side-by-side tool
 ## (`src/debug/skin_compare.tscn`) shows two skins at once, so a presenter can be dressed for one skin (`SectorPresenter.skin`): what it
-## fetches through `Catalog` (a resource a skin maps, `GameSkin.resources`) - when it is built, in an event, in a frame - comes from that skin (`SkinChoice.within`) while the rest
-## of the game wears another. (What tells the two skins apart is the creature-and-decoration picture set of the zone: a skin maps no picture, but it may bring a whole `SpriteFrames`.) Also the overlay: the debug rectangles laid over whatever presenter a world has (`SectorWorld.set_overlay`).
+## fetches through `Catalog` (a layout a skin maps, `GameSkin.resources`) - when it is built, in an event, in a frame - comes from that skin (`SkinChoice.within`) while the rest
+## of the game wears another, and what it dresses its layers with is its own skin's (`GameSkin.layer_materials`). (What tells the two skins apart is a layout and a layer's shader: a skin maps no picture.) Also the overlay: the debug rectangles laid over whatever presenter a world has (`SectorWorld.set_overlay`).
 
 const WORLD_SCENE := "res://src/gameplay/sector_world.tscn"
 const COMPARE_SCENE := "res://src/debug/skin_compare.tscn"
-const OWN_DECOS := "sprite_frames/decos_zone0"
+const OWN_LAYOUT := "ui/hud_layout"
+## The layer whose shader tells a presenter's skin.
+const MARKED_LAYER := &"background"
 
-var _own_decos: SpriteFrames
+var _own_layout: HudLayout
+var _marker_shader: Shader
 var _scale_size: Vector2i
 var _window_size: Vector2i
 
 
 func before_test() -> void:
-	_own_decos = Catalog.decos_frames(0).duplicate() as SpriteFrames                  # (another object with the same pictures: the skin's own set)
+	_own_layout = Catalog.hud_layout().duplicate() as HudLayout                      # (another object with the same keys: the skin's own layout)
+	_marker_shader = Shader.new()
+	_marker_shader.code = "shader_type canvas_item; void fragment() { COLOR = texture(TEXTURE, UV); }"
 	GameClock.paused = true
 	SectorWorld.skip_animations = false
 	PresenterChoice.forced = &""
@@ -37,21 +42,21 @@ func after_test() -> void:
 	GameState.reset()
 
 
-## A skin that brings its own decoration set for the first zone (the one thing the tests tell it by), and says the HUD's words as text.
+## A skin that brings its own HUD layout and a shader for the background (the two things the tests tell it by), and says the HUD's words as text.
 func _marker_skin() -> GameSkin:
 	var skin := load(SkinRoster.TINY).duplicate() as GameSkin
-	skin.id = &"own_decorations"
-	skin.resources = {OWN_DECOS: _own_decos}
+	skin.id = &"own_layout"
+	skin.resources = {OWN_LAYOUT: _own_layout}
+	var material := ShaderMaterial.new()
+	material.shader = _marker_shader
+	skin.layer_materials = {MARKED_LAYER: material}
 	return skin
 
 
-## The sprite frames of every decoration a presenter shows (back, middle and front).
-func _decos_of(presenter: OriginalPresenter) -> Array[SpriteFrames]:
-	var found: Array[SpriteFrames] = []
-	for layer: Node2D in [presenter.back_decos, presenter.mid_decos, presenter.front_decos]:
-		for deco: AnimatedSprite2D in layer.get_children():
-			found.append(deco.sprite_frames)
-	return found
+## Does the presenter wear the shader of the marker skin on its background?
+func _wears_marker(presenter: OriginalPresenter) -> bool:
+	var material := presenter.layer_node(MARKED_LAYER).material as ShaderMaterial
+	return material != null and material.shader == _marker_shader
 
 
 ## A presenter that notes which skin is in use whenever it hears something.
@@ -78,8 +83,8 @@ func test_within_makes_a_skin_current_for_a_while_and_selects_nothing() -> void:
 	assert_array(seen).is_equal([skin, original, skin])
 	assert_object(SkinChoice.current()).is_same(original)
 	assert_object(SkinChoice.within(null, func() -> Object: return SkinChoice.current())).is_same(original)       # (a null skin: just runs it)
-	assert_object(SkinChoice.within(skin, func() -> Object: return Catalog.decos_frames(0))).is_same(_own_decos)
-	assert_object(Catalog.decos_frames(0)).is_not_same(_own_decos)
+	assert_object(SkinChoice.within(skin, func() -> Object: return Catalog.hud_layout())).is_same(_own_layout)
+	assert_object(Catalog.hud_layout()).is_not_same(_own_layout)
 	var changes := [0]
 	var listener := func(_skin: GameSkin) -> void: changes[0] += 1
 	SkinChoice.events.changed.connect(listener)
@@ -107,7 +112,7 @@ func test_a_presenter_with_a_skin_hears_every_event_inside_that_skin() -> void:
 	assert_array(sim.ticked.get_connections().filter(func(c: Dictionary) -> bool: return not (c["callable"] as Callable).is_valid())).is_empty()
 
 
-func test_a_dressed_original_presenter_builds_its_screens_from_its_own_skin() -> void:
+func test_a_dressed_original_presenter_wears_its_own_skins_layers_through_every_screen() -> void:
 	var skin := _marker_skin()
 	var sim := SimWorld.new(GameState)
 	var host := auto_free(Node2D.new()) as Node2D
@@ -117,13 +122,13 @@ func test_a_dressed_original_presenter_builds_its_screens_from_its_own_skin() ->
 	presenter.bind(sim)
 	sim.load_sector(0, 0)
 	var dressed := presenter as OriginalPresenter
-	var shown := _decos_of(dressed)
-	assert_array(shown).is_not_empty()
-	assert_bool(shown.all(func(frames: SpriteFrames) -> bool: return frames == _own_decos)).is_true()
-	sim.load_screen(1)                                                     # (an event: built inside the presenter's skin, while the skin in use is the original's)
-	shown = _decos_of(dressed)
-	assert_bool(shown.all(func(frames: SpriteFrames) -> bool: return frames == _own_decos)).is_true()
+	assert_bool(_wears_marker(dressed)).is_true()
+	sim.load_screen(1)                                                     # (an event, while the skin in use is the original's)
+	assert_bool(_wears_marker(dressed)).is_true()
 	assert_object(SkinChoice.current()).is_same(SkinChoice.original())
+	var plain := auto_free(PresenterChoice.make_presenter_for(SkinChoice.original())) as OriginalPresenter
+	host.add_child(plain)
+	assert_bool(_wears_marker(plain)).override_failure_message("a presenter of the original skin wears the marker").is_false()
 
 
 # --- the overlay -----------------------------------------------------------------------------------------------
@@ -203,7 +208,7 @@ func test_the_tool_shows_one_set_of_rules_through_two_skins() -> void:
 	assert_object(tool.get("_overlay")).is_not_null()
 
 
-func test_the_right_half_keeps_its_skins_resources_while_the_left_has_the_originals() -> void:
+func test_the_right_half_keeps_its_skins_layers_and_layout_while_the_left_has_the_originals() -> void:
 	var skin := _marker_skin()
 	var tool := (load(COMPARE_SCENE) as PackedScene).instantiate() as Control
 	tool.set("start_skin", SkinRoster.TINY)
@@ -212,9 +217,10 @@ func test_the_right_half_keeps_its_skins_resources_while_the_left_has_the_origin
 	var world := tool.get("world") as SectorWorld
 	world.load_sector(0, 0)
 	var right := tool.get("_presenter") as OriginalPresenter
-	assert_array(_decos_of(right)).is_not_empty()
-	assert_bool(_decos_of(right).all(func(frames: SpriteFrames) -> bool: return frames == _own_decos)).is_true()
-	assert_bool(_decos_of(world.original).any(func(frames: SpriteFrames) -> bool: return frames == _own_decos)).is_false()
+	assert_bool(_wears_marker(right)).is_true()
+	assert_bool(_wears_marker(world.original)).is_false()
+	assert_object((tool.get("_hud") as Hud).layout).override_failure_message("the right HUD wears the skin's layout").is_same(_own_layout)
+	assert_object((tool.get_node("LeftContainer/LeftViewport/Hud") as Hud).layout).is_not_same(_own_layout)
 	world.load_screen(1)
-	assert_bool(_decos_of(right).all(func(frames: SpriteFrames) -> bool: return frames == _own_decos)).is_true()
-	assert_bool(_decos_of(world.original).any(func(frames: SpriteFrames) -> bool: return frames == _own_decos)).is_false()
+	assert_bool(_wears_marker(right)).is_true()
+	assert_bool(_wears_marker(world.original)).is_false()

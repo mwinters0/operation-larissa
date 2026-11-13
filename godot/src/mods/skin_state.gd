@@ -84,7 +84,7 @@ static func _decos(view: SimView) -> Dictionary:
 		layers[String(layer)] = {"slot": [], "key": [], "position": [], "size": [], "mirrored": []}
 	if view.zone < 0:
 		return layers
-	var frames := Catalog.pack_decos_frames(view.zone)
+	var frames := Catalog.decos_frames(view.zone)
 	for deco in view.decorations():
 		var picture := _picture(frames, deco.slot)
 		var columns: Dictionary = layers[String(deco.layer)]
@@ -101,7 +101,7 @@ static func _anim_decos(view: SimView) -> Dictionary:
 	var columns := {"position": [], "size": [], "key": [], "frame": [], "cursor": []}
 	if view.zone < 0:
 		return columns
-	var frames := Catalog.pack_decos_frames(view.zone)
+	var frames := Catalog.decos_frames(view.zone)
 	for deco in view.anim_decorations():
 		var picture := _picture(frames, deco.frame)
 		(columns["position"] as Array).append(deco.position)
@@ -120,7 +120,7 @@ static func _station(view: SimView) -> Variant:
 	if station == null:
 		return null
 	var trip := view.sequence()
-	var frames := Catalog.pack_station_frames()
+	var frames := Catalog.station_frames()
 	var parts: Array = []
 	for part in StationLayout.parts(station.left):
 		var part_name := String(part["name"])

@@ -228,9 +228,9 @@ func test_a_forced_choice_wins_and_a_skin_is_found_by_its_id() -> void:
 # --- what a skin may replace -------------------------------------------------------------------------
 
 func test_a_skin_may_replace_presentation_data_and_nothing_else() -> void:
-	for key in ["ui/hud_layout", "ui/story_layout", "sprite_frames/foes_zone2", "neptune_tileset", "problems/screen_layout"]:
+	for key in ["ui/hud_layout", "ui/story_layout", "problems/screen_layout"]:
 		assert_bool(GameSkin.is_replaceable(key)).override_failure_message(key).is_true()
-	for key in ["zones", "trigger_table", "bubble_rules", "problems/problem_type_00", "problems/hints", "sprite_meta/sprite_meta_zone2",
+	for key in ["sprite_frames/foes_zone2", "sprite_frames/decos_zone0", "neptune_tileset", "zones", "trigger_table", "bubble_rules", "problems/problem_type_00", "problems/hints", "sprite_meta/sprite_meta_zone2",
 			"sectors/sector_00/sector_00", "story/story_script", "sfx_catalog"]:
 		assert_bool(GameSkin.is_replaceable(key)).override_failure_message(key).is_false()
 	var skin := GameSkin.new()
@@ -239,6 +239,29 @@ func test_a_skin_may_replace_presentation_data_and_nothing_else() -> void:
 	assert_object(skin.resource_for("ui/hud_layout")).is_not_null()
 	assert_object(skin.resource_for("zones")).is_null()
 	assert_array(skin.refused_resources()).contains_exactly(["zones"])
+
+
+## A skin maps no picture: the sprite sets and the tile set (the picture bundles) are the packs', and a layout that carries a picture of its own is not shown.
+func test_a_skin_cannot_carry_a_picture_of_its_own() -> void:
+	var skin := GameSkin.new()
+	skin.id = &"brings_art"
+	var bundles := Catalog.foes_frames(0).duplicate() as SpriteFrames
+	var with_a_file := HudLayout.new()
+	with_a_file.bezel = ImageTexture.create_from_image(Image.create(4, 4, false, Image.FORMAT_RGBA8))
+	var nested := HudLayout.new()
+	nested.zone_textures = [PictureRef.of("frame/sub_00"), with_a_file.bezel]
+	var by_key := HudLayout.new()
+	by_key.bezel = PictureRef.of("frame/sub_00")
+	by_key.zone_textures = [PictureRef.of("frame/sub_00")]
+	skin.resources = {"sprite_frames/foes_zone0": bundles, "neptune_tileset": Catalog.tileset().duplicate(), "ui/hud_layout": with_a_file, "ui/story_layout": by_key, "ui/calculator_layout": nested}
+	assert_array(skin.refused_resources()).contains_exactly_in_any_order(["sprite_frames/foes_zone0", "neptune_tileset", "ui/hud_layout", "ui/calculator_layout"])
+	for key in ["sprite_frames/foes_zone0", "neptune_tileset", "ui/hud_layout", "ui/calculator_layout"]:
+		assert_object(skin.resource_for(key)).override_failure_message(key).is_null()
+	assert_object(skin.resource_for("ui/story_layout")).override_failure_message("a layout that holds keys is the skin's").is_same(by_key)
+	SkinChoice.select(skin)
+	assert_object(Catalog.hud_layout()).override_failure_message("the layout with a file of its own is not shown").is_same(load(DevPack.ROOT + "data/ui/hud_layout.tres"))
+	assert_object(Catalog.foes_frames(0)).is_same(load(DevPack.ROOT + "data/sprite_frames/foes_zone0.tres"))
+	assert_bool(GameSkin.holds_a_picture(Catalog.hud_layout())).override_failure_message("the pack's own layouts hold keys only").is_false()
 
 
 # --- a picture drawn at a fraction of its size --------------------------------------------------------------------
