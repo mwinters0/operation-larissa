@@ -15,6 +15,8 @@ const MAX_LINES := 64
 
 ## The lines given, in order.
 var told: Array[String] = []
+## A quiet log keeps `told` and gives nothing to `push_warning` (`quietly`).
+var quiet := false
 
 var _seen: Dictionary = {}
 
@@ -22,6 +24,16 @@ var _seen: Dictionary = {}
 ## A run begins: what `session` said is said again if the cause is met again.
 static func new_run() -> void:
 	session = TroubleLog.new()
+
+
+## Runs `body` with a quiet `session`: what it meets is kept in that log and warned of nowhere, and the run's own `session` is put back untouched. For a check that judges a pack it has borrowed the chain for and reports
+## what is wrong with it itself (`PackCheck`): the game is not told of a pack that is merely looked at.
+static func quietly(body: Callable) -> void:
+	var kept := session
+	session = TroubleLog.new()
+	session.quiet = true
+	body.call()
+	session = kept
 
 
 ## Gives `line` to `push_warning` unless this log has given it already. True when it was given now.
@@ -34,7 +46,8 @@ func tell(line: String) -> bool:
 	if told.size() == MAX_LINES - 1:
 		line += " (further warnings of this kind are not given)"
 	told.append(line)
-	push_warning(line)
+	if not quiet:
+		push_warning(line)
 	return true
 
 

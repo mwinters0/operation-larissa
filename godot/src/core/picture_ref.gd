@@ -23,7 +23,7 @@ extends Texture2D
 var _texture: Texture2D
 var _epoch := -1
 var _image: Image
-## The log that was told this key holds no picture (`TroubleLog.session` changes with each run, so the next run is told again).
+## The log this reference asked the chain under (`TroubleLog.session` is a new one each run, so a run is told what its picture's lookup met and that nobody holds the key).
 var _told_in: TroubleLog
 
 
@@ -58,13 +58,13 @@ func _init() -> void:
 
 ## The picture the chain gives the key now, or null.
 func resolved() -> Texture2D:
-	if _epoch != Pictures.epoch:
+	if _epoch != Pictures.epoch or _told_in != TroubleLog.session:
 		_epoch = Pictures.epoch
+		_told_in = TroubleLog.session               # (a run begins: the lookup, kept per chain, tells the troubles of its rows again, and this says the key is held by nobody)
 		_image = null
 		_texture = Pictures.resolve(key)
-	if _texture == null and not key.is_empty() and _told_in != TroubleLog.session:
-		_told_in = TroubleLog.session
-		TroubleLog.session.tell(Pictures.unheld_line(key))
+		if _texture == null and not key.is_empty():
+			TroubleLog.session.tell(Pictures.unheld_line(key))
 	return _texture
 
 

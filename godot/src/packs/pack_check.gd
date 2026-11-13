@@ -89,16 +89,17 @@ static func _chain(pack: Pack, report: PackReport) -> void:
 
 
 ## Makes `pack` the chosen pack (with the chain under it) while `body` (called with the pack as the chain holds it) runs, unless it is the chosen pack already; the
-## chain in use is put back afterwards.
+## chain in use is put back afterwards. The troubles the chain meets meanwhile (a row of the checked pack that does not resolve) are the check's findings, not the player's warnings: `body` runs under a quiet `TroubleLog.session`.
 static func _with_chain(pack: Pack, body: Callable) -> void:
-	var current := Packs.chosen()                              # (null when the game refused its choice and holds no pack)
-	if current != null and current.root == pack.root:
-		body.call(current)
-		return
-	var saved := Packs.snapshot()
-	Packs.use(pack)
-	body.call(Packs.chosen())
-	Packs.restore(saved)
+	TroubleLog.quietly(func() -> void:
+		var current := Packs.chosen()                              # (null when the game refused its choice and holds no pack)
+		if current != null and current.root == pack.root:
+			body.call(current)
+			return
+		var saved := Packs.snapshot()
+		Packs.use(pack)
+		body.call(Packs.chosen())
+		Packs.restore(saved))
 
 
 # --- the content ------------------------------------------------------------------------------------------------------------------

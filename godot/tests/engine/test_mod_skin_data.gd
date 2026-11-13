@@ -299,6 +299,23 @@ func test_a_pictures_row_whose_file_the_pack_lacks_is_told_once_and_the_pack_und
 	assert_array(TroubleLog.session.told.filter(func(line: String) -> bool: return line.contains("skin/sky.png") and line.contains("pack '%s'" % shelf.id))).has_size(1)
 
 
+## A check borrows the chain to judge a pack as the game will see it, and says what is wrong with it in its own findings: the player's run is told nothing of a pack that is only looked at.
+func test_checking_a_pack_whose_picture_row_does_not_resolve_tells_the_run_nothing() -> void:
+	GameState.reset()
+	var shelf := PackShelf.new()
+	_shelves.append(shelf)
+	shelf.add_mod_fixture(FIXTURE)                                                                       # (its pictures.json names skin/sky.png, which is not written; its theme names KEY)
+	var options := PackCheck.Options.new()
+	options.reach = false
+	PackCheck.run(Pack.open(shelf.root), options)
+	var about_it := func(line: String) -> bool: return line.contains("skin/sky.png")
+	assert_array(TroubleLog.session.told.filter(about_it)).override_failure_message("the check told the run of a pack it only looked at").is_empty()
+	shelf.mount()                                                                                        # (the control: in use, the same row is told)
+	Mods.sync()
+	Assets.holds(KEY)
+	assert_array(TroubleLog.session.told.filter(about_it)).has_size(1)
+
+
 func test_a_skin_with_the_id_of_a_skin_of_the_game_is_refused() -> void:
 	var shelf := PackShelf.new(&"creatures")
 	_shelves.append(shelf)

@@ -189,6 +189,43 @@ func test_what_was_told_is_told_again_in_the_next_run() -> void:
 	assert_array(_told_about("art/gone.png")).has_size(1)
 
 
+func test_the_troubles_of_the_rows_are_told_again_in_the_next_run_from_the_kept_answer() -> void:
+	_shelf.mount_base()
+	var epoch := Pictures.epoch
+	Pictures.resolve("ui_picture/lost")                                                                 # (a file the pack does not hold)
+	Pictures.resolve("ui_picture/dangling")                                                             # (an alias of a key nobody holds)
+	Pictures.resolve("ui_picture/loop_a")                                                               # (aliases that go round)
+	var lines: Array[String] = []
+	lines.append_array(_told_about("art/gone.png"))
+	lines.append_array(_told_about("'ui_picture/dangling' is an alias"))
+	lines.append_array(_told_about("go round in a circle"))
+	assert_array(lines).has_size(3)
+	GameState.begin_run(null)                                                                           # (a run begins: a new log, the chain is the same and its answers are kept)
+	assert_array(TroubleLog.session.told).is_empty()
+	for key in ["ui_picture/lost", "ui_picture/dangling", "ui_picture/loop_a"]:
+		Pictures.resolve(key)
+		Pictures.resolve(key)
+	assert_int(Pictures.epoch).override_failure_message("the answers were kept").is_equal(epoch)
+	assert_array(TroubleLog.session.told).is_equal(lines)                                                # (each once, as the first run was told)
+
+
+func test_a_reference_tells_what_it_met_and_that_nobody_holds_its_key_again_in_the_next_run() -> void:
+	_shelf.mount_base()
+	var lost := PictureRef.of("ui_picture/lost")
+	var nobody := PictureRef.of("ui_picture/zz_nobody_has_me")
+	for ref in [lost, nobody]:
+		(ref as PictureRef).get_width()
+	assert_array(_told_about("art/gone.png")).has_size(1)
+	assert_array(_told_about("'ui_picture/zz_nobody_has_me'")).has_size(1)
+	GameState.begin_run(null)
+	assert_array(TroubleLog.session.told).is_empty()
+	for ref in [lost, nobody]:
+		(ref as PictureRef).get_width()
+		(ref as PictureRef).get_height()
+	assert_array(_told_about("art/gone.png")).has_size(1)
+	assert_array(_told_about("'ui_picture/zz_nobody_has_me'")).has_size(1)
+
+
 # --- the Assets lookups ask the table -----------------------------------------------------------------------------------------
 
 func test_the_assets_lookups_find_a_key_the_table_holds_even_when_the_registry_has_not_its_name() -> void:

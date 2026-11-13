@@ -5,7 +5,8 @@ extends RefCounted
 ## CHOOSING A PICTURE BELONGS TO THE PACK. The first pack of the chain whose table has a row for the key answers; a pack laid over another that redraws a picture replaces it, and a pack that does not say leaves it to the pack under it. A row names a file of its own pack
 ## (drawn at its size, or at `1 / scale` of it through `ScaledTexture`) or ANOTHER KEY (`{"alias": key}`): an alias is resolved from the top of the chain again, whichever pack holds the row, so a pack above that redraws the target redraws every alias of it,
 ## and one file serves many names. A row that does not resolve (a file the pack does not hold or that is no PNG, an alias to a key no pack holds, aliases that go round in a circle) is left out, as if its pack had no row for the key, so the packs under it answer;
-## it is told ONCE per run (`TroubleLog.session`), naming the pack, the key and what is shown instead.
+## it is told ONCE per run (`TroubleLog.session`), naming the pack, the key and what is shown instead. An answer is kept WITH the lines its lookup told, and a hit tells them again (the session drops a line it has given), so a run that begins after
+## the answer was made is told too.
 ##
 ## THE CACHE is per chain: an answer is kept until the chain changes (`forget`, from `Assets.forget_folders` by `Catalog.packs_changed`). `epoch` counts the changes and `events.changed` announces them, so a holder of an answer (`PictureRef`) asks again. A skin changes no picture.
 ##
@@ -23,8 +24,10 @@ static var events := PictureEvents.new()
 ## How many times the answers were forgotten.
 static var epoch := 0
 
-## key -> Texture2D, or null for a key nothing holds.
+## key -> `[Texture2D (null for a key nothing holds), the lines its lookup told: Array[String]]`.
 static var _answers: Dictionary = {}
+## The lines told by the lookup in progress (`resolve` keeps them with its answer), or null when none is.
+static var _collecting: Variant = null
 ## "<pack id>/<file>@<scale>" -> the `ScaledTexture` of a row, so the same row gives the same object.
 static var _scaled: Dictionary = {}
 ## How many causes of trouble were met (told or told before): lets a lookup see that what it followed failed for a cause already told.
@@ -36,11 +39,18 @@ class PictureEvents extends RefCounted:
 	signal changed
 
 
-## The picture of `key` the chain holds, or null when no pack does.
+## The picture of `key` the chain holds, or null when no pack does. The troubles of the rows it followed are told (again, for a answer kept from an earlier run: `TroubleLog.session` is a new log each run).
 static func resolve(key: String) -> Texture2D:
 	if not _answers.has(key):
-		_answers[key] = _find(key, [])
-	return _answers[key]
+		var lines: Array[String] = []
+		_collecting = lines
+		var found := _find(key, [])
+		_collecting = null
+		_answers[key] = [found, lines]
+	var answer: Array = _answers[key]
+	for line: String in answer[1]:
+		TroubleLog.session.tell(line)
+	return answer[0]
 
 
 ## The picture `pack` itself holds for `key`: its own file row, or an alias followed inside its own table; null when it has none. What a pack draws there whatever the packs laid over it redraw (the size a redrawing pack is judged by, `SkinTemplates`).
@@ -154,4 +164,6 @@ static func _file_row(pack: Pack, table: PictureTable, key: String) -> Texture2D
 
 static func _tell(line: String) -> void:
 	_troubles += 1
+	if _collecting != null:
+		(_collecting as Array[String]).append(line)
 	TroubleLog.session.tell(line)
