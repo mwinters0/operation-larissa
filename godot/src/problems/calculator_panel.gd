@@ -20,7 +20,7 @@ func _load_layout() -> void:
 	_scene_layout = layout if layout != null else Catalog.pack_resource("data/ui/calculator_layout.tres") as CalculatorLayout       # (the pack's; the skin in use may show another)
 
 
-## Puts the panel at `at` with `texture` stretched to `panel_size` and the display on it (the display's layout is `layout`, in use now): the size is the layout's data, not the texture's that happens to be loaded, so a skin's picture of another size moves nothing.
+## Puts the panel at `at` with `texture` stretched to `panel_size` and the display on it (the display's layout is `layout`, in use now): the size is the layout's data, not the texture's that happens to be loaded, so a pack's picture of another size moves nothing.
 func _dress_panel(at: Vector2i, texture: Texture2D, panel_size: Vector2i, display_origin: Vector2i) -> void:
 	position = Vector2(at)
 	picture.texture = texture

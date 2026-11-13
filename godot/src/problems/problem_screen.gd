@@ -152,7 +152,7 @@ func _dress() -> void:
 func _apply_layout(layout: ProblemScreenLayout) -> void:
 	background.texture = layout.background
 	background.position = Vector2(layout.background_position)
-	background.size = Vector2(layout.background_size)                                 # (the layout's data, not the picture's: a skin's picture of another size is stretched to it)
+	background.size = Vector2(layout.background_size)                                 # (the layout's data, not the picture's: a pack's picture of another size is stretched to it)
 	title_label.position = Vector2(layout.title_box_x, layout.title_y)
 	title_label.size = Vector2(layout.title_box_width, layout.line_height)
 	var box := Rect2(layout.message_box)

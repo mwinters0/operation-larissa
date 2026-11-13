@@ -370,7 +370,7 @@ func skip_scan() -> void:
 	scan_animation.play(&"scan_cut")
 
 
-## The five scanner pictures, asked of `Assets` each time: they depend on the pack chain and the skin in use, so nothing keeps them
+## The five scanner pictures, asked of `Assets` each time: they depend on the pack chain, so nothing keeps them
 ## (the textures themselves are cached where they are loaded).
 static func scan_pictures() -> Array[Texture2D]:
 	var pictures: Array[Texture2D] = []

@@ -85,8 +85,8 @@ func _on_skin_changed(_skin: GameSkin) -> void:
 	_dress()
 
 
-## Puts the calculator on as the skin in use shows it: the layout and its picture, the rectangle the layout gives it and the one of each key, and the display's layout. The one builder of the calculator's looks (`_ready` and a skin put on in the middle of a
-## problem both call it): the picture is stretched to the layout's size, so a skin's picture of another size moves nothing. The keys' looks and the display's field are the theme's (`key` and `display`): they are looked up, not set here.
+## Puts the calculator on as the skin in use lays it out: the layout and its picture (the pack chain's), the rectangle the layout gives it and the one of each key, and the display's layout. The one builder of the calculator's looks (`_ready` and a skin put on in the middle of a
+## problem both call it): the picture is stretched to the layout's size, so a pack's picture of another size moves nothing. The keys' looks and the display's field are the theme's (`key` and `display`): they are looked up, not set here.
 func _dress() -> void:
 	layout = Catalog.skinned(_scene_layout) as CalculatorLayout
 	_dress_panel(layout.picture_position, layout.picture, layout.picture_size, layout.display_origin_calculator)

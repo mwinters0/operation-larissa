@@ -48,7 +48,7 @@ func _on_skin_changed(_skin: GameSkin) -> void:
 	_dress()
 
 
-## Puts the panel on as the skin in use shows it: the layout and its picture, stretched to the rectangle the layout gives it (a skin's picture of another size moves nothing), and the display's layout. `_ready` and a skin put on in the middle of a
+## Puts the panel on as the skin in use lays it out: the layout and its picture, stretched to the rectangle the layout gives it (a pack's picture of another size moves nothing), and the display's layout. `_ready` and a skin put on in the middle of a
 ## problem both call it. The display's field is the theme's `display` colour: looked up, not set here.
 func _dress() -> void:
 	layout = Catalog.skinned(_scene_layout) as CalculatorLayout

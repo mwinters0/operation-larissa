@@ -201,7 +201,7 @@ func _show_scan_picture() -> void:
 	lights.texture = scan_picture(CanisterLog.scan_picture(_scan_tick))
 
 
-## Scanner picture `index` (0..8), asked of `Assets` each time: it depends on the pack chain and the skin in use, so nothing keeps it
+## Scanner picture `index` (0..8), asked of `Assets` each time: it depends on the pack chain, so nothing keeps it
 ## (the texture itself is cached where it is loaded).
 static func scan_picture(index: int) -> Texture2D:
 	return Assets.problem_art(StringName("log_scan_%d" % index))
