@@ -554,7 +554,7 @@ func test_the_man_on_the_left_appears_after_30_seconds_and_walks_in() -> void:
 
 
 func _picture_id(sprite: Sprite2D) -> int:
-	var path := Packs.source_of(sprite.texture)
+	var path := Packs.source_of((sprite.texture as PictureRef).resolved())
 	return int(path.get_file().get_basename().rsplit("_", true, 1)[1])          # <name>_<number>.png, or ui_<number>.png
 
 

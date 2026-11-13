@@ -269,7 +269,7 @@ func test_expert_deck_crew_follows_the_six_programs() -> void:
 	assert_array(shown).is_equal([false, true, true, true, false, false])
 	var s1 := closing.crew_layer.get_child(1) as Sprite2D
 	assert_vector(s1.position).is_equal(Vector2(332 - 16, 214 - 32))
-	assert_str(Packs.source_of(s1.texture)).ends_with("ui_2036.png")                     # item 24
+	assert_str(Packs.source_of((s1.texture as PictureRef).resolved())).ends_with("ui_2036.png")                     # item 24
 	var s3 := closing.crew_layer.get_child(3) as Sprite2D
 	assert_vector(s3.position).is_equal(Vector2(436 - 16, 214 - 32))
 	assert_bool(s3.flip_h).is_true()                                                  # walks to the right, drawn mirrored
@@ -279,7 +279,7 @@ func test_expert_deck_crew_follows_the_six_programs() -> void:
 	var s0 := closing.crew_layer.get_child(0) as Sprite2D
 	assert_bool(s0.visible).is_true()
 	assert_vector(s0.position).is_equal(Vector2(496 - 16, 214 - 32))
-	assert_str(Packs.source_of(s0.texture)).ends_with("ui_2025.png")
+	assert_str(Packs.source_of((s0.texture as PictureRef).resolved())).ends_with("ui_2025.png")
 	_at_step(closing, &"deck", 112)
 	assert_vector(s0.position).is_equal(Vector2(368 - 16, 214 - 32))                   # 32 steps of 4 px to the left
 
@@ -336,7 +336,7 @@ func test_expert_pod_blinks_through_its_three_pictures() -> void:
 	var mirrored := []
 	for step in 4:
 		_at_step(closing, &"deck", step)
-		pictures.append(Packs.source_of(closing.pod.texture).get_file())
+		pictures.append(Packs.source_of((closing.pod.texture as PictureRef).resolved()).get_file())
 		mirrored.append(closing.pod.flip_h)
 	assert_array(pictures).is_equal(["deck_pod_0_2015.png", "deck_pod_1_2016.png", "deck_pod_2_2017.png", "deck_pod_1_2016.png"])
 	assert_array(mirrored).is_equal([false, false, false, true])
@@ -346,7 +346,7 @@ func test_expert_pod_blinks_through_its_three_pictures() -> void:
 	assert_int(wait.loop_mode).is_equal(Animation.LOOP_LINEAR)
 	assert_float(wait.length).is_equal_approx(4 * 18.0 / 73.0, 0.0001)
 	_at_step(closing, &"wait", 0)
-	assert_str(Packs.source_of(closing.pod.texture)).ends_with("deck_pod_2_2017.png")
+	assert_str(Packs.source_of((closing.pod.texture as PictureRef).resolved())).ends_with("deck_pod_2_2017.png")
 
 
 func test_expert_keys_are_ignored_until_the_last_stage() -> void:
