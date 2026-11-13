@@ -54,7 +54,7 @@ const KIND_FOLDERS: Dictionary[String, String] = {
 const PLAIN_FOLDERS: Array[String] = ["backgrounds", "sprites", "tiles"]
 ## The kinds of picture key there are (`KIND_FOLDERS`' values, each once). A pack's `pictures/` folder holds these kinds (`PackCheck`), and a mod's draw list may name a picture of any of them (`ModSpec.is_drawable_key`);
 ## a skin mod's `pictures` may replace only `ModSpec.REPLACEABLE_KINDS` of them.
-static var KEY_KINDS: Array[String] = _kinds()
+static var KEY_KINDS: Array[String] = PictureTable.KINDS
 
 ## The skin's id: the folder name under `res://skins/` and the word of `--skin=<id>`.
 @export var id: StringName = &""
@@ -101,9 +101,10 @@ func next_skin() -> GameSkin:
 	return SkinChoice.original()
 
 
-## The picture for `key` (see the class comment): a mounted pack's, else this skin's, else the next skin's. Null when none maps it.
+## The picture for `key` (see the class comment): what the packs laid over another say (`Pictures.overlaid`), else this skin's, else the next skin's. Null when none maps it. BRIDGE: a skin
+## will not map pictures (the packs' tables choose them), and this is then `Pictures.resolve`.
 func picture(key: String) -> Texture2D:
-	var from_pack := Packs.picture(key)
+	var from_pack := Pictures.overlaid(key)
 	return from_pack if from_pack != null else _skin_picture(key)
 
 
@@ -250,14 +251,6 @@ static func key_of_rel(assets: String) -> String:
 	return "%s/%s" % [kind, _registry_name(StringName(kind), stem)]
 
 
-static func _kinds() -> Array[String]:
-	var kinds: Array[String] = []
-	for kind: String in KIND_FOLDERS.values():
-		if not kinds.has(kind):
-			kinds.append(kind)
-	return kinds
-
-
 static func _registry_name(kind: StringName, stem: String) -> String:
 	var found := _trailing_number.search(stem)
 	if found == null or NameRegistry.fallback_index(kind, stem) >= 0:
@@ -328,6 +321,8 @@ func _with_pictures(original: Resource) -> Resource:
 ## resource (one that lives inside the file, as the data files' sub-resources do) is copied if something in it changed. Anything
 ## else, and everything that did not change, comes back as the very same value.
 func _mapped(value: Variant) -> Variant:
+	if value is PictureRef:
+		return value                             # (a key: the chain's tables choose the picture, `Pictures`)
 	if value is Texture2D:
 		var texture: Texture2D = value
 		var mapped := picture(key_of(Packs.source_of(texture)))

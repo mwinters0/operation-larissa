@@ -54,6 +54,8 @@ const EXCLUDED: Dictionary = {
 	"res://src/core/assets.gd": "the loader that turns the NAME of a picture into a Texture2D; the rules only hold names, a presenter calls it",
 	"res://src/core/pack.gd": "reads one pack's files; its `texture` turns a PNG of the pack into a Texture2D (a loader like `Assets`, called by the lookups)",
 	"res://src/core/packs.gd": "the mounted packs and their lookups; `picture` answers a Texture2D to `Assets` / `GameSkin`, which are the views' side",
+	"res://src/core/pictures.gd": "the lookup of a picture KEY in the packs' tables; answers a Texture2D to `Assets`, `GameSkin` and `PictureRef`, which are the views' side",
+	"res://src/core/picture_ref.gd": "a Texture2D that holds a picture key: the one object that data holds in place of a picture file, drawn by whatever shows it",
 	"res://src/core/resource_json.gd": "reads a Resource from JSON; a `Texture2D` field (`Campaign.banner`) is a picture file of the pack",
 	"res://src/core/window_focus.gd": "the test runner's switch for the window's focus, read by the audio and clock autoloads; it asks the engine's main loop which script runs",
 	"res://src/problems/prompt_sender.gd": "the sender picture of a prompt: its rule is static, but `texture` loads the picture; only the problem screen calls that",

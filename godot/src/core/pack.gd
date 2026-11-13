@@ -14,7 +14,8 @@ extends RefCounted
 ##     sectors/sector_NN/sector_NN.foe  its creature script, the same text as in the base game
 ##     texts.json                       {"text name": "the words"}: new texts, or new words for a text of the original
 ##     voice_cues.json                  {"groups": {"group name": ["voice name", ...]}}: the speech groups a campaign names
-##     pictures/<kind>/<name>.png       a picture by its skin key (`ui_picture/title_sky`, `background/bg_s40_00`, `frame/...`)
+##     pictures.json                    the PICTURE TABLE: a skin key (`ui_picture/title_sky`, `frame/sub_00`) to a file of the pack or to another key (`PictureTable`; `Pictures` follows it down the chain)
+##     pictures/<kind>/<name>.png       a picture by its skin key, for a pack with no picture table (`Packs.picture`)
 ##     audio/sound|music|voice/<name>.ogg   a sound, song or speech clip by its registry name, or a new name
 ##     audio/lengths.json               {"voice": {"name": ticks}}: lengths the pack states for its clips (else they are measured, `ClipLengths`)
 ##     data/problems/problem_type_NN.json   a problem type (ResourceJson)
@@ -81,6 +82,8 @@ var errors: Array[String] = []
 var _textures: Dictionary = {}
 var _streams: Dictionary = {}
 var _fonts: Dictionary = {}
+## The pack's `pictures.json`, read once (`picture_table`).
+var _picture_table: PictureTable = null
 ## rel -> the resource a data-form file made (a trusted pack's are cached by `ResourceLoader`).
 var _resources: Dictionary = {}
 ## kind -> {clip name -> ticks}: the clips' lengths, measured from the files / stated by `audio/lengths.json`. Filled by `measure_clips`.
@@ -312,6 +315,13 @@ func texture(rel: String) -> Texture2D:
 	return _textures[rel]
 
 
+## The pack's picture table (`pictures.json`, read through the pack like every file of it, a folder or a pack file alike), read once; a pack that has none gives an empty table that is not `present`.
+func picture_table() -> PictureTable:
+	if _picture_table == null:
+		_picture_table = PictureTable.read(self)
+	return _picture_table
+
+
 ## The sound file `rel` (`.ogg` or `.wav`) as a stream, or null; read once and kept. A trusted pack's imported file is loaded (its import settings hold);
 ## else the bytes are decoded (`load_from_buffer`), so no import and no `ResourceLoader` is involved. Either carries its file (`SOURCE_META`).
 func stream(rel: String) -> AudioStream:
@@ -404,6 +414,7 @@ func file(rel: String) -> Resource:
 ## Forgets the pictures, streams and clip lengths read so far (a file changed under a mounted pack), and lets go of a pack file (`close`).
 func forget() -> void:
 	close()
+	_picture_table = null
 	_textures.clear()
 	_streams.clear()
 	_fonts.clear()

@@ -262,7 +262,7 @@ func finale_texture() -> Texture2D:
 		return null
 	if finale_picture.begins_with("res://"):
 		return Assets.texture_at(finale_picture) if Packs.exists_at(finale_picture) else null
-	if NameRegistry.original().index_of(&"ui_picture", finale_picture) >= 0 or Packs.picture("ui_picture/" + finale_picture) != null:
+	if NameRegistry.original().index_of(&"ui_picture", finale_picture) >= 0 or Pictures.has("ui_picture/" + finale_picture):
 		return Assets.ui_picture(StringName(finale_picture))
 	return null
 

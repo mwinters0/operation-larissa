@@ -9,8 +9,8 @@ extends RefCounted
 ## `<name>_<number>.png` (`radar_map_1000.png`), one nobody named keeps `ui_1000.png` / `pa_1780.png` (`file_stem`; the importer's twin
 ## is tools/import/asset_names.py).
 ##
-## THE PACKS. A pack's picture for a skin key (`pictures/ui_picture/title_sky.png`, `Packs.picture`) comes before the skin's and the
-## file's: `GameSkin.picture` asks the packs first. A `ui_picture` name that only a pack has is found by `ui_picture` itself.
+## THE PACKS. A picture is found by its KEY, through the chain's picture tables (`Pictures`: `pictures.json` of each pack, the top first); the number-to-path functions below are what a pack with no table is still read by
+## (BRIDGE: they go when every pack has a table). A `ui_picture` name that only a pack has is found by `ui_picture` itself.
 ##
 ## THE SKIN. The path is not the last step: every texture is fetched with `texture_at(path)`, which asks the skin in use
 ## (`SkinChoice.current()`, `GameSkin.texture_at`) whether it has its own picture for that file, and loads the file only if it has none.
@@ -49,17 +49,18 @@ static var _problem_art_folders: Dictionary = {}
 ## key -> file of the chain's pictures, built by `key_files`.
 static var _key_files: Dictionary = {}
 static var _key_files_made := false
+## BRIDGE: pack id -> the same for one pack (`pack_key_files`).
+static var _pack_key_files: Dictionary = {}
 
 
 # --- the interface, story and console pictures (`ui_picture`) ------------------------------------------------
 
 ## The texture of the picture `picture_name` (a `ui_picture` name), or null when there is no such name or file.
 static func ui_picture(picture_name: StringName) -> Texture2D:
-	if NameRegistry.original().index_of(&"ui_picture", String(picture_name)) < 0:       # a name of a pack's own (`pictures/ui_picture/<name>.png`)
-		var from_pack := Packs.picture("ui_picture/" + picture_name)
-		if from_pack != null:
-			return from_pack
-	return _texture(ui_picture_path(number_of(&"ui_picture", picture_name)))
+	var held := picture_by_key("ui_picture/" + picture_name)
+	if held != null:
+		return held
+	return _texture(ui_picture_path(number_of(&"ui_picture", picture_name)))       # BRIDGE: a made-up name (`ui_1039`) and the pack with no table
 
 
 ## The texture of picture `number`, for numbers a data file holds (`ClosingCrewScripts`).
@@ -91,7 +92,10 @@ static func _ui_folder(number: int) -> String:
 
 ## The texture of the problem-art picture `picture_name`, or null.
 static func problem_art(picture_name: StringName) -> Texture2D:
-	return _texture(problem_art_path(number_of(&"problem_art", picture_name)))
+	var held := picture_by_key("problem_art/" + picture_name)
+	if held != null:
+		return held
+	return _texture(problem_art_path(number_of(&"problem_art", picture_name)))     # BRIDGE: a made-up name (`pa_1780`) and the pack with no table
 
 
 ## "res://packs/legacy/assets/problem_art/b116/log_scan_0_2046.png", or "" when no folder holds the number.
@@ -118,18 +122,21 @@ static func problem_art_rel(number: int) -> String:
 
 ## The picture behind screen `screen` of sector `sector`, or null when the screen has none (two of the finale's are plain black).
 static func background(sector: int, screen: int) -> Texture2D:
-	return texture_at(background_path(sector, screen)) if has_background(sector, screen) else null
+	return picture_by_key(_background_key(sector, screen))
 
 
-## Has screen `screen` of sector `sector` a picture behind it (a file of the chain, or one a pack maps for its key)?
+## Has screen `screen` of sector `sector` a picture behind it (a picture of the chain for its key)?
 static func has_background(sector: int, screen: int) -> bool:
-	var path := background_path(sector, screen)
-	return Packs.exists_at(path) or Packs.picture(GameSkin.key_of(path)) != null
+	return picture_by_key(_background_key(sector, screen)) != null
 
 
-## The skin key of that picture (`background/bg_s03_07`), or "" when the screen has none.
+## The key of that picture (`background/bg_s03_07`), or "" when the screen has none.
 static func background_key(sector: int, screen: int) -> String:
-	return GameSkin.key_of(background_path(sector, screen)) if has_background(sector, screen) else ""
+	return _background_key(sector, screen) if has_background(sector, screen) else ""
+
+
+static func _background_key(sector: int, screen: int) -> String:
+	return "background/bg_s%02d_%02d" % [sector, screen]
 
 
 ## "res://packs/legacy/assets/backgrounds/bg_s03_07.png": where the picture behind screen `screen` of sector `sector` is (or would be).
@@ -139,34 +146,49 @@ static func background_path(sector: int, screen: int) -> String:
 
 ## Forget what was read from the chain's files (`Catalog.packs_changed`: another pack is in use).
 static func forget_folders() -> void:
+	Pictures.forget()
 	_problem_art_folders = {}
 	_key_files = {}
 	_key_files_made = false
+	_pack_key_files = {}
 
 
 # --- a picture by its skin key ------------------------------------------------------------------------------------
 
-## The picture of the skin key `key` (`frame/sub_00`, `background/bg_s03_07`, `deco/coral_fan_cyan`) as the original look shows it: the one lookup `texture_at` makes for a file, found from the key. The pack's own picture
-## for it (`Packs.picture`), else the skin's, else the file of the first pack of the chain that has one (`key_files`); null for a key nothing holds. What a mod's draw list names is resolved here (`ModDraw`), so a mod sees
-## what `OriginalPresenter` would show under the skin in use, and holds no picture itself.
+## The picture of the skin key `key` (`frame/sub_00`, `background/bg_s03_07`, `deco/coral_fan_cyan`): what the chain's picture tables say (`Pictures.resolve`); null for a key no pack holds. What a mod's draw list names is
+## resolved here (`ModDraw`), so a mod sees what `OriginalPresenter` would show, and holds no picture itself. BRIDGE: what a skin maps (`GameSkin.picture`) still comes before the base game's pictures.
 static func picture_by_key(key: String) -> Texture2D:
-	var rel: String = key_files().get(key, "")
-	return texture_at(Packs.path(rel)) if not rel.is_empty() else SkinChoice.current().picture(key)
+	var dressed := SkinChoice.current().picture(key)
+	return dressed if dressed != null else Pictures.resolve(key)
 
 
-## The picture files of the chain by their skin key: key -> the file as a pack keeps it (`assets/sprites/sub/sub_00.png`), the first pack of the chain having the last word. Made once for the chain in use (`forget_folders`).
+## BRIDGE: the picture files of the packs with no table by their skin key: key -> the file as a pack keeps it (`assets/sprites/sub/sub_00.png`), the first pack of the chain having the last word. Made once for the chain in use (`forget_folders`).
 static func key_files() -> Dictionary:
 	if not _key_files_made:
 		var made := {}
 		for each in Packs.chain():                        # (the top of the chain first: the file of a key the first pack has is the one `Packs.path` finds)
-			for rel in each.all_files():
-				if rel.get_extension() == "png" and rel.begins_with("assets/"):
-					var key := GameSkin.key_of_rel(rel)
-					if not key.is_empty() and not made.has(key):
-						made[key] = rel
+			var own := pack_key_files(each)
+			for key: String in own:
+				if not made.has(key):
+					made[key] = own[key]
 		_key_files = made
 		_key_files_made = true
 	return _key_files
+
+
+## BRIDGE: the same for one pack (`{}` for a pack with a table: it names its pictures there, not by its files' names).
+static func pack_key_files(pack: Pack) -> Dictionary:
+	if pack.picture_table().present:
+		return {}
+	if not _pack_key_files.has(pack.id):
+		var made := {}
+		for rel in pack.all_files():
+			if rel.get_extension() == "png" and rel.begins_with("assets/"):
+				var key := GameSkin.key_of_rel(rel)
+				if not key.is_empty() and not made.has(key):
+					made[key] = rel
+		_pack_key_files[pack.id] = made
+	return _pack_key_files[pack.id]
 
 
 # --- shared -------------------------------------------------------------------------------------------------------

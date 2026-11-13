@@ -85,6 +85,10 @@ static func _resources(a: Resource, b: Resource, path: String, differences: Arra
 
 
 static func _pictures(a: Texture2D, b: Texture2D, path: String, differences: Array[String]) -> void:
+	if a is PictureRef or b is PictureRef:                          # (a picture held by key is the same when it holds the same key)
+		if not (a is PictureRef and b is PictureRef) or (a as PictureRef).key != (b as PictureRef).key:
+			differences.append("%s: the picture %s against %s" % [path, a.key if a is PictureRef else "a file", b.key if b is PictureRef else "a file"])
+		return
 	var from_a := rel_of(a)
 	var from_b := rel_of(b)
 	if not from_a.is_empty() and not from_b.is_empty():

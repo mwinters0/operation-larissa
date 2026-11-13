@@ -747,7 +747,7 @@ static func voice_groups() -> Dictionary:
 	return _voice_groups
 
 
-## Pictures: the picture for a skin key (`ui_picture/title_sky`, `background/bg_s40_00`) in the first pack that has `pictures/<key>.png`.
+## BRIDGE (the folder convention the picture tables replace): the picture for a skin key (`ui_picture/title_sky`, `background/bg_s40_00`) in the first pack that has `pictures/<key>.png`. `Pictures.resolve` is the lookup.
 static func picture(key: String) -> Texture2D:
 	if key.is_empty():
 		return null
@@ -882,7 +882,7 @@ static func _reindex() -> void:
 	for i in range(_chain.size() - 1, -1, -1):
 		var each := _chain[i]
 		each.measure_clips()
-		_has_pictures = _has_pictures or not each.folders_in("pictures").is_empty()
+		_has_pictures = _has_pictures or not each.folders_in("pictures").is_empty() or (each.base != &"" and not each.picture_table().keys().is_empty())
 		for number in each.sector_ids():
 			_sector_owner[number] = each
 		var words: Variant = each.read_json("texts.json")

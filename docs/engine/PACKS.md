@@ -103,7 +103,8 @@ is [`../create/CONTENT.md`](../create/CONTENT.md), section 4; this page is the c
   sectors/sector_NN/sector_NN.json    a SectorData, NN 0 to 255   +   sector_NN.foe   its creature script
   texts.json                          {"text_name": "words"} (Catalog.text / has_text)
   voice_cues.json                     {"groups": {"group name": ["voice name", ...]}}
-  pictures/<kind>/<name>.png          a picture by its skin key
+  pictures.json                       the picture table: skin key -> a file of the pack, `{"file": f, "scale": n}` (drawn at 1/n of its size) or `{"alias": key}` (`PictureTable`; `Pictures` looks a key up down the chain, top first)
+  pictures/<kind>/<name>.png          a picture by its skin key, in a pack with no picture table
   audio/sound|music|voice/<name>.ogg  a clip by registry name (replaces the base's) or a name of its own
   audio/lengths.json                  {"voice": {"name": ticks}}: stated lengths (optional)
   data/problems/problem_type_NN.json  a ProblemType
@@ -177,6 +178,7 @@ What the data form adds to hold every kind a pack has (`data/` of dev and legacy
   its own, by its authoring path (a trusted reader and an untrusted one name the same file). Read through the door, looking in the pack the file is in
   and then in the packs under it. On writing, a picture or sound whose file is in a pack becomes a `$ref`. A Texture2D field may also be the bare path
   of a PNG in the pack (a campaign by hand); a script resource is always inline.
+- **`{"$picture": "frame/sub_00"}`**: a Texture2D field (or a list element or a Dictionary value) that holds a picture by its skin key: a `PictureRef`, whatever the chain's picture tables give that key (`Pictures.resolve`), so the data names no file.
 - **`{"$path": "assets/audio/voice/x.wav"}`**: a String (or PackedStringArray element) of a field the class lists in `JSON_PATH_FIELDS`
   (`VoiceIndex.paths`, `MusicCatalog.gm_paths` / `adlib_paths`, `ProblemType.art_dir` / `art_files`). Written relative to the pack, read back as the
   full path of the file in the pack that holds it (`res://packs/dev/assets/...`, `user://packs/x/assets/...`), which `Packs.file_at` serves.

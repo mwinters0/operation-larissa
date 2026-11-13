@@ -92,6 +92,61 @@ func test_a_hand_written_sprite_frames_and_tile_set_are_built() -> void:
 	shelf.remove()
 
 
+# --- a picture by key -----------------------------------------------------------------------------------------------------------
+
+func test_a_picture_held_by_key_is_written_as_its_key_and_read_back_as_the_same_ref() -> void:
+	var shelf := PicturesShelf.new()
+	shelf.mount_base()
+	var frames := SpriteFrames.new()
+	frames.remove_animation(&"default")
+	frames.add_animation(&"walk")
+	frames.add_frame(&"walk", PictureRef.of("frame/eel_swim_0"), 2.0)
+	frames.add_frame(&"walk", PictureRef.of("ui_picture/coral_noon"))
+	var source := TileSetAtlasSource.new()
+	source.texture = PictureRef.of("tile/wall_sheet")
+	source.texture_region_size = Vector2i(16, 16)
+	source.create_tile(Vector2i(1, 0))
+	var tile_set := TileSet.new()
+	tile_set.tile_size = Vector2i(16, 16)
+	tile_set.add_source(source, 3)
+	var campaign := Campaign.new()
+	campaign.id = &"by_key"
+	campaign.banner = PictureRef.of("deco/half_clear")
+	var layout := HudLayout.new()
+	layout.bezel = PictureRef.of("ui_picture/title_sky")
+	layout.game_textures = [PictureRef.of("frame/eel_swim_0"), PictureRef.of("frame/sub_00")] as Array[Texture2D]
+	var pack := shelf.base.pack
+	for original: Resource in [frames, tile_set, campaign, layout]:
+		var writer := ResourceJson.new(pack)
+		var text := ResourceJson.stringify(writer.data_of(original))
+		var reader := ResourceJson.new(pack)
+		var back := reader.resource_from(JSON.parse_string(text))
+		assert_array(writer.problems).override_failure_message("%s: %s" % [original.get_class(), writer.problems]).is_empty()
+		assert_array(reader.problems).override_failure_message("%s: %s" % [original.get_class(), reader.problems]).is_empty()
+		var differences: Array[String] = []
+		ResourceCompare.same(original, back, original.get_class(), differences)
+		assert_array(differences).override_failure_message("\n".join(differences)).is_empty()
+		assert_str(text).contains("\"$picture\"").not_contains("$ref")
+	assert_str(ResourceJson.new(pack).data_of(frames)["animations"][0]["frames"][0]["texture"]["$picture"]).is_equal("frame/eel_swim_0")
+	assert_str(ResourceJson.new(pack).data_of(campaign)["banner"]["$picture"]).is_equal("deco/half_clear")
+	var read_tile_set := ResourceJson.new(pack).resource_from(ResourceJson.new(pack).data_of(tile_set)) as TileSet
+	assert_int((read_tile_set.get_source(3) as TileSetAtlasSource).get_tiles_count()).is_equal(1)         # (the picture was known when the tiles were made)
+	assert_object(((read_tile_set.get_source(3) as TileSetAtlasSource).texture as PictureRef).resolved()).is_not_null()
+	shelf.remove()
+
+
+func test_a_picture_by_key_that_is_not_one_is_a_problem() -> void:
+	for bad: Variant in [{"$picture": 5}, {"$picture": "sky/x"}, {"$picture": "frame/x", "extra": 1}, {"$picture": "nokind"}]:
+		var reader := ResourceJson.new()
+		var campaign := reader.resource_from({"class": "Campaign", "banner": bad}) as Campaign
+		assert_object(campaign.banner).override_failure_message(str(bad)).is_null()
+		assert_array(reader.problems).override_failure_message(str(bad)).has_size(1)
+		assert_str(reader.problems[0]).contains("Campaign.banner").contains("picture key")
+	var wrong_field := ResourceJson.new()
+	wrong_field.resource_from({"class": "Campaign", "sectors": {"$picture": "frame/x"}})
+	assert_array(wrong_field.problems).is_not_empty()
+
+
 # --- the references ---------------------------------------------------------------------------------------------------------
 
 func test_a_sub_resource_held_twice_is_written_once_and_read_as_one_object() -> void:

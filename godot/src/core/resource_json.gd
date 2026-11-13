@@ -21,6 +21,8 @@ extends RefCounted
 ##     file of the pack by its AUTHORING path (the path a `.tres` of a trusted pack names it by). It is looked for in the pack the file is in and then in
 ##     the packs under it in the chain (`Packs.provider_below`), never above. A `.ogg` / `.wav` is an AudioStream, a `.png` a Texture2D, a `.tres` another
 ##     resource of the pack (its data form, `X.json`). A Texture2D field may also be a bare path of a PNG in the pack (a campaign by hand).
+##   * a Texture2D field, or an element of a list or a value of a dictionary, may instead hold a picture BY KEY: `{"$picture": "frame/sub_00"}`, a `PictureRef` that is whatever picture the chain's picture tables (`Pictures`) give that key, so
+##     the data names no file of any pack.
 ##   * a String field that holds a path into a pack (`JSON_PATH_FIELDS`): `{"$path": "assets/audio/voice/x.wav"}`, read as the full path of the
 ##     file in the pack that holds it (`res://packs/dev/assets/...`), which `Packs.file_at` then serves. A string that is not under a pack stays as it is.
 ##   * a sub-resource used more than once in the file: `{"$id": "r1", ...fields}` the first time and `{"$id": "r1"}` after.
@@ -46,6 +48,7 @@ extends RefCounted
 const CLASS_KEY := "class"
 ## The keys of the references: another file of the pack, a path into the pack, a sub-resource shared inside the file.
 const REF_KEY := "$ref"
+const PICTURE_KEY := "$picture"
 const PATH_KEY := "$path"
 const ID_KEY := "$id"
 ## The tag of a value whose kind the field's type does not say (inside a Dictionary or an untyped Array): {"$": tag, "v": value}.
@@ -188,6 +191,8 @@ func _decode_object(value: Variant, info: Dictionary, label: String) -> Variant:
 	if value is Dictionary:
 		if value.has(REF_KEY):
 			return _reference(value[REF_KEY], declared, label)
+		if value.has(PICTURE_KEY):
+			return _picture(value, declared, label)
 		if value.has(ID_KEY) and value.size() == 1:
 			return _shared_resource(value[ID_KEY], label)
 	if declared == "Texture2D" or ClassDB.is_parent_class(declared, "Texture2D"):
@@ -277,6 +282,19 @@ func _reference(rel: Variant, declared: String, label: String) -> Variant:
 	return made
 
 
+## The `PictureRef` `{"$picture": key}` describes, for a field of class `declared` (a Texture2D or something it may stand in for); null with a problem when it is not one.
+func _picture(value: Dictionary, declared: String, label: String) -> Variant:
+	var named: Variant = value[PICTURE_KEY]
+	var bad := PictureTable.key_problem(named)
+	if value.size() != 1 or not bad.is_empty():
+		problems.append("%s: {\"%s\": ...} should hold a picture key and nothing else%s" % [label, PICTURE_KEY, "" if bad.is_empty() else " (" + bad + ")"])
+		return null
+	if not (declared.is_empty() or declared == "Resource" or declared == "Texture2D" or declared == "PictureRef" or ClassDB.is_parent_class("Texture2D", declared)):
+		problems.append("%s: a picture by key is a Texture2D, not %s" % [label, declared])
+		return null
+	return PictureRef.of(named)
+
+
 ## "" when `made` may stand in a field of class `declared`, else a reason.
 static func _not_a(made: Resource, declared: String) -> String:
 	if declared.is_empty() or declared == "Resource":
@@ -309,6 +327,8 @@ func _plain(value: Variant, int_keys: bool = false, label: String = "") -> Varia
 			return _tagged(value[TAG_KEY], value["v"], label)
 		if value.has(REF_KEY):
 			return _reference(value[REF_KEY], "", label)
+		if value.has(PICTURE_KEY):
+			return _picture(value, "", label)
 		var map := {}
 		for key: String in value:
 			map[key.to_int() if int_keys and key.is_valid_int() else key] = _plain(value[key], false, "%s[%s]" % [label, key])
@@ -385,9 +405,11 @@ func vector2i(value: Variant, label: String, fallback: Vector2i) -> Vector2i:
 func texture_from(value: Variant, label: String) -> Texture2D:
 	if value == null:
 		return null
+	if value is Dictionary and value.has(PICTURE_KEY):
+		return _picture(value, "Texture2D", label) as Texture2D
 	if value is Dictionary:
 		return _reference(value.get(REF_KEY), "Texture2D", label) as Texture2D
-	problems.append("%s should be {\"$ref\": \"assets/...png\"}" % label)
+	problems.append("%s should be {\"$ref\": \"assets/...png\"} or {\"$picture\": \"<key>\"}" % label)
 	return null
 
 
@@ -511,8 +533,10 @@ func _path_data(path: String) -> Variant:
 	return {PATH_KEY: path.trim_prefix(holder.root + "/")}
 
 
-## `{"$ref": rel}` for a picture or a sound that is a file of a pack (the file `Packs.source_of` names), else null with a problem.
+## `{"$ref": rel}` for a picture or a sound that is a file of a pack (the file `Packs.source_of` names), `{"$picture": key}` for a `PictureRef`, else null with a problem.
 func reference_of(resource: Resource) -> Variant:
+	if resource is PictureRef:
+		return {PICTURE_KEY: (resource as PictureRef).key}
 	var path := Packs.source_of(resource)
 	var holder := Packs.pack_of_path(path, pack)
 	if holder == null:
