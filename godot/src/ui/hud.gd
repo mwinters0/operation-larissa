@@ -260,11 +260,6 @@ func game_phase(fraction: float) -> float:
 	return GameClock.tick_count + fraction
 
 
-## Runs `action` as this HUD's skin (`SkinChoice.within`; just runs it when `skin` is null): a picture a script names by key is the one this HUD's skin shows.
-func run_in_skin(action: Callable) -> Variant:
-	return SkinChoice.within(skin, action)
-
-
 ## Does a skin mod's script draw parts of this console?
 func hosts_mod_layers() -> bool:
 	return _mod_layers != null

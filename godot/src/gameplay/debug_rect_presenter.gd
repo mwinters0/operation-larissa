@@ -32,7 +32,7 @@ extends SectorPresenter
 ##
 ## It shows no keys of the sector viewer (`show_debug`): everything is always on, that is the point of it.
 
-## How opaque the filled boxes (the walls) are when this is an overlay (`backdrop` off), so the skin's picture shows through them.
+## How opaque the filled boxes (the walls) are when this is an overlay (`backdrop` off), so the picture the presenter draws shows through them.
 const OVERLAY_FILL_ALPHA := 0.4
 
 ## Fill the playfield with a dark background. Off: only the outlines are drawn (an overlay).

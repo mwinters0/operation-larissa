@@ -11,7 +11,7 @@ extends RefCounted
 ## chosen apart from it, so a skin's presenter and the debug rectangles can be swapped and swapped back.
 ##
 ## THE OVERLAY. Apart from being the presenter, the debug rectangles can be laid OVER whatever presenter the skin brings
-## (`SectorWorld.set_overlay`): the rectangles the rules test drawn on top of the skin's pictures, to see whether a picture covers its
+## (`SectorWorld.set_overlay`): the rectangles the rules test drawn on top of the pictures the skin's presenter draws, to see whether a picture covers its
 ## rectangle. `-- --overlay` starts the game with it on, and it is a key in the game (F3 then O) and in the sector viewer (O).
 ##
 ## From the command line (arguments after `--`):

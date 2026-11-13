@@ -10,7 +10,7 @@ extends Control
 ##        C  currents on/off      H  collision shapes on/off      Space  pause clock
 ##        T  show the (normally invisible) math triggers      L  educational level 0-3
 ##        P  swap the original look for the debug rectangles (`DebugRectPresenter`) and back
-##        O  lay the debug rectangles OVER the picture of the skin in use (and take them off): the skin-authoring overlay
+##        O  lay the debug rectangles OVER what the presenter of the skin in use draws (and take them off): the skin-authoring overlay
 ##        F  flight mode: the arrows (or WASD) now steer the sub through the screens,
 ##           Space fires ink; creatures cost oxygen (a lost tank respawns the sub).
 ##           Pieces are picked up by touching them; a math trigger blinks a light on the sub

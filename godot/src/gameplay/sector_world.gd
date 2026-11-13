@@ -215,7 +215,7 @@ func toggle_presenter() -> void:
 
 
 ## Lays the debug rectangles (`DebugRectPresenter` with no backdrop) over the presenter, or takes them off: the walls, the sub's two boxes, the
-## creatures' hit rectangles, the pellets, the pieces, the triggers, the dock, drawn from the rules on top of the skin's pictures
+## creatures' hit rectangles, the pellets, the pieces, the triggers, the dock, drawn from the rules on top of the pictures the presenter draws
 ## (does the picture cover its rectangle?). It is bound to the same rules and survives a change of presenter or skin; the game
 ## plays the same with it on or off. A key in the sector viewer (O) and in the game (F3 then O), `-- --overlay` at the start.
 func set_overlay(on: bool) -> void:

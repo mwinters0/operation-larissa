@@ -14,15 +14,13 @@ extends RefCounted
 ## Teaches: one host for every mod that draws a part of a screen: the part is named by a layer, the original is the fallback of every part, and "hide the original" is a derived fact (has the script answered?), never a flag to keep in step.
 
 ## What a host stands on: the places of one screen. `parent` is the node the stacks are children of, `nodes_of(layer)` the original's nodes of a layer (`Array[CanvasItem]`, in the order they are drawn: the stack stands behind the last one and all of them are made transparent while the
-## script's answer is on), `clip_of(layer)` the rectangle a layer's picture is cut to (an invalid Callable: not cut), `state()` the state the script is told (empty: there is nothing to show yet), `in_skin(action)` runs `action` as the screen's skin (a picture named by key is
-## the one this screen's skin shows), `phase(fraction)` the game's time the shaders of the stacks are given (`ModShader.PHASE_UNIFORM`: the sector's `SectorPresenter.game_phase`, the console's `Hud.game_phase`), and `fresh` says the state is built again every frame (else after an event or `refresh`).
+## script's answer is on), `clip_of(layer)` the rectangle a layer's picture is cut to (an invalid Callable: not cut), `state()` the state the script is told (empty: there is nothing to show yet), `phase(fraction)` the game's time the shaders of the stacks are given (`ModShader.PHASE_UNIFORM`: the sector's `SectorPresenter.game_phase`, the console's `Hud.game_phase`), and `fresh` says the state is built again every frame (else after an event or `refresh`).
 class Site:
 	extends RefCounted
 	var parent: Node
 	var nodes_of: Callable
 	var clip_of: Callable
 	var state: Callable
-	var in_skin: Callable
 	var phase: Callable
 	var fresh := false
 
@@ -57,7 +55,6 @@ static func make(presenter: OriginalPresenter, worn: GameSkin) -> ModLayerHost:
 	site.parent = presenter
 	site.nodes_of = func(layer: StringName) -> Array[CanvasItem]: return [presenter.layer_node(layer)]
 	site.state = func() -> Dictionary: return SkinState.build(presenter.view) if presenter.view != null and presenter.view.sector_index >= 0 else {}      # (the original's layers stay until a sector is shown)
-	site.in_skin = presenter.run_in_skin
 	site.phase = presenter.game_phase
 	var host := ModLayerHost.new()
 	host._site = site
@@ -83,7 +80,6 @@ static func make_hud(hud: Hud, worn: GameSkin) -> ModLayerHost:
 	site.nodes_of = hud.layer_nodes
 	site.clip_of = hud.layer_clip
 	site.state = hud.console_state
-	site.in_skin = hud.run_in_skin
 	site.phase = hud.game_phase
 	site.fresh = true
 	var host := ModLayerHost.new()
@@ -179,7 +175,7 @@ func show(fraction: float) -> void:
 		if not answer["ok"]:                       # (a fault: the frame went wrong, the last answer stays, or the original's layer if there is none)
 			continue
 		var checked: Variant = answer["value"]
-		var drawn := _site.in_skin.call(func() -> ModDraw.Drawn: return ModDraw.validate(checked, pack, _skin.assets)) as ModDraw.Drawn      # (a picture named by key is the one this screen's skin shows)
+		var drawn := ModDraw.validate(checked, pack, _skin.assets)
 		if drawn == null:                          # (not a list: likewise)
 			ModDraw.report_not_a_list(_skin.pack_id, "skin", "the last picture it drew stays, and the original's layer shows if it drew none")
 		else:

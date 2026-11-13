@@ -138,7 +138,7 @@ func _on_skin_changed(_skin: GameSkin) -> void:
 	_dress()
 
 
-## Puts the screen's frame on as the skin in use shows it: the screen's picture and the sender's, in the rectangles of the layout (`_apply_layout`). The one builder of the frame: `_ready` and a skin put on in the middle of a problem both call it, and what it
+## Puts the screen's frame on: the layout of the skin in use gives the rectangles (`_apply_layout`), the pictures (the screen's and the sender's) are the pack chain's. The one builder of the frame: `_ready` and a skin put on in the middle of a problem both call it, and what it
 ## reads is the skin and the problem now (the sender's picture of the prompt shown), never what it was when the screen was made. Colours, fonts and styles are not set here: every label, the text box and the calculator's keys look them up in the project theme
 ## (`ThemeBuilder`, `SkinTheme`), which the skin puts on when it is selected.
 func _dress() -> void:
