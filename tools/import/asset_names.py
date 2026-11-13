@@ -19,6 +19,10 @@ When a name is given or changed (rename_name.py) the file moves: run the importe
 The zone stays in the file name as a `foe_z<zone>_` / `deco_z<zone>_` prefix because a name belongs to a zone (slot 40 is a different
 drawing in every zone) and the files of all zones share one folder. the game does not know these file names: the legacy pack's `pictures.json`
 (`picture_table.py`) says which file draws which key, and the resources hold keys (`PictureRef`).
+
+A picture's key is made here, once, by the `*_key` functions (`plain` for the folders whose names hold no number), and the step that writes the
+file hands that key to `asset_manifest` with it (`copy_picture`, `put_atlas`, `put_port`): the table is built from those records, no file name is
+read back into a key.
 """
 from __future__ import annotations
 
@@ -80,6 +84,27 @@ def deco_key(zone: int, slot: int) -> str:
     if slot < COMMON_DECOS:
         return "deco/" + key_name("deco", slot, "deco_%03d" % slot)
     return "deco/" + key_name("deco", slot, "deco_z%d_%03d" % (zone, slot), zone, "deco_z%d_" % zone)
+
+
+def plain(folder: str, kind: str, name: str) -> tuple[Path, str]:
+    """The file and the key of a picture of a folder whose names hold no registry number (`sprites/sub`, `tiles`, `backgrounds`): `assets/<folder>/<name>.png`
+    and `<kind>/<name>`."""
+    return ASSETS / folder / (name + ".png"), "%s/%s" % (kind, name)
+
+
+def background(sector: int, screen: int) -> tuple[Path, str]:
+    """The background of screen `screen` of sector `sector`."""
+    return plain("backgrounds", "background", "bg_s%02d_%02d" % (sector, screen))
+
+
+def tile(name: str) -> tuple[Path, str]:
+    """A tile picture (`zone0_tiles`, `currents`, `invisible_wall`)."""
+    return plain("tiles", "tile", name)
+
+
+def sprite(folder: str, name: str) -> tuple[Path, str]:
+    """A frame of the sub, the pieces, the station or the effects (`folder` below `sprites/`)."""
+    return plain("sprites/" + folder, "frame", name)
 
 
 def ui_file(folder: str, pid: int) -> Path:

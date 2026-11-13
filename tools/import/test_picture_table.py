@@ -1,4 +1,4 @@
-"""pytest checks of the picture table (picture_table.py): the key of every picture file is the key the importer says it holds the picture by, a `.tres` holds a picture
+"""pytest checks of the picture table (picture_table.py): the key of every picture file is recorded by the step that writes it (the forward rules of asset_names.py), a `.tres` holds a picture
 as a PictureRef sub-resource (`Tres.picture`), and the legacy pack's `pictures.json` answers every key its data names."""
 import json
 import re
@@ -24,46 +24,75 @@ def _rel(path: Path) -> str:
     return path.relative_to(common.LEGACY).as_posix()
 
 
-def test_the_key_of_a_file_is_the_key_the_importer_holds_the_picture_by():
-    """`key_of_rel` (file -> key, for the table written from the manifest) and `asset_names.*_key` (the key a step writes into a resource) are one rule."""
+def _recorded_key(path: Path) -> str:
+    """The key the manifest (the record the steps wrote with the file) holds the picture file `path` by."""
+    return asset_manifest.load()[_rel(path)]["picture_key"]
+
+
+def test_the_steps_record_the_key_the_forward_rules_make_with_each_picture_file():
+    """What a step hands `copy_picture` with the file is the key `asset_names.*_key` makes (the key the resources hold the picture by): the table is built from these records."""
     for folder, ids in pictures.UI_FOLDERS.items():
         for pid in ids:
-            assert picture_table.key_of_file(pictures.ui_file(folder, pid)) == asset_names.ui_key(pid), (folder, pid)
+            assert _recorded_key(pictures.ui_file(folder, pid)) == asset_names.ui_key(pid), (folder, pid)
     for zone in range(7):
         for slot in range(len(common.foe_slots(zone))):
-            assert picture_table.key_of_file(asset_names.foe_file(zone, slot)) == asset_names.foe_key(zone, slot), (zone, slot)
+            assert _recorded_key(asset_names.foe_file(zone, slot)) == asset_names.foe_key(zone, slot), (zone, slot)
     for zone in range(5):
         for slot in range(len(common.deco_slots(zone))):
-            assert picture_table.key_of_file(asset_names.deco_file(zone, slot)) == asset_names.deco_key(zone, slot), (zone, slot)
+            assert _recorded_key(asset_names.deco_file(zone, slot)) == asset_names.deco_key(zone, slot), (zone, slot)
+    for name in ("zone0_tiles", "currents", "invisible_wall"):
+        file, key = asset_names.tile(name)
+        assert _recorded_key(file) == key == "tile/" + name
 
 
 @NEEDS_GAME
-def test_the_key_of_a_problem_art_file_is_its_problem_art_key():
+def test_the_key_recorded_with_a_problem_art_file_is_its_problem_art_key():
     for folder, ids in step_images.problem_art_index().items():
         for pid in ids:
             if pictures.home(pid) is None:
-                assert picture_table.key_of_file(pictures.problem_art_file(folder, pid)) == asset_names.problem_art_key(pid), (folder, pid)
+                assert _recorded_key(pictures.problem_art_file(folder, pid)) == asset_names.problem_art_key(pid), (folder, pid)
 
 
-def test_a_key_of_a_plain_folder_is_the_stem_and_what_is_no_picture_has_none():
-    assert picture_table.key_of_rel("assets/sprites/sub/sub_00.png") == "frame/sub_00"
-    assert picture_table.key_of_rel("assets/sprites/fx/fx_bubbles_03.png") == "frame/fx_bubbles_03"
-    assert picture_table.key_of_rel("assets/tiles/zone0_tiles.png") == "tile/zone0_tiles"
-    assert picture_table.key_of_rel("assets/backgrounds/bg_s03_07.png") == "background/bg_s03_07"
-    assert picture_table.key_of_rel("assets/ui/hud/ui_1189.png") == "ui_picture/ui_1189"                        # (nobody named it: the number is part of the name)
-    assert picture_table.key_of_rel("assets/sprites/decos/deco_z0_096.png") == "deco/deco_z0_096"
-    assert picture_table.key_of_rel("assets/sprites/foes/foe_z2_octopus_ball_41.png") == "frame/foe_z2_octopus_ball"
-    assert picture_table.key_of_rel("assets/problem_art/single/README.md") == ""
-    assert picture_table.key_of_rel("assets/audio/sfx/lock_tick_38.wav") == ""
+def test_a_picture_is_recorded_with_its_key_and_nothing_else_is():
+    entries = asset_manifest.load()
+    for rel, entry in entries.items():
+        assert ("picture_key" in entry) == rel.endswith(".png"), rel
+    keys = [entry["picture_key"] for entry in entries.values() if "picture_key" in entry]
+    assert len(keys) == len(set(keys)) > 900
+    for rel, entry in entries.items():
+        if rel.endswith(".png"):
+            kind, name = entry["picture_key"].split("/", 1)
+            assert kind in ("ui_picture", "problem_art", "frame", "deco", "tile", "background") and name, rel
+
+
+def test_the_plain_folders_make_the_file_and_the_key_from_one_name():
+    assert asset_names.sprite("sub", "sub_00")[1] == "frame/sub_00"
+    assert _rel(asset_names.sprite("fx", "fx_bubbles_03")[0]) == "assets/sprites/fx/fx_bubbles_03.png"
+    assert (_rel(asset_names.tile("zone0_tiles")[0]), asset_names.tile("zone0_tiles")[1]) == ("assets/tiles/zone0_tiles.png", "tile/zone0_tiles")
+    assert (_rel(asset_names.background(3, 7)[0]), asset_names.background(3, 7)[1]) == ("assets/backgrounds/bg_s03_07.png", "background/bg_s03_07")
+
+
+def test_the_table_has_a_row_for_each_recorded_picture_and_no_file_name_is_read():
+    manifest = {"assets/x/whatever_1.png": {"picture_key": "frame/a"}, "assets/y/other.png": {"picture_key": "tile/b"}, "assets/y/README.md": {}}
+    assert picture_table.rows(manifest, {}) == {"frame/a": "assets/x/whatever_1.png", "tile/b": "assets/y/other.png"}
+
+
+def test_a_picture_without_its_key_or_two_with_one_key_are_refused():
+    with pytest.raises(AssertionError, match="no picture key"):
+        picture_table.rows({"assets/a.png": {"origin": "original"}}, {})
+    with pytest.raises(AssertionError, match="is the key of"):
+        picture_table.rows({"assets/a.png": {"picture_key": "frame/a"}, "assets/b.png": {"picture_key": "frame/a"}}, {})
 
 
 def test_a_picture_another_role_keeps_is_an_alias_of_its_owners_key():
     owner = pictures.home(2012)
-    assert owner is not None
-    files = [_rel(owner)]
-    table = picture_table.rows(files, {"b999": [2012]})
-    assert table[picture_table.key_of_file(owner)] == _rel(owner)
-    assert table[asset_names.problem_art_key(2012)] == {"alias": picture_table.key_of_file(owner)}
+    owner_key = pictures.home_key(2012)
+    assert owner is not None and owner_key is not None and owner_key == asset_names.ui_key(2012)
+    table = picture_table.rows({_rel(owner): {"picture_key": owner_key}}, {"b999": [2012]})
+    assert table[owner_key] == _rel(owner)
+    assert table[asset_names.problem_art_key(2012)] == {"alias": owner_key}
+    with pytest.raises(AssertionError, match="has no file"):
+        picture_table.rows({}, {"b999": [2012]})
 
 
 def test_the_table_text_is_sorted_json_the_engine_reads():

@@ -11,7 +11,7 @@ One entry for each file under the legacy pack's `assets/` (not Godot's `.import`
 
 ```json
 "assets/sprites/foes/foe_z5_canister_idle_0_35.png": {"origin": "original", "source": "ONWINCD/NEP256.DLL", "resource": 1980,
-    "offset": 2181120, "length": 1536, "bundle": 110, "conversion": "rund_png_rgba"}
+    "offset": 2181120, "length": 1536, "bundle": 110, "conversion": "rund_png_rgba", "picture_key": "frame/foe_z5_canister_idle_0"}
 ```
 
 | Field | Meaning |
@@ -23,6 +23,7 @@ One entry for each file under the legacy pack's `assets/` (not Godot's `.import`
 | `bundle` | The NEP.DLL bundle (BNDL) the picture is a member of, when it is in one (the extractor takes the first). |
 | `conversion` | `rund_png_rgba` (a sprite: RUND decoded, palette 900, index 200 becomes alpha 0), `rund_png_opaque` (a background), `pcm_wav` (sound resource to WAV), `tile_atlas` (16 x 16 tile pictures into an 8 x 8 grid), `midi_ogg` (FluidSynth, then ffmpeg: silence at the end cut, loud songs turned down, see `step_audio.py`), `drawn` (made with Pillow), `text`, `stamp` (the `rendered_with.json` next to the OGGs). |
 | `rate` | WAV only: the rate the game *plays* the clip at. Every resource header says 22050; see "Sounds". |
+| `picture_key` | PNG only: the key the pack's `pictures.json` holds the picture by (`frame/foe_z5_canister_idle_0`). The step that writes the file makes it by the rules of `asset_names.py` and records it with the file; the picture table is built from these entries, no file name is read back into a key. |
 
 It holds provenance, never bytes. The **importer writes it** (`asset_manifest.py`): every step records an entry when it writes an
 asset, `import_all.py` resolves the offsets from the DLLs' resource tables and saves the file, and a partial run

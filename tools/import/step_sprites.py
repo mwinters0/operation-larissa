@@ -2,14 +2,14 @@
 from __future__ import annotations
 
 import animation_map as amap
-import picture_table
+import asset_names
 from asset_manifest import copy_picture
-from common import (ASSETS, PACK_DATA, TABLES, TICK_HZ, bundle_ids, deco_slots, foe_slots,
+from common import (PACK_DATA, TABLES, TICK_HZ, bundle_ids, deco_slots, foe_slots,
                     load_json, out_text)
 import sprite_meta
 import tres
-from asset_names import deco_file, foe_file
-from pictures import home
+from asset_names import deco_file, deco_key, foe_file, foe_key
+from pictures import home, key_of
 
 SPRITE_FRAMES_DIR = PACK_DATA / "sprite_frames"
 META_DIR = PACK_DATA / "sprite_meta"
@@ -44,36 +44,35 @@ def pick(keys: list[str], indices: list[int]) -> list[str]:
 
 # ---- copying sprites ------------------------------------------------------
 
-def copy_ids(ids: list[int], file) -> list[str]:
-    """Copy NEP256 sprites to the file `file(i, id)` (a Path; `sprite_in` makes one for the sets without registry names); returns their keys.
+def copy_ids(ids: list[int], place) -> list[str]:
+    """Copy NEP256 sprites to the file and under the key `place(i, id)` gives (a (Path, key) pair; `sprite_in` makes one for the sets without registry names);
+    returns their keys, each recorded with its file in the manifest.
 
     A picture is stored once (pictures.py): an id that another role owns (the story art, the finale creatures) is not
     copied again, the returned key is that role's picture."""
     out = []
     for i, pid in enumerate(ids):
-        dest = file(i, pid)
+        dest, key = place(i, pid)
         owner = home(pid)
         if owner is None or owner == dest:
-            copy_picture(pid, dest)
-        else:
-            dest = owner
-        out.append(picture_table.key_of_file(dest))
+            copy_picture(pid, dest, key)
+        out.append(key_of(pid, key))
     return out
 
 
 def sprite_in(folder: str, pattern: str):
-    """The file rule of a set that has no names: assets/sprites/<folder>/<pattern % index>.png (`pattern` may use the id as %(id)d)."""
-    return lambda i, pid: ASSETS / "sprites" / folder / ((pattern % {"i": i, "id": pid}) + ".png")
+    """The place rule of a set that has no names: assets/sprites/<folder>/<pattern % index>.png and the key frame/<pattern % index> (`pattern` may use the id as %(id)d)."""
+    return lambda i, pid: asset_names.sprite(folder, pattern % {"i": i, "id": pid})
 
 
 def deco_keys(zone: int) -> list[str]:
     """The keys of deco slots 0-69 (common) and the zone's own, from the slot table tools/analysis/data/sprite_slots.json."""
-    return copy_ids(deco_slots(zone), lambda slot, pid: deco_file(zone, slot))
+    return copy_ids(deco_slots(zone), lambda slot, pid: (deco_file(zone, slot), deco_key(zone, slot)))
 
 
 def foe_keys(zone: int) -> list[str]:
     """The keys of creature slots 0-27 (common), 28-34 (ink) and 35+ (the zone's own), from tools/analysis/data/sprite_slots.json."""
-    return copy_ids(foe_slots(zone), lambda slot, pid: foe_file(zone, slot))
+    return copy_ids(foe_slots(zone), lambda slot, pid: (foe_file(zone, slot), foe_key(zone, slot)))
 
 
 # ---- metadata ---------------------------------------------------------------

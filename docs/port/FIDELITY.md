@@ -37,7 +37,7 @@ the legacy pack as a player, see [`../play/LEGACY.md`](../play/LEGACY.md); for t
   (`tools/import/import_uids.py`), so the same ISO gives the same uids in every checkout and a scene can refer to an asset by
   `uid://`.
 - **Every asset has a recorded source.** `tools/import/asset_manifest.json` (written by the importer, committed: provenance only) says
-  for every file under the pack's `assets/` its source file, resource id, offset and conversion.
+  for every file under the pack's `assets/` its source file, resource id, offset and conversion, and for a picture the key the pack's `pictures.json` holds it by.
 - **Names, not numbers.** An asset with a registry name is written as `<name>_<number>`; a renamed one is moved and stale outputs are
   pruned ([`../create/NAMES.md`](../create/NAMES.md)).
 - **Committed outputs.** The one file the importer writes into the project's `godot/data/` is `ui/menu_layout.tres`, which holds nothing of the game (the

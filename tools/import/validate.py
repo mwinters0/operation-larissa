@@ -5,6 +5,7 @@ import re
 
 from PIL import Image
 
+import asset_names
 from asset_names import foe_file, problem_art_folder_file, ui_file
 from common import (ASSETS, COMMON_CREATURES, COMMON_DECOS, ANALYSIS_DATA, TABLES, FOE_ZONE_BASE, INK_FRAMES,
                     ORIGINAL_SECTOR_COUNT, PACK_DATA, PROJECT_DATA, ZONE_DECO_COUNTS, ZONE_FOE_COUNTS, file_of_res, load_json, raw_table, sector_file)
@@ -82,7 +83,7 @@ def run() -> list[str]:
 
     # tile pictures 1..61 are non-empty in every zone atlas
     for z in range(5):
-        atlas = Image.open(ASSETS / "tiles" / ("zone%d_tiles.png" % z)).convert("RGBA")
+        atlas = Image.open(asset_names.tile("zone%d_tiles" % z)[0]).convert("RGBA")
         for k in range(1, 62):
             cell = atlas.crop(((k % 8) * 16, (k // 8) * 16, (k % 8) * 16 + 16, (k // 8) * 16 + 16))
             if cell.getbbox() is None:

@@ -21,7 +21,7 @@ from __future__ import annotations
 from functools import cache
 from pathlib import Path
 
-from asset_names import foe_file, problem_art_folder_file, ui_file       # the file names: asset_names.py (re-exported here)
+from asset_names import foe_file, foe_key, problem_art_folder_file, problem_art_key, ui_file, ui_key       # the file names and keys: asset_names.py (`foe_file` etc. re-exported here)
 from common import FOE_ZONE_BASE, foe_slots
 
 # Console art: the Game / Zone / Sector lettering, zone banners and the console bezel. The status lights (1007-1012),
@@ -47,29 +47,51 @@ UI_FOLDERS: dict[str, list[int]] = {"hud": HUD_IDS, "title": TITLE_IDS, "map": M
 
 
 @cache
-def homes() -> dict[int, Path]:
-    """Picture id -> the one file that holds it, for every id a role owns (all others: see `problem_art_file`)."""
-    found: dict[int, Path] = {}
+def _claims() -> dict[int, tuple[Path, str]]:
+    """Picture id -> (the one file that holds it, its key), for every id a role owns."""
+    found: dict[int, tuple[Path, str]] = {}
 
-    def claim(pid: int, path: Path) -> None:
+    def claim(pid: int, path: Path, key: str) -> None:
         if pid in found:
-            raise ValueError("picture %d is claimed twice: %s and %s" % (pid, found[pid], path))
-        found[pid] = path
+            raise ValueError("picture %d is claimed twice: %s and %s" % (pid, found[pid][0], path))
+        found[pid] = (path, key)
 
     for folder, ids in UI_FOLDERS.items():
         for pid in ids:
-            claim(pid, ui_file(folder, pid))
+            claim(pid, ui_file(folder, pid), ui_key(pid))
     # The finale zones' creatures (zones 5 and 6 of tools/analysis/data/sprite_slots.json) are pictures of bundles 110 and 112, which are
     # also in the problem-art id range.
     for zone in FINALE_ZONES:
         for slot, pid in enumerate(foe_slots(zone)[FOE_ZONE_BASE:], FOE_ZONE_BASE):
-            claim(pid, foe_file(zone, slot))
+            claim(pid, foe_file(zone, slot), foe_key(zone, slot))
     return found
+
+
+def homes() -> dict[int, Path]:
+    """Picture id -> the one file that holds it, for every id a role owns (all others: see `problem_art_file`)."""
+    return {pid: claim[0] for pid, claim in _claims().items()}
 
 
 def home(pid: int) -> Path | None:
     """The file of picture `pid` if a role owns it (so nothing else may write a copy), else None."""
-    return homes().get(pid)
+    claim = _claims().get(pid)
+    return claim[0] if claim else None
+
+
+def home_key(pid: int) -> str | None:
+    """The key of picture `pid` if a role owns it (every other name of the picture is an alias of it), else None."""
+    claim = _claims().get(pid)
+    return claim[1] if claim else None
+
+
+def key_of(pid: int, own_key: str) -> str:
+    """The key a consumer holds picture `pid` by: the owner's key when a role owns it, else `own_key` (the key the consumer's own file has)."""
+    return home_key(pid) or own_key
+
+
+def problem_art_held_key(pid: int) -> str:
+    """The key problem-art picture `pid` is held by: its owner's, else its own (the key of `problem_art_file`'s file)."""
+    return key_of(pid, problem_art_key(pid))
 
 
 def problem_art_file(folder: str, pid: int) -> Path:

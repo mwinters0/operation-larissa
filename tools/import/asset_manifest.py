@@ -17,6 +17,8 @@ at the end, so the manifest is made by the code that makes the assets and cannot
     bundle      the NEP.DLL bundle (BNDL) the picture belongs to, if it belongs to one
     conversion  how the original bytes became this file (the list is in docs/port/ASSET_FORMATS.md)
     rate        WAV only: the sample rate the game plays the clip at (the clip's own header says 22050)
+    picture_key PNG only: the key the pack's `pictures.json` holds the picture by (`ui_picture/title_sky`), made by the step that writes the file
+                (asset_names.py) and recorded with it; picture_table.py builds the table from these
 
 Offsets and lengths are read from the resource tables of the game's DLLs (the importer has checked the copy of the game
 first, source_files.py), so the manifest holds provenance and no original bytes.
@@ -40,7 +42,7 @@ from source_files import FOLDER, load_table
 MANIFEST = Path(__file__).with_name("asset_manifest.json")
 FORMAT = 1
 ORIGINS = ("original", "derived", "port")
-KEY_ORDER = ("origin", "source", "resource", "resources", "offset", "length", "bundle", "conversion", "rate")
+KEY_ORDER = ("origin", "source", "resource", "resources", "offset", "length", "bundle", "conversion", "rate", "picture_key")
 # NE resource type of the pictures and sounds (all of them: NE "TYPE32513", see docs/port/ASSET_FORMATS.md).
 RESOURCE_TYPE = 32513
 
@@ -69,8 +71,8 @@ def dll_path(dll: str) -> str:
 
 # ---- recording ---------------------------------------------------------------------------------------------------------
 
-def copy_picture(pid: int, dest: Path, dll: str = "NEP256") -> Path:
-    """Copy the extracted PNG of picture `pid` of `dll` (NEP256: sprites and UI; NEPBG1 / NEPBG2: backgrounds) to `dest`."""
+def copy_picture(pid: int, dest: Path, key: str, dll: str = "NEP256") -> Path:
+    """Copy the extracted PNG of picture `pid` of `dll` (NEP256: sprites and UI; NEPBG1 / NEPBG2: backgrounds) to `dest`, the file of the picture `key`."""
     info = manifest()["%s:%d" % (dll, pid)]
     out_copy(EXTRACTED / info["file"], dest)
     entry = {"origin": "original", "source": dll_path(dll), "resource": pid}
@@ -78,6 +80,7 @@ def copy_picture(pid: int, dest: Path, dll: str = "NEP256") -> Path:
         entry["bundle"] = info["bundle"]
     # sprites have the colour key turned into alpha, backgrounds are opaque
     entry["conversion"] = "rund_png_rgba" if info["transparent_index"] is not None else "rund_png_opaque"
+    entry["picture_key"] = key
     _put(dest, entry)
     return dest
 
@@ -90,10 +93,10 @@ def copy_sound(dll: str, sound: int, dest: Path) -> Path:
     return dest
 
 
-def put_atlas(dest: Path, bundle: int, pictures: list[int]) -> None:
-    """A tile atlas the tiles step drew out of the pictures of one bundle (the file itself is written by the caller)."""
+def put_atlas(dest: Path, bundle: int, pictures: list[int], key: str) -> None:
+    """A tile atlas the tiles step drew out of the pictures of one bundle (the file itself is written by the caller), the file of the picture `key`."""
     _put(dest, {"origin": "derived", "source": dll_path("NEP256"), "resources": list(pictures), "bundle": bundle,
-                "conversion": "tile_atlas"})
+                "conversion": "tile_atlas", "picture_key": key})
 
 
 def put_song(dest: Path, midi_stem: str) -> None:
@@ -103,10 +106,14 @@ def put_song(dest: Path, midi_stem: str) -> None:
                 "conversion": "midi_ogg"})
 
 
-def put_port(dest: Path, script: str, conversion: str) -> None:
-    """A file the port itself makes (nothing original in it): `script` is the importer file that writes it."""
+def put_port(dest: Path, script: str, conversion: str, key: str = "") -> None:
+    """A file the port itself makes (nothing original in it): `script` is the importer file that writes it; `key` is the picture's, for a PNG."""
     assert (ROOT / script).is_file(), script
-    _put(dest, {"origin": "port", "source": script, "conversion": conversion})
+    assert bool(key) == (dest.suffix == ".png"), "%s: a picture has its key recorded with it, and nothing else does" % dest
+    entry = {"origin": "port", "source": script, "conversion": conversion}
+    if key:
+        entry["picture_key"] = key
+    _put(dest, entry)
 
 
 # ---- stale files ---------------------------------------------------------------------------------------------------------

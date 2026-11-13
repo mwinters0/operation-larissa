@@ -4,10 +4,9 @@ from __future__ import annotations
 import copy
 
 from common import PACK_DATA, ANALYSIS_DATA, TABLES, EXTRACTED, bundle_ids, load_json, out_text, png_size, raw_table, res_path
-from pictures import problem_art_file
+from pictures import problem_art_file, problem_art_held_key
 from step_images import problem_art_index
 import asset_names
-import picture_table
 import problem_tables
 import tres
 
@@ -229,7 +228,7 @@ def build_screen_layout(diagrams: dict) -> str:
     t = tres.Tres("Resource", "ProblemScreenLayout", SCRIPTS + "problem_screen_layout.gd")
     bg = screen["background"]
     background = res_path(problem_art_file("single", bg["single_pic_id"]))
-    t.set("background", t.picture(picture_table.key_of_file(problem_art_file("single", bg["single_pic_id"]))))
+    t.set("background", t.picture(problem_art_held_key(bg["single_pic_id"])))
     t.set("background_position", tres.vec2i(*bg["pos"]))
     t.set("background_size", tres.vec2i(*png_size(background)))
     t.set("title_box_x", str(screen["title"]["box"][0]))

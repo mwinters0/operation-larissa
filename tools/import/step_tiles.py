@@ -3,16 +3,18 @@ from __future__ import annotations
 
 import io
 import math
-from pathlib import Path
 
 from PIL import Image, ImageDraw
 
+import asset_names
 from asset_manifest import put_atlas, put_port
-from common import ASSETS, PACK_DATA, ZONE_TITLES, bundle_ids, out_text, sprite_file, Stats, write_bytes
-import picture_table
+from common import PACK_DATA, ZONE_TITLES, bundle_ids, out_text, sprite_file, Stats, write_bytes
 import tres
 
 TILE = 16
+ZONE_ATLAS = "zone%d_tiles"    # the name of a zone's atlas (its file and its key: asset_names.tile)
+CURRENTS = "currents"
+INVISIBLE_WALL = "invisible_wall"
 GRID = 8                       # 8 x 8 cells per atlas
 # Direction table of the original (jump-table order): NW N NE W E SW S SE.
 DIRS = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
@@ -40,9 +42,9 @@ def build_zone_atlas(zone: int) -> None:
         tile = Image.open(sprite_file(pid)).convert("RGBA")
         assert tile.size == (TILE, TILE), (zone, k, tile.size)
         atlas.paste(tile, ((k % GRID) * TILE, (k // GRID) * TILE))
-    dest = ASSETS / "tiles" / ("zone%d_tiles.png" % zone)
+    dest, key = asset_names.tile(ZONE_ATLAS % zone)
     save_png(atlas, dest)
-    put_atlas(dest, 23 + 3 * zone, bundle_ids(23 + 3 * zone))
+    put_atlas(dest, 23 + 3 * zone, bundle_ids(23 + 3 * zone), key)
 
 
 def build_currents_atlas() -> None:
@@ -64,8 +66,9 @@ def build_currents_atlas() -> None:
             head = [tip, (tip[0] - ux * 3 + px * 2, tip[1] - uy * 3 + py * 2),
                     (tip[0] - ux * 3 - px * 2, tip[1] - uy * 3 - py * 2)]
             d.polygon(head, fill=(255, 255, 255, 230))
-    save_png(img, ASSETS / "tiles" / "currents.png")
-    put_port(ASSETS / "tiles" / "currents.png", "tools/import/step_tiles.py", "drawn")
+    dest, key = asset_names.tile(CURRENTS)
+    save_png(img, dest)
+    put_port(dest, "tools/import/step_tiles.py", "drawn", key)
 
 
 def build_invisible_wall() -> None:
@@ -84,8 +87,9 @@ def build_invisible_wall() -> None:
                 px[x, y] = pink + (255,)
             if x in (0, TILE - 1) or y in (0, TILE - 1):
                 px[x, y] = pink + (255,)
-    save_png(img, ASSETS / "tiles" / "invisible_wall.png")
-    put_port(ASSETS / "tiles" / "invisible_wall.png", "tools/import/step_tiles.py", "drawn")
+    dest, key = asset_names.tile(INVISIBLE_WALL)
+    save_png(img, dest)
+    put_port(dest, "tools/import/step_tiles.py", "drawn", key)
 
 
 def zone_source_name(zone: int) -> str:
@@ -104,9 +108,9 @@ def godot_vec2(x: int, y: int) -> str:
     return "Vector2(%d, %d)" % (x, y)
 
 
-def tile_texture(t: tres.Tres, png: Path) -> str:
-    """The atlas picture, held by its key (`tile/zone0_tiles`: a PictureRef)."""
-    return t.picture(picture_table.key_of_file(png))
+def tile_texture(t: tres.Tres, name: str) -> str:
+    """The atlas picture `name` (`zone0_tiles`), held by its key (`tile/zone0_tiles`: a PictureRef)."""
+    return t.picture(asset_names.tile(name)[1])
 
 
 def build_tileset() -> None:
@@ -116,7 +120,7 @@ def build_tileset() -> None:
     (checked by saving it in a headless editor: the result is byte for byte this file)."""
     t = tres.Tres("TileSet", uid=TILESET_UID)
     for z in range(5):
-        tex = tile_texture(t, ASSETS / "tiles" / ("zone%d_tiles.png" % z))
+        tex = tile_texture(t, ZONE_ATLAS % z)
         lines = ["texture = " + tex, "use_texture_padding = false"]
         for k in range(GRID * GRID):
             c = "%d:%d/0" % (k % GRID, k // GRID)
@@ -126,7 +130,7 @@ def build_tileset() -> None:
         t.sub("TileSetAtlasSource", [("resource_name", tres.s(zone_source_name(z)))], prefix="Zone%d" % z)
         t.subs[-1] += "\n" + "\n".join(lines)
     # currents atlas: no collision, custom data "current" = acceleration in source units
-    tex = tile_texture(t, ASSETS / "tiles" / "currents.png")
+    tex = tile_texture(t, CURRENTS)
     lines = ["texture = " + tex, "use_texture_padding = false"]
     for strength in range(8):
         for direction, (dx, dy) in enumerate(DIRS):
@@ -138,7 +142,7 @@ def build_tileset() -> None:
     t.sub("TileSetAtlasSource", [("resource_name", tres.s("Currents (debug arrows, not drawn in the game)"))], prefix="Currents")
     t.subs[-1] += "\n" + "\n".join(lines)
     # invisible wall (editor only): one hatched tile with the wall collision square and tile byte 0x40
-    tex = tile_texture(t, ASSETS / "tiles" / "invisible_wall.png")
+    tex = tile_texture(t, INVISIBLE_WALL)
     lines = ["texture = " + tex, "use_texture_padding = false",
              "0:0/0 = 0", "0:0/0/physics_layer_0/polygon_0/points = " + SQUARE, "0:0/0/custom_data_1 = %d" % 0x40]
     t.sub("TileSetAtlasSource", [("resource_name", tres.s("Invisible wall (editor only)"))], prefix="InvisibleWall")

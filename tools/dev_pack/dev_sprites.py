@@ -1,19 +1,16 @@
 """Dev sprite frames, sprite metadata (box hit rectangles that match the dev pictures) and bubble rules.
 
-The pictures are held by KEY (`PictureRef`, `Tres.picture`): the keys come from the importer's own naming code (asset_names, pictures.home, picture_table) and the slot
+The pictures are held by KEY (`PictureRef`, `Tres.picture`): the keys come from the importer's own naming code (asset_names, pictures.home_key) and the slot
 tables of tools/analysis/data/sprite_slots.json; the sizes come from dev_pictures. Nothing is read from the legacy pack.
 """
 from __future__ import annotations
-
-from pathlib import Path
 
 from devlib import DEV, SCRIPTS, write_text, tres
 
 import animation_map as amap
 import common as importer
-from asset_names import deco_file, foe_file
-from picture_table import key_of_rel
-from pictures import home
+from asset_names import deco_key, foe_key
+from pictures import home_key, key_of
 
 import dev_pictures
 
@@ -26,26 +23,24 @@ CANISTER_PICTURES = [3, 3, 4, 4]
 ROCK_PICTURES = [0, 0, 1, 2, 1, 0, 0, 0, 0, 0]
 
 
-def _rel(path: Path) -> str:
-    return path.relative_to(importer.LEGACY).as_posix()
-
-
-def _slot_keys(ids: list[int], file) -> list[str]:
-    """The key of the picture in each slot: the slot's own, or the key of the role that keeps the picture once (pictures.home)."""
-    out = []
-    for i, pid in enumerate(ids):
-        dest = file(i, pid)
-        owner = home(pid)
-        out.append(key_of_rel(_rel(dest if owner is None or owner == dest else owner)))
-    return out
+def _slot_keys(ids: list[int], key) -> list[str]:
+    """The key of the picture in each slot: the slot's own (`key(slot, id)`), or the key of the role that keeps the picture once (pictures.key_of)."""
+    return [key_of(pid, key(i, pid)) for i, pid in enumerate(ids)]
 
 
 def deco_keys(zone: int) -> list[str]:
-    return _slot_keys(importer.deco_slots(zone), lambda slot, pid: deco_file(zone, slot))
+    return _slot_keys(importer.deco_slots(zone), lambda slot, pid: deco_key(zone, slot))
 
 
 def foe_keys(zone: int) -> list[str]:
-    return _slot_keys(importer.foe_slots(zone), lambda slot, pid: foe_file(zone, slot))
+    return _slot_keys(importer.foe_slots(zone), lambda slot, pid: foe_key(zone, slot))
+
+
+def owned_key(pid: int) -> str:
+    """The key of picture `pid`, which a role of the importer owns (the effects' pictures are the story's)."""
+    key = home_key(pid)
+    assert key is not None, "picture %d has no owner" % pid
+    return key
 
 
 def numbered(stem: str, count: int) -> list[str]:
@@ -90,7 +85,7 @@ def frame_sets() -> dict[str, tuple[list[str], list]]:
     bubbles = numbered("fx_bubbles", 8)
     extra = [("bubble_columns", bubbles, True)]
     for name, (ids, loop) in amap.FX_SETS.items():
-        extra.append((name, _slot_keys(ids, lambda i, pid: Path("/nowhere")), loop))
+        extra.append((name, [owned_key(pid) for pid in ids], loop))
     sets["fx_frames"] = (bubbles, extra)
     return sets
 

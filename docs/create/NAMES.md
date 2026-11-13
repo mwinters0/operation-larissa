@@ -203,7 +203,8 @@ The numbers of the original are an implementation detail of the registry; the re
 ## Asset file names
 
 This is the importer's own convention for the legacy pack's files. The game finds a picture through the pack's table, never by a file name; the table's rows (`pictures.json`, written by the importer after
-the last step) are what these names turn into.
+the last step) say which file draws which key. The key is made by the same module (`asset_names.py`, `ui_key` and its siblings) by the step that writes the
+file, and recorded with the file in the asset manifest, which is what the table is built from.
 
 The file of a **named** entry is `<name>_<number>.<ext>`, so the original's number is next to the name when someone reads an original script,
 a manifest or a folder (`lock_tick_38.wav` is sound 38). An entry **nobody has named** has a file name that holds

@@ -17,6 +17,7 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import asset_manifest
 import dev_pictures
 import dev_problems
 import dev_sectors
@@ -234,7 +235,7 @@ def test_the_inventory_is_the_legacy_packs_file_list():
                    and f != "data/problems/problem_art_index.json")
     assert files == INV["files"]
     assert sorted(f for f in everything if inventory.is_audio(f)) == INV["audio"]
-    pictures, aliases = inventory.pictures_of(inventory._tree(legacy, "assets", ".png"), INV["problem_art_index"])
+    pictures, aliases = inventory.pictures_of(asset_manifest.load(), INV["problem_art_index"])
     assert pictures == INV["pictures"] and aliases == INV["picture_aliases"]
     for table, ids in INV["text_tables"].items():
         assert inventory.table_ids((legacy / "data" / "problems" / (table + ".tres")).read_text()) == ids

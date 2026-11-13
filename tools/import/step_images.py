@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from functools import cache
 
+import asset_names
 from asset_manifest import copy_picture, put_port
 from common import ASSETS, EXTRACTED, ORIGINAL_SECTOR_COUNT, SCREENS, bundles, load_json, manifest, out_text
 from pictures import UI_FOLDERS, home, problem_art_file, ui_file
@@ -41,7 +42,7 @@ def background_dll(bg_id: int) -> str:
 @cache
 def problem_art_index() -> dict[str, list[int]]:
     """Folder (`b041` ... `b118`, `single`) -> the picture ids of the problem art, including those whose file another role keeps (pictures.py). The bundles are 41 and
-    77-118; `single` is every other picture of ids 1780-2138 (but the authoring tool's). Nothing is written: a pack names these pictures by key (picture_table.py)."""
+    77-118; `single` is every other picture of ids 1780-2138 (but the authoring tool's). Nothing is written: a pack names these pictures by key (asset_names.py, picture_table.py)."""
     index: dict[str, list[int]] = {}
     in_bundle: set[int] = set()
     for b in [41] + list(range(77, 119)):
@@ -61,14 +62,15 @@ def run() -> None:
         for screen in range(SCREENS):
             bg_id = 3000 + sector * SCREENS + screen
             if "%s:%d" % (background_dll(bg_id), bg_id) in manifest():
-                copy_picture(bg_id, ASSETS / "backgrounds" / ("bg_s%02d_%02d.png" % (sector, screen)), background_dll(bg_id))
+                file, key = asset_names.background(sector, screen)
+                copy_picture(bg_id, file, key, background_dll(bg_id))
                 n += 1
     print("  backgrounds:", n)
 
     # The ids of each folder are in pictures.py, which also keeps the same id out of every other folder.
     for folder, ids in UI_FOLDERS.items():
         for i in ids:
-            copy_picture(i, ui_file(folder, i))
+            copy_picture(i, ui_file(folder, i), asset_names.ui_key(i))
         print("  ui/%s: %d" % (folder, len(ids)))
 
     # Problem panel art: bundles 41 and 77-118 (picture ids 1780-2138) plus loose pictures in that id range that belong to no bundle
@@ -77,7 +79,7 @@ def run() -> None:
     for folder, ids in index.items():
         for i in ids:
             if home(i) is None:
-                copy_picture(i, problem_art_file(folder, i))
+                copy_picture(i, problem_art_file(folder, i), asset_names.problem_art_key(i))
     out_text(ASSETS / "problem_art" / "single" / "README.md", PROBLEM_ART_SINGLE_README)
     put_port(ASSETS / "problem_art" / "single" / "README.md", "tools/import/step_images.py", "text")
     print("  problem art: %d pictures in %d folders" % (sum(len(ids) for ids in index.values()), len(index)))
