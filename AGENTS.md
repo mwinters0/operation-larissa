@@ -22,6 +22,9 @@ read it only when you need the why.
 
 ## Rules of the code
 
+- **No backward compatibility.** The architecture is still being found: code, data formats, pack layouts, manifests and the mod API
+  change outright when a better shape is found. Change every user (fixtures, example packs, the dev pack, the importer, docs) in the
+  same change; write no shims, deprecated keys, compatibility readers or migration paths.
 - **Fidelity.** The port follows the original as read from the asm. `docs/port/DESIGN.md` names functions by name and address
   (`tools/analysis/ghidra/names_onwin32.json`), never as bare `FUN_xxxx`. A found difference goes in `docs/port/PORT_GAPS.md`; when it is
   fixed, a gdUnit4 test pins the fix and the entry is removed. A quirk of the original that hurts play is fixed as a **Deliberate

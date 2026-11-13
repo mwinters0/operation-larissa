@@ -34,7 +34,7 @@ extends RefCounted
 ## Teaches: validating an untrusted description by naming each rule in one place, and clamping a request to a ceiling instead of refusing it (a limit is a request; the host decides).
 
 ## The version of the API a mod is given (`ModApi.build`). A mod that requires a higher one is refused. The version goes up when the API gains something a mod can ask for (2: the skin API, 3: the problem
-## screens, 4: the rule hooks, 5: a mod draws the game, `DRAWS_THE_GAME_API_VERSION`), so that a mod written for it says so; a mod that requires an older version keeps running, because what it was given is never changed or taken away.
+## screens, 4: the rule hooks, 5: a mod draws the game, `DRAWS_THE_GAME_API_VERSION`), so that a mod written for it says so. The API carries no promise of backward compatibility yet (AGENTS.md, "No backward compatibility"): a version may change or take away what an earlier one gave.
 const API_VERSION := 5
 ## The first version with the skin API: a skin mod requires it.
 const SKIN_API_VERSION := 2

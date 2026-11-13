@@ -4,6 +4,30 @@ Future work only. What exists is described in the permanent docs ([`OVERVIEW.md`
 item here is done, delete it and describe the result in the doc that owns the topic. A work item added here is numbered so
 commits can name it; the ids are not used outside this file.
 
+## Content the engine does not assume
+
+The road to a campaign that adds its own creatures, in order: each step is the seam the next one attaches to. The other assumptions in
+[`engine/HARD_CODED.md`](engine/HARD_CODED.md) (the project-level `durations.json` / `tuning.json` base, the original campaigns and problem
+types) are independent of this road and can be done in any order.
+
+- **C1. Pictures by key, through a table.** Every pack holds `pictures.json`: a skin key to a file of the pack, or to another key (an alias,
+  so one file serves several names). The chain of tables is the only way the game finds a picture: data files (SpriteFrames, the tile set,
+  zones, layouts, problem types) hold keys, not paths, and are built against the table when loaded; `Assets` loses the folder ranges, `file_stem`
+  and the number-to-path functions; `GameSkin.key_of_rel` (a key guessed from a file name) goes. The importer and the dev-pack generator write
+  the tables; `pack_tool --check` reports a key that resolves to nothing, an alias cycle and a file no row names; the pack tools can write a
+  table from a folder. The pack's `pictures/<kind>/<name>.png` convention is replaced by table rows. A test pack whose files have no legacy
+  names pins it.
+- **C2. Clips by key, through the same table.** The sound, music and voice catalogs hold keys; `audio/<kind>/<name>.ogg` becomes table rows.
+- **C3. Names belong to packs.** The registry is layered like the rest of the chain: the engine's own names (those the code asks for: the
+  console, the sign-in, the problem frame), each pack's names on top (legacy's are today's `names/original.json`, dev's its own), and a pack
+  may add names. The numbers become a pack's slots for running the original's bytes (`Play_Sound`, frame numbers in creature scripts), and
+  the foe assembler resolves a name against the chain.
+- **C4. Creatures are content.** A zone's frame set, its hit rectangles (`sprite_meta`) and its names can be extended by a pack; the creature
+  literals of the code (`Foe.HOPPING_PICTURES`, `creature_species.gd`, the original's puffer size) become data; every creature picture has its
+  own key (no shared `frame/foe`).
+- **C5. New creatures in the editors.** The Foe Script editor and the Sector panel make a creature from a pack's own frames and script
+  rather than copying an existing one.
+
 ## Open items
 
 Known gaps of the existing systems, by area. The engine's remaining assumptions about the original content are listed in
@@ -26,8 +50,7 @@ hand in a window.
   supply them, and tiles and backgrounds have no 4x path (`ScaledTexture` does not reach `TileSet` atlases).
 - Story timelines other than the news cartoon are preloaded by their scenes, so no pack can replace them.
 - No player-facing menu to choose a pack or a skin (`--pack=`, `--skin=`, F3 then S); the soundfont is per `Audio`, not per skin.
-- Unnamed creature and decoration pictures share one skin key (`frame/foe`), so they cannot be skinned one by one; there is no
-  supported "this skin draws creature N" hook (`creatures` hides `Foe.sprite`); `SimView` events reach a skin before
+- There is no supported "this skin draws creature N" hook (`creatures` hides `Foe.sprite`); `SimView` events reach a skin before
   `OriginalPresenter`'s handlers.
 - The theme of a skin mod (`create/SKIN_API.md` "The menus' theme") reaches the sign-in screen, the dialogs, the message box and the problem screen, but not the screens that colour their text by hand from the original's palette: the canister's log screen (`LogScreen`), the surface-ship message (`SurfaceShipScreen`) and the story pages. A diagram's text is the engine's font by design (the original puts each word at a pixel and a width).
 - The supply station's door x positions are literals in the views.

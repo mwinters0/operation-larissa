@@ -477,7 +477,7 @@ mod is granted are in [`../engine/PACKS.md`](../engine/PACKS.md), "Mod packs"; `
 
 #### API versions
 
-A manifest's `requires_api` (default 1) is the lowest version of the mod API the script needs. The game provides the highest (`ModSpec.API_VERSION`) and refuses a pack that needs more; a mod that asks for an older version keeps running, because what it was given is never changed or taken away. A manifest that uses a key of a later version is refused with the version it needs. This is the one list of the versions; every other document says "the version that draws the game" or links here.
+A manifest's `requires_api` (default 1) is the lowest version of the mod API the script needs. The game provides the highest (`ModSpec.API_VERSION`) and refuses a pack that needs more. The API is not frozen yet: a later version may change or take away what an earlier one gave, and the packs that use it are changed with it. A manifest that uses a key of a later version is refused with the version it needs. This is the one list of the versions; every other document says "the version that draws the game" or links here.
 
 | Version | What a mod can ask for |
 | --- | --- |
