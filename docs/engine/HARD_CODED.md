@@ -4,11 +4,11 @@ The places where the engine or the project assumes the original game's content, 
 described in [`../create/CONTENT.md`](../create/CONTENT.md) (section 4) and [`PACKS.md`](PACKS.md), the dev pack in
 [`../../tools/dev_pack/README.md`](../../tools/dev_pack/README.md), the test suites in [`DEVELOPING.md`](DEVELOPING.md).
 
-## Not built: high-resolution pictures in packs
+## Not built: high-resolution tiles
 
-Only a skin can supply high-resolution pictures (`GameSkin.art_folder`/`art_scale`); a pack's pictures are drawn at file size.
-Candidates: `pictures/<kind>/<name>@4x.png` in a pack's own layout, high-res in complete packs' sprite frames and tile
-set, an engine test with a test-only hi-res skin.
+A row of a pack's picture table may carry a `scale` (4x art drawn at 1/4 of its size through `ScaledTexture`, [`../create/CONTENT.md`](../create/CONTENT.md) "The picture table"). `ScaledTexture`
+does not reach what the renderer takes by RID: a `TileSet` atlas (`tile/` pictures), a nine-patch or a style box (a theme's `picture`). Candidate: a tile set that knows the scale of its picture (a `TileSetAtlasSource`
+with the larger texture and `texture_region_size`), and an engine test of a high-resolution pack for it.
 
 ## Hard-coded assumptions
 
@@ -59,8 +59,6 @@ running). Paths are under `godot/`. A pack on the chain inherits whatever is pro
   the original's fish by registry picture names.
 - `src/gameplay/foe.gd:25` `HOPPING_PICTURES` is zone 0's `jellyfish_tentacle`.
 - `src/skins/hud_labels.gd`: the default zone words are the original's ("Dragon Reef").
-- The tiny test skin (`tests/skins/tiny/`) maps registry keys (`ui_picture/title_sky`, a creature picture, the first zone's name box), which dev has
-  because it follows the original's registry.
 
 **Problems**
 - `src/problems/prompt_sender.gd:23-28` sender picture position and header/body x/y are absolute original coordinates; `:35` ship slots `2..19` and `>= 60`.

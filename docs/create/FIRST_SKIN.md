@@ -133,7 +133,7 @@ gave a name; `pictures.json` takes them as they stand.) While `hud_font` is set,
 drawn into the place the original's had (stretched to it, so a drawing at twice the size fills the same place); keep the proportions. The pack check (step 7) warns of a picture whose size is not the template's, so a stretched picture is not a surprise. Save as PNG, in the same place under the same name. Start the game again (step 2): the new bezel is there.
 
 **Keep only what you drew.** The example has a row for all 24 templates, so every picture you have not drawn yet shows its flat colour with its
-key on it. Open `pictures.json` and remove the rows of the pictures you have not drawn: a picture the pack has no row for is the pack under it's (the original's). Add a row as
+key on it. Open `pictures.json` and remove the rows of the pictures you have not drawn: a picture the pack has no row for is the pack under it answers (the original's). Add a row as
 you finish a picture.
 
 ```json
@@ -142,7 +142,7 @@ you finish a picture.
 }}
 ```
 
-The value is a file of the pack (what it is called and where it lies is yours to choose); the key is the picture's, `ui_picture/` and the name. A file under a folder named after a kind, `ui_picture/ui_1189.png`, becomes its row with `pack_tool --pictures-table=<folder>`. A row whose file is not there is an **error** when you check the pack, and a PNG no row names a **warning**: the first things to look for when a picture does not appear.
+The value is a file of the pack (what it is called and where it lies is yours to choose); the key is the picture's, `ui_picture/` and the name. A row may also draw a file at a fraction of its size (4x art) or name another key (`pictures.json`'s format: [`CONTENT.md`](CONTENT.md), "The picture table"). A file under a folder named after a kind, `ui_picture/ui_1189.png`, becomes its row with `pack_tool --pictures-table=<folder>`. A row whose file is not there is an **error** when you check the pack, and a PNG no row names a **warning**: the first things to look for when a picture does not appear.
 
 Draw only your own art. A picture made by tracing or editing the original's is the original's, and it does not belong in a pack you
 give away.

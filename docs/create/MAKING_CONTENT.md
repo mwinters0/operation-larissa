@@ -469,7 +469,7 @@ tools/godot.sh --path godot -- --pack=orchard                 # play it
 with the new id and title and **no `base`**: the copy is complete. The editor has the same in Project > Tools > "New pack from dev..." (the Pack tools window, mode *New pack*). It refuses an id that is
 taken or `dev`. Then:
 
-- Replace a picture by saving yours over the file with the same name; replace a sound the same way. Dev's tables (`data/sprite_frames`, `data/sprite_meta`, the layouts) match the sizes of dev's pictures,
+- Replace a picture by saving yours over its file (dev's are `assets/pictures/<kind>/<name>.png`, each the row of its key in `pictures.json`); replace a sound the same way. Dev's tables (`data/sprite_frames`, `data/sprite_meta`, the layouts) match the sizes of dev's pictures,
   so a picture of another size needs its table changed too. `tools/dev_pack/README.md` says what the generator keeps (the sub 96 x 58, a piece 24 x 20, the 608 x 288 playfield).
 - Edit its sectors in place: open the files under `godot/packs/orchard/data/sectors/sector_NN/` in the FileSystem dock with the editors above. Its campaign is `data/campaigns/dev_tour.tres`, its texts are the tables in `data/problems/`.
 - The copy also holds dev's engine-test content: the campaign `data/campaigns/test_c.tres` and the test sectors 100-199 (`data/sectors/sector_100/` ...). Nothing of your game needs them; delete them
@@ -521,23 +521,19 @@ A skin is a `GameSkin` resource, `res://skins/<id>/skin.tres`, in a folder of th
 | --- | --- |
 | `id`, `display_name` | the id (must equal the folder name) and what a menu would show |
 | `fallback` | another skin to build on; empty means the original |
-| `pictures` | a dictionary from a picture **key** to a `Texture2D` (`ui_picture/title_sky`, `frame/dolphin_swim_0`, `deco/coral_fan_cyan`, `tile/zone0_tiles`, `background/bg_s00_00`, `problem_art/log_scan_0`, `frame/sub_00`) |
-| `art_folder`, `art_scale` | a folder of PNGs named by key (`<art_folder>/frame/sub_00.png`), drawn at 1 / `art_scale` of their size so 4x art is drawn sharp at the original's size. `pictures` wins over the folder for a key both have |
 | `resources` | a whole presentation data resource instead of the original's (`ui/hud_layout`, `problems/screen_layout`, `sprite_frames/…`, `neptune_tileset`). Only those: a key that names rules or content is ignored |
 | `presenter_scene` | the scene that shows a sector; its root extends `SectorPresenter` (inherit from `res://src/gameplay/original_presenter.tscn`) |
 | `render` | filtering and pixel snapping (`RenderSettings`) |
 | `hud_labels` | the HUD's words as `Label` text with your font (`HudLabels`) |
 
-A **key** is `<kind>/<name>`. To find the key of a picture you want to redraw, look at its file in the pack you build on (`godot/packs/legacy/assets/`, or `godot/packs/dev/assets/`, which has the same paths): `assets/ui/title/title_sky_1039.png` is `ui_picture/title_sky` (the importer's trailing
-number is dropped when the picture has a real name; a made-up name such as `ui_1189` keeps it); `sprites/foes/…` is `frame/…`, `sprites/decos/…` is `deco/…`, `tiles/…` is `tile/…`, `backgrounds/…`
-is `background/…`, `problem_art/…` is `problem_art/…`; the sub, pieces, station and bubbles are `frame/sub_00` and similar. `tools/import/picture_table.py` (`key_of_rel`) does exactly this for the legacy pack's table. A picture that is the *content's* and that a pack of the chain
-supplies wins over every skin.
+A skin has no pictures: which file draws `ui_picture/title_sky`, `frame/dolphin_swim_0` or `tile/zone0_tiles` is the pack's table, `pictures.json` ([`CONTENT.md`](CONTENT.md), "The picture table"), and it holds
+under every skin. To redraw pictures, make a pack with a table (a skin pack is one, `examples/packs/modern/`); to find the key of a picture of the game, read `godot/packs/legacy/pictures.json`, or let the art templates
+write a file for each key at its size (`mise run skin:templates`).
 
 ## C2. Make one
 
 1. In the FileSystem dock make the folder `res://skins/reef/`. Right-click it > **New** > **Resource…** > **GameSkin**, save as `skin.tres`. In the Inspector set `id` to `reef` and a `display_name`.
-2. Start with one picture. Add an entry to `pictures` (key `ui_picture/title_sky`, value a PNG you drew), or put PNGs in a folder and point `art_folder` at it (for same-size pictures `art_scale` 1;
-   for pictures four times as large 4). Anything you do not map is the original's.
+2. Start with one shader, font or layout: a skin maps resources, a render setting, a theme, a presenter and the HUD's words, never a picture. Anything you do not map is the original's. (A picture is a row of a pack's `pictures.json`: [`FIRST_SKIN.md`](FIRST_SKIN.md), step 4.)
 3. For a change to how a sector is *drawn* (animation, shaders, a different sub), make a presenter: right-click `res://src/gameplay/original_presenter.tscn` > **New Inherited Scene**, save it in
    your skin's folder, attach a script that extends `OriginalPresenter` and overrides what you need, and set the skin's `presenter_scene`. `skins/creatures/` is the worked example. (A skin that only dresses the original presenter needs no scene: it is a skin pack, `examples/packs/modern/`, a manifest with a shader and a font; [`FIRST_SKIN.md`](FIRST_SKIN.md) walks through it.) A presenter written only against the skin API (`view`) is guaranteed not to change a trace ([`SKIN_API.md`](SKIN_API.md)).
 4. For text in your own font, give `hud_labels` a `HudLabels` resource.
@@ -556,16 +552,16 @@ supplies wins over every skin.
 
 ## C4. Share it as a mod pack
 
-A skin of the project is a folder of `res://skins/`, code of the project. To give a skin to other people, write it as a **skin mod**: a pack whose script returns what to draw, run in a sandbox ([`SKIN_API.md`](SKIN_API.md), "Writing a skin mod"). It holds the script, its pictures in `skin/`, and shaders as text; it is exported, checked and installed like
+A skin of the project is a folder of `res://skins/`, code of the project. To give a skin to other people, write it as a **skin mod**: a pack whose script returns what to draw, run in a sandbox ([`SKIN_API.md`](SKIN_API.md), "Writing a skin mod"). It holds the script, its pictures (the rows of its `pictures.json` and the files its draw lists name in `skin/`), and shaders as text; it is exported, checked and installed like
 any pack (step 10: `pack_tool --check=<folder>`, `--install=`), it needs the godot-sandbox extension (`mise run setup`), and installing it asks no trust question because all it can do is bounded: its picture is drawn by the game, and what it adds to the rules it adds only for a campaign that declares it, at hooks where the game checks and cuts every answer ([`CONTENT.md`](CONTENT.md), "Rule hooks").
 `--pack=<id>` chooses it (laid over the game pack it names as `base`), and `--skin=<id>` or F3-then-S wears it. It lasts as long as its pack is in use.
 
 **Limits.**
 
-- **A mod skin is not a project skin.** Its script draws rectangles, lines, pictures and text (`SKIN_API.md` lists them), not scenes, animation trees or 3D models; its manifest can put a shader on a layer, a font and colours on the HUD and the menus, a theme on the problem screens and its own pictures in place of the game's. The game's layouts (every rectangle), sounds, rules and timings stay as they are. `skins/creatures/` is a folder of the project and is not shared as a pack; `examples/packs/modern/` is a skin pack with no script.
+- **A mod skin is not a project skin.** Its script draws rectangles, lines, pictures and text (`SKIN_API.md` lists them), not scenes, animation trees or 3D models; its manifest can put a shader on a layer, a font and colours on the HUD and the menus, a theme on the problem screens, and its pack's `pictures.json` puts its own pictures in place of the game's. The game's layouts (every rectangle), sounds, rules and timings stay as they are. `skins/creatures/` is a folder of the project and is not shared as a pack; `examples/packs/modern/` is a skin pack with no script.
 - **No player menu.** The pack screen does not choose a skin. A player picks it with `--skin=<id>` on the command line; F3-then-S is a debug build feature.
 - **Art you make from the original's art is the original's.** A skin you share should have pictures you drew yourself.
-- **Some things cannot be skinned one by one yet** ([`ROADMAP.md`](../ROADMAP.md)): creature and decoration pictures that the registry has not named share one key; tiles and backgrounds have no 4x path;
+- **Some things cannot be skinned one by one yet** ([`ROADMAP.md`](../ROADMAP.md)): creature and decoration pictures that the registry has not named share one key; tiles have no 4x path;
   there is no supported hook for "this skin draws creature N". (Filtering can be set for the playfield apart from the rest: `RenderSettings.playfield_filter`, [`SKINS.md`](../engine/SKINS.md).)
 
 ---

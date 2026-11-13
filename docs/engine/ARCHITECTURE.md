@@ -430,7 +430,7 @@ is wrong with one. The field reference for authors is [`../create/CONTENT.md`](.
   (`display_title()`, `log_entry_text(n)`, `supply_message_text(sector)`, `finale_message()`). A voice group that is empty or names no
   group is not spoken.
 - **Generic finale.** A `closing_scene` that is neither `voyager` nor `expert` makes `Game.show_closing` put up `GenericFinale`
-  (`src/story/generic_finale.tscn`, a `StorySegment`): the title, `finale_texture()` (a `ui_picture` name or a `res://` path) and
+  (`src/story/generic_finale.tscn`, a `StorySegment`): the title, `finale_texture()` (a picture key, `ui_picture/title_sky`: a row of some pack's table) and
   `finale_message()`; Enter / a click go on, Space / Escape skip; then the Hall of Fame.
 - **Saves.** A player and a Hall of Fame row store `campaign` (the id), and `game` (0 / 1) for the originals; a file without an id is
   read by `game`. `progress` is `sector id * 2 + midpoint flag`, the original's word, validated against the campaign's list (a sector
@@ -454,7 +454,7 @@ a pack's data/story/*.tres   CutsceneTimeline: a length, tracks (actor name, pro
 Catalog.story_timeline / story_script / voyager_closing_script / closing_crew     the first pack of the chain that holds the file (`Packs.resource`)
   v
 src/story/cutscene.gd        Cutscene.animation(timeline, cast) builds an Animation; the scene's AnimationPlayer plays it
-src/story/cutscene_cast.gd   CutsceneCast: "the actor crew_4 is the Crew4 sprite", and how a name becomes a texture (a skin changes this)
+src/story/cutscene_cast.gd   CutsceneCast: "the actor crew_4 is the Crew4 sprite", and how a name becomes a texture (a picture key the chain's tables answer)
 ```
 
 A timeline is the same on every skin: a skin redraws a cutscene by binding its own nodes and resolvers and takes exactly as long,
@@ -495,7 +495,7 @@ tools/analysis/data/  our analysis of the program                  (committed: l
   |  the other importer steps
   v
 godot/packs/legacy/   THE LEGACY PACK (git-ignored, never edited by hand but for the creature scripts and screens, docs/port/FIDELITY.md)
-  assets/   PNG, WAV, OGG          data/   .tres: SectorData, ProblemType, HudLayout, SpriteFrames, TileSet, catalogs ...     midi/
+  assets/   PNG, WAV, OGG   pictures.json (key -> file)          data/   .tres: SectorData, ProblemType, HudLayout, SpriteFrames, TileSet, catalogs ...     midi/
 godot/packs/dev/      the dev pack: the same layout, placeholder content, committed (tools/dev_pack/)
 godot/data/           project-level and committed: rules/durations.json, rules/tuning.json, sectors/foe_annotations.json,
                       ui/menu_layout.tres; sectors and campaigns you make
@@ -512,7 +512,7 @@ tool reads from the original). To change one for the original, change the import
 importer puts the original's picture sizes next to the positions (`size` in the ballast and lock diagram specs of
 `data/problems/problem_type_*.tres`, `picture_size` / `digit_sizes` in `data/ui/calculator_layout.tres`, `picture_sizes` in
 `data/bubble_rules.tres`, `line_separation` in `data/problems/screen_layout.tres`; the project's `data/ui/menu_layout.tres` for where
-the menu popups open). `tests/engine/test_layout_from_data.gd` fails if layout code asks a texture or a font for a size, so a skin with
+the menu popups open). `tests/engine/test_layout_from_data.gd` fails if layout code asks a texture or a font for a size, so a pack with
 other pictures cannot move a button or change a random draw.
 
 ## Folders
@@ -520,7 +520,7 @@ other pictures cannot move a button or change a random draw.
 | Folder | Contents |
 |---|---|
 | `src/autoload/` | the singletons above |
-| `src/core/` | pure logic and loaders: `Catalog`, `Packs` / `Pack` (the chain), `Assets`, `Durations`, `Tuning` / `SubTuning` / `LayeredJson` (the rule values), `NameRegistry`, `Progression`, `FoeVM` / `FoeAsm` / `FoeOps` (the creature bytecode and its assembler), `RuleHooks` / `HookState` (the table of a run's rule hooks and the plain state they are told), `OxygenModel`, `HintSystem`, `HallOfFame`, `PracticeSet`, `TickMeter` (real time to the original's ticks), `TileGrid`, `InputSnapshot`, `ResourceJson` / `SectorJson` ... |
+| `src/core/` | pure logic and loaders: `Catalog`, `Packs` / `Pack` (the chain), `Assets`, `Pictures` / `PictureTable` / `PictureRef` (a picture by key through the chain's tables, [`PACKS.md`](PACKS.md) "Pictures"), `Durations`, `Tuning` / `SubTuning` / `LayeredJson` (the rule values), `NameRegistry`, `Progression`, `FoeVM` / `FoeAsm` / `FoeOps` (the creature bytecode and its assembler), `RuleHooks` / `HookState` (the table of a run's rule hooks and the plain state they are told), `OxygenModel`, `HintSystem`, `HallOfFame`, `PracticeSet`, `TickMeter` (real time to the original's ticks), `TileGrid`, `InputSnapshot`, `ResourceJson` / `SectorJson` ... |
 | `src/resources/` | typed `Resource` classes for the data (`SectorData`, `ScreenData`, `FoeData`, `Campaign`, `ProblemType`, `CutsceneTimeline` ...) and `PlayerProfile` |
 | `src/rules/` | the rules as plain objects: `SimWorld` and its models, `SimView`, `StationSequence`, `GameFlow`. Nothing in here may be a node, a texture, a font, `Input` or a `TileMapLayer` |
 | `src/gameplay/` | `game.tscn` (the view of `GameFlow`) and the playfield: `sector_world`, `sector_presenter`, `original_presenter`, `debug_rect_presenter`, `presenter_choice`, the parts (`sub`, `foe`, `ink_pellet`, `collectible`, `math_trigger`, `supply_station`, decorations, `bubbles`) and `input_reader` |
@@ -597,11 +597,12 @@ Non-obvious choices that the code embodies; the original's side of each is in [`
 - **Contacts** are tested once per tick with inclusive edges; only the first touching hostile creature counts, and not again if it was
   the first last tick (`SimWorld`, `FoeModel.rects_touch`). A creature with damage 0 still runs its contact script (the finale's treasure
   sets flag bit 15 that way).
+- **Pictures are found by key.** Nothing in the engine builds a picture's path or number: it asks `Assets.picture_by_key("<kind>/<name>")` (`Pictures.resolve`, the chain's `pictures.json` tables), and data holds a `PictureRef` (a key) instead of a file, so a pack that redraws a key redraws it wherever it is held. The lookups' answers are forgotten with the chain (`Catalog.packs_changed`); a node that does not hear a texture change redraws on `Pictures.events.changed`. `tests/engine/test_pictures_only_by_key.gd` fails on code that finds a picture another way.
 - **A pack's trouble is told once** (`src/core/trouble_log.gd`, `TroubleLog`). Wherever the game falls back because of what a pack, a campaign or a mod holds or lacks, it says so with `push_warning` and the system's prefix (`[rules]`, `[mods]`, `[creatures]`,
   `[problems]`, `Packs:`), naming the pack, campaign, sector or creature and what the player sees instead, once for each cause and run, never per tick or frame. The warning goes through a `TroubleLog`, which keeps the lines it gave (`told`) so that a test can read them:
   `RuleHooks.trouble` (a declared mod that does not resolve, `ModHooks.unresolved_line`; a judged type that takes no number), `FoeVM.Context.trouble` (a creature that faults, `FoeVM._tell_fault`; a `Mod_Instruction` no mod defines), and `TroubleLog.session`
   (code with no owner of a run: what a mod's draw list has dropped or answered that is no list, `ModDraw.report`; the sounds a problem mod asked for that nothing plays; the file a mod loads that its pack lacks, `ModApi`; a type laid over by another pack,
-  `ModHost.problem_screen`; a trigger slot with no problem, `ProblemFactory.for_trigger_slot`: no screen, the owner answers the world with `ProblemSession.not_made`, the sub goes on, a data canister stays taken; `GameFlow._no_lock`: the dock finishes the sector; a problem type whose diagram names no family or one the game does not draw, `DiagramFactory._new_for`: the plain list of its items), which every run (`GameState.begin_run`) starts over. `test_pack_trouble` pins the log and the lookups with no mod behind them; the other lines are pinned where the
+  `ModHost.problem_screen`; a trigger slot with no problem, `ProblemFactory.for_trigger_slot`: no screen, the owner answers the world with `ProblemSession.not_made`, the sub goes on, a data canister stays taken; `GameFlow._no_lock`: the dock finishes the sector; a problem type whose diagram names no family or one the game does not draw, `DiagramFactory._new_for`: the plain list of its items; a picture row that does not resolve, or a key no pack holds, `Pictures` and `Assets`: the pack under answers, or nothing is drawn), which every run (`GameState.begin_run`) starts over. `test_pack_trouble` pins the log and the lookups with no mod behind them; the other lines are pinned where the
   system is tested. What is warned about already (a refused mod, a mod that faults or is quarantined, a file of a pack that does not read) is not told twice.
 - **`FoeVM`**: a creature faults and stands still after 512 instructions without a yield or on bad code, and says so in the log (`[creatures]`); the game does not crash. All
   creatures of a sector exist from load; only those on the shown screen run.

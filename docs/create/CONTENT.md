@@ -27,7 +27,7 @@ Everything in the project belongs to one of three layers. Knowing which one a th
 ```
   +-------------------------------------------------------------------+
   |  PRESENTATION   how it looks and sounds                           |
-  |                 skins: pictures, fonts, shaders, the HUD's words  |
+  |                 pictures, fonts, shaders, the HUD's words         |
   |                 changes freely - never changes the game           |
   +-------------------------------------------------------------------+
   |  CONTENT        what is in it                                     |
@@ -73,7 +73,7 @@ source, not a branch that drifts.
 Two things that look like changes to the rules but are not:
 
 - **High resolution.** The rules keep 640 x 400 as their coordinates. Godot draws 2D at window size, so 4x art drawn at a quarter
-  scale is sharp. That is a skin.
+  scale is sharp. That is a picture table row with a `scale` (section 4, "The picture table").
 - **Other values for the rules** (more oxygen, a faster sub). The plan is that a pack states them as data and a pack that states
   none plays with the original's. This is not built ([`ROADMAP.md`](../ROADMAP.md)).
 - **New gameplay from a mod** (the judging of a new problem type's answers, a new creature instruction, a sub ability). This is a mod pack whose code runs inside a
@@ -140,11 +140,11 @@ titles and messages may be a text name or just the words (section 3).
 
 ### Pictures
 
-Pictures are PNGs. Each one has a **skin key**, written `<kind>/<name>`: `ui_picture/title_sky`, `background/bg_s00_00`,
-`problem_art/log_scan_0`, `frame/dolphin_swim_0`, `deco/...`, `tile/zone0_tiles`. A key is how a skin or a pack says "this
-picture". The kinds a pack may supply are `ui_picture`, `background`, `problem_art`, `frame` (creatures), `deco` and `tile`.
-
-Files of the legacy pack are named `<name>_<number>.png` (`log_scan_0_2046.png`): the friendly name, then the original's number.
+Pictures are PNGs. The game never asks for a file: it asks for a **key**, written `<kind>/<name>`: `ui_picture/title_sky`, `background/bg_s00_00`,
+`problem_art/log_scan_0`, `frame/dolphin_swim_0`, `deco/...`, `tile/zone0_tiles`. The kinds are `ui_picture`, `background`, `problem_art`,
+`frame` (creatures), `deco` and `tile` (`PictureTable.KINDS`). Every pack that has pictures holds a **picture table**, `pictures.json`, that says which of
+its files draws which key; what a file is called, and in which folder it lies, means nothing to the game (section 4, "The picture table"). The data that holds a
+picture (a creature's frames, the tile set, a layout) holds its key too.
 
 ### Sounds, music, speech
 
@@ -389,9 +389,8 @@ A pack **outside the project** lays its content out as below. Every part is opti
   sectors/sector_NN/sector_NN.foe      its creature script (same text as in the game)
   texts.json                           {"text_name": "the words"}
   voice_cues.json                      {"groups": {"group_name": ["voice_name", ...]}}
-  pictures.json                        the picture table: {"format": 1, "pictures": {"ui_picture/title_sky": "art/sky.png"}}: a skin key to a file of the pack,
-                                       {"file": f, "scale": n} (4x art drawn at 1/n) or {"alias": other key}; what the files are called means nothing
-                                       (`pack_tool --pictures-table=<folder>` writes it from a folder of <kind>/<name>.png)
+  pictures.json                        the picture table: which file draws which picture key ("The picture table" below)
+  <any folder>/<any name>.png          the pictures the table names; their names and folders mean nothing to the game
   audio/sound|music|voice/<name>.ogg   a clip by registry name
   audio/lengths.json                   {"voice": {"name": ticks}}  lengths you state yourself (optional)
   data/problems/problem_type_NN.json   a problem type; any other data/ file of a complete pack is held the same way, as the JSON of the same name
@@ -413,6 +412,44 @@ characters. `base` is the id of the pack this one is laid over (also a lowercase
 The JSON files are the same data as the `.tres` files of a complete pack, one key per field with defaults left out. A field the class does not have,
 or a value of the wrong kind, is reported by the pack check; it is never silently ignored.
 
+### The picture table
+
+The game asks for a picture by its **key** (`<kind>/<name>`, section 2, "Pictures"), and a pack answers through its **picture table**, `pictures.json` at the pack's
+root. A pack with no table holds no picture. Each row is a key (the "skin key" of the mod API) and one of three forms:
+
+```json
+{"format": 1,
+ "pictures": {
+   "ui_picture/title_sky": "art/sky.png",
+   "frame/sub_00": {"file": "art/sub_00@4x.png", "scale": 4},
+   "ui_picture/coral_dawn": {"alias": "ui_picture/title_sky"}
+ }}
+```
+
+- **A file** (a string): a PNG of this pack, a path relative to the pack's root. It is drawn at its own size.
+- **A file with a scale** (`{"file": f, "scale": n}`, `n` from 1 to 16): drawn at 1/n of its size, so 4x art is sharp and fills the place of the original's picture.
+  (A scale suits what the game draws as a sprite, a layout's picture or a background. A `tile/` picture (a tile set's atlas) and a theme's `picture` (a nine-patch or a style box) are handed to the renderer as the file itself, so give those rows no scale.)
+- **An alias** (`{"alias": key}`): the picture of another key, so one file serves many names. The alias is looked up from the top of the chain again, whichever pack
+  holds the row: a pack above that redraws the target redraws every alias of it.
+
+The key's kind is one of `ui_picture`, `background`, `problem_art`, `frame`, `deco`, `tile` (`PictureTable.KINDS`); the name is letters, digits, `_`, `-` and `.`.
+A file's name and folder say nothing: the game never guesses a key from them.
+
+**Writing one.** Write the rows by hand, or draw the pictures as `<kind>/<name>.png` files in a folder and let `pack_tool --pictures-table=<folder>` write the table: it
+adds a row for each such file that no row names and leaves the rows it holds as they are ([`MAKING_CONTENT.md`](MAKING_CONTENT.md) B5). To find the key of a picture of
+the game to redraw, read the legacy pack's own table (`godot/packs/legacy/pictures.json`, one row for every picture the importer made), or run the art templates
+(`mise run skin:templates`, [`SKIN_API.md`](SKIN_API.md) "A skin with no script"), which write a file for each key at the size the game draws it.
+
+**A graphics pack.** A pack whose `base` is `legacy` and that holds one set of PNGs and a table redraws the game: a row for every legacy key it redraws (a key it leaves out is
+the legacy pack's), and, if it likes, rows of its own names that are aliases of those keys (`"ui_picture/dawn_over_the_reef": {"alias": "ui_picture/title_sky"}`) or the other
+way round (the files are named by the pack's own keys and the legacy keys are aliases of them). A pack on top of that one redraws a key once, and every alias of it follows.
+
+**What the checks say.** `pack_tool --check` reports, as errors: a malformed row or key or an unknown field, a row whose file the pack does not hold or that is no PNG the
+game can decode, an alias that leads to a key no pack of the chain has a picture for or round in a circle. It warns of: a picture whose size is not the size of the
+picture it redraws (it is drawn stretched to that place; a scaled row is judged by its drawn size), a PNG that no row names (nothing reads it), a `pictures/` folder (the game does not read it) and a
+theme picture nothing holds. While the game runs, a row that does not resolve is left out, as if the pack had no row, so the pack under it answers; a key no pack
+holds draws nothing. Each cause is logged once per run, naming the pack, the key and what is shown instead.
+
 ### The lookup: the chosen pack first, then its bases
 
 Every time the game wants something, it asks the packs of the chain in order: the chosen pack, its base, the base's base. The first one that has it
@@ -423,27 +460,27 @@ wins. It works like your shell's `PATH`, or CSS.
         |
         v
    chosen pack ----has a row for ui_picture/title_sky in its pictures.json?---> use it
+        | no                         (a row that is an alias: ask the whole chain again, from the top, for its key)
+        v
+   its base    ----has a row?---> use it
         | no
         v
-   its base    ----has it?---> use it
-        | no                    (and so on down the chain)
-        v
-   (no skin is asked: a skin maps no picture; a row that is an alias asks the whole chain again for the key it names)
+   (and so on down the chain)
         | no
         v
-   the complete pack at the bottom (a pack with no table answers by its file names until the importer and the dev pack write tables)
+   no picture: nothing is drawn, and the log says so once
 ```
 
 There are two kinds of lookup, both down the chain:
 
 - **A whole file** of a complete pack (`data/zones.tres`, `assets/tiles/zone0_tiles.png`): the first pack that provides the file. A pack of the project answers
   for a `.tres`, any pack for the JSON of it (`data/zones.json`). `Catalog`, `Assets`, the music and the scenes ask this (`Packs.resource`, `Packs.stream`).
-- **A thing a pack holds in the layout above**: a sector or campaign as JSON, a text, a picture by skin key, a clip by name, a problem type. A pack
+- **A thing a pack holds in the layout above**: a sector or campaign as JSON, a text, a picture by key (its table), a clip by name, a problem type. A pack
   with no such thing answers nothing and the next one is asked. Texts and speech groups are merged down the chain, the pack nearest the top having
   the last word.
 
-Pictures have one more layer: **a pack's picture by skin key wins over every skin**. The content says what a picture is; a skin only dresses what the
-content leaves alone. Sounds, texts, problem types and durations do not involve skins.
+Pictures are the **packs' alone**: a skin maps no picture, so no skin changes which file draws a key, and the pictures in use do not depend on the skin worn. Sounds, texts,
+problem types and durations do not involve skins either.
 
 Sectors and campaigns of the project itself (`res://data/sectors/`, `res://data/campaigns/`, the ones the editors make) are the lowest layer, under the chain.
 
@@ -456,7 +493,7 @@ The rules are code and no pack changes them. What is left is decided by where th
 | add or remake sectors (any number) and campaigns (any id) | hold scenes, GDScript, resources (`.tres`) or skins |
 | add or re-word texts (`texts.json`) | change the project's own data (the menu layout) |
 | carry a sandboxed mod script (`.sgd`, "Mod packs" below) | hold any other code: a `.gd`, a native library |
-| add or replace pictures of the six kinds above | |
+| add or replace pictures of the six kinds of key (section 2, "Pictures") | |
 | add or replace sounds, songs, speech (OGG, WAV) | |
 | replace whole problem types | change how a rule works (only its values, `rules/tuning.json`; a mod adds behaviour only at the rule hooks of a campaign that declares it) |
 | replace the data a complete pack holds (a zone table, a tile set, sprite frames, layouts, a story timeline) as JSON | |
@@ -530,7 +567,7 @@ The script runs under the mod's limits, and a mod that draws is held to at most 
 | `fields` | the record's fields in order: a whole number for a byte or a word, `{"text", "value", "fraction"}` for a number (`text` the way the game prints it, `value` a float, `fraction` true for a fraction) |
 | `family` | the diagram family the type's data names (`items`, `sonar`, `pie` ...; `mod` for a type a pack adds) |
 | `diagram` | the type's diagram data as the pack holds it: what the original's diagram draws from (the vocabulary at the top of `DiagramBase`: pictures by number `pic`, positions, the record fields they read, the build-up) |
-| `art` | the skin keys (`problem_art/pa_1843`) of the type's pictures in the order `diagram` numbers them (`pic`): a script names one to draw it; `""` for a file that has none |
+| `art` | the picture keys (`problem_art/pa_1843`) of the type's pictures in the order `diagram` numbers them (`pic`): a script names one to draw it; `""` for a file that has none |
 | `entry` | what the calculator or the answer box shows now (`"0"` before anything is typed) |
 | `step` | `intro` while the diagram builds up, `answering` while an answer is awaited, `waiting` while a message, the solution or the success text is up |
 | `attempt` | the try the player is on: 1, or 2 after a miss (the hint is up) |
@@ -649,15 +686,15 @@ tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --expor
 
 ## 5. Skins
 
-A **skin** is the presentation layer as data. It is a `GameSkin` resource (`res://skins/<id>/skin.tres`) that maps the registry's
-names to its own pictures, fonts, shaders and, if it wants, a whole presenter scene. Whatever it does not map falls back to the
-original skin, so a skin can be as small as one picture.
+A **skin** is the presentation layer as data. It is a `GameSkin` resource (`res://skins/<id>/skin.tres`) that maps names to its own
+fonts, shaders, themes, layouts and, if it wants, a whole presenter scene. Whatever it does not map falls back to the
+original skin. A skin maps no picture: which file draws a picture is the pack's table (section 4, "The picture table").
 
 ### What a skin may change, and may not
 
 | A skin **may** change | A skin **may not** change |
 | --- | --- |
-| any picture, at any resolution (4x art drawn at a quarter scale is fine) | a hit rectangle, or the walls |
+| how the pictures of the pack in use are drawn (a font, a filter, a shader), not which ones | a hit rectangle, or the walls |
 | how things are drawn: shaders, animation, 3D models, lighting | how long a step that holds up play lasts (launch, dock, balloon, dissolve) |
 | the HUD's layout and its lettering (font, size, colour) | what happens in a tick: the same sector and the same hands give the same trace |
 | the filter and pixel snapping of the window | content: sectors, texts, problem answers (a key that names them is ignored) |
@@ -691,13 +728,12 @@ There is no skin menu for players yet.
 
 ### Skins and packs
 
-A skin you give to other people is a **mod pack** (section 3, "Mod packs"): a pack with a script, its pictures in `skin/` and, if it wants, shaders as text. It is code of a stranger in a sandbox, so it can only say what to draw and can change no rule; installing one asks no trust question and it needs the godot-sandbox extension (a skin with no script needs none). `--pack=<id>`
+A skin you give to other people is a **mod pack** (section 3, "Mod packs"): a pack with a script, the pictures it redraws as rows of its `pictures.json`, the files its draw lists name in `skin/` and, if it wants, shaders as text. It is code of a stranger in a sandbox, so it can only say what to draw and can change no rule; installing one asks no trust question and it needs the godot-sandbox extension (a skin with no script needs none). `--pack=<id>`
 chooses it (it is laid over the game pack it names as its `base`), and then its skin appears in the list of skins with its pack id and works with `--skin=<id>` and F3 + S like a shipped one. It lasts as long as its pack is in use. How to write one is [`SKIN_API.md`](SKIN_API.md), "Writing a skin mod". The skins of the project itself (`original`, `creatures`) are folders of `res://skins/`; an export carries `original` and not `creatures` ("Shipping", section 6). A mod skin's script draws the layers of the sector and of the console it names (or the whole screen) and leaves the rest to the original; the game's layouts (every rectangle), sounds, rules and timings stay as they are, and the font and theme of its manifest are worn only while the skin is; its pictures are rows of its `pictures.json`, the chain's under every skin.
 
 **The example pack** is `examples/packs/modern/`: a skin with no script, laid over `legacy`, that you can copy. Its `pack.json` has the `skin` entry of [`SKIN_API.md`](SKIN_API.md) ("A skin with no script"): `render` (linear filter, no snapping), `hud_font` (Exo 2 at weight 600, with its licence `OFL.txt` next to it in `skin/fonts/`), a `theme` (that font and cool blues for the menus: the message box, the dialogs and the sign-in screen, and the problem screen's text, calculator keys and display), two `shaders` put on the layers `background` (the water) and `walls` (kept sharp under the smooth filter) and a `pictures.json` with a row for each of the console's templates. Those are flat colour at the original's sizes with their key and size written on them, made by `mise run skin:templates --pack legacy`; draw your art over them and keep their sizes. The templates of the problem screen's frame (`skin/problem_art/`) are in the folder too, not mapped. `mise run examples:pack modern [--out <dir>]` writes `modern.larissa` (the legacy pack must be found: it is the pack's `base`), and `mise run examples:install modern` installs the folder into `user://packs/`, so that `tools/godot.sh --path godot -- --pack=modern --skin=modern` plays it (`--pack=` chooses the pack, and its skin is then offered). The two are `mise run pack:archive <folder>` and `mise run pack:install <folder-or-file>` for any pack folder: [`FIRST_SKIN.md`](FIRST_SKIN.md), step 8. The template pictures, the shaders and every key of its manifest are told where they are used: [`SKIN_API.md`](SKIN_API.md), "A skin with no script"; [`FIRST_SKIN.md`](FIRST_SKIN.md) walks through it.
 
-Remember the order in section 4: a pack's picture beats the skin's. If a content pack and a skin both supply a picture, the
-content pack's is what you see.
+A skin pack's pictures are rows of its table like any pack's, so they show under every skin while the pack is in the chain; a pack above it that redraws the same key wins.
 
 ---
 
@@ -733,6 +769,7 @@ content.
 | Path in the legacy pack | Holds |
 | --- | --- |
 | `pack.json` | the manifest (`"id": "legacy"`, no `base`: it is complete) |
+| `pictures.json` | the picture table: the key of every picture to its file in `assets/`, or to the key it shares a file with |
 | `assets/` | pictures and sounds (`sprites/`, `tiles/`, `backgrounds/`, `ui/`, `problem_art/`, `audio/`), each with a stub `.import` file |
 | `data/sectors/sector_00` ... `sector_31` | the original's sectors 0-31 |
 | `data/campaigns/{voyager,expert}.tres` | the original's two campaigns |
@@ -849,9 +886,9 @@ of the game.**
 | **Generic finale** | the closing a campaign gets when it has no closing of its own. |
 | **Tick** | one step of the rules: 1/12.17 of a second. The 73 Hz timer ticks used for lengths are about six times shorter. |
 | **Registry** | `godot/names/original.json`: friendly names for the original's numbers. |
-| **Skin** | presentation as data: pictures, fonts, shaders, a presenter. Changes nothing about play. |
+| **Skin** | presentation as data: fonts, shaders, a theme, layers, a presenter. Changes nothing about play. |
 | **Presenter** | the scene that draws a sector from the rules' state. A skin may bring one. |
-| **Skin key** | `<kind>/<name>` such as `frame/dolphin_swim_0`: how a skin or a pack names a picture. |
+| **Picture key** | `<kind>/<name>` such as `frame/dolphin_swim_0`: how the game, a pack's `pictures.json` and a mod's draw list name a picture. |
 | **Fidelity** | the property that the port plays like the original, which the tests check. |
 | **The fork** | a change to an existing rule. It would end this codebase and start another. |
 | **User folder** | `user://`: where saves, settings and installed packs live. |

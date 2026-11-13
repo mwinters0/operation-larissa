@@ -10,14 +10,7 @@ The road to a campaign that adds its own creatures, in order: each step is the s
 [`engine/HARD_CODED.md`](engine/HARD_CODED.md) (the project-level `durations.json` / `tuning.json` base, the original campaigns and problem
 types) are independent of this road and can be done in any order.
 
-- **C1. Pictures by key, through a table.** Every pack holds `pictures.json`: a skin key to a file of the pack, or to another key (an alias,
-  so one file serves several names). The chain of tables is the only way the game finds a picture: data files (SpriteFrames, the tile set,
-  zones, layouts, problem types) hold keys, not paths, and are built against the table when loaded; `Assets` loses the folder ranges, `file_stem`
-  and the number-to-path functions; `GameSkin.key_of_rel` (a key guessed from a file name) goes. The importer and the dev-pack generator write
-  the tables; `pack_tool --check` reports a key that resolves to nothing, an alias cycle and a file no row names; the pack tools can write a
-  table from a folder. The pack's `pictures/<kind>/<name>.png` convention is replaced by table rows. A test pack whose files have no legacy
-  names pins it.
-- **C2. Clips by key, through the same table.** The sound, music and voice catalogs hold keys; `audio/<kind>/<name>.ogg` becomes table rows.
+- **C2. Clips by key, through a table.** The sound, music and voice catalogs hold keys, as the data holds pictures by key, and a pack's table (like `pictures.json`) names the file of each; `audio/<kind>/<name>.ogg` becomes table rows.
 - **C3. Names belong to packs.** The registry is layered like the rest of the chain: the engine's own names (those the code asks for: the
   console, the sign-in, the problem frame), each pack's names on top (legacy's are today's `names/original.json`, dev's its own), and a pack
   may add names. The numbers become a pack's slots for running the original's bytes (`Play_Sound`, frame numbers in creature scripts), and
@@ -46,8 +39,7 @@ hand in a window.
 - A rule hook that keeps state in variables of its own (rather than the memory the game hands back) is outside the promise that the same inputs are the same play; `RuleHooks.verify_pure` catches it in tests and tools, not while playing.
   The hooks are three (the judging of an answer, a creature instruction, the sub's velocity and invulnerability); another point (a piece, a trigger, a contact, a creature that a mod adds) is a new named hook in `RuleHooks`.
 - A type a pack adds is worded from its texts and fields only and never uses the combination lock or the ballast panel; the lock and the ballast panels of the original cannot be drawn by a mod. A type a pack adds can build up from its data (`intro`) but has no success replay: `ProblemFlow.SUCCESS_REPLAY_TYPES` names the original's eight.
-- High-resolution pictures in packs (`pictures/<kind>/<name>@4x.png`, high-res sprite frames and tile sets); today only a skin can
-  supply them, and tiles and backgrounds have no 4x path (`ScaledTexture` does not reach `TileSet` atlases).
+- High-resolution pictures: a picture table row with a `scale` (4x art drawn at a quarter of its size, `ScaledTexture`) draws sprite frames, layouts and backgrounds sharp, but not a picture the renderer takes by its RID: a `tile/` picture (a `TileSet` atlas), a nine-patch or a style box (a theme's `picture`). A pack has no 4x path for tiles.
 - Story timelines other than the news cartoon are preloaded by their scenes, so no pack can replace them.
 - No player-facing menu to choose a pack or a skin (`--pack=`, `--skin=`, F3 then S); the soundfont is per `Audio`, not per skin.
 - There is no supported "this skin draws creature N" hook (`creatures` hides `Foe.sprite`); `SimView` events reach a skin before

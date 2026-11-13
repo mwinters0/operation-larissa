@@ -25,7 +25,7 @@ physics instead of the tile scan, another tick rate, scrolling or larger screens
 of `FoeVM` scripts, 3D gameplay. After any of these the original sectors are no longer guaranteed to play as designed and the
 fidelity tests stop meaning anything; such a remake belongs in a separate project that takes this one as its specification and
 content source. High resolution is *not* a fork: the rules keep 640 x 400 as their coordinates, and `stretch/mode="canvas_items"`
-draws 4x art at scale 0.25 sharply, which is a skin's business.
+draws 4x art at scale 0.25 sharply, which a pack's picture table says per picture.
 
 The creator-facing version of this model, with what each layer means for your own content, is
 [`create/CONTENT.md`](create/CONTENT.md), section 1.
@@ -97,7 +97,7 @@ Read: [`create/CONTENT.md`](create/CONTENT.md), section 3; the tutorial [`create
 
 ## Skins
 
-A skin (`GameSkin`) is the presentation layer as data: pictures by name, high-resolution art, fonts, shaders, render settings and
+A skin (`GameSkin`) is the presentation layer as data: fonts, shaders, render settings, a theme and
 even a whole presenter scene, with everything it does not map falling back to the original. A presenter sees the rules only
 through `SimView` (copies of the state and 28 events), and every skin in `godot/skins/` is played against the original by the
 tests and must give the same trace. One skin besides the original is in the project: `creatures` (an animation-tree fish and a 3D puffer;
@@ -105,7 +105,10 @@ models and animation trees need real nodes, so only a project skin can do that).
 example of a skin pack, `examples/packs/modern/`, played by the same tests.
 
 A skin from a stranger is a mod pack: a sandboxed script that is given the state as plain data and returns what to draw, so it can change nothing but the picture; it is chosen like any other skin and played by the same tests.
+
 A mod pack can also add gameplay: a campaign names the mods it uses, and only a run of that campaign asks them, at three points (the judging of the answers of a problem type the mod added, a creature instruction, a sub ability), with plain data in and plain data out that the game validates; the originals declare none and the tests prove they ask nobody ([`create/CONTENT.md`](create/CONTENT.md), "Rule hooks").
+
+Pictures belong to packs, not skins. The game asks for a picture by its key (`ui_picture/title_sky`), and each pack's `pictures.json` says which of its files draws which key (or that it is another key's picture), the pack on top first; a pack laid over `legacy` that redraws a few keys is a graphics pack, in any resolution ([`create/CONTENT.md`](create/CONTENT.md), "The picture table").
 
 Read: what a skin author is given, [`create/SKIN_API.md`](create/SKIN_API.md); a first skin step by step,
 [`create/FIRST_SKIN.md`](create/FIRST_SKIN.md); making one,
