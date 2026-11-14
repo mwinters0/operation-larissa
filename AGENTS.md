@@ -17,7 +17,7 @@ read it only when you need the why.
 - **One home per fact.** Before writing, find the doc that owns the topic (CODEMAP lists them) and link to it instead of repeating it.
 - **Docs live by audience:** `docs/play/` (build the legacy pack and play), `docs/create/` (content creators: sectors, scripts, campaigns,
   packs, skins), `docs/engine/` (how the Godot code works, developing and testing it), `docs/port/` (the original game, reverse
-  engineering, fidelity). A README next to a tool documents only that tool.
+  engineering, fidelity), `docs/genai/` (making content with generative tools). A README next to a tool documents only that tool.
 - Keep `docs/CODEMAP.md` terse: pointers, not prose. A new system, folder, tool or test helper gets one line there.
 
 ## Rules of the code

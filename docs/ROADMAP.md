@@ -21,6 +21,15 @@ types) are independent of this road and can be done in any order.
 - **C5. New creatures in the editors.** The Foe Script editor and the Sector panel make a creature from a pack's own frames and script
   rather than copying an existing one.
 
+## Generated picture packs
+
+Tools for the technique of [`genai/IMAGES.md`](genai/IMAGES.md).
+
+- **G1. Layout wireframe.** Beside `skin_templates_tool.tscn`, write one image per layout (`hud_layout`, the problem screen's, the
+  calculator's) with every template placed at its layout rectangle: the guide for generating a whole part as one image.
+- **G2. Slicer.** Cut a finished image of a layout back into the template files (`<kind>/<name>.png`) by the layout's rectangles, at the
+  pack's picture scale.
+
 ## Open items
 
 Known gaps of the existing systems, by area. The engine's remaining assumptions about the original content are listed in
