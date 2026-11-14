@@ -21,6 +21,24 @@ types) are independent of this road and can be done in any order.
 - **C5. New creatures in the editors.** The Foe Script editor and the Sector panel make a creature from a pack's own frames and script
   rather than copying an existing one.
 
+## High-resolution packs
+
+A run draws every picture at one scale N. The game's unit stays 640 x 400 (the rules, layouts and draw lists do not change); a picture of
+scale N reports 1/N of its file's size (`ScaledTexture`), and the window's `canvas_items` stretch puts the file's pixels on the screen.
+
+- **H1. One scale per run, chosen by coverage.** A pack declares `"picture_scale": N` in `pack.json` (default 1); the per-row `scale` of
+  `pictures.json` goes. The run's N is the highest scale whose packs together answer every picture key `PackNeeds` finds the chain needs
+  (the code's names, the data's keys, what each campaign brings). Pictures of packs at another scale are off for that run (the pack's
+  other content stays); `Pictures.resolve` and alias resolution look only at packs of scale N. A pack whose scale cannot cover is told
+  once per run through `TroubleLog`: the pack, how many keys it lacks, the first few, and that the game draws the pictures of scale 1
+  instead. `PackCheck` reports the same finding with every missing key. N is derived by the builder that derives the chain, so every
+  chain change (start, a pack switch, `ModHost.sync`) re-decides it.
+- **H2. Every consumer draws at N.** What the renderer takes by RID: the tile set's atlas (the presenter's `TileMapLayer`s at `1/N` with an
+  N-times tile size), nine-patches and style boxes (texture margins x N under a `1/N` transform). An engine test of a scale-4 pack drawn
+  by every consumer; `PackCheck` softly reports a picture whose size is not N times the scale-1 picture it replaces.
+- **H3. A mod declares the pictures it draws.** A mod's manifest names the picture keys its draw lists and problem screens ask for; `PackNeeds`
+  adds them to the needs, so a run-time key is checked at start like the rest.
+
 ## Open items
 
 Known gaps of the existing systems, by area. The engine's remaining assumptions about the original content are listed in
@@ -39,7 +57,6 @@ hand in a window.
 - A rule hook that keeps state in variables of its own (rather than the memory the game hands back) is outside the promise that the same inputs are the same play; `RuleHooks.verify_pure` catches it in tests and tools, not while playing.
   The hooks are three (the judging of an answer, a creature instruction, the sub's velocity and invulnerability); another point (a piece, a trigger, a contact, a creature that a mod adds) is a new named hook in `RuleHooks`.
 - A type a pack adds is worded from its texts and fields only and never uses the combination lock or the ballast panel; the lock and the ballast panels of the original cannot be drawn by a mod. A type a pack adds can build up from its data (`intro`) but has no success replay: `ProblemFlow.SUCCESS_REPLAY_TYPES` names the original's eight.
-- High-resolution pictures: a picture table row with a `scale` (4x art drawn at a quarter of its size, `ScaledTexture`) draws sprite frames, layouts and backgrounds sharp, but not a picture the renderer takes by its RID: a `tile/` picture (a `TileSet` atlas), a nine-patch or a style box (a theme's `picture`). A pack has no 4x path for tiles.
 - Story timelines other than the news cartoon are preloaded by their scenes, so no pack can replace them.
 - No player-facing menu to choose a pack or a skin (`--pack=`, `--skin=`, F3 then S); the soundfont is per `Audio`, not per skin.
 - There is no supported "this skin draws creature N" hook (`creatures` hides `Foe.sprite`); `SimView` events reach a skin before
