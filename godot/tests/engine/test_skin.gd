@@ -236,9 +236,12 @@ func test_a_skin_may_replace_presentation_data_and_nothing_else() -> void:
 	var skin := GameSkin.new()
 	skin.id = &"asks_too_much"
 	skin.resources = {"ui/hud_layout": HudLayout.new(), "zones": ZoneTable.new()}
+	TroubleLog.new_run()
 	assert_object(skin.resource_for("ui/hud_layout")).is_not_null()
 	assert_object(skin.resource_for("zones")).is_null()
 	assert_array(skin.refused_resources()).contains_exactly(["zones"])
+	assert_array(TroubleLog.session.told).contains_exactly([skin.refusal_line("zones")])
+	assert_str(skin.refusal_line("zones")).contains("skin 'asks_too_much'").contains("'zones'").contains("ignored")
 
 
 ## A skin maps no picture: the sprite sets and the tile set (the picture bundles) are the packs', and a layout that carries a picture of its own is not shown.
@@ -258,8 +261,14 @@ func test_a_skin_cannot_carry_a_picture_of_its_own() -> void:
 	for key in ["sprite_frames/foes_zone0", "neptune_tileset", "ui/hud_layout", "ui/calculator_layout"]:
 		assert_object(skin.resource_for(key)).override_failure_message(key).is_null()
 	assert_object(skin.resource_for("ui/story_layout")).override_failure_message("a layout that holds keys is the skin's").is_same(by_key)
+	assert_str(skin.refusal_line("ui/story_layout")).is_empty()
+	TroubleLog.new_run()
 	SkinChoice.select(skin)
 	assert_object(Catalog.hud_layout()).override_failure_message("the layout with a file of its own is not shown").is_same(load(DevPack.ROOT + "data/ui/hud_layout.tres"))
+	Catalog.hud_layout()
+	var line := skin.refusal_line("ui/hud_layout")
+	assert_str(line).contains("skin 'brings_art'").contains("'ui/hud_layout'").contains("picture of its own")
+	assert_int(TroubleLog.session.told.count(line)).override_failure_message("the layout that carries a picture is told, once").is_equal(1)
 	assert_object(Catalog.foes_frames(0)).is_same(load(DevPack.ROOT + "data/sprite_frames/foes_zone0.tres"))
 	assert_bool(GameSkin.holds_a_picture(Catalog.hud_layout())).override_failure_message("the pack's own layouts hold keys only").is_false()
 

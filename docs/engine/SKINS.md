@@ -12,7 +12,7 @@ for the skin classes). What a skin author is given is [`../create/SKIN_API.md`](
 - **`resources`**: a whole layout by its path under `data/` (`ui/hud_layout`, `ui/story_layout`, `problems/screen_layout`), for a skin that lays the screens out differently. Only `GameSkin.REPLACEABLE` keys are
   taken (`ui/`, the problem screen's layout); a key that names rules, content or a picture bundle
   (`zones`, `trigger_table`, `problems/problem_type_NN`, `sprite_meta/*`, a sector, the texts, `sprite_frames/*`, `neptune_tileset`) is ignored, and so is a layout that carries a picture of its own (a `Texture2D` that is not a `PictureRef`,
-  `GameSkin.holds_a_picture`); they are listed by `GameSkin.refused_resources()`. The sprite sets and the tile set are the pack's, whatever skin is worn.
+  `GameSkin.holds_a_picture`); they are listed by `GameSkin.refused_resources()`, and a lookup that meets one warns once per run, naming the skin and the key (`GameSkin.refusal_line`, `TroubleLog.session`). The sprite sets and the tile set are the pack's, whatever skin is worn.
 - **`presenter_scene`** (the root extends `SectorPresenter`), **`render`** (`RenderSettings`), **`hud_labels`** (`HudLabels`),
   **`fallback`** (another skin to build on).
 
