@@ -48,7 +48,7 @@ const LAYER_KIND := "hud_layer"
 const PROBLEM_LAYER_KIND := "problem_layer"
 const PROBLEM_WINDOW := "window"
 
-## One picture to draw: its skin key (`ui_picture/ui_1195`, `problem_art/pa_1780`, or `hud_layer/hud_oxygen` for a layer's) and its size.
+## One picture to draw: its picture key (`ui_picture/ui_1195`, `problem_art/pa_1780`, or `hud_layer/hud_oxygen` for a layer's) and its size.
 class Entry extends RefCounted:
 	var key := ""
 	var size := Vector2i.ZERO

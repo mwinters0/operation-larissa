@@ -2,7 +2,7 @@ class_name Assets
 extends RefCounted
 ## Turns the NAME of a picture into the picture: the one place that knows the keys of the pictures the code asks for.
 ##
-## The rest of the game says what it means (`Assets.ui_picture(&"title_sky")`), never which number or file that is. A name is a skin key
+## The rest of the game says what it means (`Assets.ui_picture(&"title_sky")`), never which number or file that is. A name is a picture key
 ## (`ui_picture/title_sky`, `problem_art/log_scan_0`, `background/bg_s03_07`) and the key is answered by the chain's picture tables
 ## (`Pictures`: the `pictures.json` of each pack, the top of the chain first). Nothing here knows a file name, a folder or a number of the
 ## original: which file draws a key is the pack's business, and a key no pack holds is a picture the game does not show (told once, naming the key).
@@ -65,13 +65,13 @@ static func forget_folders() -> void:
 	Pictures.forget()
 
 
-# --- a picture by its skin key ------------------------------------------------------------------------------------
+# --- a picture by its picture key ------------------------------------------------------------------------------------
 
 ## key -> the `PictureRef` handed out for it.
 static var _refs: Dictionary = {}
 
 
-## The picture of the skin key `key` (`frame/sub_00`, `background/bg_s03_07`, `deco/coral_fan_cyan`), held by it: the reference shows what the chain's picture tables say now (`Pictures.resolve`, the one resolver), draws nothing for a key no pack holds
+## The picture of the picture key `key` (`frame/sub_00`, `background/bg_s03_07`, `deco/coral_fan_cyan`), held by it: the reference shows what the chain's picture tables say now (`Pictures.resolve`, the one resolver), draws nothing for a key no pack holds
 ## (told once per run, by the reference). What a mod's draw list names is held here (`ModDraw`), so a mod sees what `OriginalPresenter` would show, and holds no picture itself.
 static func picture_by_key(key: String) -> PictureRef:
 	if not _refs.has(key):

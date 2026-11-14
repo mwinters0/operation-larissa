@@ -1,5 +1,5 @@
 # A small skin mod: it redraws the whole sector from the state it is given, with rectangles for the walls and pictures of its own pack (skin/*.png) for the sub, the creatures, the ink and
-# the pieces, and the sub through its own shader (skin/glow.gdshader). The screen's own content (the background, the decorations by layer, the swaying ones, the station's parts) it draws by NAME: the state tells it what is where and under what skin key, and the draw
+# the pieces, and the sub through its own shader (skin/glow.gdshader). The screen's own content (the background, the decorations by layer, the swaying ones, the station's parts) it draws by NAME: the state tells it what is where and under what picture key, and the draw
 # list names that key, so the game draws the picture it would draw itself (a skin's or the chain's) and the script holds none. It keeps nothing between frames: every frame is built from `state`, so a skin bound late draws what one bound early does.
 var api : Dictionary = {}
 # (only for the tests to ask: what the skin was told happened. It draws from `state`, never from this. Each event costs the script instructions, so a long list is only looked at in its last element.)

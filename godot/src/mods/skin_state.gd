@@ -5,7 +5,7 @@ extends RefCounted
 ## what one bound from the start builds. `event` makes one entry of the `events` list from what the view's signal carried. The Dictionaries, Arrays and values are made fresh per call and made
 ## read-only (`ModLoader.freeze`), so a script cannot change what the next frame is told, and none of them holds an object.
 ##
-## The screen's own content (the background, the decorations, the station) is told by NAME, not as a picture: a `key` is the skin key of the picture as the pack in use holds it (`PictureRef.key_of`: `background/bg_s00_00`, `deco/coral_fan_cyan`,
+## The screen's own content (the background, the decorations, the station) is told by NAME, not as a picture: a `key` is the picture key of the picture as the pack in use holds it (`PictureRef.key_of`: `background/bg_s00_00`, `deco/coral_fan_cyan`,
 ## `frame/station_00`), with the `size` of that picture, and what the game draws for the key is the skin's business. It is built from the same `SimView` each time, like the rest: nothing about the screen is kept between builds (a screen is
 ## some forty small dictionaries, a cost the walls' 684 characters already exceed), so a skin bound on any screen is told the screen.
 ##

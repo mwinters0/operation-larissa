@@ -415,7 +415,7 @@ or a value of the wrong kind, is reported by the pack check; it is never silentl
 ### The picture table
 
 The game asks for a picture by its **key** (`<kind>/<name>`, section 2, "Pictures"), and a pack answers through its **picture table**, `pictures.json` at the pack's
-root. A pack with no table holds no picture. Each row is a key (the "skin key" of the mod API) and one of three forms:
+root. A pack with no table holds no picture. Each row is a picture key (the key a mod names a picture of the game by) and one of three forms:
 
 ```json
 {"format": 1,
@@ -555,7 +555,7 @@ func problem_frame(state : Dictionary, events : Array) -> Array:
 ```
 
 `problem_frame` is called when the screen is shown, when what it is told changes (the player types a key, the step changes) and on the frame after something happened ("What happened"); it returns a draw list in window pixels (`window`, 640 x 400, clipped to it), the **same list** a skin returns, checked by the same code:
-[`SKIN_API.md`](SKIN_API.md), "The draw list" has the commands (`rect`, `line`, `picture`, `region`, `text`, `layer`), their caps and the shaders. A picture is a PNG of the folder `problems/` of the mod's own pack, or a picture of the game named by its skin key (`problem_art/log_scan_0`, `ui_picture/...`; `SKIN_API.md`, "Pictures by key"), which the game resolves under the skin in use (a mod that does says the version that draws the game). The calculator, the prompt and the message box are drawn by the game over the picture.
+[`SKIN_API.md`](SKIN_API.md), "The draw list" has the commands (`rect`, `line`, `picture`, `region`, `text`, `layer`), their caps and the shaders. A picture is a PNG of the folder `problems/` of the mod's own pack, or a picture of the game named by its picture key (`problem_art/log_scan_0`, `ui_picture/...`; `SKIN_API.md`, "Pictures by key"), which the game resolves under the skin in use (a mod that does says the version that draws the game). The calculator, the prompt and the message box are drawn by the game over the picture.
 The script runs under the mod's limits, and a mod that draws is held to at most 10 million instructions per call. Every mod runs under at least 1 million: a limit of 0 in a manifest is 1, so no mod runs uncounted.
 
 **The state.** A read-only Dictionary of plain values (`ProblemState.build`):

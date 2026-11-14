@@ -458,7 +458,7 @@ func test_a_picture_of_another_pack_is_never_drawn() -> void:
 	assert_int(drawn.dropped).is_equal(1)
 
 
-func test_a_draw_list_names_a_picture_of_the_game_by_its_skin_key() -> void:
+func test_a_draw_list_names_a_picture_of_the_game_by_its_picture_key() -> void:
 	var skinny := _mount(["skinny"] as Array[String])
 	var skin := SkinChoice.load_skin(skinny.id) as ModSkin
 	var sky := Assets.background(0, 3)

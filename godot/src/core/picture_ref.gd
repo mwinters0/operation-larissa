@@ -13,7 +13,7 @@ extends Texture2D
 ## Teaches: a `Texture2D` written in GDScript that stands for another one (compare `ScaledTexture`, which stands for the same picture at another scale): which virtuals a stand-in must forward so every consumer draws it, and why a
 ## texture's identity can be a name that is looked up when it is used.
 
-## The picture's skin key (`<kind>/<name>`, `PictureTable.is_key`).
+## The picture's picture key (`<kind>/<name>`, `PictureTable.is_key`).
 @export var key: String = "":
 	set(value):
 		key = value

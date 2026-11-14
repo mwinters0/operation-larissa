@@ -27,7 +27,7 @@ extends RefCounted
 ## string held in data, and nothing else in the game turns a pack's file into an object. Besides:
 ##   * a WHOLE FILE the caller reads itself (MIDI bytes, a file an editor writes): `path(rel)` is where the first pack that has it keeps it (a virtual path for a
 ##     pack file); `has_file_at(path)` and `bytes_at(path)` read a path like that, whatever pack it is in.
-##   * a THING a pack holds in its own layout (a sector or a campaign as JSON, a text, a picture by skin key, a clip by name): `sector_owner`,
+##   * a THING a pack holds in its own layout (a sector or a campaign as JSON, a text, a picture by picture key, a clip by name): `sector_owner`,
 ##     `campaign_files`, `text`, `picture`, `clip`. A pack with no such files answers nothing, and the next one is asked.
 ##
 ## Teaches: a layered lookup (the Unix `PATH` idea, or CSS's cascade): the first layer that has the thing answers; a chain that is built by following

@@ -71,7 +71,7 @@ def test_every_picture_key_the_data_holds_is_a_row_of_the_table():
 
 def test_every_row_of_the_table_is_used_by_the_data_or_asked_for_by_name():
     """A picture the pack draws is held by key in its data, or asked for by name: a registry name (`Assets.ui_picture`), a background by sector and screen,
-    a skin key. The rows nothing in the data holds are the registry's (the engine looks them up by name), the backgrounds and the aliases of problem art."""
+    a picture key. The rows nothing in the data holds are the registry's (the engine looks them up by name), the backgrounds and the aliases of problem art."""
     held = set()
     for tres in DEV.rglob("*.tres"):
         text = tres.read_text()

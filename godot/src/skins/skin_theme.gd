@@ -8,7 +8,7 @@ extends Resource
 ##     problem screen too), `caret` and `display` (the field behind the digits of the calculator and the "Ans:" panel).
 ##   * `styles`: `panel` (panels), `console` (the frame of a dialog and of the message box), `button` with a state (`normal`, `hover`, `pressed`, `disabled`, `focus`), `input` with one (`normal`, `focus`, `read_only`) and `key` with one (`normal`, `hover`, `pressed`: the calculator's keys, which are the original's picture with a button over each; `normal` is clear, `hover` and `pressed` are the glass that lights a key). A style is
 ##     the fields it says, laid over the engine's own style of that name: `fill` and `border` (`Color`), `border_width`, `radius` (whole numbers), `margin` (`Vector2i`: the space between the border and the content, x and y), or a
-##     picture, `picture` (a skin key, `ThemeBuilder` finds it as the draw list of a mod does, `Assets.picture_by_key`) with `slice` (`Vector4i`: the margins that stay unstretched, left, top, right, bottom).
+##     picture, `picture` (a picture key, `ThemeBuilder` finds it as the draw list of a mod does, `Assets.picture_by_key`) with `slice` (`Vector4i`: the margins that stay unstretched, left, top, right, bottom).
 ## The controls, their order, their rectangles and what they do are the engine's: nothing here names one.
 ##
 ## Teaches: a look as a table of names to values, so that a skin is a few lines of data, a partial one is a layer over a whole one (the same idea as `GameSkin.fallback`), and the thing that makes a `Theme` is one function.

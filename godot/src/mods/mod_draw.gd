@@ -7,14 +7,14 @@ extends RefCounted
 ##
 ##     ["rect", Rect2 area, Color]                                       a filled rectangle
 ##     ["line", Vector2 from, Vector2 to, Color, float width]
-##     ["picture", "skin/x.png" or "frame/sub_00", Vector2 or Rect2 where, mirrored?, Color?]  a picture of the mod's own pack, or of the game by its skin key; a Vector2 puts its top-left corner there at its own size, a Rect2 stretches it
+##     ["picture", "skin/x.png" or "frame/sub_00", Vector2 or Rect2 where, mirrored?, Color?]  a picture of the mod's own pack, or of the game by its picture key; a Vector2 puts its top-left corner there at its own size, a Rect2 stretches it
 ##     ["region", "skin/x.png" or "deco/coral_fan_cyan", Rect2 where, Rect2 source, mirrored?, Color?]   part of a picture (a tile of a sheet), source in pixels of the picture
 ##     ["text", "words", Vector2 where, int size, Color, float width?, "left" or "center" or "right"?]   one line in the theme's font, its top-left corner at `where`
 ##     ["layer", "skin/x.gdshader" or "", {"uniform": number, bool, vector or Color, ...}?]   starts a layer drawn through that shader (one the manifest lists); "" is no shader
 ##
 ## `mirrored` is a bool, the Color after it a modulate. The list starts in an unshaded layer. At most `MAX_LAYERS` layers, places and sizes finite and within `LIMIT`, and the uniforms of a layer as `ModShader.check_uniforms` judges them (the shader must declare each, a value of its type, `phase` is the game's). A picture is a PNG under the
 ## folder of `ModAssets` (`skin/` or `problems/`) of THE MOD'S OWN PACK (`Pack.texture`, never the chain's lookup), so a path that names another pack, a folder above, or a file the pack lacks draws nothing. A name that is not under that folder but
-## is a SKIN KEY (`<kind>/<name>`, a kind of `PictureTable.KINDS`: `ModSpec.is_drawable_key`) names a picture of the game: the game resolves it (`Assets.picture_by_key`, the lookup `OriginalPresenter` makes: the picture the chain's tables give the key), the mod never holds it,
+## is a PICTURE KEY (`<kind>/<name>`, a kind of `PictureTable.KINDS`: `ModSpec.is_drawable_key`) names a picture of the game: the game resolves it (`Assets.picture_by_key`, the lookup `OriginalPresenter` makes: the picture the chain's tables give the key), the mod never holds it,
 ## and a key nothing holds is a dropped command, told by `report`. A layer
 ## whose shader the manifest does not list draws nothing (it is never drawn unshaded). A text is cut to `MAX_TEXT` characters (a control character becomes a space), its size held to `MIN_FONT_SIZE`..`MAX_FONT_SIZE`, at
 ## most `MAX_TEXTS` of them in a list; there is one font, the theme in use's (`ModLayer.theme_font`), so a mod names none. With a `width` the line is aligned in that width and clipped to it. Nothing here asks the script anything or runs its code.
@@ -212,7 +212,7 @@ static func _clean_text(text: String) -> String:
 	return out
 
 
-## The texture named by `command[at]`: a plain path under the assets' folder ending `.png` that the mod's pack holds, or a skin key the chain holds a picture for (`keys` keeps the answers), or null.
+## The texture named by `command[at]`: a plain path under the assets' folder ending `.png` that the mod's pack holds, or a picture key the chain holds a picture for (`keys` keeps the answers), or null.
 static func _picture(command: Array, pack: Pack, assets: ModAssets, keys: Dictionary, at: int) -> Texture2D:
 	var path: Variant = command[at]
 	if not path is String or (path as String).length() > MAX_PATH:

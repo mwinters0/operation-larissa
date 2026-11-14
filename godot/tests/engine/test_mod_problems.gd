@@ -192,7 +192,7 @@ func test_a_picture_is_a_file_of_the_folder_of_the_assets_and_of_the_mods_own_pa
 	assert_bool(ModDraw.is_empty(ModDraw.validate([["picture", "problems/fish.png", Vector2(0, 0)]], tides.pack, null))).is_true()
 
 
-func test_a_problem_screen_names_a_picture_of_the_game_by_its_skin_key_too() -> void:
+func test_a_problem_screen_names_a_picture_of_the_game_by_its_picture_key_too() -> void:
 	var tides := _mount(["tides"] as Array[String])
 	var screens := ModHost.problem_screen(TYPE)
 	var art := Array(Catalog.problem_type(3).art_keys)

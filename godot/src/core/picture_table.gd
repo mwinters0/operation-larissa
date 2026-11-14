@@ -1,6 +1,6 @@
 class_name PictureTable
 extends RefCounted
-## The picture table of ONE pack: `pictures.json`, from a skin key to a file of the pack or to another key.
+## The picture table of ONE pack: `pictures.json`, from a picture key to a file of the pack or to another key.
 ##
 ##     {"format": 1,
 ##      "pictures": {

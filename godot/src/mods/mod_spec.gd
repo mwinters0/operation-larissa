@@ -583,7 +583,7 @@ func font_files() -> Array[String]:
 	return files
 
 
-## The skin keys of the pictures the theme's styles name (`theme.styles`' `picture`), each once.
+## The picture keys of the pictures the theme's styles name (`theme.styles`' `picture`), each once.
 func theme_pictures() -> Array[String]:
 	var keys: Array[String] = []
 	if theme != null:
