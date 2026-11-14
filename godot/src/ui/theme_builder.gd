@@ -162,17 +162,11 @@ static func _styled(base: StyleBox, fields: Dictionary, owner: StringName, style
 			TroubleLog.session.tell("[theme] skin '%s': its theme's style '%s' names the picture '%s', which no pack of the chain holds, so that style is drawn flat (the fields it says besides the picture, else the engine's own style)" % [owner, style, fields["picture"]])
 		var texture: Texture2D = Assets.picture_by_key(fields["picture"]) if held else null
 		if texture != null:
-			var slice: Vector4i = fields["slice"]
-			var box := StyleBoxTexture.new()
-			box.texture = texture
-			box.texture_margin_left = slice.x
-			box.texture_margin_top = slice.y
-			box.texture_margin_right = slice.z
-			box.texture_margin_bottom = slice.w
+			var box := ScaledStyleBox.of(texture, fields["slice"])
 			for side in [SIDE_LEFT, SIDE_RIGHT]:
-				box.set_content_margin(side, margin.x if margin.x >= 0 else (base.get_margin(side) if base != null else -1.0))
+				_content_margin(box, base, side, margin.x)
 			for side in [SIDE_TOP, SIDE_BOTTOM]:
-				box.set_content_margin(side, margin.y if margin.y >= 0 else (base.get_margin(side) if base != null else -1.0))
+				_content_margin(box, base, side, margin.y)
 			return box
 	var flat := (base.duplicate() as StyleBoxFlat) if base is StyleBoxFlat else StyleBoxFlat.new()
 	if fields.has("fill"):
@@ -189,6 +183,14 @@ static func _styled(base: StyleBox, fields: Dictionary, owner: StringName, style
 		flat.content_margin_top = margin.y
 		flat.content_margin_bottom = margin.y
 	return flat
+
+
+## The content margin of `side` of `box`: `stated` when the style says one, else the engine's style's, else the picture's own margin (what `box` has when this leaves it).
+static func _content_margin(box: StyleBox, base: StyleBox, side: Side, stated: int) -> void:
+	if stated >= 0:
+		box.set_content_margin(side, stated)
+	elif base != null:
+		box.set_content_margin(side, base.get_margin(side))
 
 
 ## Liberation Sans Bold narrowed to the original's average character width.

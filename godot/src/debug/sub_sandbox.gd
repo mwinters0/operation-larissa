@@ -54,8 +54,7 @@ var _start := Vector2i(150, 200)    # window pixels of the picture's top-left (S
 
 
 func _ready() -> void:
-	walls.tile_set = Catalog.pack_resource("data/neptune_tileset.tres") as TileSet
-	currents.tile_set = walls.tile_set
+	ScaledTileSet.dress([walls, currents], Catalog.pack_resource("data/neptune_tileset.tres") as TileSet)
 	build_room(ROOM)
 	GameState.reset()                                       # (a run of its own: the sub flies on the chain's rule values)
 	sub.bind(SubModel.new(GameState.tuning.sub))            # (this scene owns the model, as `SimWorld` owns the game's)

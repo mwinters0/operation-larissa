@@ -873,10 +873,8 @@ static func _rebuild() -> void:
 	_reindex()
 	Catalog.packs_changed()
 	Durations.read_files()
-	var drawn := _picture_decision.scale
 	_picture_decision = PictureScale.decide(_chain)             # (after the content lookups: the closure of what the chain needs reads them)
-	if _picture_decision.scale != drawn:
-		Pictures.forget()
+	Assets.forget_folders()                                     # (the pictures last: what holds one is told of the chain once its scale is decided, and asks again under it)
 
 
 ## Builds the lists the lookups use: who holds each sector, the merged texts, the merged speech groups; measures the clips of a pack

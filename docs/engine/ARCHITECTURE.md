@@ -527,7 +527,7 @@ other pictures cannot move a button or change a random draw.
 | `src/problems/` | the 34 math problem types: `ProblemFactory`, `ProblemFlow`, `ProblemScreen`, `Calculator`, the diagrams, the combination lock, `PracticeMode` |
 | `src/story/` | the opening (`Opening`, `NewsCartoon`, `TitleScene`, `StoryPages`), the closings (`VoyagerClosing`, `ExpertClosing`, `GenericFinale`), `SurfaceShipScreen`, `StorySegment`, `Cutscene`, `CutsceneCast` |
 | `src/ui/` | sign-in, Hall of Fame, dialogs, the menu bar, `Hud`, the message queue, the pack screen and warning, `theme_builder.gd` |
-| `src/skins/` | `GameSkin`, `SkinChoice`, `RenderSettings`, `HudLabels`, `ScaledTexture` ([`SKINS.md`](SKINS.md)) |
+| `src/skins/` | `GameSkin`, `SkinChoice`, `RenderSettings`, `HudLabels`, `ScaledTexture`, `ScaledTileSet`, `ScaledStyleBox` (pictures of a scale above 1, [`PACKS.md`](PACKS.md) "Pictures"; [`SKINS.md`](SKINS.md)) |
 | `src/audio/` | `MidiMusic` ([`AUDIO.md`](AUDIO.md)) |
 | `src/checks/` | Check sector: `SectorChanges`, `SectorChecks`, `SectorReport`, `check_sector.tscn` ([`EDITORS.md`](EDITORS.md)) |
 | `src/mods/` | mod packs: `ModSpec` (the manifest entry), `ModLoader` (runs a script in a Sandbox, watches its health), `ModApi` (what a mod is granted), `ModHooks` (a campaign's declared mods resolved into the run's rule hooks), `ModParts` (the one record of a running mod and the one judgement of its pack), `ModDraw` / `ModLayer` / `ModAssets` / `ModShader` (the draw list of a skin or a problem screen, checked and drawn), `ModProblems` / `ProblemState` (problem screens) ([`PACKS.md`](PACKS.md)) |

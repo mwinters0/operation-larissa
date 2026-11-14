@@ -11,7 +11,7 @@ extends RefCounted
 ## it is told ONCE per run (`TroubleLog.session`), naming the pack, the key and what is shown instead. An answer is kept WITH the lines its lookup told, and a hit tells them again (the session drops a line it has given), so a run that begins after
 ## the answer was made is told too.
 ##
-## THE CACHE is per chain: an answer is kept until the chain changes (`forget`, from `Assets.forget_folders` by `Catalog.packs_changed`). `epoch` counts the changes and `events.changed` announces them, so a holder of an answer (`PictureRef`) asks again. A skin changes no picture.
+## THE CACHE is per chain: an answer is kept until the chain changes (`forget`, from `Assets.forget_folders` by `Packs`, after the chain's picture scale is decided). `epoch` counts the changes and `events.changed` announces them, so a holder of an answer (`PictureRef`) asks again. A skin changes no picture.
 ##
 ## THE ONE RESOLVER. `resolve` is the only function that turns a key into a texture: `Assets.picture_by_key` and `PictureRef.resolved` both call it. A pack with no `pictures.json` holds no picture; no file name, folder or number means anything to it.
 ##
@@ -61,12 +61,28 @@ static func resolve(key: String) -> Texture2D:
 ## The picture `pack` itself holds for `key`: its own file row, or an alias followed inside its own table; null when it has none. What a pack draws there whatever the packs laid over it redraw (the size a redrawing pack is judged by, `SkinTemplates`).
 static func in_pack(pack: Pack, key: String) -> Texture2D:
 	var table := pack.picture_table()
+	var at := _end_of_aliases(table, key)
+	return _file_row(pack, table, at) if table.files.has(at) else null
+
+
+## The size in pixels of the file the packs of picture scale 1 give `key` (the first of the chain that holds a row of its own for it, as `in_pack` finds it), read from the file's header, nothing decoded; `Vector2i.ZERO` when none does. What a pack of a
+## higher scale is held to: its file is that many times larger (`PackCheck`).
+static func scale_one_size(key: String) -> Vector2i:
+	for each in Packs.packs_at_scale(1):
+		var table := each.picture_table()
+		var at := _end_of_aliases(table, key)
+		if table.files.has(at):
+			return each.png_size(table.files[at])
+	return Vector2i.ZERO
+
+
+static func _end_of_aliases(table: PictureTable, key: String) -> String:
 	var seen: Array[String] = []
 	var at := key
 	while table.aliases.has(at) and not seen.has(at):
 		seen.append(at)
 		at = table.aliases[at]
-	return _file_row(pack, table, at) if table.files.has(at) else null
+	return at
 
 
 ## Does a pack of the chain hold a picture for `key`?

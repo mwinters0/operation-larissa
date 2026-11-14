@@ -11,9 +11,9 @@ extends Texture2D
 ## `Sprite2D`, `AnimatedSprite2D`, `TextureRect` and `TextureProgressBar` is concerned. Compare `AtlasTexture`, which answers with a
 ## piece of another texture; this one answers with the same picture at another scale.
 ##
-## What it does not do: nodes that hand the texture's own RID to the renderer instead of asking it to draw (a `TileSet`'s atlas, a
-## `Sprite3D`, a shader's `sampler2D` uniform) see the large file as it is. A skin that wants a sharper tile set gives it a
-## `TileSetAtlasSource` with the larger texture and `texture_region_size` and the same tile coordinates, as a whole resource instead.
+## What the renderer takes by RID instead of asking the texture to draw (a `TileSet`'s atlas, a nine-patch, a `StyleBoxTexture`) never sees this class: its RID is empty, so those consumers are given the stored picture and the scale by one builder each:
+## `ScaledTileSet` (a tile set at `scale` times its cell size under a layer at `1 / scale`) and `ScaledStyleBox` (a nine-patch drawn under a transform of `1 / scale`). `stored` and `scale_of` are how they read a picture. A `Sprite3D` and a
+## `NinePatchRect` are not used by the game; a shader's `sampler2D` uniform is a picture of its own and `TEXTURE` is the stored picture, whose own pixel size `TEXTURE_PIXEL_SIZE` reports.
 
 ## The picture as it is stored: `scale` times larger than it is drawn.
 @export var source: Texture2D
@@ -27,6 +27,23 @@ static func of(file: Texture2D, factor: int) -> ScaledTexture:
 	made.source = file
 	made.scale = factor
 	return made
+
+
+## The picture as it is stored (a file `scale_of(texture)` times as large as `texture` says it is): the picture `texture` stands for with every `ScaledTexture` and `PictureRef` taken off, or `texture` itself when it is a plain picture. Null for a `PictureRef`
+## that holds no picture. What a consumer that hands the renderer a texture's RID is given (`ScaledTileSet`, `ScaledStyleBox`).
+static func stored(texture: Texture2D) -> Texture2D:
+	var held := texture
+	if held is PictureRef:
+		held = (held as PictureRef).resolved()
+	return (held as ScaledTexture).source if held is ScaledTexture else held
+
+
+## How many times larger than the size `texture` reports its stored picture is: the `scale` of a `ScaledTexture` (also behind a `PictureRef`), 1 for any other picture.
+static func scale_of(texture: Texture2D) -> int:
+	var held := texture
+	if held is PictureRef:
+		held = (held as PictureRef).resolved()
+	return (held as ScaledTexture).scale if held is ScaledTexture else 1
 
 
 func _get_width() -> int:
@@ -56,10 +73,24 @@ func _draw(to_canvas_item: RID, pos: Vector2, modulate: Color, transpose: bool) 
 		source.draw_rect(to_canvas_item, Rect2(pos, get_size()), false, modulate, transpose)
 
 
-## A rectangle on the screen is the same for either size: the large file is simply sampled more finely.
+## A rectangle on the screen is the same for either size: the large file is simply sampled more finely. A tiled rectangle repeats the picture at the size it reports, so the repeat is made here from the whole picture, one cell at a time (`rect` is a few cells in the game's use).
 func _draw_rect(to_canvas_item: RID, rect: Rect2, tile: bool, modulate: Color, transpose: bool) -> void:
-	if source != null:
-		source.draw_rect(to_canvas_item, rect, tile, modulate, transpose)
+	if source == null:
+		return
+	if not tile:
+		source.draw_rect(to_canvas_item, rect, false, modulate, transpose)
+		return
+	var cell := get_size()
+	if cell.x <= 0.0 or cell.y <= 0.0:
+		return
+	var y := 0.0
+	while y < rect.size.y:
+		var x := 0.0
+		while x < rect.size.x:
+			var piece := Vector2(minf(cell.x, rect.size.x - x), minf(cell.y, rect.size.y - y))
+			source.draw_rect_region(to_canvas_item, Rect2(rect.position + Vector2(x, y), piece), Rect2(Vector2.ZERO, (piece * float(scale)).min(source.get_size())), modulate, transpose, true)
+			x += cell.x
+		y += cell.y
 
 
 ## `src_rect` is in the REPORTED size's pixels (a sprite sheet cell, a progress bar's fill); the file has `scale` times as many.

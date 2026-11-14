@@ -252,7 +252,7 @@ static func _voice_cues(live: Pack, report: PackReport) -> void:
 
 
 ## The pack's picture table (`pictures.json`, `PictureTable`): each mistake of the file itself, a row whose file the pack does not hold or the engine cannot decode, an alias that leads to a key no pack of the chain has a picture for (or round in a circle through the chain), a picture the table
-## gives that is not the size of the picture it redraws as drawn, the file over the pack's `picture_scale` (a warning: it is drawn stretched), a set of packs at a higher picture scale that does not cover what the game needs (a warning, every missing key: `PictureScale.Shortfall.line`), a PNG of the pack no row names (a warning: nothing reads it). A pack with no table holds no picture: its PNGs are named by no row (warned), and a `pictures/` folder is not read.
+## gives that is not the size of the picture it redraws (a warning: it is drawn stretched; for a pack of picture scale N, a file that is not N times the size of the picture of scale 1 it replaces, read from the headers of the files: `_scaled_row`), a set of packs at a higher picture scale that does not cover what the game needs (a warning, every missing key: `PictureScale.Shortfall.line`), a PNG of the pack no row names (a warning: nothing reads it). A pack with no table holds no picture: its PNGs are named by no row (warned), and a `pictures/` folder is not read.
 static func _pictures(live: Pack, report: PackReport) -> void:
 	var table := live.picture_table()
 	if not table.present and not live.folders_in("pictures").is_empty():
@@ -288,10 +288,24 @@ static func _picture_row(live: Pack, table: PictureTable, key: String, sizes: Di
 	if texture == null:
 		report.error("pictures", "%s: '%s' names %s, which is not a PNG picture the engine can decode" % [PictureTable.FILE, key, rel])
 		return
+	if live.picture_scale > 1:
+		_scaled_row(live, key, Vector2i(texture.get_size()), report)
+		return
 	var wanted: Vector2i = sizes.get(key, Vector2i.ZERO)
-	var drawn := Vector2i(texture.get_size()) / live.picture_scale
+	var drawn := Vector2i(texture.get_size())
 	if wanted != Vector2i.ZERO and drawn != wanted:
-		report.warn("pictures", "%s: '%s' is %dx%d%s, and the picture it replaces is %dx%d: it is drawn stretched to that place" % [PictureTable.FILE, key, drawn.x, drawn.y, "" if live.picture_scale == 1 else " as drawn (the file is %dx%d)" % [texture.get_width(), texture.get_height()], wanted.x, wanted.y])
+		report.warn("pictures", "%s: '%s' is %dx%d, and the picture it replaces is %dx%d: it is drawn stretched to that place" % [PictureTable.FILE, key, drawn.x, drawn.y, wanted.x, wanted.y])
+
+
+## One file row of a pack of picture scale N above 1: the file is N times the size of the picture of scale 1 that the row replaces (the game draws it at 1 / N of its size, so any other size is a picture drawn stretched, or short of a pixel row of the original's size).
+## The scale-1 picture is the one the chain's packs of scale 1 give the key, measured from the header of its file; a key none gives is a picture of the pack's own, with nothing to compare.
+static func _scaled_row(live: Pack, key: String, file_size: Vector2i, report: PackReport) -> void:
+	var plain := Pictures.scale_one_size(key)
+	if plain == Vector2i.ZERO or file_size == plain * live.picture_scale:
+		return
+	report.warn("pictures", "%s: '%s' is %dx%d pixels, and the picture of scale 1 it replaces is %dx%d, so a picture of scale %d should be %dx%d pixels: drawn at 1/%d of its size it is %dx%d, not the size of the original's" % [
+			PictureTable.FILE, key, file_size.x, file_size.y, plain.x, plain.y, live.picture_scale, plain.x * live.picture_scale, plain.y * live.picture_scale,
+			live.picture_scale, ceili(float(file_size.x) / live.picture_scale), ceili(float(file_size.y) / live.picture_scale)])
 
 
 ## Is `rel` a picture a mod's draw list names by its path (`skin/`, `problems/`)? Those are not rows of the table.

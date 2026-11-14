@@ -101,11 +101,14 @@ var _mod_layers: ModLayerHost
 
 
 func _ready() -> void:
-	# The tile set of the pack in use, with the chain's pictures in it (the same set for both layers).
-	var tiles := Catalog.tileset()
-	walls.tile_set = tiles
-	currents.tile_set = tiles
+	_dress_tiles()
+	Pictures.events.changed.connect(_dress_tiles)                                  # (another chain: its tile set and the scale of its pictures)
 	_dress_layers()
+
+
+## The tile set of the pack in use, with the chain's pictures in it, on both layers: made for the scale the run draws its pictures at (`ScaledTileSet`), whose layers are drawn at 1 / that scale, so a cell is 16 units whatever the art.
+func _dress_tiles() -> void:
+	ScaledTileSet.dress([walls, currents], Catalog.tileset())
 
 
 ## Connects the events of `sim_world` and builds everything from what it holds already: a presenter may be bound in the middle of a

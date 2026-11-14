@@ -54,6 +54,9 @@ const FORMAT := 1
 const ID_PATTERN := "^[a-z][a-z0-9_]{0,31}$"
 ## What a pack that is not trusted may never hold: these are the formats the engine runs.
 ## A font of a pack is a TrueType file (`font`), at most this many bytes: the one place a pack's font kind and size are named (`ModSpec` and `PackCheck` ask here).
+## The first bytes of a PNG file: the signature (8), the IHDR chunk's length (4) and name (4), its width (4) and height (4).
+static var _png_signature := PackedByteArray([137, 80, 78, 71, 13, 10, 26, 10])
+const PNG_HEADER_BYTES := 24
 const FONT_EXTENSION := "ttf"
 const MAX_FONT_BYTES := 2 << 20
 ## The first four bytes of a TrueType file (`00 01 00 00`, or `true`) or of an OpenType one with outlines of PostScript (`OTTO`): a file that starts otherwise is no font, and is not handed to the font engine, which would only complain.
@@ -269,6 +272,25 @@ func read_bytes(rel: String) -> PackedByteArray:
 	if not has(rel):
 		return PackedByteArray()
 	return _archive.read(rel) if _archive != null else FileAccess.get_file_as_bytes(path_of(rel))
+
+
+## The size in pixels of the PNG file `rel`, read from its header (the signature, then the IHDR chunk's width and height) without decoding the picture; `Vector2i.ZERO` for a missing file or one that is not a PNG.
+func png_size(rel: String) -> Vector2i:
+	if not has(rel):
+		return Vector2i.ZERO
+	var head := _archive.read(rel).slice(0, PNG_HEADER_BYTES) if _archive != null else _file_head(path_of(rel))
+	if head.size() < PNG_HEADER_BYTES or head.slice(0, 8) != _png_signature or head.slice(12, 16) != "IHDR".to_ascii_buffer():
+		return Vector2i.ZERO
+	return Vector2i(_big_endian(head, 16), _big_endian(head, 20))
+
+
+static func _file_head(path: String) -> PackedByteArray:
+	var file := FileAccess.open(path, FileAccess.READ)
+	return file.get_buffer(PNG_HEADER_BYTES) if file != null else PackedByteArray()
+
+
+static func _big_endian(bytes: PackedByteArray, at: int) -> int:
+	return (bytes[at] << 24) | (bytes[at + 1] << 16) | (bytes[at + 2] << 8) | bytes[at + 3]
 
 
 ## A JSON file parsed, or null for a missing file or text that is not JSON (with a warning that says which).

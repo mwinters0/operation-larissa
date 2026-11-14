@@ -65,7 +65,7 @@ func _build() -> void:
 
 func _build_tiles(screen: ScreenData, zone: ZoneData) -> TileMapLayer:
 	var layer := TileMapLayer.new()
-	layer.tile_set = Catalog.tileset()
+	ScaledTileSet.dress([layer], Catalog.tileset())
 	for i in screen.tiles.size():
 		var byte := screen.tiles[i]
 		var cell := Vector2i(i % ScreenData.TILE_COLUMNS, floori(i / float(ScreenData.TILE_COLUMNS)))

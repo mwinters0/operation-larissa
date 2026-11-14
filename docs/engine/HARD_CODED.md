@@ -4,12 +4,6 @@ The places where the engine or the project assumes the original game's content, 
 described in [`../create/CONTENT.md`](../create/CONTENT.md) (section 4) and [`PACKS.md`](PACKS.md), the dev pack in
 [`../../tools/dev_pack/README.md`](../../tools/dev_pack/README.md), the test suites in [`DEVELOPING.md`](DEVELOPING.md).
 
-## Not built: high-resolution tiles
-
-A pack may say `picture_scale` (4x art drawn at 1/4 of its size through `ScaledTexture`, [`../create/CONTENT.md`](../create/CONTENT.md) "The picture table"). `ScaledTexture`
-does not reach what the renderer takes by RID: a `TileSet` atlas (`tile/` pictures), a nine-patch or a style box (a theme's `picture`). Candidate: a tile set that knows the scale of its picture (a `TileSetAtlasSource`
-with the larger texture and `texture_region_size`), and an engine test of a high-resolution pack for it.
-
 ## Hard-coded assumptions
 
 Places where the engine or the project assumes the original's content (each is a candidate for separation; none stops dev from

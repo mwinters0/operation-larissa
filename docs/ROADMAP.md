@@ -27,9 +27,6 @@ A run draws every picture at one scale N, chosen by coverage (`create/CONTENT.md
 layouts and draw lists do not change); a picture of scale N reports 1/N of its file's size (`ScaledTexture`), and the window's `canvas_items`
 stretch puts the file's pixels on the screen.
 
-- **H2. Every consumer draws at N.** What the renderer takes by RID: the tile set's atlas (the presenter's `TileMapLayer`s at `1/N` with an
-  N-times tile size), nine-patches and style boxes (texture margins x N under a `1/N` transform). An engine test of a scale-4 pack drawn
-  by every consumer; `PackCheck` softly reports a picture whose size is not N times the scale-1 picture it replaces.
 - **H3. A mod declares the pictures it draws.** A mod's manifest names the picture keys its draw lists and problem screens ask for; `PackNeeds`
   adds them to the needs, so a run-time key is checked at start like the rest.
 
