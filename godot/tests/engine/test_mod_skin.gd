@@ -153,7 +153,8 @@ func test_a_skin_mod_is_given_the_skin_facts_and_other_mods_are_not() -> void:
 	assert_int(api["api_version"]).is_equal(ModSpec.API_VERSION)
 	assert_dict(api["skin"]).is_equal({"columns": 38, "rows": 18, "tile": 16, "playfield": Vector2(608, 288), "max_commands": ModDraw.MAX_COMMANDS,
 			"max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModShader.MAX_UNIFORMS, "max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT,
-			"min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE, "shaders": ["skin/glow.gdshader"]})
+			"min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE, "shaders": ["skin/glow.gdshader"],
+			"picture_keys": ["background/*", "deco/*", "frame/*", "tile/*"]})
 	for value: Variant in api["skin"].values():
 		assert_bool(value is Object).is_false()                                                      # (numbers and names: nothing to reach through)
 	var hello := PackShelf.new(&"", skinny.id)

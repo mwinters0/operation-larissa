@@ -4,7 +4,7 @@ extends RefCounted
 ## `property_allowed` / `method_allowed` are the policies for the objects the game hands over. To give mods a new ability, add its key to `build` and its function below;
 ## to let a mod touch an object, grant the object (`_grant`) and allow the property or method in the policy. Nothing else in the game is reachable from a mod.
 ##
-## The API (`ModSpec.API_VERSION`, 5): the first four keys are version 1, `skin` is version 2, `problems` is version 3, `rules` is version 4. Version 5 (`ModSpec.DRAWS_THE_GAME_API_VERSION`) adds no key: it widens what a manifest may say (a skin's `render`, `pictures`, `hud_font`, `layers`, `script_layers`, `theme`), what a draw list may name (`ModDraw`: a picture of the game by key) and what a callback is told (a problem screen's events, clock and sounds):
+## The API (`ModSpec.API_VERSION`, 6): the first four keys are version 1, `skin` is version 2, `problems` is version 3, `rules` is version 4. Version 5 (`ModSpec.DRAWS_THE_GAME_API_VERSION`) adds no key: it widens what a manifest may say (a skin's `render`, `pictures`, `hud_font`, `layers`, `script_layers`, `theme`), what a draw list may name (`ModDraw`: a picture of the game by key) and what a callback is told (a problem screen's events, clock and sounds). Version 6 (`ModSpec.PICTURE_KEYS_API_VERSION`) adds the `picture_keys` fact to `skin` and `problems`, and a draw list names only the pictures of the game its manifest declares:
 ##
 ##     api_version  int       the version of this API
 ##     id           String    the mod's id (= its pack's id)
@@ -13,10 +13,10 @@ extends RefCounted
 ##                            the pack does not hold or a path that is not a plain relative path of the pack. The object is granted: the mod may hold it and hand it back to
 ##                            the game, and touches nothing of it (the policies allow no property and no method).
 ##     skin         Dictionary   only for a mod whose manifest says `skin`: the facts a skin needs, plain values (docs/create/SKIN_API.md): `columns`, `rows`, `tile`, `playfield` (the size
-##                            in pixels), `max_commands`, `max_layers`, `max_uniforms`, `max_texts`, `max_text`, `min_font_size`, `max_font_size`, `shaders` (the paths its manifest lists). A skin gets nothing else: the state, the tick fraction and the
+##                            in pixels), `max_commands`, `max_layers`, `max_uniforms`, `max_texts`, `max_text`, `min_font_size`, `max_font_size`, `shaders` (the paths its manifest lists), `picture_keys` (the pictures of the game its manifest declares). A skin gets nothing else: the state, the tick fraction and the
 ##                            events arrive as arguments of its own `skin_layer` (or `skin_frame`), and what it draws is a list it returns (`ModDraw`); no node, texture or material is granted.
 ##     problems     Dictionary   only for a mod whose manifest says `problems`: the facts a problem screen needs, plain values (docs/create/CONTENT.md, "Problem screens"): `types` (the problem types it draws),
-##                            `window` (the size in pixels), `max_commands`, `max_layers`, `max_uniforms`, `max_texts`, `max_text`, `min_font_size`, `max_font_size`, `shaders` (the paths its manifest lists), `events` (the names of `ProblemEvents`), `max_sounds`, `sound_burst` and `sounds_per_second` (the bounds of `ModSounds`).
+##                            `window` (the size in pixels), `max_commands`, `max_layers`, `max_uniforms`, `max_texts`, `max_text`, `min_font_size`, `max_font_size`, `shaders` (the paths its manifest lists), `picture_keys` (the pictures of the game its manifest declares), `events` (the names of `ProblemEvents`), `max_sounds`, `sound_burst` and `sounds_per_second` (the bounds of `ModSounds`).
 ##                            A problem screen gets nothing else: the problem, the entry and the step arrive as the argument of its own `problem_frame`, what happened as its `events` and where the animation is as the state's `clock` (both API version 5), and what it draws is a list it returns (`ModDraw`), with the sounds it asks for by name (version 5).
 ##     rules        Dictionary   only for a mod whose manifest says `rules`: the facts a rule hook needs, plain values (docs/create/CONTENT.md, "Rule hooks"): `answers`, `instructions` and `sub` (what its manifest lists),
 ##                            `max_calls_per_tick`, `max_faults`, and the bounds of what a hook may answer: `max_memory_keys`, `max_memory_key`, `max_memory_text`, `max_memory_items`, `max_move`. A hook gets nothing else:
@@ -72,7 +72,7 @@ func _skin_facts(spec: ModSpec) -> Dictionary:
 	return {
 		"columns": SkinState.COLUMNS, "rows": SkinState.ROWS, "tile": TileGrid.TILE_SIZE, "playfield": Vector2(TileGrid.PLAYFIELD_SIZE),
 		"max_commands": ModDraw.MAX_COMMANDS, "max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModShader.MAX_UNIFORMS,
-		"max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT, "min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE, "shaders": spec.shaders.duplicate(),
+		"max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT, "min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE, "shaders": spec.shaders.duplicate(), "picture_keys": spec.picture_keys.duplicate(),
 	}
 
 
@@ -82,7 +82,7 @@ func _problem_facts(spec: ModSpec) -> Dictionary:
 		"types": spec.problem_types.duplicate(), "window": DiagramBase.WINDOW_SIZE,
 		"max_commands": ModDraw.MAX_COMMANDS, "max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModShader.MAX_UNIFORMS,
 		"max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT, "min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE,
-		"shaders": spec.problem_shaders.duplicate(),
+		"shaders": spec.problem_shaders.duplicate(), "picture_keys": spec.problem_picture_keys.duplicate(),
 		"events": ProblemEvents.NAMES.map(func(each: StringName) -> String: return String(each)),
 		"max_sounds": ModSounds.MAX_PER_CALL, "sound_burst": ModSounds.BURST, "sounds_per_second": ModSounds.PER_SECOND,
 	}

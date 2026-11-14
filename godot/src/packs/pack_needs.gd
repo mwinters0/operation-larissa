@@ -7,7 +7,8 @@ extends RefCounted
 ##   * WHOLE FILES of a complete pack that `Catalog` (the cutscenes' choreography among it), `Assets`, `SpriteMeta`, `NewsCartoon` and the theme load through `Packs.path`: `FILES` (declared here, one list), the
 ##     sets of each zone (`PER_ZONE`, `PER_TILE_ZONE`) and the problem types (`Catalog.PROBLEM_TYPE_COUNT`; a type is a trusted pack's `.tres` or its `.json` in the data form).
 ##     `tests/engine/test_pack_needs.gd` keeps the list equal to what the dev pack holds under `data/`.
-##   * PICTURES that code asks for by name: every `ui_picture` and `problem_art` name of the registry, as the KEY `Assets` asks for (`ui_picture/title_sky`): a row of some pack's `pictures.json` answers it.
+##   * PICTURES that code asks for by name: every `ui_picture` and `problem_art` name of the registry, as the KEY `Assets` asks for (`ui_picture/title_sky`): a row of some pack's `pictures.json` answers it; and the pictures of the game a mod of the chain names
+##     (`ModSpec.needed_pictures`: the keys its manifest declares for its draw lists, the pictures of its theme): they count among `picture_keys`, so a set of packs of a higher picture scale must hold them (`PictureScale`); a key no pack holds is no gap (`PackCheck` warns of it, a draw list that names it draws nothing).
 ##   * THINGS THE DATA NAMES: the sounds a required resource refers to (`ResourceLoader.get_dependencies`), the keys of the pictures it holds (a `PictureRef` of a `.tres`, `{"$picture": key}` of the data form, a problem type's `art_keys`: each needs a row
 ##     in some pack of the chain), the songs of the music catalog, the clips of the voice index. The files live inside the pack that holds the resource, so no other pack can fill them in; a key is answered by the whole chain.
 ##   * WHAT THE CONTENT BRINGS: each campaign `Catalog` finds in the chain: its sectors (and what a `.tres` sector refers to, a JSON sector's script), its finale picture, the
@@ -282,6 +283,7 @@ static func _problem_types(chain: Array[Pack], scan: Scan) -> void:
 ## The layers that read the game's own lookups; the chain is the one in use while this runs.
 static func _content(chain: Array[Pack], scan: Scan) -> void:
 	_pictures(chain, scan)
+	_mod_pictures(chain, scan)
 	_references(chain, scan)
 	_problem_art(chain, scan)
 	_audio(chain, scan)
@@ -301,6 +303,14 @@ static func _pictures(chain: Array[Pack], scan: Scan) -> void:
 			scan.ask_picture(key)
 			if not _row_for(chain, key):
 				scan.lack(GROUP_PICTURES, key, "")
+
+
+## The pictures of the game the mods of the chain name (`ModSpec.needed_pictures`), asked as keys for the scale decision. A key no pack holds is not a gap: the game goes on without it (the draw list that names it draws nothing, a theme's style is flat) and `PackCheck` warns of the mod that names it.
+static func _mod_pictures(chain: Array[Pack], scan: Scan) -> void:
+	for each in chain:
+		if each.mod != null:
+			for key in each.mod.needed_pictures():
+				scan.ask_picture(key)
 
 
 ## What each required resource names: the pictures, tiles and sounds that Godot loads with a trusted pack's `.tres` (its header lists them), or that the

@@ -47,7 +47,7 @@ static func make(pack: Pack, reasons: Array[String]) -> ModProblems:
 			reasons.append("problem type %d: its diagram family must be \"%s\" (it is \"%s\"), or the mod draws nothing of it" % [type_id, FAMILY, type.diagram.get("family", "")])
 		elif type.records.is_empty():
 			reasons.append("problem type %d: it has no records to ask" % type_id)
-	screens.assets = ModAssets.make(pack, ModSpec.PROBLEM_FOLDER, pack.mod.problem_shaders, reasons)
+	screens.assets = ModAssets.make(pack, ModSpec.PROBLEM_FOLDER, pack.mod.problem_shaders, pack.mod.problem_picture_keys, reasons)
 	return screens if reasons.is_empty() else null
 
 

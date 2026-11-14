@@ -21,15 +21,6 @@ types) are independent of this road and can be done in any order.
 - **C5. New creatures in the editors.** The Foe Script editor and the Sector panel make a creature from a pack's own frames and script
   rather than copying an existing one.
 
-## High-resolution packs
-
-A run draws every picture at one scale N, chosen by coverage (`create/CONTENT.md` "The picture table"). The game's unit stays 640 x 400 (the rules,
-layouts and draw lists do not change); a picture of scale N reports 1/N of its file's size (`ScaledTexture`), and the window's `canvas_items`
-stretch puts the file's pixels on the screen.
-
-- **H3. A mod declares the pictures it draws.** A mod's manifest names the picture keys its draw lists and problem screens ask for; `PackNeeds`
-  adds them to the needs, so a run-time key is checked at start like the rest.
-
 ## Open items
 
 Known gaps of the existing systems, by area. The engine's remaining assumptions about the original content are listed in

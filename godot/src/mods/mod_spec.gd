@@ -13,6 +13,8 @@ extends RefCounted
 ##     "mod": {"entry": "reef.sgd", "requires_api": 5, "skin": {"script_layers": ["background", "hud_oxygen", "hud_ship"]}}
 ##     "mod": {"entry": "tides.sgd", "requires_api": 3, "problems": {"types": [40], "shaders": ["problems/wave.gdshader"]}}
 ##     "mod": {"entry": "tides.sgd", "requires_api": 5, "problems": {"types": [5, 9, 40]}}
+##     "mod": {"entry": "reef.sgd", "requires_api": 6, "skin": {"picture_keys": ["background/*", "deco/*", "frame/sub_00", "ui_picture/title_sky"]}}
+##     "mod": {"entry": "tides.sgd", "requires_api": 6, "problems": {"types": [5], "picture_keys": ["problem_art/*"]}}
 ##     "mod": {"entry": "tides.sgd", "requires_api": 5, "problems": {"types": [3, 23], "own_sounds": true}}
 ##     "mod": {"entry": "rules.sgd", "requires_api": 4, "rules": {"answers": [41], "instructions": [0, 1], "sub": true}}
 ##
@@ -29,13 +31,16 @@ extends RefCounted
 ## add GAMEPLAY inside the rules (`RuleHooks`), for a campaign that declares the mod: `answers` lists problem types it judges instead of their `compare_mode` (numbers as for `problems.types`, the pack holds each as data),
 ## `instructions` the numbers 0 to `RuleHooks.MAX_INSTRUCTIONS - 1` of the creature instruction `Mod_Instruction` it defines, `sub` (true) a sub ability; it needs API version 4, at least one of the three, and a mod with `rules`
 ## runs under an instruction limit of 1 to `MAX_RULE_EXECUTION_TIMEOUT` million per call. The instruction limit of every mod is at least 1: counting is never off. `Pack` reads this entry (`Pack.mod`), `PackCheck` judges what it names,
+## `picture_keys` (in `skin` and in `problems`, each its own list; API version 6, `PICTURE_KEYS_API_VERSION`) declares the pictures OF THE GAME a draw list asks for by picture key (`<kind>/<name>`, or `<kind>/*` for every picture of a kind: what a script that draws the
+## screen's content by the keys of its state, or a problem screen by the keys of its `art`, names; at most `MAX_PICTURE_KEYS`). A key the manifest does not declare draws nothing and is told once per run (`ModDraw.report`); the declared keys count with the pictures the chain needs (`needed_pictures`,
+## `PackNeeds`), so a set of packs at a higher picture scale must hold them too (`PictureScale`). The mod's own `skin/x.png` and `problems/x.png` are named by path and need no declaring.
 ## `functions` lists what the script must define for it, and `ModLoader` runs the script.
 ##
 ## Teaches: validating an untrusted description by naming each rule in one place, and clamping a request to a ceiling instead of refusing it (a limit is a request; the host decides).
 
 ## The version of the API a mod is given (`ModApi.build`). A mod that requires a higher one is refused. The version goes up when the API gains something a mod can ask for (2: the skin API, 3: the problem
-## screens, 4: the rule hooks, 5: a mod draws the game, `DRAWS_THE_GAME_API_VERSION`), so that a mod written for it says so. The API carries no promise of backward compatibility yet (AGENTS.md, "No backward compatibility"): a version may change or take away what an earlier one gave.
-const API_VERSION := 5
+## screens, 4: the rule hooks, 5: a mod draws the game, `DRAWS_THE_GAME_API_VERSION`, 6: a mod declares the pictures of the game it draws, `PICTURE_KEYS_API_VERSION`), so that a mod written for it says so. The API carries no promise of backward compatibility yet (AGENTS.md, "No backward compatibility"): a version may change or take away what an earlier one gave.
+const API_VERSION := 6
 ## The first version with the skin API: a skin mod requires it.
 const SKIN_API_VERSION := 2
 ## The first version with problem screens: a mod that draws problem types requires it.
@@ -46,6 +51,8 @@ const RULE_API_VERSION := 4
 ## a `theme` (with the colour `display` and the style `key`) in `skin`; a mod that draws the original's problem types by number and may say `own_sounds`. A mod that requires it is told the presentation events of a problem (`ProblemEvents`) and where the animation is
 ## (`ProblemState.clock`) and may return sounds (`ModSounds`): its `problem_frame` takes `(state, events)`, where an older problem-screen mod defines `problem_frame(state)` and is told none of it. A manifest that has any of these requires it.
 const DRAWS_THE_GAME_API_VERSION := 5
+## The first version in which a draw list may name only the pictures of the game its manifest declares (`picture_keys`): a manifest that declares any requires it.
+const PICTURE_KEYS_API_VERSION := 6
 ## The game's ceilings. A manifest can lower these, never raise them (the same numbers as the godot-sandbox example's loader).
 const MAX_EXECUTION_TIMEOUT := 200       # millions of instructions per call into the mod
 const MAX_MEMORY := 32                   # MiB of guest memory
@@ -67,7 +74,7 @@ const LIMITS: Dictionary[String, int] = {
 }
 const KNOWN_KEYS: Array[String] = ["entry", "requires_api", "limits", "skin", "problems", "rules"]
 ## The keys of the `skin` entry.
-const SKIN_KEYS: Array[String] = ["shaders", "render", "hud_font", "layers", "script_layers", "theme"]
+const SKIN_KEYS: Array[String] = ["shaders", "render", "hud_font", "layers", "script_layers", "theme", "picture_keys"]
 ## The keys of `skin` that need `DRAWS_THE_GAME_API_VERSION` (every key but `shaders`).
 const DRAWING_SKIN_KEYS: Array[String] = ["render", "hud_font", "layers", "script_layers", "theme"]
 ## A skin draws no picture of its own: the pictures of the game are the pack's, rows of its `pictures.json` (`PictureTable`). A manifest that names `pictures` is told so.
@@ -93,8 +100,11 @@ const MAX_SLICE := 64
 const RENDER_KEYS: Array[String] = ["texture_filter", "snap_transforms", "snap_vertices"]
 ## The longest a picture key a draw list names may be (a file's name under a kind: the registry's names are shorter, `NameRegistry.MAX_NAME_LENGTH`, but a stem the importer keeps is not).
 const MAX_KEY := 96
+## The most picture keys one `picture_keys` list declares, and the end of a key that stands for every picture of its kind (`deco/*`).
+const MAX_PICTURE_KEYS := 256
+const KIND_WILDCARD := "*"
 ## The keys of the `problems` entry.
-const PROBLEM_KEYS: Array[String] = ["types", "shaders", "own_sounds"]
+const PROBLEM_KEYS: Array[String] = ["types", "shaders", "own_sounds", "picture_keys"]
 ## The keys of the `rules` entry.
 const RULE_KEYS: Array[String] = ["answers", "instructions", "sub"]
 ## The most problem types one mod draws.
@@ -118,6 +128,8 @@ var limits: Dictionary[String, int] = {}
 ## Is the mod a skin? And the shaders it lists (paths in the pack, `skin/....gdshader`).
 var is_skin := false
 var shaders: Array[String] = []
+## The pictures of the game the skin's draw lists may name (`skin.picture_keys`): picture keys and `<kind>/*`.
+var picture_keys: Array[String] = []
 ## What the skin asks of the renderer (`skin.render`), or null when it does not say.
 var render: RenderSettings = null
 ## The lettering the skin asks for (`skin.hud_font`): its font (`FontSpec`: the file in the pack, `skin/....ttf`, "" when it names none, and the weight) and the `HudLabels` with the size and colour it set (both null when the skin says none; the
@@ -135,6 +147,8 @@ var script_layers: Array[StringName] = []
 var has_problems := false
 var problem_types: Array[int] = []
 var problem_shaders: Array[String] = []
+## The pictures of the game the problem screens' draw lists may name (`problems.picture_keys`).
+var problem_picture_keys: Array[String] = []
 ## Does the mod make the sounds of the build-up and the replay itself (`problems.own_sounds`)? The original diagram's own then stay silent while the mod runs (`ModDiagram`); the lengths are the same.
 var problem_own_sounds := false
 ## Does the mod add rule hooks (`rules`, which lists at least one of the three)? The problem types whose answers it judges, the creature instruction numbers it defines, and whether it has the sub ability.
@@ -211,6 +225,7 @@ static func _parse_skin(value: Variant, spec: ModSpec, scripted: bool, found: Ar
 		elif not SKIN_KEYS.has(key):
 			found.append("\"skin\" has no \"%s\" (it has %s)" % [key, ", ".join(SKIN_KEYS)])
 	spec.shaders = _parse_shaders(value, SKIN_FOLDER, found)
+	spec.picture_keys = _parse_picture_keys(value, spec, found)
 	if value.has("render"):
 		spec.render = _parse_render(value["render"], found)
 	if value.has("hud_font"):
@@ -476,6 +491,7 @@ static func _parse_problems(value: Variant, spec: ModSpec, found: Array[String])
 				if int(number) < Catalog.PROBLEM_TYPE_COUNT and spec.requires_api < DRAWS_THE_GAME_API_VERSION:
 					found.append("a mod that draws the original's problem type %d needs \"requires_api\": %d (a mod draws the game from that version)" % [int(number), DRAWS_THE_GAME_API_VERSION])
 	spec.problem_shaders = _parse_shaders(value, PROBLEM_FOLDER, found)
+	spec.problem_picture_keys = _parse_picture_keys(value, spec, found)
 	if value.has("own_sounds"):
 		if not value["own_sounds"] is bool:
 			found.append("\"own_sounds\" must be true or false")
@@ -529,6 +545,30 @@ static func _parse_rules(value: Variant, spec: ModSpec, found: Array[String]) ->
 		found.append("\"rules\" defines nothing: list problem types in \"answers\", instruction numbers in \"instructions\" or say \"sub\": true")
 
 
+## The pictures of the game `value["picture_keys"]` declares (picture keys, or `<kind>/*`), or [] with every mistake appended to `found`.
+static func _parse_picture_keys(value: Dictionary, spec: ModSpec, found: Array[String]) -> Array[String]:
+	var keys: Array[String] = []
+	if not value.has("picture_keys"):
+		return keys
+	var listed: Variant = value["picture_keys"]
+	if not listed is Array:
+		found.append("\"picture_keys\" must be a list of picture keys like \"deco/coral_fan_cyan\" or \"deco/*\" (every picture of a kind)")
+		return keys
+	if spec.requires_api < PICTURE_KEYS_API_VERSION:
+		found.append("a manifest with \"picture_keys\" needs \"requires_api\": %d (a draw list names only the pictures of the game it declares from that version)" % PICTURE_KEYS_API_VERSION)
+	if listed.size() > MAX_PICTURE_KEYS:
+		found.append("at most %d picture keys can be declared (%d are)" % [MAX_PICTURE_KEYS, listed.size()])
+		return keys
+	for key: Variant in listed:
+		if not key is String or not is_declarable_key(key):
+			found.append("the picture key %s must be <kind>/<name>, or <kind>/%s for every picture of a kind, with a kind of %s" % [JSON.stringify(key), KIND_WILDCARD, ", ".join(PictureTable.KINDS)])
+		elif keys.has(key):
+			found.append("the picture key %s is listed twice" % key)
+		else:
+			keys.append(key)
+	return keys
+
+
 ## The shaders `value["shaders"]` lists (paths of `folder`), or [] with every mistake appended to `found`.
 static func _parse_shaders(value: Dictionary, folder: String, found: Array[String]) -> Array[String]:
 	var paths: Array[String] = []
@@ -569,6 +609,19 @@ static func is_drawable_key(key: String) -> bool:
 	return parts.size() == 2 and PictureTable.KINDS.has(parts[0]) and is_key_name(parts[1])
 
 
+## Is `key` a picture key a manifest may declare: one a draw list may name (`is_drawable_key`), or a kind and `KIND_WILDCARD` (`deco/*`), every picture of the kind?
+static func is_declarable_key(key: String) -> bool:
+	if is_drawable_key(key):
+		return true
+	var parts := key.split("/")
+	return parts.size() == 2 and parts[1] == KIND_WILDCARD and PictureTable.KINDS.has(parts[0])
+
+
+## Does the list of declared keys `declared` (`picture_keys`) let a draw list name `key`: the key itself, or its kind's wildcard?
+static func declares(declared: Array[String], key: String) -> bool:
+	return declared.has(key) or declared.has("%s/%s" % [key.get_slice("/", 0), KIND_WILDCARD])
+
+
 ## Is `path` a place a skin's font may be: `skin/` and then a plain relative path ending `.ttf`?
 static func is_font_path(path: String) -> bool:
 	return path.begins_with(SKIN_FOLDER) and path.get_extension() == Pack.FONT_EXTENSION and path.length() <= 96 and not path.get_basename().get_file().is_empty() and Pack.is_safe(path)
@@ -591,6 +644,15 @@ func theme_pictures() -> Array[String]:
 			var key: String = theme.styles[style].get("picture", "")
 			if not key.is_empty() and not keys.has(key):
 				keys.append(key)
+	return keys
+
+
+## The pictures of the game the mod needs, each once: the keys it declares for its draw lists (a `<kind>/*` stands for pictures the game's own content names, so it adds none) and the pictures of its theme's styles. `PackNeeds` adds them to what the chain must hold.
+func needed_pictures() -> Array[String]:
+	var keys: Array[String] = []
+	for key: String in picture_keys + problem_picture_keys + theme_pictures():
+		if not key.ends_with("/" + KIND_WILDCARD) and not keys.has(key):
+			keys.append(key)
 	return keys
 
 
@@ -673,6 +735,8 @@ func to_dict() -> Dictionary:
 		data["skin"] = {}
 		if not shaders.is_empty():
 			data["skin"]["shaders"] = shaders.duplicate()
+		if not picture_keys.is_empty():
+			data["skin"]["picture_keys"] = picture_keys.duplicate()
 		if render != null:
 			data["skin"]["render"] = _render_dict()
 		if hud_font != null:
@@ -687,6 +751,8 @@ func to_dict() -> Dictionary:
 		data["problems"] = {"types": problem_types.duplicate()}
 		if not problem_shaders.is_empty():
 			data["problems"]["shaders"] = problem_shaders.duplicate()
+		if not problem_picture_keys.is_empty():
+			data["problems"]["picture_keys"] = problem_picture_keys.duplicate()
 		if problem_own_sounds:
 			data["problems"]["own_sounds"] = true
 	if has_rules:

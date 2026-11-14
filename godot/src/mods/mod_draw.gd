@@ -15,7 +15,7 @@ extends RefCounted
 ## `mirrored` is a bool, the Color after it a modulate. The list starts in an unshaded layer. At most `MAX_LAYERS` layers, places and sizes finite and within `LIMIT`, and the uniforms of a layer as `ModShader.check_uniforms` judges them (the shader must declare each, a value of its type, `phase` is the game's). A picture is a PNG under the
 ## folder of `ModAssets` (`skin/` or `problems/`) of THE MOD'S OWN PACK (`Pack.texture`, never the chain's lookup), so a path that names another pack, a folder above, or a file the pack lacks draws nothing. A name that is not under that folder but
 ## is a PICTURE KEY (`<kind>/<name>`, a kind of `PictureTable.KINDS`: `ModSpec.is_drawable_key`) names a picture of the game: the game resolves it (`Assets.picture_by_key`, the lookup `OriginalPresenter` makes: the picture the chain's tables give the key), the mod never holds it,
-## and a key nothing holds is a dropped command, told by `report`. A layer
+## and a key nothing holds is a dropped command, told by `report`. A key the manifest does not declare (`picture_keys`, `ModAssets.declares`) is not looked up at all: the command draws nothing and `report` tells the key (`Drawn.undeclared`), once per run. A layer
 ## whose shader the manifest does not list draws nothing (it is never drawn unshaded). A text is cut to `MAX_TEXT` characters (a control character becomes a space), its size held to `MIN_FONT_SIZE`..`MAX_FONT_SIZE`, at
 ## most `MAX_TEXTS` of them in a list; there is one font, the theme in use's (`ModLayer.theme_font`), so a mod names none. With a `width` the line is aligned in that width and clipped to it. Nothing here asks the script anything or runs its code.
 ##
@@ -37,6 +37,8 @@ const MAX_FONT_SIZE := 64
 ## Numbers beyond this (a place, a size) are refused: far past anything on a 640 x 400 window, and nowhere near float limits.
 const LIMIT := 100000.0
 const MAX_PATH := 96
+## The most undeclared picture keys one list tells (`Drawn.undeclared`): the line of each is given once per run, and a script that names a thousand keys does not make a thousand lines.
+const MAX_UNDECLARED := 8
 
 
 ## One layer of a list: the shader it is drawn through (a path the manifest lists, "" for none), its uniforms, its commands in the form `ModLayer` draws, and whether its shader is unusable (then nothing of it is drawn).
@@ -55,6 +57,8 @@ class Drawn:
 	var dropped := 0
 	var texts := 0
 	var first_dropped := ""
+	## The picture keys of the game the list names that the manifest does not declare, each once, in the order named (at most `MAX_UNDECLARED`): their commands are left out and not counted in `dropped`.
+	var undeclared: Array[String] = []
 
 
 ## The list `raw` (what the mod's function returned) as what the game draws, or null when `raw` is not even an Array. `pack` is the mod's own pack, `assets` the folder its pictures are in and the shaders it may name.
@@ -72,6 +76,11 @@ static func validate(raw: Variant, pack: Pack, assets: ModAssets) -> Drawn:
 		var command: Variant = list[i]
 		if not command is Array or (command as Array).is_empty() or not (command[0] is String or command[0] is StringName):
 			_drop(drawn, command)
+			continue
+		var absent := _undeclared_key(command, assets)
+		if not absent.is_empty():                           # (a picture of the game the manifest does not declare: told by name, not counted as a malformed command)
+			if drawn.undeclared.size() < MAX_UNDECLARED and not drawn.undeclared.has(absent):
+				drawn.undeclared.append(absent)
 			continue
 		if String(command[0]) == "layer":
 			var next := _layer(command, assets)
@@ -98,6 +107,17 @@ static func validate(raw: Variant, pack: Pack, assets: ModAssets) -> Drawn:
 	return drawn
 
 
+## The picture key a `picture` or `region` command names that is of the game and not declared by the manifest (`assets.pictures`), or "". The key is judged by shape alone: whether the chain holds a picture for it comes after.
+static func _undeclared_key(command: Array, assets: ModAssets) -> String:
+	if command.size() < 2 or not (command[0] is String or command[0] is StringName) or not command[1] is String:
+		return ""
+	var op := String(command[0])
+	var key: String = command[1]
+	if (op != "picture" and op != "region") or key.length() > MAX_PATH or not ModSpec.is_drawable_key(key):
+		return ""
+	return "" if assets != null and assets.declares(key) else key
+
+
 ## Counts a dropped command and keeps the first one's words.
 static func _drop(drawn: Drawn, command: Variant) -> void:
 	drawn.dropped += 1
@@ -117,9 +137,13 @@ static func _words_of(command: Variant) -> String:
 	return "a command named \"%s\", which the game does not know" % op.left(16)
 
 
-## Tells the player, once per run, that the mod `pack_id` drew less than its list says (`what`: "skin" or "problem screen"): `drawn` dropped commands. The first is named, with the reason the usual causes give. A list the game cut short is told as well.
+## Tells the player, once per run, that the mod `pack_id` drew less than its list says (`what`: "skin" or "problem screen"): each picture of the game it names without declaring it, and `drawn` dropped commands (the first is named, with the reason the usual causes give; a list the game cut short is told as well).
 static func report(drawn: Drawn, pack_id: StringName, what: String) -> void:
-	if drawn == null or drawn.dropped == 0:
+	if drawn == null:
+		return
+	for key in drawn.undeclared:
+		TroubleLog.session.tell("[mods] mod '%s': its %s draw list names the picture '%s', which its manifest does not declare in \"picture_keys\"; that picture is not drawn" % [pack_id, what, key])
+	if drawn.dropped == 0:
 		return
 	TroubleLog.session.tell("[mods] mod '%s': its %s draw list has commands the game does not draw, the first is %s; commands like that are left out (a name its pack does not hold, a shader its manifest does not list, a value out of range, or more than the limits allow) and the rest is drawn" % [
 			pack_id, what, drawn.first_dropped])

@@ -184,6 +184,9 @@ static func _mod(live: Pack, report: PackReport) -> void:
 			_entry_script(live, report)
 		for message in ModParts.problems(live):
 			report.error("mod", message)
+		for key in live.mod.picture_keys + live.mod.problem_picture_keys:
+			if not key.ends_with("/" + ModSpec.KIND_WILDCARD) and not Assets.holds(key):
+				report.warn("mod", "the picture %s the manifest declares in \"picture_keys\" is held by no pack of the chain (a row of a pictures.json): a draw list that names it draws nothing" % key)
 		for key in live.mod.theme_pictures():
 			if not Assets.holds(key):
 				report.warn("mod", "the theme's picture %s is held by no pack of the chain (a row of a pictures.json): the style is drawn flat" % key)

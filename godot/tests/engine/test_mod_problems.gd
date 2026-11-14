@@ -129,7 +129,7 @@ func test_a_problem_mod_is_given_the_problem_facts_and_other_mods_are_not() -> v
 	var api: Dictionary = ModApi.new(Mods.loader()).build("x", tides.pack)
 	assert_int(api["api_version"]).is_equal(ModSpec.API_VERSION)
 	assert_dict(api["problems"]).is_equal({"types": [TYPE] + ModProblemShelf.ORIGINALS, "window": Vector2(640, 400), "max_commands": ModDraw.MAX_COMMANDS, "max_layers": ModDraw.MAX_LAYERS, "max_uniforms": ModShader.MAX_UNIFORMS,
-			"max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT, "min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE, "shaders": ["problems/glow.gdshader"],
+			"max_texts": ModDraw.MAX_TEXTS, "max_text": ModDraw.MAX_TEXT, "min_font_size": ModDraw.MIN_FONT_SIZE, "max_font_size": ModDraw.MAX_FONT_SIZE, "shaders": ["problems/glow.gdshader"], "picture_keys": ["problem_art/*"],
 			"events": ["started", "step", "verdict", "damage", "success", "timeout"], "max_sounds": ModSounds.MAX_PER_CALL, "sound_burst": ModSounds.BURST, "sounds_per_second": ModSounds.PER_SECOND})
 	assert_bool(api.has("skin")).is_false()
 	for value: Variant in api["problems"].values():

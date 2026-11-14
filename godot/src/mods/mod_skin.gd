@@ -74,7 +74,7 @@ static func make(pack: Pack, reasons: Array[String]) -> ModSkin:
 			skin.menu_theme.font = pack.mod.theme_font.font(pack) if pack.mod.theme_font != null else null
 		else:
 			reasons.append("the skin's theme font: %s" % problem)
-	skin.assets = ModAssets.make(pack, ModSpec.SKIN_FOLDER, pack.mod.shaders, reasons)
+	skin.assets = ModAssets.make(pack, ModSpec.SKIN_FOLDER, pack.mod.shaders, pack.mod.picture_keys, reasons)
 	if skin.assets != null:
 		for layer in pack.mod.layers:
 			_make_layer(skin, layer, pack.mod.layers[layer], reasons)
