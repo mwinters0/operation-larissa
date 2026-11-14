@@ -118,7 +118,7 @@ files, `midi/`. The same pack **exported** (`PackExport.complete`) is in the dat
 
 **Manifest.** `id` (a lowercase word, at most 32 characters), `title` and `version` (free text) are required; `author`, `description` and `base` (a pack id,
 not the pack's own) are optional; `format` is 1. A pack with no `base` is complete (`PackNeeds` asks the pack for everything the game needs); a pack with one is laid
-over that pack. `mod` is optional and makes the pack a mod pack ("Mod packs"). A key the code does not know (`"tier"`, `"skins"`) is left alone. `Pack.open(folder or pack file)` reads it, `errors` says what is wrong, `Pack.problems()` adds the layout's (a resource,
+over that pack. `picture_scale` (a whole number from 1 to `PictureScale.MAX`, default 1) is the scale of the pack's picture files ("Pictures"). `mod` is optional and makes the pack a mod pack ("Mod packs"). A key the code does not know (`"tier"`, `"skins"`) is left alone. `Pack.open(folder or pack file)` reads it, `errors` says what is wrong, `Pack.problems()` adds the layout's (a resource,
 scene or script inside a pack that is not trusted).
 
 ## Lookups
@@ -152,12 +152,15 @@ scene or script inside a pack that is not trusted).
 The format of a pack's picture table, the order of the lookup and what a creator writes are in [`../create/CONTENT.md`](../create/CONTENT.md), "The picture table". The code:
 
 - **`PictureTable`** (`src/core/picture_table.gd`) is ONE pack's `pictures.json` (`Pack.picture_table()`, read through the pack so a folder and a `.larissa` are alike, kept until `Pack.forget`). It keeps every sound row
-  (`files`, `scales`, `aliases`) and says each unsound one in `problems`; `check(pack)` adds what needs the pack's files. A pack without the file is not `present` and holds no picture. The kinds of a key are `PictureTable.KINDS`.
-- **`Pictures`** (`src/core/pictures.gd`) is the one resolver, key to texture: the chain's tables, top of the chain first; a file row is the pack's PNG (a `ScaledTexture` over it for a `scale`); an alias is
-  resolved from the top of the chain again; a row that does not resolve is left out and the packs under it answer. Answers are kept per chain: `Assets.forget_folders` calls `Pictures.forget` when
-  `Catalog.packs_changed` says the chain changed, and `Pictures.events.changed` tells whoever holds an answer. Each cause of trouble is told once per run through `TroubleLog` (`Pictures.unheld_line`,
+  (`files`, `aliases`) and says each unsound one in `problems`; `check(pack)` adds what needs the pack's files. A pack without the file is not `present` and holds no picture. The kinds of a key are `PictureTable.KINDS`.
+- **`PictureScale`** (`src/core/picture_scale.gd`) decides the scale a run draws its pictures at: `decide(chain)` is the highest `Pack.picture_scale` (the manifest's `picture_scale`) whose packs of the chain together hold a row for every key `PackNeeds.picture_keys` finds
+  (`needed`: the keys some pack holds), else 1; a set above 1 that does not cover is a `Shortfall` (`line(shown)` is its one sentence, the game's and `PackCheck`'s). `Packs._rebuild` decides it every time the lookups of a chain are built (`Packs.picture_scale()`,
+  `picture_packs()` = the packs of that scale, `packs_at_scale(n)`, `picture_decision()`), so a start, a pack switch, a lent chain and a `restore` all decide again, and `Pictures.forget` follows a change of the scale. `PackNeeds` runs for it only when some pack of the chain declares a scale above 1.
+- **`Pictures`** (`src/core/pictures.gd`) is the one resolver, key to texture: the tables of the run's picture packs (`Packs.picture_packs`), top of the chain first; a file row is the pack's PNG (a `ScaledTexture` over it in a pack of `picture_scale` above 1); an alias is
+  resolved from the top of those packs again; a row that does not resolve is left out and the packs under it answer. Answers are kept per chain: `Assets.forget_folders` calls `Pictures.forget` when
+  `Catalog.packs_changed` says the chain changed, and `Pictures.events.changed` tells whoever holds an answer. Each cause of trouble is told once per run through `TroubleLog` (the shortfalls of the scale decision, by the first lookup of a run; `Pictures.unheld_line`,
   the line a key nothing holds gets, is told by the `PictureRef` that draws nothing, once per run). `Pictures.in_pack(pack, key)` is what a pack itself draws for a key, whatever lies over it (the size a pack
-  redraws is judged against the pack at the bottom, `SkinTemplates`); `Pictures.unanswered(key)` is the question `PackCheck` asks of an alias.
+  redraws is judged against the pack at the bottom, `SkinTemplates`); `Pictures.unanswered(key, scale)` is the question `PackCheck` asks of an alias, among the packs of the checked pack's scale.
 - **`Assets`** hands out a `PictureRef` for a key, one per key kept for good: `picture_by_key(key)`, and `ui_picture(name)` / `problem_art(name)` (`"<kind>/<name>"`) for a name the code holds, `background(sector, screen)` (null for a screen
   with none: two of the finale's have no picture, and that is no trouble). A screen that keeps what it was given in a node keeps the key, so it shows the chain as it is when a pack is installed or taken away
   (`tests/engine/test_assets_follow_the_chain.gd`). `holds(key)` says whether a pack of the chain has a picture for a key, for what is decided by it (a style that falls back to flat colour, `PackCheck`). No path, number or file

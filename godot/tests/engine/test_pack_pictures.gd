@@ -45,15 +45,15 @@ func test_a_table_the_folder_holds_keeps_its_rows_and_gains_only_the_files_no_ro
 	PackFiles.write_text("%s/%s" % [ROOT, PictureTable.FILE], JSON.stringify({"format": 1, "pictures": {
 		"ui_picture/title_sky": "art/hi@4x.png",                                                    # (a row for the key: the file of the same name is not another row)
 		"ui_picture/coral_dawn": {"alias": "ui_picture/title_sky"},
-		"frame/sub_01": {"file": "frame/sub_00.png", "scale": 4.0}}}))                               # (a scaled row names frame/sub_00.png)
+		"frame/sub_01": "frame/sub_00.png"}}))                                                       # (a row names frame/sub_00.png)
 	var result := PackPictures.write(ROOT)
 	assert_dict(result.added).is_empty()
-	assert_dict(_table()).is_equal({"ui_picture/title_sky": "art/hi@4x.png", "ui_picture/coral_dawn": {"alias": "ui_picture/title_sky"}, "frame/sub_01": {"file": "frame/sub_00.png", "scale": 4.0}})
+	assert_dict(_table()).is_equal({"ui_picture/title_sky": "art/hi@4x.png", "ui_picture/coral_dawn": {"alias": "ui_picture/title_sky"}, "frame/sub_01": "frame/sub_00.png"})
 	_png("ui_picture/title_sea.png")
 	result = PackPictures.write(ROOT)
 	assert_dict(result.added).is_equal({"ui_picture/title_sea": "ui_picture/title_sea.png"})
 	assert_int(_table().size()).is_equal(4)
-	assert_dict(_table()["frame/sub_01"]).is_equal({"file": "frame/sub_00.png", "scale": 4.0})
+	assert_str(_table()["frame/sub_01"]).is_equal("frame/sub_00.png")
 
 
 func test_a_folder_that_is_not_there_is_an_error() -> void:

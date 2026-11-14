@@ -1,7 +1,7 @@
 class_name TestPictures
 extends GdUnitTestSuite
 ## Teaches: the picture tables as a lookup you can test by their effect. The packs of `PicturesShelf` name their picture files at random (`art/zz1.png`), so a picture found for a KEY was found through the table, never through a file name. The order (the pack laid over another
-## first, aliases asked of the whole chain again), a row that does not resolve (left out, told once per run, naming the pack and what is shown instead), a file drawn at `1 / scale`, and the answers forgotten when the chain changes.
+## first, aliases asked of the whole chain again), a row that does not resolve (left out, told once per run, naming the pack and what is shown instead), and the answers forgotten when the chain changes.
 
 var _shelf: PicturesShelf
 
@@ -37,8 +37,6 @@ func test_a_table_is_read_through_the_pack() -> void:
 	assert_array(table.problems).is_empty()
 	assert_str(table.files["ui_picture/title_sky"]).is_equal("art/zz1.png")
 	assert_str(table.aliases["ui_picture/coral_noon"]).is_equal("ui_picture/coral_dawn")
-	assert_int(table.scale_of("frame/sub_00")).is_equal(4)
-	assert_int(table.scale_of("ui_picture/title_sky")).is_equal(1)
 	assert_dict(PictureTable.read(Pack.open(_shelf.base.root)).to_data()["pictures"]).is_equal(table.to_data()["pictures"])
 
 
@@ -47,13 +45,12 @@ func test_a_table_names_each_of_its_mistakes_and_keeps_the_good_rows() -> void:
 	shelf.write_json(PictureTable.FILE, {"format": 1, "extra": 1, "pictures": {
 		"ui_picture/ok": "art/ok.png", "sky/ok": "art/ok.png", "ui_picture/bad name": "art/ok.png", "frame": "art/ok.png",
 		"frame/escape": "../ok.png", "frame/not_png": "art/ok.gif", "frame/number": 5, "frame/two": {"alias": "frame/a", "file": "x.png"},
-		"frame/bad_scale": {"file": "art/ok.png", "scale": 0}, "frame/big": {"file": "art/ok.png", "scale": 99}, "frame/odd_field": {"file": "art/ok.png", "zoom": 2},
-		"frame/alias_of_nothing": {"alias": "nothing"}, "frame/good_scale": {"file": "art/ok.png", "scale": 2}}})
+		"frame/scaled_row": {"file": "art/ok.png", "scale": 2}, "frame/alias_of_nothing": {"alias": "nothing"}, "frame/good": "art/ok.png"}})
 	var table := PictureTable.read(Pack.open(shelf.root))
-	assert_array(table.keys()).contains_exactly_in_any_order(["ui_picture/ok", "frame/good_scale"])
+	assert_array(table.keys()).contains_exactly_in_any_order(["ui_picture/ok", "frame/good"])
 	var text := "\n".join(table.problems)
 	for fragment in ["has no field 'extra'", "'sky/ok' is no picture key", "'ui_picture/bad name' is no picture key", "'frame' is no picture key", "'../ok.png' is not a path inside the pack",
-			"'art/ok.gif' is not a .png file", "'frame/number' should be a file", "'frame/two' has no field 'alias'", "\"scale\" should be a whole number from 1 to 16", "has no field 'zoom'",
+			"'art/ok.gif' is not a .png file", "'frame/number' should be a file", "'frame/two' should be a file", "'frame/scaled_row' should be a file",
 			"'nothing', which is no picture key"]:
 		assert_str(text).override_failure_message("no sentence says: " + fragment + "\n" + text).contains(fragment)
 	for text_of_file in ["not json", "[1]", "{\"format\": 2, \"pictures\": {}}", "{\"pictures\": {}}", "{\"format\": 1, \"pictures\": 3}"]:
@@ -118,16 +115,6 @@ func test_the_answers_are_forgotten_when_the_chain_changes_and_come_back_with_it
 	_shelf.mount_over()
 	assert_that(PicturesShelf.color_of(Pictures.resolve("ui_picture/title_sky"))).is_equal(PicturesShelf.WHITE)
 	assert_that(PicturesShelf.color_of(white)).is_equal(PicturesShelf.WHITE)
-
-
-func test_a_file_row_with_a_scale_is_drawn_at_a_fraction_of_its_size() -> void:
-	_shelf.mount_base()
-	var drawn := Pictures.resolve("frame/sub_00")
-	assert_object(drawn).is_instanceof(ScaledTexture)
-	assert_vector(drawn.get_size()).is_equal(Vector2(4, 4))
-	assert_vector((drawn as ScaledTexture).source.get_size()).is_equal(Vector2(16, 16))
-	assert_object(Pictures.resolve("frame/sub_00")).is_same(drawn)                          # (one row, one object)
-	assert_vector(Pictures.resolve("ui_picture/title_sky").get_size()).is_equal(Vector2(4, 4))
 
 
 # --- a row that does not resolve ----------------------------------------------------------------------------------------------

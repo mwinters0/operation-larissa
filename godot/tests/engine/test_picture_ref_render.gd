@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 ## are read again, with nothing rebuilt.
 ##   * `Sprite2D`, `AnimatedSprite2D`, `TextureRect` (stretched, and tiled, which draws the RID), `NinePatchRect`, `StyleBoxTexture` on a `Panel`, `TextureProgressBar`, a control that calls `draw_texture_rect` and `draw_texture`, a `TileMapLayer` over a `TileSetAtlasSource`,
 ##   * the picture is the table's, and after the chain changes it is the new chain's,
-##   * a scaled row (4x art) fills the same place as the plain one.
+##   * a picture of a scaled pack (4x art) fills the same place as the plain one.
 
 const CELL := 32
 const COLUMNS := 4
@@ -156,8 +156,9 @@ func test_every_consumer_draws_the_picture_of_the_key(do_skip := DisplayServer.g
 	assert_that(_color_at(image, "tile_map", Vector2i(CELL / 2, CELL / 2))).is_equal(PicturesShelf.GREEN)
 
 
-func test_a_scaled_row_fills_the_same_place_as_a_plain_one(do_skip := DisplayServer.get_name() == "headless", skip_reason := SKIP) -> void:
-	_stage("frame/sub_00")                                                           # (a 16 x 16 file drawn at 4 x 4)
+func test_a_picture_of_a_scaled_pack_fills_the_same_place_as_a_plain_one(do_skip := DisplayServer.get_name() == "headless", skip_reason := SKIP) -> void:
+	_shelf.mount_hires()
+	_stage("frame/sub_00")                                                           # (a 16 x 16 file of a pack of picture scale 4, drawn at 4 x 4)
 	var image := await _draw_frames()
 	for cell_name in ["sprite", "animated", "texture_rect"]:
 		assert_that(_color_at(image, cell_name)).override_failure_message("%s does not show the scaled picture" % cell_name).is_equal(PicturesShelf.YELLOW)

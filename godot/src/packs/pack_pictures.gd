@@ -3,7 +3,7 @@ extends RefCounted
 ## Writes a pack's picture table (`pictures.json`, `PictureTable`) from a folder of picture files laid out as `<kind>/<name>.png` (`ui_picture/title_sky.png`, `frame/sub_00.png`: what the art templates, `SkinTemplates`, make, and the layout a person draws in),
 ## so that a pack made of such a folder needs no hand-written table. `pack_tool --pictures-table=<folder>` is this.
 ##
-## A file under a folder named after a kind of picture (`PictureTable.KINDS`) becomes the row `<kind>/<name>` to that file; any other file is left alone and reported. A table the folder holds already is kept: its rows (aliases, files drawn at a scale, a file of any
+## A file under a folder named after a kind of picture (`PictureTable.KINDS`) becomes the row `<kind>/<name>` to that file; any other file is left alone and reported. A table the folder holds already is kept: its rows (aliases, a file of any
 ## name) stay as they are, and a file whose key has no row gets one. Nothing is ever changed in a row, and the table is written only when it changed. The written table is checked the usual way (`PackCheck`, `pack_tool --check`).
 ##
 ## Teaches: deriving a table from a folder once, at authoring time, so that the game never guesses a key from a file name: the guess is written down where a person can read and change it.
@@ -69,12 +69,10 @@ static func key_of(rel: String) -> String:
 	return key if PictureTable.is_key(key) else ""
 
 
-## Does a row of `rows` (key -> file, scaled file or alias) already name the file `rel`?
+## Does a row of `rows` (key -> file or alias) already name the file `rel`?
 static func _named(rows: Dictionary, rel: String) -> bool:
 	for key: String in rows:
 		var value: Variant = rows[key]
 		if value is String and value == rel:
-			return true
-		if value is Dictionary and value.get(PictureTable.FILE_KEY, "") == rel:
 			return true
 	return false

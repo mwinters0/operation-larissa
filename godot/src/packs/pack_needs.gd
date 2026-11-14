@@ -100,10 +100,17 @@ class Gap extends RefCounted:
 class Scan extends RefCounted:
 	## path -> true: every file or thing the closure asked for, present or not.
 	var needed: Dictionary = {}
+	## key -> true: the picture keys among them (what `PictureScale` asks the packs of each scale to hold).
+	var pictures: Dictionary = {}
 	var gaps: Array[Gap] = []
 
 	func ask(path: String) -> void:
 		needed[path] = true
+
+	## The closure needs the picture `key` (and asks for it as a thing too).
+	func ask_picture(key: String) -> void:
+		needed[key] = true
+		pictures[key] = true
 
 	func lack(group: String, path: String, needed_by := "", soft := false) -> void:
 		var gap := Gap.new()
@@ -155,6 +162,14 @@ static func missing(chain: Array[Pack]) -> Array[String]:
 static func required(chain: Array[Pack]) -> Array[String]:
 	var sorted: Array[String] = []
 	sorted.assign(_scan(chain).needed.keys())
+	sorted.sort()
+	return sorted
+
+
+## Every picture key the closure asks `chain` for, each once, sorted (the code's names, the keys the data holds, a campaign's finale picture): the set `PictureScale` asks the packs of one scale to hold between them.
+static func picture_keys(chain: Array[Pack]) -> Array[String]:
+	var sorted: Array[String] = []
+	sorted.assign(_scan(chain).pictures.keys())
 	sorted.sort()
 	return sorted
 
@@ -273,9 +288,9 @@ static func _content(chain: Array[Pack], scan: Scan) -> void:
 	_campaigns(chain, scan)
 
 
-## Does a pack of the chain have a row for the picture key `key` (`PictureTable.has`)? Not whether the row resolves: `PackCheck` and `Pictures` say that.
+## Does a pack of the chain that draws pictures in this run (`Packs.picture_scale`: the packs of the run's scale) have a row for the picture key `key` (`PictureTable.has`)? Not whether the row resolves: `PackCheck` and `Pictures` say that.
 static func _row_for(chain: Array[Pack], key: String) -> bool:
-	return chain.any(func(each: Pack) -> bool: return each.picture_table().has(key))
+	return chain.any(func(each: Pack) -> bool: return each.picture_scale == Packs.picture_scale() and each.picture_table().has(key))
 
 
 static func _pictures(chain: Array[Pack], scan: Scan) -> void:
@@ -283,7 +298,7 @@ static func _pictures(chain: Array[Pack], scan: Scan) -> void:
 	for kind: StringName in [&"ui_picture", &"problem_art"]:
 		for picture_name: String in registry.entries(kind):
 			var key := "%s/%s" % [kind, picture_name]
-			scan.ask(key)
+			scan.ask_picture(key)
 			if not _row_for(chain, key):
 				scan.lack(GROUP_PICTURES, key, "")
 
@@ -311,7 +326,7 @@ static func _tres_pictures(chain: Array[Pack], holder: Pack, rel: String, scan: 
 		if Packs.has_file_at(path):
 			keys.append_array(PictureRef.keys_in_tres(Packs.bytes_at(path).get_string_from_utf8()))
 	for key in keys:
-		scan.ask(key)
+		scan.ask_picture(key)
 		if not _row_for(chain, key):
 			scan.lack(GROUP_PICTURES, key, rel)
 
@@ -325,7 +340,7 @@ static func _data_references(chain: Array[Pack], holder: Pack, rel: String, scan
 		if not below.any(func(each: Pack) -> bool: return each.provides(named) or each.has_folder(named)):          # (a `$path` may name a folder)
 			scan.lack(GROUP_REFERENCES, named, rel)
 	for key in ResourceJson.named_pictures(data):                  # (a picture by key: the whole chain looks it up, `Pictures`)
-		scan.ask(key)
+		scan.ask_picture(key)
 		if not _row_for(chain, key):
 			scan.lack(GROUP_PICTURES, key, rel)
 
@@ -362,7 +377,7 @@ static func _problem_art(chain: Array[Pack], scan: Scan) -> void:
 		if problem == null:
 			continue
 		for key in problem.art_keys:
-			scan.ask(key)
+			scan.ask_picture(key)
 			if not _row_for(chain, key):
 				scan.lack(GROUP_PICTURES, key, stem + ".tres")
 
@@ -395,6 +410,7 @@ static func _campaigns(chain: Array[Pack], scan: Scan) -> void:
 			_sector(chain, number, group, scan)
 		if not campaign.finale_picture.is_empty():
 			scan.ask("finale_picture " + campaign.finale_picture)
+			scan.pictures[campaign.finale_picture] = true
 			if not _row_for(chain, campaign.finale_picture):
 				scan.lack(group, "finale_picture " + campaign.finale_picture, "", true)
 		var cues := Catalog.voice_cues()

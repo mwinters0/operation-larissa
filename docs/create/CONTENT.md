@@ -73,7 +73,7 @@ source, not a branch that drifts.
 Two things that look like changes to the rules but are not:
 
 - **High resolution.** The rules keep 640 x 400 as their coordinates. Godot draws 2D at window size, so 4x art drawn at a quarter
-  scale is sharp. That is a picture table row with a `scale` (section 4, "The picture table").
+  scale is sharp. That is a pack that says `"picture_scale": 4` (section 4, "The picture table").
 - **Other values for the rules** (more oxygen, a faster sub). The plan is that a pack states them as data and a pack that states
   none plays with the original's. This is not built ([`ROADMAP.md`](../ROADMAP.md)).
 - **New gameplay from a mod** (the judging of a new problem type's answers, a new creature instruction, a sub ability). This is a mod pack whose code runs inside a
@@ -407,7 +407,7 @@ The **manifest**, `pack.json`:
 
 `id`, `title` and `version` are required. `id` is a lowercase word: letters, digits and `_`, starting with a letter, at most 32
 characters. `base` is the id of the pack this one is laid over (also a lowercase word, and not the pack's own id); leave it out for a complete pack.
-`author` and `description` are optional. `format` is 1. A key the game does not know (`"tier"`, say) is left alone.
+`author` and `description` are optional. `format` is 1. `picture_scale` (a whole number from 1 to 16, 1 when left out) says how many times larger than drawn the pack's picture files are ("The picture table"). A key the game does not know (`"tier"`, say) is left alone.
 
 The JSON files are the same data as the `.tres` files of a complete pack, one key per field with defaults left out. A field the class does not have,
 or a value of the wrong kind, is reported by the pack check; it is never silently ignored.
@@ -415,25 +415,31 @@ or a value of the wrong kind, is reported by the pack check; it is never silentl
 ### The picture table
 
 The game asks for a picture by its **key** (`<kind>/<name>`, section 2, "Pictures"), and a pack answers through its **picture table**, `pictures.json` at the pack's
-root. A pack with no table holds no picture. Each row is a picture key (the key a mod names a picture of the game by) and one of three forms:
+root. A pack with no table holds no picture. Each row is a picture key (the key a mod names a picture of the game by) and one of two forms:
 
 ```json
 {"format": 1,
  "pictures": {
    "ui_picture/title_sky": "art/sky.png",
-   "frame/sub_00": {"file": "art/sub_00@4x.png", "scale": 4},
+   "frame/sub_00": "art/sub_00.png",
    "ui_picture/coral_dawn": {"alias": "ui_picture/title_sky"}
  }}
 ```
 
-- **A file** (a string): a PNG of this pack, a path relative to the pack's root. It is drawn at its own size.
-- **A file with a scale** (`{"file": f, "scale": n}`, `n` from 1 to 16): drawn at 1/n of its size, so 4x art is sharp and fills the place of the original's picture.
-  (A scale suits what the game draws as a sprite, a layout's picture or a background. A `tile/` picture (a tile set's atlas) and a theme's `picture` (a nine-patch or a style box) are handed to the renderer as the file itself, so give those rows no scale.)
+- **A file** (a string): a PNG of this pack, a path relative to the pack's root. It is drawn at its own size, or at `1 / picture_scale` of it in a pack that says so.
 - **An alias** (`{"alias": key}`): the picture of another key, so one file serves many names. The alias is looked up from the top of the chain again, whichever pack
   holds the row: a pack above that redraws the target redraws every alias of it.
 
 The key's kind is one of `ui_picture`, `background`, `problem_art`, `frame`, `deco`, `tile` (`PictureTable.KINDS`); the name is letters, digits, `_`, `-` and `.`.
 A file's name and folder say nothing: the game never guesses a key from them.
+
+**High-resolution art: the picture scale.** A pack that carries 4x art says `"picture_scale": 4` in its `pack.json`; its files are four times larger than the picture they redraw (a 2560 x 1600 title picture for the 640 x 400 game),
+and the game draws them at a quarter of their size, so the rules and layouts do not move and the window shows the file's own pixels. A scale is a property of the pack, never of a row. **A run draws every picture at ONE scale**,
+chosen when the chain is made: the highest scale whose packs of the chain, together, hold a row for every picture the game needs of that chain (what `PackNeeds` asks: the code's names, the keys the data holds, what each campaign brings),
+else 1. Packs of one scale stack, so a 4x skin and a 4x tile pack count as one set. The packs of another scale than the run's give no picture to the run (their sectors, texts, rule values, mods and sounds stay), and an alias is looked up among the packs of
+the run's scale only, so a 4x alias never lands on a 1x row. A pack that leaves a key out is thus all or nothing: until the packs of its scale cover every key, the game draws the 1x pictures. A set that does not cover is told once per run, naming the packs, how many pictures
+they lack, the first few and what the game draws instead; `pack_tool --check` says the same with every missing key, as a warning (a half of a set, a 4x skin without its 4x tile pack, is complete only with the other half). What the renderer takes by RID (a `tile/` picture, a theme's `picture`) is not
+drawn at the scale yet ([`../engine/HARD_CODED.md`](../engine/HARD_CODED.md)).
 
 **Writing one.** Write the rows by hand, or draw the pictures as `<kind>/<name>.png` files in a folder and let `pack_tool --pictures-table=<folder>` write the table: it
 adds a row for each such file that no row names and leaves the rows it holds as they are ([`MAKING_CONTENT.md`](MAKING_CONTENT.md) B5). To find the key of a picture of
@@ -446,7 +452,7 @@ way round (the files are named by the pack's own keys and the legacy keys are al
 
 **What the checks say.** `pack_tool --check` reports, as errors: a malformed row or key or an unknown field, a row whose file the pack does not hold or that is no PNG the
 game can decode, an alias that leads to a key no pack of the chain has a picture for or round in a circle. It warns of: a picture whose size is not the size of the
-picture it redraws (it is drawn stretched to that place; a scaled row is judged by its drawn size), a PNG that no row names (nothing reads it), a `pictures/` folder (the game does not read it) and a
+picture it redraws (it is drawn stretched to that place; the size is judged as drawn, the file's size over the pack's `picture_scale`), a set of packs of a higher picture scale that does not cover the pictures the game needs, a PNG that no row names (nothing reads it), a `pictures/` folder (the game does not read it) and a
 theme picture nothing holds. While the game runs, a row that does not resolve is left out, as if the pack had no row, so the pack under it answers; a key no pack
 holds draws nothing. Each cause is logged once per run, naming the pack, the key and what is shown instead.
 

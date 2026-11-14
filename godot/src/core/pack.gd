@@ -8,7 +8,7 @@ extends RefCounted
 ## the importer writes them (`assets/`, `data/`, `midi/`) or is in the data form is a matter of where its folder is (`trusted`); the layout is as below.
 ##
 ## THE LAYOUT OF A PACK IN THE DATA FORM (every part is optional; docs: docs/engine/PACKS.md)
-##     pack.json                        the manifest: id, title, version (and author, description, format, `base`: the id of the pack this one is laid over, `mod`: see below)
+##     pack.json                        the manifest: id, title, version (and author, description, format, `base`: the id of the pack this one is laid over, `picture_scale`: how many times larger than drawn the pack's pictures are, `mod`: see below)
 ##     campaigns/<id>.json              a `Campaign` (ResourceJson: the fields of the .tres, defaults left out)
 ##     sectors/sector_NN/sector_NN.json a `SectorData` (SectorJson: header, pieces, creatures, screens)
 ##     sectors/sector_NN/sector_NN.foe  its creature script, the same text as in the base game
@@ -67,6 +67,9 @@ var author: String = ""
 var description: String = ""
 ## The id of the pack this one is laid over (the manifest's `"base"`), or `&""` for a complete pack. `Packs` follows the links.
 var base: StringName = &""
+## The manifest's `"picture_scale"` (1 when it says none): how many times larger than the size they are drawn at the pack's picture files are (4 for 4x art in a 640 x 400 game). The game draws all its pictures at one scale
+## and takes the pictures of the packs of that scale only (`PictureScale`).
+var picture_scale: int = 1
 var format: int = FORMAT
 ## The folder of the pack, without a trailing slash: `res://packs/<id>` or `user://packs/<id>`; or the pack file: `user://packs/<id>.larissa`.
 var root: String = ""
@@ -126,6 +129,8 @@ func manifest() -> Dictionary:
 		data["description"] = description
 	if base != &"":
 		data["base"] = String(base)
+	if picture_scale > 1:
+		data["picture_scale"] = picture_scale
 	if mod != null:
 		data["mod"] = mod.to_dict()
 	return data
@@ -141,6 +146,8 @@ func _read_manifest(data: Dictionary) -> void:
 			errors.append("\"%s\" must be a string" % key)
 	if data.has("format") and not (data["format"] is float or data["format"] is int):
 		errors.append("\"format\" must be a number")
+	if data.has("picture_scale") and not PictureScale.is_scale(data["picture_scale"]):
+		errors.append("\"picture_scale\" must be a whole number from 1 to %d" % PictureScale.MAX)
 	if not errors.is_empty():
 		return
 	id = StringName(data["id"])
@@ -150,6 +157,7 @@ func _read_manifest(data: Dictionary) -> void:
 	description = data.get("description", "")
 	format = int(data.get("format", FORMAT))
 	base = StringName(data.get("base", ""))
+	picture_scale = int(data.get("picture_scale", 1))
 	if RegEx.create_from_string(ID_PATTERN).search(String(id)) == null:
 		errors.append("the id '%s' is not a lowercase word (letters, digits and _, starting with a letter, at most 32)" % id)
 	if base != &"" and RegEx.create_from_string(ID_PATTERN).search(String(base)) == null:

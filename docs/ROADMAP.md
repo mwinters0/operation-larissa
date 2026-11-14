@@ -23,16 +23,10 @@ types) are independent of this road and can be done in any order.
 
 ## High-resolution packs
 
-A run draws every picture at one scale N. The game's unit stays 640 x 400 (the rules, layouts and draw lists do not change); a picture of
-scale N reports 1/N of its file's size (`ScaledTexture`), and the window's `canvas_items` stretch puts the file's pixels on the screen.
+A run draws every picture at one scale N, chosen by coverage (`create/CONTENT.md` "The picture table"). The game's unit stays 640 x 400 (the rules,
+layouts and draw lists do not change); a picture of scale N reports 1/N of its file's size (`ScaledTexture`), and the window's `canvas_items`
+stretch puts the file's pixels on the screen.
 
-- **H1. One scale per run, chosen by coverage.** A pack declares `"picture_scale": N` in `pack.json` (default 1); the per-row `scale` of
-  `pictures.json` goes. The run's N is the highest scale whose packs together answer every picture key `PackNeeds` finds the chain needs
-  (the code's names, the data's keys, what each campaign brings). Pictures of packs at another scale are off for that run (the pack's
-  other content stays); `Pictures.resolve` and alias resolution look only at packs of scale N. A pack whose scale cannot cover is told
-  once per run through `TroubleLog`: the pack, how many keys it lacks, the first few, and that the game draws the pictures of scale 1
-  instead. `PackCheck` reports the same finding with every missing key. N is derived by the builder that derives the chain, so every
-  chain change (start, a pack switch, `ModHost.sync`) re-decides it.
 - **H2. Every consumer draws at N.** What the renderer takes by RID: the tile set's atlas (the presenter's `TileMapLayer`s at `1/N` with an
   N-times tile size), nine-patches and style boxes (texture margins x N under a `1/N` transform). An engine test of a scale-4 pack drawn
   by every consumer; `PackCheck` softly reports a picture whose size is not N times the scale-1 picture it replaces.

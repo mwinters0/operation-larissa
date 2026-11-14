@@ -68,6 +68,8 @@ static var events := PackEvents.new()
 
 static var _chain: Array[Pack] = []
 static var _fallback: Fallback
+## The scale the chain's pictures are drawn at and the sets of packs that did not cover (`PictureScale.decide`), decided again every time the lookups are built for a chain (`_rebuild`).
+static var _picture_decision := PictureScale.Decision.new()
 ## What `choose` was last asked for ("" is the default choice): `reset` makes the same choice again.
 static var _wanted: StringName = &""
 ## Has a choice been made (`_chain` may be empty after one: a refused chain that holds no pack)?
@@ -218,6 +220,33 @@ static func chain_ids() -> Array[StringName]:
 	for each in chain():
 		ids.append(each.id)
 	return ids
+
+
+## The scale the run draws every picture at (`PictureScale`): the highest `picture_scale` whose packs of the chain together hold every picture the game needs, else 1. Decided when the lookups of the chain are built, so it is
+## the chain's, whichever way the chain changed. The one answer: `Pictures`, `PackNeeds` and `PackCheck` all ask here.
+static func picture_scale() -> int:
+	chain()
+	return _picture_decision.scale
+
+
+## The packs of the chain whose pictures the run draws: those that declare `picture_scale()`, top of the chain first. A pack of another scale gives no picture (the rest of what it holds stays).
+static func picture_packs() -> Array[Pack]:
+	return packs_at_scale(picture_scale())
+
+
+## The packs of the chain that declare `picture_scale`, top of the chain first.
+static func packs_at_scale(scale: int) -> Array[Pack]:
+	var found: Array[Pack] = []
+	for each in chain():
+		if each.picture_scale == scale:
+			found.append(each)
+	return found
+
+
+## What was decided about the scale of the chain's pictures, with the sets that did not cover (`PictureScale.Decision`).
+static func picture_decision() -> PictureScale.Decision:
+	chain()
+	return _picture_decision
 
 
 ## The pack of the chain called `id`, or null.
@@ -844,6 +873,10 @@ static func _rebuild() -> void:
 	_reindex()
 	Catalog.packs_changed()
 	Durations.read_files()
+	var drawn := _picture_decision.scale
+	_picture_decision = PictureScale.decide(_chain)             # (after the content lookups: the closure of what the chain needs reads them)
+	if _picture_decision.scale != drawn:
+		Pictures.forget()
 
 
 ## Builds the lists the lookups use: who holds each sector, the merged texts, the merged speech groups; measures the clips of a pack

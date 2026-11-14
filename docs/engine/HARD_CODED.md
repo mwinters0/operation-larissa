@@ -6,7 +6,7 @@ described in [`../create/CONTENT.md`](../create/CONTENT.md) (section 4) and [`PA
 
 ## Not built: high-resolution tiles
 
-A row of a pack's picture table may carry a `scale` (4x art drawn at 1/4 of its size through `ScaledTexture`, [`../create/CONTENT.md`](../create/CONTENT.md) "The picture table"). `ScaledTexture`
+A pack may say `picture_scale` (4x art drawn at 1/4 of its size through `ScaledTexture`, [`../create/CONTENT.md`](../create/CONTENT.md) "The picture table"). `ScaledTexture`
 does not reach what the renderer takes by RID: a `TileSet` atlas (`tile/` pictures), a nine-patch or a style box (a theme's `picture`). Candidate: a tile set that knows the scale of its picture (a `TileSetAtlasSource`
 with the larger texture and `texture_region_size`), and an engine test of a high-resolution pack for it.
 

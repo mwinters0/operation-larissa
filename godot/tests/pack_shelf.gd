@@ -58,6 +58,13 @@ func add_sector(sector: SectorData) -> void:
 	SectorJson.save(sector, root)
 
 
+## The pack carries pictures `scale` times larger than they are drawn (its manifest's `picture_scale`).
+func set_picture_scale(scale: int) -> void:
+	var manifest: Dictionary = pack_json("pack.json")
+	manifest["picture_scale"] = scale
+	write_json("pack.json", manifest)
+
+
 ## A copy of sector `source` (original or not) as sector `index` of the pack: its script re-written for the new number, as the sector editor
 ## does (`SectorFactory.copied_script_text`). The source is not changed.
 func add_sector_copy(source: int, index: int) -> SectorData:
@@ -78,7 +85,7 @@ func add_picture(rel: String, color: Color, size: Vector2i = Vector2i(4, 4)) -> 
 	write_bytes(rel, image.save_png_to_buffer())
 
 
-## The row of `key` in the pack's `pictures.json` (made if the pack has none; the rows it holds stay): a file of the pack, `{"file": rel, "scale": N}` or `{"alias": key}`.
+## The row of `key` in the pack's `pictures.json` (made if the pack has none; the rows it holds stay): a file of the pack or `{"alias": key}`.
 func add_row(key: String, value: Variant) -> void:
 	var table: Dictionary = pack_json(PictureTable.FILE) if FileAccess.file_exists("%s/%s" % [root, PictureTable.FILE]) else {"format": PictureTable.FORMAT, "pictures": {}}
 	table["pictures"][key] = value

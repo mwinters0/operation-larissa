@@ -5,7 +5,7 @@ extends RefCounted
 ##     {"format": 1,
 ##      "pictures": {
 ##        "ui_picture/title_sky": "art/sky.png",                       a file of THIS pack (relative to its root, a PNG)
-##        "frame/sub_00": {"file": "art/sub_00@4x.png", "scale": 4},   a file drawn at 1/scale of its size (`ScaledTexture`: 4x art in a 640 x 400 game)
+##        "frame/sub_00": "art/sub_00@4x.png",                         (a pack of `picture_scale` 4: its files are 4x art, drawn at 1/4 of their size, `Pictures`)
 ##        "ui_picture/coral_dawn": {"alias": "ui_picture/title_sky"}   another key: one file serves both names
 ##      }}
 ##
@@ -19,10 +19,6 @@ extends RefCounted
 const FILE := "pictures.json"
 const FORMAT := 1
 const ALIAS_KEY := "alias"
-const FILE_KEY := "file"
-const SCALE_KEY := "scale"
-## The largest `scale` of a row (`ScaledTexture`'s own range is 1 to this).
-const MAX_SCALE := 16
 const PICTURE_EXTENSION := "png"
 
 ## The kinds of picture there are (the part of a key before the `/`): what a table's keys, a theme's `picture` and a mod's draw list may name.
@@ -37,8 +33,6 @@ var pack_id: StringName = &""
 var present := false
 ## key -> the file of the pack (`art/sky.png`).
 var files: Dictionary = {}
-## key -> how many times larger than its drawn size the file is (only a row that says `scale`; 1 otherwise).
-var scales: Dictionary = {}
 ## key -> the key it is an alias of.
 var aliases: Dictionary = {}
 ## What is wrong with the file itself, one sentence each (without the pack's name).
@@ -96,11 +90,6 @@ func keys() -> Array[String]:
 	return found
 
 
-## How many times larger than the size it is drawn at the file of `key` is (1 for a plain row).
-func scale_of(key: String) -> int:
-	return int(scales.get(key, 1))
-
-
 ## The table as the JSON object it was read from (a tool writes a table with it).
 func to_data() -> Dictionary:
 	var rows := {}
@@ -109,8 +98,6 @@ func to_data() -> Dictionary:
 	for key in sorted:
 		if aliases.has(key):
 			rows[key] = {ALIAS_KEY: aliases[key]}
-		elif scale_of(key) > 1:
-			rows[key] = {FILE_KEY: files[key], SCALE_KEY: scale_of(key)}
 		else:
 			rows[key] = files[key]
 	return {"format": FORMAT, "pictures": rows}
@@ -175,8 +162,6 @@ func _take(data: Variant) -> void:
 				files[key] = value
 			else:
 				problems.append("%s: '%s': %s" % [FILE, key, why])
-		elif value is Dictionary and (value as Dictionary).has(FILE_KEY):
-			_take_scaled(key, value)
 		elif value is Dictionary and (value as Dictionary).size() == 1 and (value as Dictionary).has(ALIAS_KEY):
 			var target: Variant = (value as Dictionary)[ALIAS_KEY]
 			var target_problem := key_problem(target)
@@ -185,30 +170,7 @@ func _take(data: Variant) -> void:
 			else:
 				problems.append("%s: '%s' is an alias of '%s', which is no picture key (%s)" % [FILE, key, target, target_problem])
 		else:
-			problems.append("%s: '%s' should be a file of the pack (text), {\"%s\": \"<file>\", \"%s\": <number>} or {\"%s\": \"<key>\"}" % [FILE, key, FILE_KEY, SCALE_KEY, ALIAS_KEY])
-
-
-## A row `{"file": ..., "scale": N}`.
-func _take_scaled(key: String, row: Dictionary) -> void:
-	var typo := false
-	for field: String in row:
-		if field != FILE_KEY and field != SCALE_KEY:
-			problems.append("%s: '%s' has no field '%s' (\"%s\" and \"%s\" are the fields)" % [FILE, key, field, FILE_KEY, SCALE_KEY])
-			typo = true
-	if typo:
-		return
-	var rel: Variant = row[FILE_KEY]
-	var why := _file_problem(rel) if rel is String else "the file should be text"
-	if not why.is_empty():
-		problems.append("%s: '%s': %s" % [FILE, key, why])
-		return
-	var scale: Variant = row.get(SCALE_KEY, 1)
-	if not (scale is float or scale is int) or int(scale) != scale or int(scale) < 1 or int(scale) > MAX_SCALE:
-		problems.append("%s: '%s': \"%s\" should be a whole number from 1 to %d" % [FILE, key, SCALE_KEY, MAX_SCALE])
-		return
-	files[key] = rel
-	if int(scale) > 1:
-		scales[key] = int(scale)
+			problems.append("%s: '%s' should be a file of the pack (text) or {\"%s\": \"<key>\"}" % [FILE, key, ALIAS_KEY])
 
 
 ## Why `rel` cannot be the file of a row ("" when it can): a path that leaves the pack, or one that is no PNG.
