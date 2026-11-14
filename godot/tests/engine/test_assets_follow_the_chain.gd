@@ -1,7 +1,7 @@
 class_name TestAssetsFollowTheChain
 extends GdUnitTestSuite
 ## Teaches: one way to hold a picture. `Assets` hands out a `PictureRef` for every key (one per key), so a screen that keeps what `Assets` gave it in a node shows the chain as it is NOW: when a pack is installed or taken away
-## (`PackInstall` -> `Packs.reset` -> `Catalog.packs_changed`), the picture on the screen is the other pack's with nothing rebuilt. The packs of `PicturesShelf` name their files at random, so a colour is found through the table only.
+## (`PackInstall` -> `Packs.reset` -> `Pictures.forget`), the picture on the screen is the other pack's with nothing rebuilt. The packs of `PicturesShelf` name their files at random, so a colour is found through the table only.
 
 var _shelf: PicturesShelf
 

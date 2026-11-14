@@ -68,8 +68,9 @@ static var events := PackEvents.new()
 
 static var _chain: Array[Pack] = []
 static var _fallback: Fallback
-## The scale the chain's pictures are drawn at and the sets of packs that did not cover (`PictureScale.decide`), decided again every time the lookups are built for a chain (`_rebuild`).
-static var _picture_decision := PictureScale.Decision.new()
+## The scale the chain's pictures are drawn at, the packs that draw them and the sets that did not cover (`PictureScale.decide`): null until asked (`picture_decision`) after the chain changed, so the one scan of what the chain needs runs when a decision is wanted,
+## and is kept for the chain (`_checked` has the scan already).
+static var _picture_decision: PictureScale.Decision
 ## What `choose` was last asked for ("" is the default choice): `reset` makes the same choice again.
 static var _wanted: StringName = &""
 ## Has a choice been made (`_chain` may be empty after one: a refused chain that holds no pack)?
@@ -222,30 +223,16 @@ static func chain_ids() -> Array[StringName]:
 	return ids
 
 
-## The scale the run draws every picture at (`PictureScale`): the highest `picture_scale` whose packs of the chain together hold every picture the game needs, else 1. Decided when the lookups of the chain are built, so it is
-## the chain's, whichever way the chain changed. The one answer: `Pictures`, `PackNeeds` and `PackCheck` all ask here.
-static func picture_scale() -> int:
-	chain()
-	return _picture_decision.scale
-
-
-## The packs of the chain whose pictures the run draws: those that declare `picture_scale()`, top of the chain first. A pack of another scale gives no picture (the rest of what it holds stays).
-static func picture_packs() -> Array[Pack]:
-	return packs_at_scale(picture_scale())
-
-
-## The packs of the chain that declare `picture_scale`, top of the chain first.
-static func packs_at_scale(scale: int) -> Array[Pack]:
-	var found: Array[Pack] = []
-	for each in chain():
-		if each.picture_scale == scale:
-			found.append(each)
-	return found
-
-
-## What was decided about the scale of the chain's pictures, with the sets that did not cover (`PictureScale.Decision`).
+## What was decided about the pictures of the chain in use (`PictureScale.Decision`): `scale` is the one every picture of the run is drawn at (the highest `picture_scale` whose packs of the chain together would draw every picture the game needs, else 1),
+## `packs` the packs whose pictures are drawn (top of the chain first), `shortfalls` the sets that did not cover. The one accessor: `Pictures`, `ScaledTileSet`, `PackCheck` ask here. Made from the chain on the first question after a change of it,
+## whichever way it changed, and the same for the chain until it changes again.
 static func picture_decision() -> PictureScale.Decision:
 	chain()
+	if _picture_decision == null:
+		var keys: Array[String] = []
+		if PictureScale.has_higher(_chain):
+			keys = PackNeeds.picture_keys(_chain)
+		_picture_decision = PictureScale.decide(_chain, keys)
 	return _picture_decision
 
 
@@ -381,14 +368,14 @@ static func use(first: Pack) -> bool:
 ## The chain in use, to give back to `restore` (a check or a test borrows the chain for a while).
 static func snapshot() -> Dictionary:
 	chain()
-	return {"chain": _chain, "fallback": _fallback, "wanted": _wanted}
+	return {"chain": _chain, "fallback": _fallback, "wanted": _wanted, "pictures": _picture_decision}
 
 
 static func restore(saved: Dictionary) -> void:
 	_chain = saved["chain"]
 	_fallback = saved["fallback"]
 	_wanted = saved["wanted"]
-	_changed()
+	_changed(saved.get("pictures"))                            # (the same chain: its decision is given back, not made again)
 
 
 ## Runs `body` with exactly `packs` as the chain (chosen pack first, nothing appended: `dev` is not put under it), then puts the chain in use back. For a
@@ -462,7 +449,9 @@ static func _checked(result: Chain) -> Chain:
 	_started = true
 	_tentative = true
 	_rebuild()
-	var found := PackNeeds.gaps(result.packs)
+	var scan := PackNeeds.inspect(result.packs)
+	_picture_decision = scan.decision                          # (the one scan of this chain: the decision is made from it)
+	var found := scan.gaps
 	var hard := PackNeeds.hard(found)
 	var soft := PackNeeds.soft(found)
 	if not soft.is_empty():
@@ -862,19 +851,25 @@ static func exists_at(path: String) -> bool:
 
 # --- keeping the lists ---------------------------------------------------------------------------------------------
 
-static func _changed() -> void:
-	_rebuild()
+static func _changed(pictures: PictureScale.Decision = null) -> void:
+	_rebuild(pictures)
 	events.changed.emit()
 
 
-## Builds the lookups for the chain in use.
-static func _rebuild() -> void:
+## The picture scale of the chain in use must be decided again (a mod was refused or let go: its declared pictures count or stop counting), and the holders of a picture ask again.
+static func pictures_changed() -> void:
+	_picture_decision = null
+	Pictures.forget()
+
+
+## Builds the lookups for the chain in use. `pictures` is the decision of this very chain when it is known (`restore`), else it is made when asked.
+static func _rebuild(pictures: PictureScale.Decision = null) -> void:
 	_holders = {}
 	_reindex()
 	Catalog.packs_changed()
 	Durations.read_files()
-	_picture_decision = PictureScale.decide(_chain)             # (after the content lookups: the closure of what the chain needs reads them)
-	Assets.forget_folders()                                     # (the pictures last: what holds one is told of the chain once its scale is decided, and asks again under it)
+	_picture_decision = pictures                                # (made when asked, after the content lookups: the closure of what the chain needs reads them)
+	Pictures.forget()                                           # (what holds a picture asks again, and hears the decision of this chain)
 
 
 ## Builds the lists the lookups use: who holds each sector, the merged texts, the merged speech groups; measures the clips of a pack

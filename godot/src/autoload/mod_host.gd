@@ -93,6 +93,7 @@ static func key_of(pack: Pack) -> String:
 func sync() -> void:
 	var chain_changed := _stale
 	_stale = false
+	var refused_before := _failed.keys()
 	var changed := false
 	var packs := wanted()
 	var wanted_keys := {}
@@ -130,6 +131,8 @@ func sync() -> void:
 		parts.key = wanted_keys[id]
 		_parts[id] = parts
 		changed = true
+	if refused_before != _failed.keys():
+		Packs.pictures_changed()                         # (a mod refused declares no picture the scale must hold, and one let go declares them again)
 	var left := changed and SkinChoice.leave_dead_mod_skins()
 	if chain_changed and not left:
 		SkinChoice.chain_changed()                       # (the mods are the chain's now: a theme made before would have named the pictures of a skin that may have just stopped)
@@ -161,6 +164,11 @@ static func failure(id: StringName) -> String:
 		return ""
 	_instance._sync_if_stale()
 	return _instance._failed[String(id)]["reason"] if _instance._failed.has(String(id)) else ""
+
+
+## Was the mod `id` refused (its parts or its script did not load, or lack a function its manifest lists)? What a sync found: it asks for no sync itself, so it can be asked while the chain is being looked at, and `sync` tells `Packs` when the answer changed.
+static func is_refused(id: StringName) -> bool:
+	return _instance != null and _instance._failed.has(String(id))
 
 
 ## Is the mod `id` quarantined (it faulted too often)? False when it is not running.

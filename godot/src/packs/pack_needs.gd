@@ -8,19 +8,27 @@ extends RefCounted
 ##     sets of each zone (`PER_ZONE`, `PER_TILE_ZONE`) and the problem types (`Catalog.PROBLEM_TYPE_COUNT`; a type is a trusted pack's `.tres` or its `.json` in the data form).
 ##     `tests/engine/test_pack_needs.gd` keeps the list equal to what the dev pack holds under `data/`.
 ##   * PICTURES that code asks for by name: every `ui_picture` and `problem_art` name of the registry, as the KEY `Assets` asks for (`ui_picture/title_sky`): a row of some pack's `pictures.json` answers it; and the pictures of the game a mod of the chain names
-##     (`ModSpec.needed_pictures`: the keys its manifest declares for its draw lists, the pictures of its theme): they count among `picture_keys`, so a set of packs of a higher picture scale must hold them (`PictureScale`); a key no pack holds is no gap (`PackCheck` warns of it, a draw list that names it draws nothing).
+##     (`ModSpec.needed_pictures`: the keys its manifest declares for its draw lists, the pictures of its theme; a mod `ModHost` refused draws nothing and counts for none): they count among `picture_keys`, so a set of packs of a higher picture scale must hold them (`PictureScale`); a key no pack
+##     holds is no gap (`PackCheck` warns of it, a draw list that names it draws nothing).
 ##   * THINGS THE DATA NAMES: the sounds a required resource refers to (`ResourceLoader.get_dependencies`), the keys of the pictures it holds (a `PictureRef` of a `.tres`, `{"$picture": key}` of the data form, a problem type's `art_keys`: each needs a row
 ##     in some pack of the chain), the songs of the music catalog, the clips of the voice index. The files live inside the pack that holds the resource, so no other pack can fill them in; a key is answered by the whole chain.
 ##   * WHAT THE CONTENT BRINGS: each campaign `Catalog` finds in the chain: its sectors (and what a `.tres` sector refers to, a JSON sector's script), its finale picture, the
 ##     speech groups of its log and supply messages. The tiles, creature pictures and sounds a sector uses are slots of its zone's sets and of the sound catalog, already
 ##     required above; a sector's own background is not (a screen without one is plain black on purpose in the original), nor is a MIDI file (the rendered song plays).
 ##
-## A PICTURE is answered by the packs' tables alone (a skin maps none): a row for its key in a pack of the chain (`PictureTable.has`; whether the row resolves is `PackCheck`'s and `Pictures`' business). A resource's own pictures are loaded with the resource.
+## A PICTURE is answered by the packs' tables alone (a skin maps none): a row for its key in a pack that draws in this run (`PictureTable.has`; whether the row resolves is `PackCheck`'s and `Pictures`' business). A resource's own pictures are loaded with the resource.
+##
+## WHAT A HIGHER PICTURE SCALE MUST HOLD (`picture_keys`) is wider than what the game needs to start: besides the needs above it counts the pictures the game DRAWS when it has them and leaves out when it has not, so that a set of 4x art is chosen only when the run would show
+## what it shows at scale 1: every `background` row the packs of picture scale 1 would draw (a screen with a background in them but none in the set would be black), and for a mod's wildcard `<kind>/*` every row of that kind they would draw (the mod's script names them by
+## the keys of its state, so the manifest cannot list them). These are no gaps (a chain with none of them starts); they count only for the scale.
 ##
 ## THE CHAIN is an argument, so a chain that has no `dev` under it can be asked about (`chain_of`); a chain that is not the one in use is lent to `Packs` for the question.
 ##
 ## Teaches: a closure computed from the code's own constants and lookups instead of a second description that could drift, existence checks instead of loads (a path is
 ## cheap, a texture is not), and a result that is data (`Gap`) so that one caller shows a count and another a sentence.
+
+## How many walks of the closure were made (`_scan`): a test counts them to see that a chain is walked once.
+static var walks := 0
 
 ## The groups of a gap, for a report; a campaign's own is "campaign <id>" (`CAMPAIGN_PREFIX`).
 const GROUP_FILES := "files"
@@ -92,6 +100,8 @@ class Gap extends RefCounted:
 	var needed_by := ""
 	## The game goes on without it (a line that is not spoken, a picture left out) rather than breaking.
 	var soft := false
+	## For a picture a pack has to hold: its key. The gap stands unless a pack that draws in the run has a row for it (`inspect` decides, once the run's scale is known).
+	var unless_row_for := ""
 
 	func text() -> String:
 		return path if needed_by.is_empty() else "%s (%s)" % [path, needed_by]
@@ -101,9 +111,11 @@ class Gap extends RefCounted:
 class Scan extends RefCounted:
 	## path -> true: every file or thing the closure asked for, present or not.
 	var needed: Dictionary = {}
-	## key -> true: the picture keys among them (what `PictureScale` asks the packs of each scale to hold).
+	## key -> true: the picture keys among them, and those the scale must hold besides (what `PictureScale` asks the packs of each scale to hold).
 	var pictures: Dictionary = {}
 	var gaps: Array[Gap] = []
+	## What `PictureScale` made of `pictures`: the scale the run draws at; set by `inspect`.
+	var decision: PictureScale.Decision
 
 	func ask(path: String) -> void:
 		needed[path] = true
@@ -112,6 +124,18 @@ class Scan extends RefCounted:
 	func ask_picture(key: String) -> void:
 		needed[key] = true
 		pictures[key] = true
+
+	## A picture the scale must hold that the game does not need to start (`want_picture`'s callers say why).
+	func want_picture(key: String) -> void:
+		pictures[key] = true
+
+	## The picture `key` is needed: a gap (named `path`, the key when empty, in `group`) unless a pack that draws in the run has a row for it.
+	func need_picture(key: String, needed_by: String, group := GROUP_PICTURES, path := "", soft := false) -> void:
+		if path.is_empty():
+			needed[key] = true                                     # (a picture that is a thing of its own; a finale's is asked under its own name)
+		pictures[key] = true
+		lack(group, key if path.is_empty() else path, needed_by, soft)
+		gaps[gaps.size() - 1].unless_row_for = key
 
 	func lack(group: String, path: String, needed_by := "", soft := false) -> void:
 		var gap := Gap.new()
@@ -145,7 +169,21 @@ static func chain_of(first: Pack) -> Array[Pack]:
 
 ## Everything `chain` cannot answer, in the order of the groups.
 static func gaps(chain: Array[Pack]) -> Array[Gap]:
-	return _scan(chain).gaps
+	return inspect(chain).gaps
+
+
+## One walk of the closure over `chain`, with its picture needs judged: the gaps (a picture is a gap unless a pack of the scale the run draws at has a row for it), and the decision of `PictureScale` made from the keys the walk found. The scale is decided from this
+## walk alone (`PictureScale.decide`), so nothing here reads the run's. `Packs` asks it for the chain it starts with and keeps the decision.
+static func inspect(chain: Array[Pack]) -> Scan:
+	var scan := _scan(chain)
+	var keys: Array[String] = []
+	keys.assign(scan.pictures.keys())
+	keys.sort()
+	if not PictureScale.has_higher(chain):
+		keys = []                                                      # (nothing to measure: the keys are not looked at)
+	scan.decision = PictureScale.decide(chain, keys)
+	scan.gaps = scan.gaps.filter(func(gap: Gap) -> bool: return gap.unless_row_for.is_empty() or not scan.decision.packs.any(func(each: Pack) -> bool: return each.picture_table().has(gap.unless_row_for)))
+	return scan
 
 
 ## The paths (or names) of `gaps`, each once, sorted.
@@ -220,6 +258,7 @@ static func summary(found: Array[Gap], limit := 6) -> String:
 # --- the walk -------------------------------------------------------------------------------------------------------
 
 static func _scan(chain: Array[Pack]) -> Scan:
+	walks += 1
 	var scan := Scan.new()
 	_files(chain, scan)
 	_problem_types(chain, scan)
@@ -284,33 +323,45 @@ static func _problem_types(chain: Array[Pack], scan: Scan) -> void:
 static func _content(chain: Array[Pack], scan: Scan) -> void:
 	_pictures(chain, scan)
 	_mod_pictures(chain, scan)
+	_scale_one_pictures(chain, scan)
 	_references(chain, scan)
 	_problem_art(chain, scan)
 	_audio(chain, scan)
 	_campaigns(chain, scan)
 
 
-## Does a pack of the chain that draws pictures in this run (`Packs.picture_scale`: the packs of the run's scale) have a row for the picture key `key` (`PictureTable.has`)? Not whether the row resolves: `PackCheck` and `Pictures` say that.
-static func _row_for(chain: Array[Pack], key: String) -> bool:
-	return chain.any(func(each: Pack) -> bool: return each.picture_scale == Packs.picture_scale() and each.picture_table().has(key))
-
-
 static func _pictures(chain: Array[Pack], scan: Scan) -> void:
 	var registry := NameRegistry.original()
 	for kind: StringName in [&"ui_picture", &"problem_art"]:
 		for picture_name: String in registry.entries(kind):
-			var key := "%s/%s" % [kind, picture_name]
-			scan.ask_picture(key)
-			if not _row_for(chain, key):
-				scan.lack(GROUP_PICTURES, key, "")
+			scan.need_picture("%s/%s" % [kind, picture_name], "")
 
 
 ## The pictures of the game the mods of the chain name (`ModSpec.needed_pictures`), asked as keys for the scale decision. A key no pack holds is not a gap: the game goes on without it (the draw list that names it draws nothing, a theme's style is flat) and `PackCheck` warns of the mod that names it.
+## A mod `ModHost` refused draws nothing, so what it names is not drawn and counts for nothing.
 static func _mod_pictures(chain: Array[Pack], scan: Scan) -> void:
 	for each in chain:
-		if each.mod != null:
+		if each.mod != null and not ModHost.is_refused(each.id):
 			for key in each.mod.needed_pictures():
 				scan.ask_picture(key)
+
+
+## The pictures the scale must hold besides the needs: what the packs of picture scale 1 of `chain` would draw of the kinds the game draws when it has the picture and leaves out when it has not: every `background` (`Assets.background`: a screen with none is plain black), and every row of
+## a kind a mod's wildcard `<kind>/*` names. The rows are those scale 1 would draw (`Pictures.unanswered`), so a set of 4x art that lacks one of them is not chosen (the screen would be black, the mod's picture missing, and nothing would say it). A key the packs of scale 1 would not draw
+## is not counted: the game does not show it at scale 1 either, and a chain with no packs at scale 1 has no such pictures to keep.
+static func _scale_one_pictures(chain: Array[Pack], scan: Scan) -> void:
+	var kinds: Array[String] = ["background"]
+	for each in chain:
+		if each.mod != null and not ModHost.is_refused(each.id):
+			for kind in each.mod.picture_kinds():
+				if not kinds.has(kind):
+					kinds.append(kind)
+	var one := PictureScale.packs_at(chain, 1)
+	for each in one:
+		var table := each.picture_table()
+		for key in table.keys():
+			if kinds.any(func(kind: String) -> bool: return key.begins_with(kind + "/")) and Pictures.unanswered(key, one).is_empty():
+				scan.want_picture(key)
 
 
 ## What each required resource names: the pictures, tiles and sounds that Godot loads with a trusted pack's `.tres` (its header lists them), or that the
@@ -336,9 +387,7 @@ static func _tres_pictures(chain: Array[Pack], holder: Pack, rel: String, scan: 
 		if Packs.has_file_at(path):
 			keys.append_array(PictureRef.keys_in_tres(Packs.bytes_at(path).get_string_from_utf8()))
 	for key in keys:
-		scan.ask_picture(key)
-		if not _row_for(chain, key):
-			scan.lack(GROUP_PICTURES, key, rel)
+		scan.need_picture(key, rel)
 
 
 ## The files (and folders) the data form of `rel` (`holder`'s `.json`) names, each of which some pack of `chain` from the holder down must provide.
@@ -350,9 +399,7 @@ static func _data_references(chain: Array[Pack], holder: Pack, rel: String, scan
 		if not below.any(func(each: Pack) -> bool: return each.provides(named) or each.has_folder(named)):          # (a `$path` may name a folder)
 			scan.lack(GROUP_REFERENCES, named, rel)
 	for key in ResourceJson.named_pictures(data):                  # (a picture by key: the whole chain looks it up, `Pictures`)
-		scan.ask_picture(key)
-		if not _row_for(chain, key):
-			scan.lack(GROUP_PICTURES, key, rel)
+		scan.need_picture(key, rel)
 
 
 ## The files of a pack that the resource at `path` names (the pictures, tiles and sounds Godot loads with it), as `res://packs/...` paths: its header is read, nothing is loaded.
@@ -387,9 +434,7 @@ static func _problem_art(chain: Array[Pack], scan: Scan) -> void:
 		if problem == null:
 			continue
 		for key in problem.art_keys:
-			scan.ask_picture(key)
-			if not _row_for(chain, key):
-				scan.lack(GROUP_PICTURES, key, stem + ".tres")
+			scan.need_picture(key, stem + ".tres")
 
 
 ## The songs of the music catalog (the General MIDI set; the AdLib set falls back to it) and the clips of the voice index.
@@ -420,9 +465,7 @@ static func _campaigns(chain: Array[Pack], scan: Scan) -> void:
 			_sector(chain, number, group, scan)
 		if not campaign.finale_picture.is_empty():
 			scan.ask("finale_picture " + campaign.finale_picture)
-			scan.pictures[campaign.finale_picture] = true
-			if not _row_for(chain, campaign.finale_picture):
-				scan.lack(group, "finale_picture " + campaign.finale_picture, "", true)
+			scan.need_picture(campaign.finale_picture, "", group, "finale_picture " + campaign.finale_picture, true)
 		var cues := Catalog.voice_cues()
 		for voice_group: StringName in campaign.log_voices + campaign.supply_voices:
 			if voice_group == &"":

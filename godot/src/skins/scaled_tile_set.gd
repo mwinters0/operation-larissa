@@ -6,7 +6,7 @@ extends RefCounted
 ## as long (cell size, tile size in the atlas, margins, separation, the texture origin of a tile, the points of its collision polygons), and `dress` puts it on layers scaled by 1/N. A cell is then still 16 game units, a tile is drawn from N x N times the pixels,
 ## and the cell a tile is set in, its atlas coordinates and its custom data (`TileCodec`) are the ones of the tile set a pack holds.
 ##
-## THE OWNER of N is `Packs.picture_scale`, read each time a set is made; the tile set a pack holds is never changed (the copy is deep). A layer that is shown again (the chain changed: `Pictures.events`) is dressed again from `Catalog.tileset()`, so the
+## THE OWNER of N is `Packs.picture_decision().scale`, read each time a set is made; the tile set a pack holds is never changed (the copy is deep). A layer that is shown again (the chain changed: `Pictures.events`) is dressed again from `Catalog.tileset()`, so the
 ## presenter first made, the one made after a pack change and the one bound in the middle of a sector see the same thing.
 ##
 ## Teaches: what a `TileMapLayer` asks of its tile set (the atlas texture's RID and `get_image()`, not its `draw` methods), a deep `Resource.duplicate` of a tile set, and a node's `scale` as the way to draw a finer grid in the same space.
@@ -26,9 +26,9 @@ static func of(tile_set: TileSet, scale: int) -> TileSet:
 	return made
 
 
-## Puts the tile set for the run's picture scale (`Packs.picture_scale`) on `layers`, and the layers at `1 / scale`: the one place a layer is given a tile set, so each path that shows tiles (the presenter, the debug scenes) dresses them the same way.
+## Puts the tile set for the run's picture scale (`Packs.picture_decision().scale`) on `layers`, and the layers at `1 / scale`: the one place a layer is given a tile set, so each path that shows tiles (the presenter, the debug scenes) dresses them the same way.
 static func dress(layers: Array[TileMapLayer], tile_set: TileSet) -> void:
-	var scale := Packs.picture_scale()
+	var scale := Packs.picture_decision().scale
 	var made := of(tile_set, scale)
 	for layer in layers:
 		layer.tile_set = made

@@ -52,6 +52,8 @@ const SOURCE_META := &"pack_file"
 ## The version of the manifest and layout this code reads. A pack that says a higher one is refused.
 const FORMAT := 1
 const ID_PATTERN := "^[a-z][a-z0-9_]{0,31}$"
+## The largest `picture_scale` a manifest may say (`ScaledTexture`'s own range is 1 to this).
+const MAX_PICTURE_SCALE := 16
 ## What a pack that is not trusted may never hold: these are the formats the engine runs.
 ## A font of a pack is a TrueType file (`font`), at most this many bytes: the one place a pack's font kind and size are named (`ModSpec` and `PackCheck` ask here).
 ## The first bytes of a PNG file: the signature (8), the IHDR chunk's length (4) and name (4), its width (4) and height (4).
@@ -149,8 +151,8 @@ func _read_manifest(data: Dictionary) -> void:
 			errors.append("\"%s\" must be a string" % key)
 	if data.has("format") and not (data["format"] is float or data["format"] is int):
 		errors.append("\"format\" must be a number")
-	if data.has("picture_scale") and not PictureScale.is_scale(data["picture_scale"]):
-		errors.append("\"picture_scale\" must be a whole number from 1 to %d" % PictureScale.MAX)
+	if data.has("picture_scale") and not is_picture_scale(data["picture_scale"]):
+		errors.append("\"picture_scale\" must be a whole number from 1 to %d" % MAX_PICTURE_SCALE)
 	if not errors.is_empty():
 		return
 	id = StringName(data["id"])
@@ -184,6 +186,10 @@ func is_valid() -> bool:
 
 
 # --- paths and files ---------------------------------------------------------------------------------------------
+
+## Is `value` what a manifest's `picture_scale` may be: a whole number from 1 to `MAX_PICTURE_SCALE`?
+static func is_picture_scale(value: Variant) -> bool:
+	return (value is float or value is int) and int(value) == value and int(value) >= 1 and int(value) <= MAX_PICTURE_SCALE
 
 ## Is `rel` a path that stays inside the pack: relative, no `..`, no drive or scheme, no backslash? Everything else is refused before a
 ## file is touched, so a manifest or a JSON file cannot name a file outside the pack.

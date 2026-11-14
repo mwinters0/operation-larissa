@@ -6,12 +6,12 @@ extends RefCounted
 ## (drawn at its size, or at `1 / picture_scale` of it through `ScaledTexture` when the pack carries 4x art) or ANOTHER KEY (`{"alias": key}`): an alias is resolved from the top of the chain again, whichever pack holds the row, so a pack above that redraws the target redraws every alias of it,
 ## and one file serves many names.
 ##
-## ONE SCALE PER RUN. Only the packs of the run's picture scale (`Packs.picture_packs`, decided by `PictureScale`) are asked, for a key and for an alias alike, so a 4x alias never lands on a 1x row and the pictures of a run are never of two scales. The packs of another
+## ONE SCALE PER RUN. Only the packs of the run's picture scale (`Packs.picture_decision().packs`, decided by `PictureScale`) are asked, for a key and for an alias alike, so a 4x alias never lands on a 1x row and the pictures of a run are never of two scales. The packs of another
 ## scale give no picture; a set of packs at a higher scale that did not cover is told ONCE per run (`PictureScale.Shortfall`), by the first lookup of a run. A row that does not resolve (a file the pack does not hold or that is no PNG, an alias to a key no pack holds, aliases that go round in a circle) is left out, as if its pack had no row for the key, so the packs under it answer;
 ## it is told ONCE per run (`TroubleLog.session`), naming the pack, the key and what is shown instead. An answer is kept WITH the lines its lookup told, and a hit tells them again (the session drops a line it has given), so a run that begins after
 ## the answer was made is told too.
 ##
-## THE CACHE is per chain: an answer is kept until the chain changes (`forget`, from `Assets.forget_folders` by `Packs`, after the chain's picture scale is decided). `epoch` counts the changes and `events.changed` announces them, so a holder of an answer (`PictureRef`) asks again. A skin changes no picture.
+## THE CACHE is per chain: an answer is kept until the chain changes (`forget`, called by `Packs` when the chain changed). `epoch` counts the changes and `events.changed` announces them, so a holder of an answer (`PictureRef`) asks again. A skin changes no picture.
 ##
 ## THE ONE RESOLVER. `resolve` is the only function that turns a key into a texture: `Assets.picture_by_key` and `PictureRef.resolved` both call it. A pack with no `pictures.json` holds no picture; no file name, folder or number means anything to it.
 ##
@@ -42,6 +42,14 @@ class PictureEvents extends RefCounted:
 	signal changed
 
 
+## What `_answer` found: the pack and file that give a key its picture, or why none does.
+class Source extends RefCounted:
+	var pack: Pack
+	var rel := ""
+	## "" when `pack` and `rel` answer.
+	var reason := ""
+
+
 ## The picture of `key` the chain holds, or null when no pack does. The troubles of the rows it followed are told (again, for a answer kept from an earlier run: `TroubleLog.session` is a new log each run).
 static func resolve(key: String) -> Texture2D:
 	if not _answers.has(key):
@@ -50,8 +58,8 @@ static func resolve(key: String) -> Texture2D:
 		var found := _find(key, [])
 		_collecting = null
 		_answers[key] = [found, lines]
-	for line: String in Packs.picture_decision().lines():       # (the packs that hold the pictures of another scale and cannot cover: said in every run that asks for a picture)
-		TroubleLog.session.tell(line)
+	for text in Packs.picture_decision().texts:                 # (the packs that hold the pictures of another scale and cannot cover: said in every run that asks for a picture)
+		TroubleLog.session.tell("%s %s" % [TAG, text])
 	var answer: Array = _answers[key]
 	for line: String in answer[1]:
 		TroubleLog.session.tell(line)
@@ -65,15 +73,11 @@ static func in_pack(pack: Pack, key: String) -> Texture2D:
 	return _file_row(pack, table, at) if table.files.has(at) else null
 
 
-## The size in pixels of the file the packs of picture scale 1 give `key` (the first of the chain that holds a row of its own for it, as `in_pack` finds it), read from the file's header, nothing decoded; `Vector2i.ZERO` when none does. What a pack of a
+## The size in pixels of the file the packs of picture scale 1 would draw for `key` (the answer of that set, an alias followed across its packs as `unanswered` does), read from the file's header, nothing decoded; `Vector2i.ZERO` when it has none. What a pack of a
 ## higher scale is held to: its file is that many times larger (`PackCheck`).
 static func scale_one_size(key: String) -> Vector2i:
-	for each in Packs.packs_at_scale(1):
-		var table := each.picture_table()
-		var at := _end_of_aliases(table, key)
-		if table.files.has(at):
-			return each.png_size(table.files[at])
-	return Vector2i.ZERO
+	var answer := _answer(key, [] as Array[String], PictureScale.packs_at(Packs.chain(), 1))
+	return answer.pack.png_size(answer.rel) if answer.pack != null else Vector2i.ZERO
 
 
 static func _end_of_aliases(table: PictureTable, key: String) -> String:
@@ -98,31 +102,36 @@ static func forget() -> void:
 	events.changed.emit()
 
 
-## Why no pack of the chain at picture `scale` (the run's by default) would give `key` a picture, from the tables alone (no file is read and nothing is told): "" when a row answers (a file the pack holds, or an alias that does), else a clause that says what is wrong with the rows that name it, or that none does. For `PackCheck`.
-static func unanswered(key: String, scale := Packs.picture_scale()) -> String:
-	return _unanswered(key, [] as Array[String], Packs.packs_at_scale(scale))
+## Why none of `packs` (a set of the chain, as the run's picture packs are) would give `key` a picture, from the tables alone (no file is read and nothing is told): "" when a row answers (a file the pack holds, or an alias that the set answers), else a clause that says what is wrong with the rows that name it, or that none does.
+## The question `PackCheck` asks of an alias and `PictureScale` of every key a set must hold.
+static func unanswered(key: String, packs: Array[Pack]) -> String:
+	return _answer(key, [] as Array[String], packs).reason
 
 
-static func _unanswered(key: String, asking: Array[String], packs: Array[Pack]) -> String:
+static func _answer(key: String, asking: Array[String], packs: Array[Pack]) -> Source:
 	var now: Array[String] = asking.duplicate()
 	now.append(key)
-	var reason := "no pack of the chain has a row for it"
+	var found := Source.new()
+	found.reason = "no pack of the chain has a row for it"
 	for each in packs:
 		var table := each.picture_table()
 		if table.files.has(key):
 			if each.has(table.files[key]):
-				return ""
-			reason = "its row in pack '%s' names the file %s, which that pack does not hold" % [each.id, table.files[key]]
+				found.pack = each
+				found.rel = table.files[key]
+				found.reason = ""
+				return found
+			found.reason = "its row in pack '%s' names the file %s, which that pack does not hold" % [each.id, table.files[key]]
 		elif table.aliases.has(key):
 			var target: String = table.aliases[key]
 			if now.has(target) or now.size() > MAX_ALIAS_DEPTH:
-				reason = "the aliases %s go round in a circle" % " -> ".join(PackedStringArray(now + [target]))
+				found.reason = "the aliases %s go round in a circle" % " -> ".join(PackedStringArray(now + [target]))
 				continue
-			var inner := _unanswered(target, now, packs)
-			if inner.is_empty():
-				return ""
-			reason = "its row in pack '%s' is an alias of '%s', and %s" % [each.id, target, inner.replace("no pack of the chain has a row for it", "no pack of the chain has a row for that")]
-	return reason
+			var inner := _answer(target, now, packs)
+			if inner.reason.is_empty():
+				return inner
+			found.reason = "its row in pack '%s' is an alias of '%s', and %s" % [each.id, target, inner.reason.replace("no pack of the chain has a row for it", "no pack of the chain has a row for that")]
+	return found
 
 
 ## The sentence that says no pack holds the picture `key` that data names, for whoever holds it (`PictureRef`).
@@ -139,7 +148,7 @@ static func _find(key: String, asking: Array[String]) -> Texture2D:
 		return null
 	var now: Array[String] = asking.duplicate()
 	now.append(key)
-	for each in Packs.picture_packs():
+	for each in Packs.picture_decision().packs:
 		var found := _row(each, key, now)
 		if found != null:
 			return found

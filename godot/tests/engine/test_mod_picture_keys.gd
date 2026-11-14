@@ -211,7 +211,7 @@ func test_the_chain_needs_the_pictures_its_mods_declare() -> void:
 	assert_bool(keys.has(MOD_KEY)).is_true()
 	assert_bool(keys.has("deco/*")).override_failure_message("a wildcard is no key").is_false()
 	assert_bool(PackNeeds.required(Packs.chain()).has(MOD_KEY)).is_true()
-	assert_bool(PictureScale.needed(Packs.chain()).has(MOD_KEY)).is_true()                   # (some pack holds a row for it)
+	assert_bool(PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain())).has(MOD_KEY)).is_true()                   # (some pack holds a row for it)
 
 
 func test_a_declared_key_that_no_pack_holds_is_no_gap_and_counts_against_no_set_but_the_check_warns() -> void:
@@ -220,7 +220,7 @@ func test_a_declared_key_that_no_pack_holds_is_no_gap_and_counts_against_no_set_
 	assert_bool(PackNeeds.picture_keys(Packs.chain()).has("ui_picture/nobody_holds_this")).is_true()
 	assert_bool(PackNeeds.missing(Packs.chain()).has("ui_picture/nobody_holds_this")).is_false()
 	assert_array(PackNeeds.gaps(Packs.chain())).is_empty()
-	assert_bool(PictureScale.needed(Packs.chain()).has("ui_picture/nobody_holds_this")).override_failure_message("a key no pack holds counts against no set").is_false()
+	assert_bool(PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain())).has("ui_picture/nobody_holds_this")).override_failure_message("a key no pack holds counts against no set").is_false()
 	var options := PackCheck.Options.new()
 	options.reach = false
 	var report := PackCheck.run(Pack.open(shelf.root), options)
@@ -229,29 +229,73 @@ func test_a_declared_key_that_no_pack_holds_is_no_gap_and_counts_against_no_set_
 
 
 func test_a_set_of_packs_at_scale_4_that_lacks_a_key_only_a_mod_declares_does_not_cover() -> void:
-	var needed := PictureScale.needed(Packs.chain())
+	var needed := PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain()))
 	var mod := _mod_pack(PackShelf.base_id(), [MOD_KEY])
 	var four := _hires_pack(mod.id, needed)
 	four.mount()
-	assert_int(Packs.picture_scale()).override_failure_message("the key the mod declares has no row at scale 4").is_equal(1)
+	assert_int(Packs.picture_decision().scale).override_failure_message("the key the mod declares has no row at scale 4").is_equal(1)
 	var shortfall := Packs.picture_decision().shortfalls
 	assert_array(shortfall).has_size(1)
 	assert_array(shortfall[0].missing).is_equal([MOD_KEY])
-	assert_str(shortfall[0].line()).contains(MOD_KEY).contains("pack '%s' (picture scale 4)" % four.id)
+	assert_str(shortfall[0].text()).contains(MOD_KEY).contains("pack '%s' (picture scale 4)" % four.id)
 	var with_key: Array[String] = needed.duplicate()
 	with_key.append(MOD_KEY)
 	var covering := _hires_pack(mod.id, with_key)
 	covering.mount()
-	assert_int(Packs.picture_scale()).is_equal(4)
+	assert_int(Packs.picture_decision().scale).is_equal(4)
+	assert_array(Packs.picture_decision().shortfalls).is_empty()
+
+
+func test_a_set_of_packs_at_scale_4_that_lacks_the_rows_of_a_wildcard_kind_does_not_cover() -> void:
+	var needed := PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain()))
+	var outside: Array[String] = []                                                                  # (the problem pictures scale 1 draws that no data of the chain names: only a mod's script asks for them by a key it builds)
+	for key in Packs.dev().picture_table().keys():
+		if key.begins_with("problem_art/") and not needed.has(key):
+			outside.append(key)
+	outside.sort()
+	assert_array(outside).is_not_empty()
+	var mod := _mod_pack(PackShelf.base_id(), ["problem_art/*"])
+	var four := _hires_pack(mod.id, needed)
+	four.mount()
+	assert_array(PackNeeds.picture_keys(Packs.chain())).contains(outside)
+	assert_int(Packs.picture_decision().scale).override_failure_message("the pictures scale 1 would draw have no picture at scale 4").is_equal(1)
+	assert_array(Packs.picture_decision().shortfalls[0].missing).is_equal(outside)
+	assert_array(PackNeeds.gaps(Packs.chain())).override_failure_message("a picture of a wildcard is no gap").is_empty()
+	var covering := _hires_pack(mod.id, needed + outside)
+	covering.mount()
+	assert_int(Packs.picture_decision().scale).is_equal(4)
+
+
+## A scratch pack whose mod is a script that does not compile, so the host refuses it, and whose skin declares `MOD_KEY`.
+func _refused_mod_pack(base: StringName) -> PackShelf:
+	var shelf := PackShelf.new(&"", base)
+	_extra.append(shelf)
+	var manifest: Dictionary = shelf.pack_json("pack.json")
+	manifest["mod"] = {"entry": "broken.sgd", "requires_api": ModSpec.PICTURE_KEYS_API_VERSION, "skin": {"picture_keys": [MOD_KEY]}}
+	shelf.write_json("pack.json", manifest)
+	shelf.write_text("broken.sgd", "func mod_init(a):\n\tthis is not code\n")
+	shelf.add_picture_row(MOD_KEY, Color.GREEN, Vector2i(4, 4))
+	return shelf
+
+
+func test_a_mod_the_host_refused_declares_no_picture_the_scale_must_hold() -> void:
+	var needed := PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain()))
+	var broken := _refused_mod_pack(PackShelf.base_id())
+	_hires_pack(broken.id, needed).mount()
+	assert_int(Packs.picture_decision().scale).override_failure_message("until the host has refused it, the mod's declared picture counts").is_equal(1)
+	Mods.sync()
+	assert_bool(ModHost.is_refused(broken.id)).is_true()
+	assert_array(PackNeeds.picture_keys(Packs.chain())).not_contains([MOD_KEY])
+	assert_int(Packs.picture_decision().scale).override_failure_message("a refused mod draws nothing: the set covers without its picture").is_equal(4)
 	assert_array(Packs.picture_decision().shortfalls).is_empty()
 
 
 func test_the_same_set_covers_when_no_mod_declares_the_key() -> void:
-	var needed := PictureScale.needed(Packs.chain())
+	var needed := PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain()))
 	var mod := _mod_pack(PackShelf.base_id(), [])
 	var four := _hires_pack(mod.id, needed)
 	four.mount()
-	assert_int(Packs.picture_scale()).is_equal(4)
+	assert_int(Packs.picture_decision().scale).is_equal(4)
 
 
 # --- the run -----------------------------------------------------------------------------------------------------------------------

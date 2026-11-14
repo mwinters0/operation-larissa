@@ -18,7 +18,7 @@ extends Texture2D
 ## The picture as it is stored: `scale` times larger than it is drawn.
 @export var source: Texture2D
 ## How many times larger in each direction the stored picture is than the size this texture reports (4 for 4x art).
-@export_range(1, 16) var scale: int = 4
+@export_range(1, Pack.MAX_PICTURE_SCALE) var scale: int = 4
 
 
 ## The texture of `file` shown at `1 / factor` of its size.

@@ -647,13 +647,23 @@ func theme_pictures() -> Array[String]:
 	return keys
 
 
-## The pictures of the game the mod needs, each once: the keys it declares for its draw lists (a `<kind>/*` stands for pictures the game's own content names, so it adds none) and the pictures of its theme's styles. `PackNeeds` adds them to what the chain must hold.
+## The pictures of the game the mod needs, each once: the keys it declares for its draw lists (a `<kind>/*` stands for pictures the game's own content names, so it adds none: `picture_kinds`) and the pictures of its theme's styles. `PackNeeds` adds them to what the chain must hold.
 func needed_pictures() -> Array[String]:
 	var keys: Array[String] = []
 	for key: String in picture_keys + problem_picture_keys + theme_pictures():
 		if not key.ends_with("/" + KIND_WILDCARD) and not keys.has(key):
 			keys.append(key)
 	return keys
+
+
+## The kinds the mod names whole with a wildcard (`deco/*`: `deco`), each once: the pictures of those kinds a draw list may ask for by keys it builds at run time. `PackNeeds` counts the rows of them that the packs of scale 1 would draw.
+func picture_kinds() -> Array[String]:
+	var kinds: Array[String] = []
+	for key: String in picture_keys + problem_picture_keys:
+		var kind := key.get_slice("/", 0)
+		if key.ends_with("/" + KIND_WILDCARD) and not kinds.has(kind):
+			kinds.append(kind)
+	return kinds
 
 
 ## Does the mod have a script (`entry`)? A data skin has none: it is worn with no Sandbox.

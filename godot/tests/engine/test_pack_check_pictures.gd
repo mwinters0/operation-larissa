@@ -159,10 +159,10 @@ func test_a_pack_of_a_higher_picture_scale_that_does_not_cover_is_a_warning_with
 	var report := _check(shelf)
 	var told := _told(report, PackReport.Severity.WARNING).filter(func(message: String) -> bool: return message.contains("picture scale 4"))
 	assert_array(told).has_size(1)
-	var needed := PictureScale.needed(PackNeeds.chain_of(Pack.open(shelf.root)))
+	var needed := PictureScale.needed(PackNeeds.chain_of(Pack.open(shelf.root)), PackNeeds.picture_keys(PackNeeds.chain_of(Pack.open(shelf.root))))
 	var missing := needed.filter(func(key: String) -> bool: return key != "ui_picture/title_sea")
 	assert_array(missing).has_size(needed.size() - 1)                                              # (the pack's one row is a picture the game needs)
-	assert_str(told[0]).contains("pack '%s' (picture scale 4) has no row for %d of the %d pictures the game needs (" % [shelf.id, missing.size(), needed.size()])
+	assert_str(told[0]).contains("pack '%s' (picture scale 4) has no picture for %d of the %d pictures the game needs (" % [shelf.id, missing.size(), needed.size()])
 	for key in missing:
 		assert_str(told[0]).contains(key)                                                           # (every key, not the first few)
 	assert_str(told[0]).contains("the game draws the pictures of scale 1 (pack '%s') instead" % PackShelf.base_id())

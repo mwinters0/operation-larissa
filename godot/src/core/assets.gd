@@ -60,11 +60,6 @@ static func _background_key(sector: int, screen: int) -> String:
 	return "background/bg_s%02d_%02d" % [sector, screen]
 
 
-## Forget what was read from the chain's files (`Catalog.packs_changed`: another pack is in use). The references handed out stay: they ask again.
-static func forget_folders() -> void:
-	Pictures.forget()
-
-
 # --- a picture by its picture key ------------------------------------------------------------------------------------
 
 ## key -> the `PictureRef` handed out for it.

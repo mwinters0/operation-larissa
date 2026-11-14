@@ -124,12 +124,12 @@ func _distinct_colors(image: Image, at: Vector2i, size: Vector2i, factor: int) -
 
 func test_a_run_at_scale_4_draws_the_pictures_of_a_run_at_scale_1_from_four_times_the_pixels(do_skip := DisplayServer.get_name() == "headless", skip_reason := SKIP) -> void:
 	_shelf.mount_plain()
-	assert_int(Packs.picture_scale()).is_equal(1)
+	assert_int(Packs.picture_decision().scale).is_equal(1)
 	_stage(1)
 	var one := await _draw_frames()
 	_viewport.free()
 	_shelf.mount_hires()
-	assert_int(Packs.picture_scale()).is_equal(HiresShelf.SCALE)
+	assert_int(Packs.picture_decision().scale).is_equal(HiresShelf.SCALE)
 	_stage(HiresShelf.SCALE)
 	var four := await _draw_frames()
 	assert_that(four.get_size()).is_equal(one.get_size() * HiresShelf.SCALE)

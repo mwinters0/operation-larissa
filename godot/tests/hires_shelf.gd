@@ -11,9 +11,11 @@ const NINE_KEY := "ui_picture/ui_1195"
 const NINE_SLICE := 4
 const TILE_KEY := "tile/zone0_tiles"
 const TILE_CURRENTS_KEY := "tile/currents"
-## The backgrounds the pack redraws besides the pictures the chain needs.
+## The backgrounds the pack redraws from the pictures of the chain (the others of the chain are one small file).
 const BACKGROUNDS: Array[String] = ["background/bg_s00_00", "background/bg_s00_01"]
 const TILE := 16
+## The file the backgrounds that are not compared pixel by pixel share (a flat picture of a whole screen at `SCALE`: the size of each background of the chain).
+const FILLER := "art/filler.png"
 ## Where the mark is in every tile of the atlas (a 2 x 2 white square), so a tile cut one pixel off shows.
 const MARK := Rect2i(3, 5, 2, 2)
 
@@ -29,14 +31,20 @@ func _init() -> void:
 	var rows := {}
 	var plain_rows := {}
 	var written := {}                                                                          # (the file a picture comes from -> the file it is written to: pictures many keys share are written once)
-	var keys := PictureScale.needed(Packs.chain())
-	for key in BACKGROUNDS:                                                                    # (the sectors' backgrounds are no need of the chain's, and are drawn all the same: two of them, the rest would be most of the pixels of the pack)
+	var keys := PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain()))
+	for key in BACKGROUNDS:                                                                    # (the backgrounds the chain's scale 1 draws count for the scale: two are the chain's pictures at four times the size, the rest would be most of the pixels of the pack)
 		if not keys.has(key):
 			keys.append(key)
 	for key: String in redrawn:
 		if not keys.has(key):
 			keys.append(key)
 	for key in keys:
+		if key.begins_with("background/") and not BACKGROUNDS.has(key):                       # (a background the tests do not look at pixel by pixel: one small file stands for it, so the pack covers without four times the pixels of every screen)
+			if not written.has(FILLER):
+				written[FILLER] = FILLER
+				hires.write_bytes(FILLER, Image.create(SCALE * 640, SCALE * 400, false, Image.FORMAT_RGBA8).save_png_to_buffer())
+			rows[key] = FILLER
+			continue
 		var image: Image = redrawn[key] if redrawn.has(key) else _image_of(key)
 		if image == null:
 			continue

@@ -28,7 +28,7 @@ func after_test() -> void:
 ## The size of each picture the chain needs, as the chain in use draws it.
 func _sizes() -> Dictionary[String, Vector2i]:
 	var found: Dictionary[String, Vector2i] = {}
-	for key in PictureScale.needed(Packs.chain()):
+	for key in PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain())):
 		found[key] = Vector2i(Pictures.resolve(key).get_size())
 	return found
 
@@ -45,14 +45,14 @@ func _frame_sizes(frames: SpriteFrames) -> Array[Vector2i]:
 
 func test_every_picture_of_a_scale_4_pack_reports_the_size_of_the_picture_it_replaces() -> void:
 	_shelf.mount_plain()
-	assert_int(Packs.picture_scale()).is_equal(1)
+	assert_int(Packs.picture_decision().scale).is_equal(1)
 	var plain := _sizes()
 	var plain_frames := _frame_sizes(Catalog.foes_frames(0))
 	var plain_decos := _frame_sizes(Catalog.decos_frames(0))
 	var background_key := HiresShelf.BACKGROUNDS[0]
 	var plain_background := Pictures.resolve(background_key).get_size()
 	_shelf.mount_hires()
-	assert_int(Packs.picture_scale()).is_equal(HiresShelf.SCALE)
+	assert_int(Packs.picture_decision().scale).is_equal(HiresShelf.SCALE)
 	assert_dict(_sizes()).is_equal(plain)                                                         # (every key, so the layouts, the hit tests and the sprites' centres are the ones of scale 1)
 	assert_array(_frame_sizes(Catalog.foes_frames(0))).is_equal(plain_frames)
 	assert_array(_frame_sizes(Catalog.decos_frames(0))).is_equal(plain_decos)

@@ -423,7 +423,7 @@ static func _pack_campaign(holder: Pack, campaign_id: StringName, rel: String) -
 	return campaign
 
 
-## The chain of packs changed (`Packs.choose`, `use`, `refresh`): what was made from packs, and what depends on it, is forgotten (the pictures are forgotten by `Packs` once it has decided their scale: `Assets.forget_folders`).
+## The chain of packs changed (`Packs.choose`, `use`, `refresh`): what was made from packs, and what depends on it, is forgotten (the pictures are forgotten by `Packs` after it: `Pictures.forget`).
 static func packs_changed() -> void:
 	_pack_cache.clear()
 	_merged_cues = null

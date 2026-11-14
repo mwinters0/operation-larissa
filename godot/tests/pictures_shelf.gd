@@ -93,7 +93,7 @@ func mount_hires() -> void:
 		hires.add_picture("art/hi_sub.png", YELLOW, Vector2i(16, 16))
 		hires.add_picture("art/hi_all.png", CYAN, Vector2i(16, 16))
 		var rows := {}
-		for key in PictureScale.needed(Packs.chain()):
+		for key in PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain())):
 			rows[key] = "art/hi_all.png"
 		for key: String in Packs.pack(base.id).picture_table().files:                                       # (and every picture the base draws, but `lost_in_4x`)
 			rows[key] = "art/hi_all.png"

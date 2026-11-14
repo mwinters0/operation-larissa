@@ -59,27 +59,27 @@ func test_a_manifest_says_its_picture_scale_as_a_whole_number_from_1_to_the_most
 	assert_array(pack.errors).is_empty()
 	assert_int(pack.picture_scale).is_equal(4)
 	assert_int(pack.manifest()["picture_scale"]).is_equal(4)
-	for bad: Variant in [0, -1, PictureScale.MAX + 1, 2.5, "4", true, null]:
+	for bad: Variant in [0, -1, Pack.MAX_PICTURE_SCALE + 1, 2.5, "4", true, null]:
 		var manifest: Dictionary = shelf.pack_json("pack.json")
 		manifest["picture_scale"] = bad
 		shelf.write_json("pack.json", manifest)
-		assert_array(Pack.open(shelf.root).errors).override_failure_message("picture_scale %s" % [bad]).contains(["\"picture_scale\" must be a whole number from 1 to %d" % PictureScale.MAX])
+		assert_array(Pack.open(shelf.root).errors).override_failure_message("picture_scale %s" % [bad]).contains(["\"picture_scale\" must be a whole number from 1 to %d" % Pack.MAX_PICTURE_SCALE])
 
 
 func test_a_chain_of_packs_of_scale_1_is_decided_without_reading_what_it_needs() -> void:
-	var decision := PictureScale.decide(Packs.chain())
+	var decision := PictureScale.decide(Packs.chain(), [])
 	assert_int(decision.scale).is_equal(1)
 	assert_array(decision.shortfalls).is_empty()
-	assert_int(Packs.picture_scale()).is_equal(1)
-	assert_array(Packs.picture_packs()).is_equal(Packs.chain())
+	assert_int(Packs.picture_decision().scale).is_equal(1)
+	assert_array(Packs.picture_decision().packs).is_equal(Packs.chain())
 
 
 # --- a covering pack is chosen ------------------------------------------------------------------------------------------------
 
 func test_a_pack_of_scale_4_that_covers_the_chains_pictures_is_the_run_s_scale_and_draws_at_a_quarter_of_its_file() -> void:
 	_shelf.mount_hires()
-	assert_int(Packs.picture_scale()).is_equal(4)
-	assert_array(Packs.picture_packs().map(func(each: Pack) -> StringName: return each.id)).is_equal([_shelf.hires.id])
+	assert_int(Packs.picture_decision().scale).is_equal(4)
+	assert_array(Packs.picture_decision().packs.map(func(each: Pack) -> StringName: return each.id)).is_equal([_shelf.hires.id])
 	var drawn := Pictures.resolve("frame/sub_00")
 	assert_object(drawn).is_instanceof(ScaledTexture)
 	assert_vector(drawn.get_size()).is_equal(Vector2(4, 4))
@@ -101,45 +101,45 @@ func test_the_pictures_of_a_pack_of_another_scale_are_off_but_the_rest_of_the_pa
 
 
 func test_two_packs_of_scale_4_that_together_cover_are_chosen() -> void:
-	var needed := PictureScale.needed(Packs.chain())                                         # (the dev pack holds every picture the game needs)
+	var needed := PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain()))                                         # (the dev pack holds every picture the game needs)
 	assert_int(needed.size()).is_greater(100)
 	var half := needed.size() / 2
 	var below := _pack_of(PackShelf.base_id(), 4, needed.slice(0, half), Color.RED)
 	var above := _pack_of(below.id, 4, needed.slice(half), Color.BLUE)
 	above.mount()
-	assert_int(Packs.picture_scale()).is_equal(4)
-	assert_array(Packs.picture_packs().map(func(each: Pack) -> StringName: return each.id)).is_equal([above.id, below.id])
+	assert_int(Packs.picture_decision().scale).is_equal(4)
+	assert_array(Packs.picture_decision().packs.map(func(each: Pack) -> StringName: return each.id)).is_equal([above.id, below.id])
 	assert_that(_color_of(Pictures.resolve(needed[0]))).is_equal(Color.RED)
 	assert_that(_color_of(Pictures.resolve(needed[needed.size() - 1]))).is_equal(Color.BLUE)
 	assert_array(TroubleLog.session.told).is_empty()
 	below.mount()                                                                            # (the lower alone does not cover)
-	assert_int(Packs.picture_scale()).is_equal(1)
+	assert_int(Packs.picture_decision().scale).is_equal(1)
 
 
 func test_the_highest_covering_scale_wins_and_a_lower_one_is_not_told() -> void:
-	var needed := PictureScale.needed(Packs.chain())
+	var needed := PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain()))
 	var twice := _pack_of(PackShelf.base_id(), 2, needed, Color.GREEN)
 	var four := _pack_of(twice.id, 4, needed, Color.RED)
 	four.mount()
-	assert_int(Packs.picture_scale()).is_equal(4)
+	assert_int(Packs.picture_decision().scale).is_equal(4)
 	assert_that(_color_of(Pictures.resolve(needed[0]))).is_equal(Color.RED)
 	assert_array(TroubleLog.session.told).is_empty()
 	twice.mount()
-	assert_int(Packs.picture_scale()).is_equal(2)
+	assert_int(Packs.picture_decision().scale).is_equal(2)
 
 
 # --- a pack that does not cover is off, and told once -------------------------------------------------------------------------
 
 func test_a_pack_of_scale_4_that_does_not_cover_is_off_and_told_once_per_run() -> void:
-	var needed := PictureScale.needed(Packs.chain())
+	var needed := PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain()))
 	var partial := _pack_of(PackShelf.base_id(), 4, [needed[0], needed[1]] as Array[String], Color.RED)
 	partial.mount()
-	assert_int(Packs.picture_scale()).is_equal(1)
+	assert_int(Packs.picture_decision().scale).is_equal(1)
 	var drawn := Pictures.resolve(needed[0])                                                 # (the dev pack's picture: a 4x pack that does not cover gives none)
 	assert_bool(drawn is ScaledTexture).is_false()
 	assert_vector(drawn.get_size()).is_equal(Vector2(Packs.dev().texture(Packs.dev().picture_table().files[needed[0]]).get_size()))
 	var held := needed.size()
-	var expected := "[pictures] pack '%s' (picture scale 4) has no row for %d of the %d pictures the game needs (%s, %s, %s, %s, %s and %d more), so the pictures of that pack are not drawn and the game draws the pictures of scale 1 (pack '%s') instead" % [
+	var expected := "[pictures] pack '%s' (picture scale 4) has no picture for %d of the %d pictures the game needs (%s, %s, %s, %s, %s and %d more), so the pictures of that pack are not drawn and the game draws the pictures of scale 1 (pack '%s') instead" % [
 			partial.id, held - 2, held, needed[2], needed[3], needed[4], needed[5], needed[6], held - 2 - 5, PackShelf.base_id()]
 	for i in 3:
 		Pictures.resolve(needed[0])
@@ -153,7 +153,7 @@ func test_a_pack_of_scale_4_that_does_not_cover_is_off_and_told_once_per_run() -
 
 
 func test_the_check_of_the_pack_gives_the_same_finding_with_every_key() -> void:
-	var needed := PictureScale.needed(Packs.chain())
+	var needed := PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain()))
 	var partial := _pack_of(PackShelf.base_id(), 4, [needed[0]] as Array[String], Color.RED)
 	var options := PackCheck.Options.new()
 	options.reach = false
@@ -161,8 +161,8 @@ func test_the_check_of_the_pack_gives_the_same_finding_with_every_key() -> void:
 	var told := report.findings.filter(func(finding: PackReport.Finding) -> bool: return finding.area == "pictures" and finding.message.contains("picture scale 4"))
 	assert_array(told).has_size(1)
 	assert_int(told[0].severity).is_equal(PackReport.Severity.WARNING)
-	var decision := PictureScale.decide(PackNeeds.chain_of(Pack.open(partial.root)))
-	assert_str("%s %s" % [PictureScale.TAG, told[0].message]).is_equal(decision.shortfalls[0].line(-1))
+	var decision := PackNeeds.inspect(PackNeeds.chain_of(Pack.open(partial.root))).decision
+	assert_str(told[0].message).is_equal(decision.shortfalls[0].text(-1))
 	for key in needed.slice(1):
 		assert_str(told[0].message).contains(key)
 	assert_str(told[0].message).not_contains("more)")
@@ -175,7 +175,7 @@ func test_a_4x_alias_never_lands_on_a_1x_row() -> void:
 	var told := _told_about("'ui_picture/four_x_alias' is an alias of 'ui_picture/lost_in_4x'")
 	assert_array(told).has_size(1)
 	assert_str(told[0]).contains("pack '%s'" % _shelf.hires.id)
-	assert_str(Pictures.unanswered("ui_picture/four_x_alias")).contains("no pack of the chain has a row for that")
+	assert_str(Pictures.unanswered("ui_picture/four_x_alias", Packs.picture_decision().packs)).contains("no pack of the chain has a row for that")
 	_shelf.mount_base()
 	assert_object(Pictures.resolve("ui_picture/lost_in_4x")).is_not_null()                   # (at scale 1 the row answers)
 
@@ -188,18 +188,179 @@ func test_every_change_of_the_chain_decides_the_scale_again_and_the_pictures_fol
 	assert_object(ref.resolved()).is_not_instanceof(ScaledTexture)
 	var epoch := Pictures.epoch
 	_shelf.mount_hires()
-	assert_int(Packs.picture_scale()).is_equal(4)
+	assert_int(Packs.picture_decision().scale).is_equal(4)
 	assert_int(Pictures.epoch).is_greater(epoch)
 	assert_object(ref.resolved()).is_instanceof(ScaledTexture)                                # (a holder of the key follows the chain)
 	assert_vector(ref.get_size()).is_equal(Vector2(4, 4))
 	_shelf.mount_over()                                                                       # (`over` is laid over the 1x base: the 4x pack is no longer in the chain)
-	assert_int(Packs.picture_scale()).is_equal(1)
+	assert_int(Packs.picture_decision().scale).is_equal(1)
 	assert_object(ref.resolved()).is_not_instanceof(ScaledTexture)
 	_shelf.mount_hires()
-	assert_int(Packs.picture_scale()).is_equal(4)
+	assert_int(Packs.picture_decision().scale).is_equal(4)
 	var saved := Packs.snapshot()
 	_shelf.base.mount()                                                                       # (a chain borrowed and put back: `restore`)
-	assert_int(Packs.picture_scale()).is_equal(1)
+	assert_int(Packs.picture_decision().scale).is_equal(1)
 	Packs.restore(saved)
-	assert_int(Packs.picture_scale()).is_equal(4)
+	assert_int(Packs.picture_decision().scale).is_equal(4)
 	assert_object(ref.resolved()).is_instanceof(ScaledTexture)
+
+
+# --- covered means would draw ----------------------------------------------------------------------------------------------------
+
+## A scratch pack of picture scale 4 laid over `base` with `rows` as its table (key -> a file name made here, or `{"alias": key}`), the files being 16 x 16.
+func _table_pack(base: StringName, rows: Dictionary) -> PackShelf:
+	var shelf := PackShelf.new(&"", base)
+	_extra.append(shelf)
+	shelf.set_picture_scale(4)
+	shelf.add_picture("art/big.png", Color.RED, Vector2i(16, 16))
+	var table := {}
+	for key: String in rows:
+		table[key] = "art/big.png" if rows[key] is String and rows[key] == "" else rows[key]
+	shelf.write_json(PictureTable.FILE, {"format": PictureTable.FORMAT, "pictures": table})
+	return shelf
+
+
+## The keys a 4x pack must hold over the suite's pack, and a row of it that is not among them.
+func _needs() -> Array[String]:
+	return PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain()))
+
+
+func _rows_of(keys: Array[String]) -> Dictionary:
+	var rows := {}
+	for key in keys:
+		rows[key] = ""
+	return rows
+
+
+func test_a_set_whose_alias_leads_to_a_key_only_a_pack_of_scale_1_answers_does_not_cover() -> void:
+	var needed := _needs()
+	var held_only_below := ""
+	for key in Packs.dev().picture_table().files:
+		if not needed.has(key):
+			held_only_below = key
+			break
+	assert_str(held_only_below).is_not_empty()
+	var rows := _rows_of(needed.slice(1))
+	rows[needed[0]] = {"alias": held_only_below}                                              # (a row for the key, and a row that answers nothing at scale 4)
+	_table_pack(PackShelf.base_id(), rows).mount()
+	assert_int(Packs.picture_decision().scale).is_equal(1)
+	assert_array(Packs.picture_decision().shortfalls[0].missing).is_equal([needed[0]])
+	rows[held_only_below] = ""                                                                  # (the target in the set: the alias answers)
+	_table_pack(PackShelf.base_id(), rows).mount()
+	assert_int(Packs.picture_decision().scale).is_equal(4)
+
+
+func test_a_set_whose_row_names_a_file_the_pack_does_not_hold_does_not_cover() -> void:
+	var needed := _needs()
+	var rows := _rows_of(needed.slice(1))
+	rows[needed[0]] = "art/not_there.png"
+	_table_pack(PackShelf.base_id(), rows).mount()
+	assert_int(Packs.picture_decision().scale).is_equal(1)
+	assert_array(Packs.picture_decision().shortfalls[0].missing).is_equal([needed[0]])
+
+
+func test_the_decision_asks_the_resolver_of_the_lookups() -> void:
+	var needed := _needs()
+	var rows := _rows_of(needed.slice(1))
+	rows[needed[0]] = {"alias": needed[1]}                                                      # (an alias to a key of the same set)
+	var shelf := _table_pack(PackShelf.base_id(), rows)
+	shelf.mount()
+	assert_int(Packs.picture_decision().scale).is_equal(4)
+	assert_object(Pictures.resolve(needed[0])).is_instanceof(ScaledTexture)                     # (covered = drawn: the lookup answers every key the set was measured on)
+	for key in needed:
+		assert_object(Pictures.resolve(key)).override_failure_message("'%s' is covered but not drawn" % key).is_not_null()
+
+
+# --- backgrounds and wildcards of mods count ------------------------------------------------------------------------------------
+
+func test_a_set_without_a_background_the_game_would_draw_at_scale_1_does_not_cover() -> void:
+	var needed := _needs()
+	assert_array(needed.filter(func(key: String) -> bool: return key.begins_with("background/"))).is_not_empty()      # (the backgrounds the packs of scale 1 would draw are among the keys)
+	assert_array(PackNeeds.gaps(Packs.chain())).is_empty()                                      # (and none is a gap: a chain without a background starts)
+	var lacking := "background/bg_s01_03"
+	assert_bool(needed.has(lacking)).is_true()
+	var rows := _rows_of(needed.filter(func(key: String) -> bool: return key != lacking))
+	_table_pack(PackShelf.base_id(), rows).mount()
+	assert_int(Packs.picture_decision().scale).is_equal(1)
+	assert_array(Packs.picture_decision().shortfalls[0].missing).is_equal([lacking])
+	assert_array(TroubleLog.session.told).is_empty()
+	Pictures.resolve("ui_picture/title_sky")
+	assert_array(TroubleLog.session.told).has_size(1)                                           # (told once, naming the background)
+	assert_str(TroubleLog.session.told[0]).contains(lacking)
+	rows[lacking] = ""
+	_table_pack(PackShelf.base_id(), rows).mount()
+	assert_int(Packs.picture_decision().scale).is_equal(4)
+	assert_object(Assets.background(1, 3)).is_not_null()
+	assert_object(Pictures.resolve(lacking)).is_instanceof(ScaledTexture)
+
+
+# --- the decision is pure and the scan is made once --------------------------------------------------------------------------------
+
+func test_a_chain_is_decided_from_its_own_scan_not_from_the_decision_of_the_chain_in_use() -> void:
+	_shelf.mount_hires()                                                                        # (the chain in use is at 4)
+	var covering := Packs.picture_decision()
+	assert_int(covering.scale).is_equal(4)
+	var partial := _pack_of(PackShelf.base_id(), 4, [PackNeeds.picture_keys(Packs.chain())[0]] as Array[String], Color.RED)
+	var scan := PackNeeds.inspect(PackNeeds.chain_of(Pack.open(partial.root)))                  # (a chain that does not cover, asked while the decision in use is the covering one)
+	assert_int(scan.decision.scale).is_equal(1)
+	assert_array(scan.decision.shortfalls).has_size(1)
+	assert_object(Packs.picture_decision()).override_failure_message("a question about another chain leaves the decision in use alone").is_same(covering)
+	_shelf.mount_base()                                                                         # (and the other way round: the chain in use at 1, asked about a covering chain)
+	assert_int(Packs.picture_decision().scale).is_equal(1)
+	var hires := Pack.open(_shelf.hires.root)
+	var keys := PackNeeds.picture_keys(PackNeeds.chain_of(hires))
+	assert_int(PictureScale.decide(PackNeeds.chain_of(hires), keys).scale).is_equal(4)
+	assert_int(Packs.picture_decision().scale).is_equal(1)
+
+
+func test_the_closure_is_walked_once_per_chain_change_whichever_way_it_is_asked() -> void:
+	_shelf.mount_hires()
+	var walks := PackNeeds.walks
+	var decision := Packs.picture_decision()
+	assert_int(decision.scale).is_equal(4)
+	assert_int(PackNeeds.walks - walks).override_failure_message("deciding walks the closure once").is_equal(1)
+	assert_object(Packs.picture_decision()).is_same(decision)
+	Pictures.resolve("ui_picture/title_sky")
+	assert_int(PackNeeds.walks - walks).override_failure_message("a lookup asks the decision, it does not scan").is_equal(1)
+	walks = PackNeeds.walks                                                                     # (a question about another chain: lent, walked once, and the decision in use comes back as it was)
+	var other := PackNeeds.chain_of(Pack.open(_shelf.base.root))
+	PackNeeds.gaps(other)
+	assert_int(PackNeeds.walks - walks).is_equal(1)
+	assert_object(Packs.picture_decision()).override_failure_message("restore gives back the decision of the chain").is_same(decision)
+	assert_int(PackNeeds.walks - walks).is_equal(1)
+	_shelf.mount_over()                                                                         # (a change of the chain: one walk, when a decision is asked, and only when a pack holds a scale above 1)
+	walks = PackNeeds.walks
+	assert_int(Packs.picture_decision().scale).is_equal(1)
+	assert_int(PackNeeds.walks - walks).is_equal(0)
+
+
+func test_a_decision_tells_its_shortfalls_once_made() -> void:
+	var needed := _needs()
+	_table_pack(PackShelf.base_id(), _rows_of([needed[0]] as Array[String])).mount()
+	var decision := Packs.picture_decision()
+	assert_array(decision.texts).is_equal([decision.shortfalls[0].text()])
+	assert_array(decision.packs.map(func(each: Pack) -> StringName: return each.id)).is_equal([PackShelf.base_id()])
+
+
+func test_every_picture_of_a_run_is_of_the_scale_of_the_decision() -> void:
+	_shelf.mount_hires()
+	var needed := _needs()
+	assert_int(Packs.picture_decision().scale).is_equal(4)
+	for key in needed:
+		assert_int(ScaledTexture.scale_of(Pictures.resolve(key))).override_failure_message("'%s' is not drawn at the run's scale" % key).is_equal(Packs.picture_decision().scale)
+	_shelf.mount_base()
+	for key in needed.slice(0, 50):
+		assert_int(ScaledTexture.scale_of(Pictures.resolve(key))).is_equal(1)
+
+
+func test_the_size_a_pack_of_a_higher_scale_is_held_to_follows_an_alias_across_the_packs_of_scale_1() -> void:
+	var key := "ui_picture/zz_alias_of_the_title_sky"
+	var shelf := PackShelf.new(&"", PackShelf.base_id())
+	_extra.append(shelf)
+	shelf.write_json(PictureTable.FILE, {"format": PictureTable.FORMAT, "pictures": {key: {"alias": "ui_picture/title_sky"}}})     # (the alias is in the pack above, its target in the pack below)
+	shelf.mount()
+	var dev := Packs.dev()
+	var target := dev.png_size(dev.picture_table().files["ui_picture/title_sky"])
+	assert_vector(target).is_not_equal(Vector2i.ZERO)
+	assert_vector(Pictures.scale_one_size(key)).is_equal(target)
+	assert_vector(Pictures.scale_one_size("ui_picture/zz_nothing")).is_equal(Vector2i.ZERO)

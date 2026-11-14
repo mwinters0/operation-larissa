@@ -255,7 +255,7 @@ static func _voice_cues(live: Pack, report: PackReport) -> void:
 
 
 ## The pack's picture table (`pictures.json`, `PictureTable`): each mistake of the file itself, a row whose file the pack does not hold or the engine cannot decode, an alias that leads to a key no pack of the chain has a picture for (or round in a circle through the chain), a picture the table
-## gives that is not the size of the picture it redraws (a warning: it is drawn stretched; for a pack of picture scale N, a file that is not N times the size of the picture of scale 1 it replaces, read from the headers of the files: `_scaled_row`), a set of packs at a higher picture scale that does not cover what the game needs (a warning, every missing key: `PictureScale.Shortfall.line`), a PNG of the pack no row names (a warning: nothing reads it). A pack with no table holds no picture: its PNGs are named by no row (warned), and a `pictures/` folder is not read.
+## gives that is not the size of the picture it redraws (a warning: it is drawn stretched; for a pack of picture scale N, a file that is not N times the size of the picture of scale 1 it replaces, read from the headers of the files: `_scaled_row`), a set of packs at a higher picture scale that does not cover what the game needs (a warning, every missing key: `PictureScale.Shortfall.text`), a PNG of the pack no row names (a warning: nothing reads it). A pack with no table holds no picture: its PNGs are named by no row (warned), and a `pictures/` folder is not read.
 static func _pictures(live: Pack, report: PackReport) -> void:
 	var table := live.picture_table()
 	if not table.present and not live.folders_in("pictures").is_empty():
@@ -264,7 +264,7 @@ static func _pictures(live: Pack, report: PackReport) -> void:
 		report.error("pictures", message)
 	var short := Packs.picture_decision().shortfall_of(live.id)                  # (the chain in use is the pack's: `_with_chain`)
 	if short != null:
-		report.warn("pictures", short.line(-1).trim_prefix(PictureScale.TAG + " "))
+		report.warn("pictures", short.text(-1))
 	var sizes: Dictionary[String, Vector2i] = SkinTemplates.sizes()
 	var named := {}
 	var rows := table.keys()
@@ -273,7 +273,7 @@ static func _pictures(live: Pack, report: PackReport) -> void:
 		if table.files.has(key):
 			_picture_row(live, table, key, sizes, named, report)
 		elif table.own_loop(key).is_empty():
-			var why := Pictures.unanswered(table.aliases[key], live.picture_scale)
+			var why := Pictures.unanswered(table.aliases[key], PictureScale.packs_at(Packs.chain(), live.picture_scale))
 			if not why.is_empty():
 				report.error("pictures", "%s: '%s' is an alias of '%s', which no picture answers for: %s" % [PictureTable.FILE, key, table.aliases[key], why])
 	for rel in live.all_files():

@@ -234,7 +234,7 @@ func test_a_pack_with_no_table_holds_no_picture_however_its_files_are_named() ->
 	assert_bool(Packs.pack(shelf.id).picture_table().present).is_false()
 	assert_object(Pictures.resolve("ui_picture/zz_nobody_names_me")).is_null()
 	assert_object(Pictures.resolve("frame/zz_loose")).is_null()
-	assert_str(Pictures.unanswered("frame/zz_loose")).is_not_empty()
+	assert_str(Pictures.unanswered("frame/zz_loose", Packs.chain())).is_not_empty()
 	assert_str(Pictures.resolve("ui_picture/title_sky").resource_path).override_failure_message("the pack under it answers, a pack with no table says nothing").is_equal(DevPack.picture_file("ui_picture/title_sky"))
 	shelf.remove()
 
