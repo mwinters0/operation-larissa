@@ -12,8 +12,13 @@
 #   tools/run_tests.sh tests/engine/test_catalog.gd   one test file (or a directory); the pack is chosen by the folder the file is in,
 #                                            and it runs headless unless it is in WINDOWED
 #
-# The exit code is 0 only if every group passed. Needs Godot through tools/godot.sh (mise's). The pin is the command line after `--`
-# (`Packs.start()` reads it; gdUnit4's own tool ignores it), so a test that starts a second Godot must hand `Packs.asked()` on.
+# The result of a run is what gdUnit4 itself reports: the `Exit code: N` it prints when the tests are done. The exit status:
+#   0  every group passed
+#   1  a test failed, or a run printed no `Exit code` (Godot ended before gdUnit4 had a verdict)
+#   2  a path that is under neither tests/engine nor tests/legacy
+#   3  every test passed (`Exit code: 0`) and Godot then died (an abort at shutdown): said loudly, and not a failed test
+# Needs Godot through tools/godot.sh (mise's). The pin is the command line after `--` (`Packs.start()` reads it; gdUnit4's own tool
+# ignores it), so a test that starts a second Godot must hand `Packs.asked()` on.
 set -u
 cd "$(dirname "$0")/../godot" || exit 1
 godot="$PWD/../tools/godot.sh"
@@ -48,9 +53,39 @@ run_group() {
   local adds=()
   for path in "$@"; do adds+=(-a "$path"); done
   echo "== $group $mode (--pack=$(pin_of "$group")): $# test path(s)"
+  local log
+  log=$(mktemp) || return 1
   # The same call as addons/gdUnit4/runtest.sh, plus --headless. --ignoreHeadlessMode lets gdUnit4 run in headless mode.
   "$godot" "${flags[@]}" --path . -s -d --remote-debug tcp://127.0.0.1:0 \
-    res://addons/gdUnit4/bin/GdUnitCmdTool.gd --ignoreHeadlessMode "${adds[@]}" -- --pack="$(pin_of "$group")"
+    res://addons/gdUnit4/bin/GdUnitCmdTool.gd --ignoreHeadlessMode "${adds[@]}" -- --pack="$(pin_of "$group")" 2>&1 | tee "$log"
+  local godot_status=${PIPESTATUS[0]}
+  # gdUnit4's verdict: the last `Exit code: N` it printed (colored, so the line is matched, not compared).
+  local verdict
+  verdict=$(sed -n 's/^.*Exit code: \([0-9][0-9]*\).*$/\1/p' "$log" | tail -n 1)
+  rm -f "$log"
+  if [[ -z $verdict ]]; then
+    echo "== $group $mode: FAILED: gdUnit4 printed no 'Exit code' (Godot ended with status $godot_status before the tests had a verdict)" >&2
+    return 1
+  fi
+  if [[ $verdict != 0 ]]; then
+    echo "== $group $mode: FAILED: gdUnit4 reports exit code $verdict" >&2
+    return 1
+  fi
+  if [[ $godot_status != 0 ]]; then
+    echo "== $group $mode: the tests PASSED (gdUnit4: Exit code 0) but Godot then ended with status $godot_status (134 is an abort: a crash at shutdown, not a failed test)" >&2
+    return 3
+  fi
+  return 0
+}
+
+# Folds the status of one run into the result: a failed test beats a crash after a pass.
+failed=0 crashed=0
+record() {
+  case $1 in
+    0) ;;
+    3) crashed=1 ;;
+    *) failed=1 ;;
+  esac
 }
 
 is_windowed() {
@@ -75,7 +110,6 @@ run_files() {
   run_group "$mode" "$group" "${files[@]}"
 }
 
-status=0
 groups=() modes=() paths=()
 for arg in "$@"; do
   case "$arg" in
@@ -102,13 +136,18 @@ if [[ ${#paths[@]} -gt 0 ]]; then
   for key in "engine headless" "engine windowed" "legacy headless" "legacy windowed"; do
     [[ -n ${runs[$key]:-} ]] || continue
     set -- $key
-    run_group "$2" "$1" ${runs[$key]} || status=1
+    run_group "$2" "$1" ${runs[$key]}; record $?
   done
 else
   [[ ${#groups[@]} -gt 0 ]] || groups=(engine legacy)
   [[ ${#modes[@]} -gt 0 ]] || modes=(headless windowed)
   for group in "${groups[@]}"; do
-    for mode in "${modes[@]}"; do run_files "$group" "$mode" || status=1; done
+    for mode in "${modes[@]}"; do run_files "$group" "$mode"; record $?; done
   done
 fi
-exit $status
+if [[ $failed == 1 ]]; then exit 1; fi
+if [[ $crashed == 1 ]]; then
+  echo "run_tests.sh: every test passed, but Godot crashed at shutdown in at least one run (exit status 3); see docs/engine/DEVELOPING.md" >&2
+  exit 3
+fi
+exit 0

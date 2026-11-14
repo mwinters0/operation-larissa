@@ -1,7 +1,7 @@
 class_name TestPictureScaleRender
 extends GdUnitTestSuite
 ## Teaches: that a run at picture scale 4 puts the same picture on the screen as a run at scale 1, from four times the pixels. The window draws the 2D scene at its own resolution (`stretch/mode="canvas_items"`), which a viewport with a `canvas_transform` of 4 does
-## too: the same nodes, the same game units, the same pictures at four times the size (`HiresShelf`: every picture of the second pack is the first's, every pixel a 4 x 4 block). Each consumer that reaches the renderer another way than asking the texture to draw
+## too: the same nodes, the same game units, the same pictures at four times the size (`UpscaledShelf`: every picture of the second pack is the first's, every pixel a 4 x 4 block). Each consumer that reaches the renderer another way than asking the texture to draw
 ## is on the stage (the presenter's two tile layers, a panel with the style box of a theme, a tiled `TextureRect`), beside the sprites; where the pictures are flat blocks (a stretched nine-patch) probes say what the corners and the middle are. It reads pixels back, so it
 ## runs in a window (WINDOWED in `tools/run_tests.sh`; the dummy renderer of `--headless` draws nothing).
 
@@ -17,13 +17,13 @@ const TILES_AT := Vector2i(0, 56)
 const PANEL_AT := Vector2i(104, 40)
 const PANEL_SIZE := Vector2i(80, 48)
 
-var _shelf: HiresShelf
+var _shelf: UpscaledShelf
 var _viewport: SubViewport
 
 
 func before() -> void:
 	GameState.reset()
-	_shelf = HiresShelf.new()
+	_shelf = UpscaledShelf.new()
 
 
 func after() -> void:
@@ -39,7 +39,7 @@ func after_test() -> void:
 
 
 ## The stage: every consumer on a viewport of `UNITS` game units drawn at `factor` pixels to the unit.
-func _stage(factor: int) -> void:
+func _stage(factor: int, panel_style: StyleBox = null) -> void:
 	_viewport = SubViewport.new()
 	_viewport.size = UNITS * factor
 	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -48,7 +48,7 @@ func _stage(factor: int) -> void:
 	_viewport.canvas_transform = Transform2D(0.0, Vector2.ONE * factor, 0.0, Vector2.ZERO)               # (what the window's stretch does to a 2D scene; the viewport has its canvas once it is in the tree)
 
 	var background := Sprite2D.new()
-	background.texture = Assets.picture_by_key(HiresShelf.BACKGROUNDS[0])
+	background.texture = Assets.picture_by_key(UpscaledShelf.BACKGROUNDS[0])
 	background.centered = false
 	background.region_enabled = true
 	background.region_rect = Rect2(Vector2(BACKGROUND_SIZE), Vector2(BACKGROUND_SIZE))                       # (a piece in the middle of it: the source rectangle is in game units)
@@ -65,7 +65,7 @@ func _stage(factor: int) -> void:
 	_viewport.add_child(frame)
 
 	var tiled := TextureRect.new()
-	tiled.texture = Assets.picture_by_key(HiresShelf.NINE_KEY)
+	tiled.texture = Assets.picture_by_key(UpscaledShelf.NINE_KEY)
 	tiled.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	tiled.stretch_mode = TextureRect.STRETCH_TILE
 	tiled.size = Vector2(TILED_SIZE)
@@ -84,13 +84,18 @@ func _stage(factor: int) -> void:
 		presenter.currents.set_cell(Vector2i(column, 2), OriginalPresenter.CURRENTS_SOURCE_ID, Vector2i(column, 1))
 	presenter.currents.visible = true
 
-	var data := SkinTheme.new()
-	data.styles["panel"] = {"picture": HiresShelf.NINE_KEY, "slice": Vector4i(4, 4, 4, 4)}
 	var panel := Panel.new()
-	panel.add_theme_stylebox_override("panel", ThemeBuilder.derive(data, &"zz_skin").get_stylebox("panel", "Panel"))
+	panel.add_theme_stylebox_override("panel", panel_style if panel_style != null else _panel_style())
 	panel.position = Vector2(PANEL_AT)
 	panel.size = Vector2(PANEL_SIZE)
 	_viewport.add_child(panel)
+
+
+## The panel's style as a theme of a skin makes it (a nine-patch by key), for the chain in use.
+func _panel_style() -> StyleBox:
+	var data := SkinTheme.new()
+	data.styles["panel"] = {"picture": UpscaledShelf.NINE_KEY, "slice": Vector4i(4, 4, 4, 4)}
+	return ThemeBuilder.derive(data, &"zz_skin").get_stylebox("panel", "Panel")
 
 
 func _draw_frames() -> Image:
@@ -128,12 +133,12 @@ func test_a_run_at_scale_4_draws_the_pictures_of_a_run_at_scale_1_from_four_time
 	_stage(1)
 	var one := await _draw_frames()
 	_viewport.free()
-	_shelf.mount_hires()
-	assert_int(Packs.picture_decision().scale).is_equal(HiresShelf.SCALE)
-	_stage(HiresShelf.SCALE)
+	_shelf.mount_upscaled()
+	assert_int(Packs.picture_decision().scale).is_equal(UpscaledShelf.SCALE)
+	_stage(UpscaledShelf.SCALE)
 	var four := await _draw_frames()
-	assert_that(four.get_size()).is_equal(one.get_size() * HiresShelf.SCALE)
-	var f := HiresShelf.SCALE
+	assert_that(four.get_size()).is_equal(one.get_size() * UpscaledShelf.SCALE)
+	var f := UpscaledShelf.SCALE
 	var consumers := {
 		"a sprite's region of a background": [BACKGROUND_AT, BACKGROUND_SIZE],
 		"an animated sprite's frame": [FRAME_AT, Vector2i(24, 24)],
@@ -148,15 +153,15 @@ func test_a_run_at_scale_4_draws_the_pictures_of_a_run_at_scale_1_from_four_time
 
 
 func test_a_nine_patch_of_scale_4_has_the_corners_and_the_middle_of_the_one_of_scale_1(do_skip := DisplayServer.get_name() == "headless", skip_reason := SKIP) -> void:
-	_shelf.mount_hires()
-	_stage(HiresShelf.SCALE)
+	_shelf.mount_upscaled()
+	_stage(UpscaledShelf.SCALE)
 	var four := await _draw_frames()
 	_viewport.free()
 	_shelf.mount_plain()
 	_stage(1)
 	var one := await _draw_frames()
-	var slice := HiresShelf.NINE_SLICE
-	for image_and_factor: Array in [[one, 1], [four, HiresShelf.SCALE]]:
+	var slice := UpscaledShelf.NINE_SLICE
+	for image_and_factor: Array in [[one, 1], [four, UpscaledShelf.SCALE]]:
 		var image: Image = image_and_factor[0]
 		var factor: int = image_and_factor[1]
 		# a point of the panel, in game units from its top left, and the block of the picture it must show (the corners 4 units wide, the rest stretched)
@@ -174,4 +179,25 @@ func test_a_nine_patch_of_scale_4_has_the_corners_and_the_middle_of_the_one_of_s
 		for probe: Vector2i in probes:
 			var block: Vector2i = probes[probe]
 			var seen := image.get_pixelv((PANEL_AT + probe) * factor + Vector2i(factor / 2, factor / 2))
-			assert_that(seen).override_failure_message("the panel at factor %d, %s units in: the block (%d, %d) of the picture" % [factor, probe, block.x, block.y]).is_equal(HiresShelf.nine_color(block.x, block.y))
+			assert_that(seen).override_failure_message("the panel at factor %d, %s units in: the block (%d, %d) of the picture" % [factor, probe, block.x, block.y]).is_equal(UpscaledShelf.nine_color(block.x, block.y))
+
+
+## A theme made while the chain drew scale 1 is not made again when the chain moves to scale 4: its style box draws the nine-patch of the chain in use, the corners 4 game units wide.
+func test_a_theme_made_at_scale_1_draws_the_nine_patch_of_scale_4_after_the_chain_changes(do_skip := DisplayServer.get_name() == "headless", skip_reason := SKIP) -> void:
+	_shelf.mount_plain()
+	var made_at_one := _panel_style()
+	_shelf.mount_upscaled()
+	assert_int(Packs.picture_decision().scale).is_equal(UpscaledShelf.SCALE)
+	_stage(UpscaledShelf.SCALE, made_at_one)
+	var four := await _draw_frames()
+	var f := UpscaledShelf.SCALE
+	var slice := UpscaledShelf.NINE_SLICE
+	var probes := {
+		Vector2i(1, 1): Vector2i(0, 0), Vector2i(slice - 1, slice - 1): Vector2i(0, 0),
+		Vector2i(PANEL_SIZE.x - 2, PANEL_SIZE.y - 2): Vector2i(2, 2),
+		Vector2i(PANEL_SIZE.x / 2, PANEL_SIZE.y / 2): Vector2i(1, 1),
+	}
+	for probe: Vector2i in probes:
+		var block: Vector2i = probes[probe]
+		var seen := four.get_pixelv((PANEL_AT + probe) * f + Vector2i(f / 2, f / 2))
+		assert_that(seen).override_failure_message("a theme made at scale 1, drawn at scale 4, %s units in: the block (%d, %d) of the picture" % [probe, block.x, block.y]).is_equal(UpscaledShelf.nine_color(block.x, block.y))

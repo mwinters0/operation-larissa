@@ -192,13 +192,15 @@ func _mod_pack(base: StringName, declared: Array) -> PackShelf:
 func _hires_pack(base: StringName, keys: Array[String]) -> PackShelf:
 	var shelf := PackShelf.new(&"", base)
 	_extra.append(shelf)
-	shelf.set_picture_scale(4)
-	shelf.add_picture("art/big.png", Color.RED, Vector2i(16, 16))
-	var rows := {}
-	for key in keys:
-		rows[key] = "art/big.png"
-	shelf.write_json(PictureTable.FILE, {"format": PictureTable.FORMAT, "pictures": rows})
+	shelf.add_scaled_rows(4, keys, Color.RED)
 	return shelf
+
+
+## The keys of the dev pack's table (`PackShelf.dev_picture_keys`) without those that begin with `kind`.
+func _keys_but(kind: String) -> Array[String]:
+	var keys: Array[String] = []
+	keys.assign(PackShelf.dev_picture_keys().filter(func(key: String) -> bool: return not key.begins_with(kind)))
+	return keys
 
 
 func test_the_chain_needs_the_pictures_its_mods_declare() -> void:
@@ -229,7 +231,7 @@ func test_a_declared_key_that_no_pack_holds_is_no_gap_and_counts_against_no_set_
 
 
 func test_a_set_of_packs_at_scale_4_that_lacks_a_key_only_a_mod_declares_does_not_cover() -> void:
-	var needed := PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain()))
+	var needed := PackShelf.dev_picture_keys()                                                       # (the mod's key is no row of the dev pack: `MOD_KEY` is the mod pack's own)
 	var mod := _mod_pack(PackShelf.base_id(), [MOD_KEY])
 	var four := _hires_pack(mod.id, needed)
 	four.mount()
@@ -247,22 +249,21 @@ func test_a_set_of_packs_at_scale_4_that_lacks_a_key_only_a_mod_declares_does_no
 
 
 func test_a_set_of_packs_at_scale_4_that_lacks_the_rows_of_a_wildcard_kind_does_not_cover() -> void:
-	var needed := PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain()))
-	var outside: Array[String] = []                                                                  # (the problem pictures scale 1 draws that no data of the chain names: only a mod's script asks for them by a key it builds)
-	for key in Packs.dev().picture_table().keys():
-		if key.begins_with("problem_art/") and not needed.has(key):
-			outside.append(key)
-	outside.sort()
-	assert_array(outside).is_not_empty()
+	var held := _keys_but("problem_art/")
+	var every_problem_picture: Array[String] = []                                                   # (the problem pictures of scale 1: the data names some, only a mod's script asks for the others by a key it builds)
+	every_problem_picture.assign(PackShelf.dev_picture_keys().filter(func(key: String) -> bool: return key.begins_with("problem_art/")))
+	var plain := _mod_pack(PackShelf.base_id(), [])
+	_hires_pack(plain.id, held).mount()
+	var named_by_data: Array[String] = []
+	named_by_data.assign(Packs.picture_decision().shortfalls[0].missing)
+	assert_array(named_by_data).is_not_empty()
+	assert_int(named_by_data.size()).override_failure_message("the data does not name every problem picture").is_less(every_problem_picture.size())
 	var mod := _mod_pack(PackShelf.base_id(), ["problem_art/*"])
-	var four := _hires_pack(mod.id, needed)
-	four.mount()
-	assert_array(PackNeeds.picture_keys(Packs.chain())).contains(outside)
-	assert_int(Packs.picture_decision().scale).override_failure_message("the pictures scale 1 would draw have no picture at scale 4").is_equal(1)
-	assert_array(Packs.picture_decision().shortfalls[0].missing).is_equal(outside)
+	_hires_pack(mod.id, held).mount()
+	assert_array(Packs.picture_decision().shortfalls[0].missing).override_failure_message("a wildcard counts every row of its kind that scale 1 would draw").is_equal(every_problem_picture)
+	assert_int(Packs.picture_decision().scale).is_equal(1)
 	assert_array(PackNeeds.gaps(Packs.chain())).override_failure_message("a picture of a wildcard is no gap").is_empty()
-	var covering := _hires_pack(mod.id, needed + outside)
-	covering.mount()
+	_hires_pack(mod.id, PackShelf.dev_picture_keys()).mount()
 	assert_int(Packs.picture_decision().scale).is_equal(4)
 
 
@@ -279,7 +280,7 @@ func _refused_mod_pack(base: StringName) -> PackShelf:
 
 
 func test_a_mod_the_host_refused_declares_no_picture_the_scale_must_hold() -> void:
-	var needed := PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain()))
+	var needed := PackShelf.dev_picture_keys()
 	var broken := _refused_mod_pack(PackShelf.base_id())
 	_hires_pack(broken.id, needed).mount()
 	assert_int(Packs.picture_decision().scale).override_failure_message("until the host has refused it, the mod's declared picture counts").is_equal(1)
@@ -291,7 +292,7 @@ func test_a_mod_the_host_refused_declares_no_picture_the_scale_must_hold() -> vo
 
 
 func test_the_same_set_covers_when_no_mod_declares_the_key() -> void:
-	var needed := PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain()))
+	var needed := PackShelf.dev_picture_keys()
 	var mod := _mod_pack(PackShelf.base_id(), [])
 	var four := _hires_pack(mod.id, needed)
 	four.mount()

@@ -1,12 +1,8 @@
 class_name ScaledStyleBox
 extends StyleBox
-## A nine-patch picture as a style box for pictures of scale N above 1 (`ScaledTexture`). The game's lengths are game units: a style says its picture's corners are 4 units wide and a control's rectangle is in units. `StyleBoxTexture` hands the renderer the texture's RID
-## (a `ScaledTexture` has none) and draws the corners at the size of the margin in the file's own pixels, so for 4x art it would need margins of 16 and would then draw corners four times too wide. This style box keeps the style's own numbers and draws its stored
-## file under a transform of `1 / N` (`RenderingServer.canvas_item_add_set_transform`) as a `StyleBoxTexture` of the file with the margins N times as large over a rectangle N times as large: the corners are the 4 units the style says, drawn from 16 pixels, and the
-## control's minimum size and content margins are in game units like any other style box's.
-##
-## `of` is the one way to make the box for a picture: a plain `StyleBoxTexture` for a picture drawn at its own size (nothing changes for scale 1), this class for a scaled one. The scale is the picture's own (`ScaledTexture.scale_of`, behind a `PictureRef` too), read when
-## the box is drawn, so a box that holds a `PictureRef` draws the pictures of whatever chain is in use.
+## A nine-patch picture as a style box, for a picture of any scale (`ScaledTexture`): the corners are the number of game units the style says and the minimum size and content margins are in game units, because the stored file is drawn as a `StyleBoxTexture` under a transform of
+## `1 / N` over a rectangle N times as large (`RenderingServer.canvas_item_add_set_transform`). `of` is the one way to make the box for a picture. The scale is read from the picture each time the box is drawn (`ScaledTexture.scale_of`, behind a `PictureRef` too), so a box that holds
+## a `PictureRef` draws the pictures of whatever chain is in use. Why a `StyleBoxTexture` cannot do it, and where the other consumers are: `docs/engine/PACKS.md`, "Pictures".
 ##
 ## Teaches: a `StyleBox` written in GDScript (`_draw` gets the control's canvas item and its rectangle), why a transform on a canvas item is put back after it, and the inner object a script class keeps to reuse a native one's drawing.
 
@@ -31,26 +27,15 @@ var _scale := 1
 var _cut := Vector4i.ZERO
 
 
-## The style box of `picture` cut at `slice` (left, top, right, bottom, in game units); the content margins are the slice until a caller says others. A plain picture gives a `StyleBoxTexture`, a scaled one a `ScaledStyleBox`.
-static func of(picture: Texture2D, slice: Vector4i) -> StyleBox:
-	var box: StyleBox
-	if ScaledTexture.scale_of(picture) > 1:
-		var scaled := ScaledStyleBox.new()
-		scaled.texture = picture
-		scaled.texture_margin = slice
-		scaled.set_content_margin(SIDE_LEFT, slice.x)                                         # (a `StyleBoxTexture` that says none uses its texture margins: a script class has no such fallback)
-		scaled.set_content_margin(SIDE_TOP, slice.y)
-		scaled.set_content_margin(SIDE_RIGHT, slice.z)
-		scaled.set_content_margin(SIDE_BOTTOM, slice.w)
-		box = scaled
-	else:
-		var plain := StyleBoxTexture.new()
-		plain.texture = picture
-		plain.texture_margin_left = slice.x
-		plain.texture_margin_top = slice.y
-		plain.texture_margin_right = slice.z
-		plain.texture_margin_bottom = slice.w
-		box = plain
+## The style box of `picture` cut at `slice` (left, top, right, bottom, in game units); the content margins are the slice until a caller says others.
+static func of(picture: Texture2D, slice: Vector4i) -> ScaledStyleBox:
+	var box := ScaledStyleBox.new()
+	box.texture = picture
+	box.texture_margin = slice
+	box.set_content_margin(SIDE_LEFT, slice.x)                                            # (a `StyleBoxTexture` that says none uses its texture margins: a script class has no such fallback)
+	box.set_content_margin(SIDE_TOP, slice.y)
+	box.set_content_margin(SIDE_RIGHT, slice.z)
+	box.set_content_margin(SIDE_BOTTOM, slice.w)
 	return box
 
 

@@ -50,7 +50,6 @@ const WINDOW_SIZE := Vector2i(640, 400)
 ## or the project's `res://data/sectors` for the designers' sectors); a test works in a copy.
 const DATA_DIR := ""
 ## The files the editor draws with, in the pack that has them (`Packs.path`).
-const TILESET_REL := "data/neptune_tileset.tres"
 const ZONES_REL := "data/zones.tres"
 const DECO_FRAMES_REL := "data/sprite_frames/decos_zone%d.tres"
 const FOE_FRAMES_REL := "data/sprite_frames/foes_zone%d.tres"
@@ -325,9 +324,8 @@ func _build_layers() -> void:
 	background.texture = Assets.background(sector, screen)
 	add_child(background)                                                            # no owner: not editable, not saved
 
-	var tile_set := Packs.resource(TILESET_REL) as TileSet
 	_own(_layer("BackDecos", _loaded_screen.bg_decos))
-	_own(_tiles("Walls", tile_set, 1.0))
+	_own(_tiles("Walls", 1.0))
 	_own(_layer("MidDecos", _loaded_screen.mid_decos))
 	var pieces := _container("Pieces")
 	for i in _sector_data.pieces.size():
@@ -361,7 +359,7 @@ func _build_layers() -> void:
 		node.name = "Anim %d" % i
 		_add_item(anims, node)
 	_own(anims)
-	_own(_tiles("Currents", tile_set, 0.85))
+	_own(_tiles("Currents", 0.85))
 	var triggers := _container("Triggers")
 	for i in _loaded_screen.triggers.size():
 		var node := ScreenEditorTrigger.from_record(_loaded_screen.triggers[i])
@@ -734,10 +732,11 @@ func _layer(layer_name: String, records: Array) -> Node2D:
 	return node
 
 
-func _tiles(layer_name: String, tile_set: TileSet, alpha: float) -> TileMapLayer:
+## A tile layer with the tile set of the chain in use, dressed for the run's picture scale like every layer that shows tiles (`ScaledTileSet.dress`).
+func _tiles(layer_name: String, alpha: float) -> TileMapLayer:
 	var layer := TileMapLayer.new()
 	layer.name = layer_name
-	layer.tile_set = tile_set
+	ScaledTileSet.dress([layer], Catalog.tileset())
 	layer.position = Vector2(PLAYFIELD_ORIGIN)
 	layer.collision_enabled = false                       # the editor needs the pictures only, not the physics bodies
 	layer.modulate = Color(1, 1, 1, alpha)

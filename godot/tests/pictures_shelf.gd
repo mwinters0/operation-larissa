@@ -17,7 +17,7 @@ extends RefCounted
 ##     tile/wall_sheet          art/sheet.png, 32 x 16: two 16 x 16 tiles, RED then GREEN
 ##     deco/half_clear          art/half.png, 8 x 4: the left half transparent, the right half RED
 ## `over` (laid over `base`): ui_picture/title_sky is art/other.png (WHITE), frame/eel_swim_0 names art/missing_too.png (not in the pack), deco/coral_fan_cyan is art/zz4.png (MAGENTA).
-## `hires` (made by `mount_hires`, laid over `base`): a pack of picture scale 4 that holds a row for every picture the chain needs and holds and for every file row of `base` but one (16 x 16 files, 4 x 4 drawn): frame/sub_00 is YELLOW, every other key CYAN;
+## `hires` (made by `mount_hires`, laid over `base`): a pack of picture scale 4 that holds a row for every file row of `base` but one (`PackShelf.add_scaled_rows`: 16 x 16 files, 4 x 4 drawn): frame/sub_00 is YELLOW, every other key CYAN;
 ## `ui_picture/four_x_alias` is an alias of `ui_picture/lost_in_4x`, a key only `base` has a row for.
 ##
 ## Teaches: a scratch pack as a fixture of a lookup (`PackShelf`), and a table whose files are named at random.
@@ -84,23 +84,19 @@ func mount_over() -> void:
 	over.mount()
 
 
-## The chain is `hires` on `base`: a pack of picture scale 4 that holds a row for every picture the chain needs, so the run draws at scale 4. Made the first time.
+## The chain is `hires` on `base`: a pack of picture scale 4 that holds a row for every picture `base` draws but `lost_in_4x`, so the run draws at scale 4. Made the first time.
 func mount_hires() -> void:
 	base.mount()
 	if hires == null:
 		hires = PackShelf.new(&"", base.id)
-		hires.set_picture_scale(4)
+		var keys: Array[String] = []
+		for key: String in Packs.pack(base.id).picture_table().files:
+			if key != "ui_picture/lost_in_4x":
+				keys.append(key)
+		hires.add_scaled_rows(4, keys, CYAN)
 		hires.add_picture("art/hi_sub.png", YELLOW, Vector2i(16, 16))
-		hires.add_picture("art/hi_all.png", CYAN, Vector2i(16, 16))
-		var rows := {}
-		for key in PictureScale.needed(Packs.chain(), PackNeeds.picture_keys(Packs.chain())):
-			rows[key] = "art/hi_all.png"
-		for key: String in Packs.pack(base.id).picture_table().files:                                       # (and every picture the base draws, but `lost_in_4x`)
-			rows[key] = "art/hi_all.png"
-		rows.erase("ui_picture/lost_in_4x")
-		rows["frame/sub_00"] = "art/hi_sub.png"
-		rows["ui_picture/four_x_alias"] = {"alias": "ui_picture/lost_in_4x"}
-		hires.write_json(PictureTable.FILE, {"format": PictureTable.FORMAT, "pictures": rows})
+		hires.add_row("frame/sub_00", "art/hi_sub.png")
+		hires.add_row("ui_picture/four_x_alias", {"alias": "ui_picture/lost_in_4x"})
 	hires.mount()
 
 

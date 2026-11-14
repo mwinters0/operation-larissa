@@ -44,6 +44,8 @@ hand in a window.
 - There is no supported "this skin draws creature N" hook (`creatures` hides `Foe.sprite`); `SimView` events reach a skin before
   `OriginalPresenter`'s handlers.
 - The theme of a skin mod (`create/SKIN_API.md` "The menus' theme") reaches the sign-in screen, the dialogs, the message box and the problem screen, but not the screens that colour their text by hand from the original's palette: the canister's log screen (`LogScreen`), the surface-ship message (`SurfaceShipScreen`) and the story pages. A diagram's text is the engine's font by design (the original puts each word at a pixel and a width).
+- The full engine suite (`tools/run_tests.sh engine`, headless) ends with an abort of the Godot process (`double free or corruption`, SIGABRT) after gdUnit4 has printed `Exit code: 0`; a file or a fraction of the suite exits cleanly. The script reports it as status 3,
+  apart from a failed test (`engine/DEVELOPING.md`, "Tests"); the cause is not found.
 - The supply station's door x positions are literals in the views.
 - `Campaign.text()` shows the original's string for a sentence that is exactly a text name; a generic finale has no voice or music of
   its own. `SectorData.game` is read only by the importer and the sector checks.

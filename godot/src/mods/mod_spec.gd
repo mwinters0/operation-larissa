@@ -31,15 +31,15 @@ extends RefCounted
 ## add GAMEPLAY inside the rules (`RuleHooks`), for a campaign that declares the mod: `answers` lists problem types it judges instead of their `compare_mode` (numbers as for `problems.types`, the pack holds each as data),
 ## `instructions` the numbers 0 to `RuleHooks.MAX_INSTRUCTIONS - 1` of the creature instruction `Mod_Instruction` it defines, `sub` (true) a sub ability; it needs API version 4, at least one of the three, and a mod with `rules`
 ## runs under an instruction limit of 1 to `MAX_RULE_EXECUTION_TIMEOUT` million per call. The instruction limit of every mod is at least 1: counting is never off. `Pack` reads this entry (`Pack.mod`), `PackCheck` judges what it names,
-## `picture_keys` (in `skin` and in `problems`, each its own list; API version 6, `PICTURE_KEYS_API_VERSION`) declares the pictures OF THE GAME a draw list asks for by picture key (`<kind>/<name>`, or `<kind>/*` for every picture of a kind: what a script that draws the
-## screen's content by the keys of its state, or a problem screen by the keys of its `art`, names; at most `MAX_PICTURE_KEYS`). A key the manifest does not declare draws nothing and is told once per run (`ModDraw.report`); the declared keys count with the pictures the chain needs (`needed_pictures`,
+## `picture_keys` (in `skin` and in `problems`, each its own list; the key is API version 6, `PICTURE_KEYS_API_VERSION`) declares the pictures OF THE GAME a draw list asks for by picture key (`<kind>/<name>`, or `<kind>/*` for every picture of a kind: what a script that draws the
+## screen's content by the keys of its state, or a problem screen by the keys of its `art`, names; at most `MAX_PICTURE_KEYS`). A key the manifest does not declare draws nothing, in every mod whatever its `requires_api`, and is told once per run (`ModDraw.report`); the declared keys count with the pictures the chain needs (`needed_pictures`,
 ## `PackNeeds`), so a set of packs at a higher picture scale must hold them too (`PictureScale`). The mod's own `skin/x.png` and `problems/x.png` are named by path and need no declaring.
 ## `functions` lists what the script must define for it, and `ModLoader` runs the script.
 ##
 ## Teaches: validating an untrusted description by naming each rule in one place, and clamping a request to a ceiling instead of refusing it (a limit is a request; the host decides).
 
 ## The version of the API a mod is given (`ModApi.build`). A mod that requires a higher one is refused. The version goes up when the API gains something a mod can ask for (2: the skin API, 3: the problem
-## screens, 4: the rule hooks, 5: a mod draws the game, `DRAWS_THE_GAME_API_VERSION`, 6: a mod declares the pictures of the game it draws, `PICTURE_KEYS_API_VERSION`), so that a mod written for it says so. The API carries no promise of backward compatibility yet (AGENTS.md, "No backward compatibility"): a version may change or take away what an earlier one gave.
+## screens, 4: the rule hooks, 5: a mod draws the game, `DRAWS_THE_GAME_API_VERSION`, 6: the `picture_keys` key, `PICTURE_KEYS_API_VERSION`), so that a mod written for it says so. The API carries no promise of backward compatibility yet (AGENTS.md, "No backward compatibility"): a version may change or take away what an earlier one gave.
 const API_VERSION := 6
 ## The first version with the skin API: a skin mod requires it.
 const SKIN_API_VERSION := 2
@@ -51,7 +51,7 @@ const RULE_API_VERSION := 4
 ## a `theme` (with the colour `display` and the style `key`) in `skin`; a mod that draws the original's problem types by number and may say `own_sounds`. A mod that requires it is told the presentation events of a problem (`ProblemEvents`) and where the animation is
 ## (`ProblemState.clock`) and may return sounds (`ModSounds`): its `problem_frame` takes `(state, events)`, where an older problem-screen mod defines `problem_frame(state)` and is told none of it. A manifest that has any of these requires it.
 const DRAWS_THE_GAME_API_VERSION := 5
-## The first version in which a draw list may name only the pictures of the game its manifest declares (`picture_keys`): a manifest that declares any requires it.
+## The first version with the `picture_keys` key: a manifest that has it requires it. The rule it serves, that a draw list names only the pictures of the game its manifest declares, holds for every mod whatever its `requires_api`.
 const PICTURE_KEYS_API_VERSION := 6
 ## The game's ceilings. A manifest can lower these, never raise them (the same numbers as the godot-sandbox example's loader).
 const MAX_EXECUTION_TIMEOUT := 200       # millions of instructions per call into the mod
@@ -555,7 +555,7 @@ static func _parse_picture_keys(value: Dictionary, spec: ModSpec, found: Array[S
 		found.append("\"picture_keys\" must be a list of picture keys like \"deco/coral_fan_cyan\" or \"deco/*\" (every picture of a kind)")
 		return keys
 	if spec.requires_api < PICTURE_KEYS_API_VERSION:
-		found.append("a manifest with \"picture_keys\" needs \"requires_api\": %d (a draw list names only the pictures of the game it declares from that version)" % PICTURE_KEYS_API_VERSION)
+		found.append("a manifest with \"picture_keys\" needs \"requires_api\": %d (the key is that version's; every mod's draw list names only the pictures of the game its manifest declares)" % PICTURE_KEYS_API_VERSION)
 	if listed.size() > MAX_PICTURE_KEYS:
 		found.append("at most %d picture keys can be declared (%d are)" % [MAX_PICTURE_KEYS, listed.size()])
 		return keys

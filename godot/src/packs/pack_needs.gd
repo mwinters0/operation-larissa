@@ -27,7 +27,8 @@ extends RefCounted
 ## Teaches: a closure computed from the code's own constants and lookups instead of a second description that could drift, existence checks instead of loads (a path is
 ## cheap, a texture is not), and a result that is data (`Gap`) so that one caller shows a count and another a sentence.
 
-## How many walks of the closure were made (`_scan`): a test counts them to see that a chain is walked once.
+## How many walks of the closure were made (`_scan`). A second walk of the same chain gives the same answer and costs only time (a walk reads the data of every sector of the chain), so no test could tell it from the effects; `test_picture_scale.gd` reads this counter
+## to pin that a chain is walked once per change of the chain, and nothing else reads it.
 static var walks := 0
 
 ## The groups of a gap, for a report; a campaign's own is "campaign <id>" (`CAMPAIGN_PREFIX`).

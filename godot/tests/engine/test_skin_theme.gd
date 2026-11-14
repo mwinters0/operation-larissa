@@ -312,10 +312,10 @@ func test_the_skin_lays_only_what_it_says_over_the_engines_theme() -> void:
 	assert_str(hover.border_color.to_html()).is_equal(engine_hover.border_color.to_html())                          # (the border not: the engine's)
 	assert_float(hover.content_margin_left).is_equal(engine_hover.content_margin_left)
 	assert_object(engine_hover).override_failure_message("the engine's own style is never changed").is_not_same(hover)
-	var pressed := derived.get_stylebox("pressed", "Button") as StyleBoxTexture                                     # (a picture by key)
+	var pressed := derived.get_stylebox("pressed", "Button") as ScaledStyleBox                                      # (a picture by key)
 	assert_object(pressed).is_not_null()
 	assert_object(pressed.texture).is_same(Assets.picture_by_key(KEY))
-	assert_float(pressed.texture_margin_left).is_equal(4.0)
+	assert_int(pressed.texture_margin.x).is_equal(4)
 	var engine_pressed := engine.get_stylebox("pressed", "Button") as StyleBoxFlat
 	assert_float(pressed.content_margin_left).override_failure_message("a picture keeps the engine's content margins").is_equal(engine_pressed.content_margin_left)
 	assert_int(derived.default_font_size).is_equal(16)
@@ -444,7 +444,7 @@ func test_a_button_pressed_when_the_skin_changes_is_pressed_in_the_new_look() ->
 	await await_idle_frame()
 	assert_bool(screen.looks_pressed(screen.exit_button)).is_true()
 	var worn := screen.exit_button.get_theme_stylebox(&"normal")
-	assert_object(worn).is_instanceof(StyleBoxTexture)                                                      # (the skin's pressed picture)
+	assert_object(worn).is_instanceof(ScaledStyleBox)                                                     # (the skin's pressed picture)
 	assert_str(screen.exit_button.get_theme_color(&"font_color").to_html(false)).is_equal("ffee66")
 	assert_str(engine_pressed.to_html(false)).is_not_equal("ffee66")
 
@@ -523,7 +523,7 @@ func test_a_change_of_the_chain_makes_the_theme_again_once_the_mods_have_settled
 	over.mount()
 	assert_object(ThemeDB.get_project_theme().get_stylebox("pressed", "Button")).override_failure_message("the change of the chain made the theme itself").is_same(pressed_before)
 	Mods.sync()
-	var pressed := ThemeDB.get_project_theme().get_stylebox("pressed", "Button") as StyleBoxTexture
+	var pressed := ThemeDB.get_project_theme().get_stylebox("pressed", "Button") as ScaledStyleBox
 	assert_object(pressed).is_not_same(pressed_before)
 	assert_that(PicturesShelf.color_of(pressed.texture)).is_equal(Color.RED)
 	assert_object(SkinChoice.current()).override_failure_message("the skin's pack is still in the chain").is_same(_skin(shelf))

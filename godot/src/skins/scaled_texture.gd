@@ -11,9 +11,8 @@ extends Texture2D
 ## `Sprite2D`, `AnimatedSprite2D`, `TextureRect` and `TextureProgressBar` is concerned. Compare `AtlasTexture`, which answers with a
 ## piece of another texture; this one answers with the same picture at another scale.
 ##
-## What the renderer takes by RID instead of asking the texture to draw (a `TileSet`'s atlas, a nine-patch, a `StyleBoxTexture`) never sees this class: its RID is empty, so those consumers are given the stored picture and the scale by one builder each:
-## `ScaledTileSet` (a tile set at `scale` times its cell size under a layer at `1 / scale`) and `ScaledStyleBox` (a nine-patch drawn under a transform of `1 / scale`). `stored` and `scale_of` are how they read a picture. A `Sprite3D` and a
-## `NinePatchRect` are not used by the game; a shader's `sampler2D` uniform is a picture of its own and `TEXTURE` is the stored picture, whose own pixel size `TEXTURE_PIXEL_SIZE` reports.
+## What the renderer takes by RID instead of asking the texture to draw (a `TileSet`'s atlas, a nine-patch, a `StyleBoxTexture`) never sees this class: its RID is empty, so `ScaledTileSet` and `ScaledStyleBox` give those consumers the stored picture and the scale (`stored`, `scale_of`).
+## The account of the consumers: `docs/engine/PACKS.md`, "Pictures".
 
 ## The picture as it is stored: `scale` times larger than it is drawn.
 @export var source: Texture2D

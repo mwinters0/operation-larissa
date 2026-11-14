@@ -4,7 +4,7 @@ extends RefCounted
 ## `property_allowed` / `method_allowed` are the policies for the objects the game hands over. To give mods a new ability, add its key to `build` and its function below;
 ## to let a mod touch an object, grant the object (`_grant`) and allow the property or method in the policy. Nothing else in the game is reachable from a mod.
 ##
-## The API (`ModSpec.API_VERSION`, 6): the first four keys are version 1, `skin` is version 2, `problems` is version 3, `rules` is version 4. Version 5 (`ModSpec.DRAWS_THE_GAME_API_VERSION`) adds no key: it widens what a manifest may say (a skin's `render`, `pictures`, `hud_font`, `layers`, `script_layers`, `theme`), what a draw list may name (`ModDraw`: a picture of the game by key) and what a callback is told (a problem screen's events, clock and sounds). Version 6 (`ModSpec.PICTURE_KEYS_API_VERSION`) adds the `picture_keys` fact to `skin` and `problems`, and a draw list names only the pictures of the game its manifest declares:
+## The API (`ModSpec.API_VERSION`, 6): the first four keys are version 1, `skin` is version 2, `problems` is version 3, `rules` is version 4. Version 5 (`ModSpec.DRAWS_THE_GAME_API_VERSION`) adds no key: it widens what a manifest may say (a skin's `render`, `pictures`, `hud_font`, `layers`, `script_layers`, `theme`), what a draw list may name (`ModDraw`: a picture of the game by key) and what a callback is told (a problem screen's events, clock and sounds). Version 6 (`ModSpec.PICTURE_KEYS_API_VERSION`) adds the `picture_keys` fact to `skin` and `problems`. A draw list names only the pictures of the game its manifest declares, in every version:
 ##
 ##     api_version  int       the version of this API
 ##     id           String    the mod's id (= its pack's id)

@@ -1,13 +1,9 @@
 class_name ScaledTileSet
 extends RefCounted
-## A tile set for the run's picture scale. The game's tile grid is 16 x 16 units and the tile set a pack holds says so (`data/neptune_tileset.tres`: cells of 16, atlases cut in 16 x 16 tiles); its atlases hold `PictureRef`s, which are `ScaledTexture`s when the
-## run draws at a scale N above 1 (`PictureScale`), and a `ScaledTexture` reports 1/N of its file. A `TileMapLayer` reads that size for the atlas grid but hands the renderer the texture's own RID, which a `ScaledTexture` has none of (and, with
-## `use_texture_padding`, builds its padded atlas from `get_image()`, which it has none of either), so the tile set is made again for the layer that draws it: `of` is the same tile set with every atlas holding the stored file and every length of it N times
-## as long (cell size, tile size in the atlas, margins, separation, the texture origin of a tile, the points of its collision polygons), and `dress` puts it on layers scaled by 1/N. A cell is then still 16 game units, a tile is drawn from N x N times the pixels,
-## and the cell a tile is set in, its atlas coordinates and its custom data (`TileCodec`) are the ones of the tile set a pack holds.
+## A tile set for the run's picture scale: the tile set a pack holds (cells of 16 x 16 game units) made again for the scale N the run draws its pictures at, and given to layers scaled by 1/N. A `TileMapLayer` hands the renderer the RID of its atlas texture, which a `ScaledTexture` has none of, so a layer
+## is given its tile set by `dress` and by nothing else (`tests/engine/test_tile_sets_through_one_builder.gd` reads the source for it): the presenter, the screen editor and every debug scene. The account of what `of` changes and why: `docs/engine/PACKS.md`, "Pictures".
 ##
-## THE OWNER of N is `Packs.picture_decision().scale`, read each time a set is made; the tile set a pack holds is never changed (the copy is deep). A layer that is shown again (the chain changed: `Pictures.events`) is dressed again from `Catalog.tileset()`, so the
-## presenter first made, the one made after a pack change and the one bound in the middle of a sector see the same thing.
+## THE OWNER of N is `Packs.picture_decision().scale`, read each time a set is made; the tile set a pack holds is never changed (the copy is deep). A layer that is shown again (the chain changed: `Pictures.events`) is dressed again from `Catalog.tileset()`.
 ##
 ## Teaches: what a `TileMapLayer` asks of its tile set (the atlas texture's RID and `get_image()`, not its `draw` methods), a deep `Resource.duplicate` of a tile set, and a node's `scale` as the way to draw a finer grid in the same space.
 

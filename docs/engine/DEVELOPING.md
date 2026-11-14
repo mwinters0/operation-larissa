@@ -13,7 +13,16 @@ uv run pytest tools                              # the Python tests; -m "not leg
 uv run ruff check tools && uv run --group dev-pack pyright      # Python lint and type check
 ```
 
-Exit code 0 means everything passed; reports go to `godot/reports/`. There are two gdUnit4 suites, each on the pack it is about;
+The result of a run is what gdUnit4 itself reports (the `Exit code: N` it prints at the end of its run), not the status of the Godot process, which can die after the tests have finished. The script's exit status:
+
+| Status | Meaning |
+| --- | --- |
+| 0 | every group passed |
+| 1 | a test failed (gdUnit4 reported a code other than 0), or a run printed no `Exit code` (Godot ended before the tests had a verdict) |
+| 2 | a path that is under neither `tests/engine` nor `tests/legacy` |
+| 3 | every test passed and Godot then ended with a non-zero status (the full engine suite aborts at shutdown: [`../ROADMAP.md`](../ROADMAP.md), "Open items"); the script says so on stderr, in the run and at the end |
+
+A failed test beats a crash after a pass: when both happen the status is 1. Reports go to `godot/reports/`. The script is bash and runs on Linux (Windows has no `run_tests.sh`: its `mise` tasks say so; [`../SETUP.md`](../SETUP.md), "On Windows"). There are two gdUnit4 suites, each on the pack it is about;
 the script passes the choice after `--`, where `Packs.start()` reads it:
 
 - **`godot/tests/engine/`** (`-- --pack=dev`): the engine, on the dev pack's own numbers, records and test sectors. It needs no legacy
@@ -49,7 +58,7 @@ only the original has are the record of what is hard-coded ([`HARD_CODED.md`](HA
 
 **Helpers** (`godot/tests/`). Engine: `engine/dev_pack.gd` (`DevPack`: dev's root, `sector(n)`, the tour's numbers, the test-sector
 ranges, `picture_file` / `picture_rel`: the file dev's table gives a key), `engine/ground.gd` (`Ground`: the ground sectors and `clean_sectors()`), `dev_creatures.gd`, `problem_kit.gd`, `audio_probe`,
-`fake_flow_view`, `fake_save_store`, `key_state`, `skin_recorder`, `skin_roster`, `skin_vandal`, `source_scan`, `stub_clock`. Shared: `pack_shelf.gd` (scratch packs over the chain; `add_mod_fixture` makes one a mod pack from a folder of `tests/mods/`; `without_dev` makes the dev pack absent and `with_dev_again` puts it back; `empty_complete_pack_dir` a pack that is only a manifest), `mod_skin_shelf.gd` (`ModSkinShelf`: the skin mod fixtures, `skin_data` among them (no script), with their pictures, mounted and released), `mod_problem_shelf.gd` (`ModProblemShelf`: the problem-screen mod fixtures with the problem type they draw, mounted and released; `plain` the same type with no mod), `mod_rule_shelf.gd` (`ModRuleShelf`: the rule-hook mod fixtures with their problem type, two sectors and two campaigns, one declaring the mod), `pictures_shelf.gd` (`PicturesShelf`: two scratch packs whose picture files are named at random, with tables of every row form), `picture_use.gd` (`PictureUse`: the keys a pack's data holds and the rows nothing asks for), `picture_painter.gd` (a control that draws a texture, for the render test), `resource_compare.gd` (the deep comparison of two resources, a `PictureRef` by its key, sounds by the file they came from), `campaign_shelf.gd`, `sector_scenario.gd` (one scripted
+`fake_flow_view`, `fake_save_store`, `key_state`, `skin_recorder`, `skin_roster`, `skin_vandal`, `source_scan`, `stub_clock`. Shared: `pack_shelf.gd` (scratch packs over the chain; `add_mod_fixture` makes one a mod pack from a folder of `tests/mods/`; `add_scaled_rows` makes one a pack of a higher picture scale with rows for the keys it is given, and `dev_picture_keys` is every key of the dev pack's table: a test builds a covering 4x pack from those, never from what the engine says the chain needs; `without_dev` makes the dev pack absent and `with_dev_again` puts it back; `empty_complete_pack_dir` a pack that is only a manifest), `mod_skin_shelf.gd` (`ModSkinShelf`: the skin mod fixtures, `skin_data` among them (no script), with their pictures, mounted and released), `mod_problem_shelf.gd` (`ModProblemShelf`: the problem-screen mod fixtures with the problem type they draw, mounted and released; `plain` the same type with no mod), `mod_rule_shelf.gd` (`ModRuleShelf`: the rule-hook mod fixtures with their problem type, two sectors and two campaigns, one declaring the mod), `pictures_shelf.gd` (`PicturesShelf`: two scratch packs whose picture files are named at random, with tables of every row form), `picture_use.gd` (`PictureUse`: the keys a pack's data holds and the rows nothing asks for), `picture_painter.gd` (a control that draws a texture, for the render test), `resource_compare.gd` (the deep comparison of two resources, a `PictureRef` by its key, sounds by the file they came from), `campaign_shelf.gd`, `sector_scenario.gd` (one scripted
 visit to a sector, driven through the game's own `GameFlow` with a fake view: the launch, a flight, a problem, the canister's problem that
 costs the tank, a creature that takes one, the respawns, the dock and the balloon or the closing), `headless_stage.gd` (the playfield of a
 `GameFlow` made of a `SimWorld` alone: the creatures tick as in the game, a trip ticks itself out or, asked for inside a tick, after it),

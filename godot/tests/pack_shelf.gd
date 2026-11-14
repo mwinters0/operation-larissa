@@ -65,6 +65,26 @@ func set_picture_scale(scale: int) -> void:
 	write_json("pack.json", manifest)
 
 
+## A pack of a higher picture scale with rows: the pack says it carries pictures `scale` times larger than they are drawn, holds one file of `color` and `size` (the files of 4x art are large: 16 x 16 is 4 x 4 drawn at 4) and a row of it for each of `keys` (the rows the pack holds stay). The one builder of
+## "a 4x pack with rows" for the tests. A test names the keys itself or takes `dev_picture_keys()`; it never asks the engine what a chain needs to build the pack the engine is then asked about. Returns the file.
+func add_scaled_rows(scale: int, keys: Array[String], color: Color = Color.CYAN, size: Vector2i = Vector2i(16, 16)) -> String:
+	set_picture_scale(scale)
+	var rel := "art/scaled.png"
+	add_picture(rel, color, size)
+	var table: Dictionary = pack_json(PictureTable.FILE) if FileAccess.file_exists("%s/%s" % [root, PictureTable.FILE]) else {"format": PictureTable.FORMAT, "pictures": {}}
+	for key in keys:
+		table["pictures"][key] = rel
+	write_json(PictureTable.FILE, table)
+	return rel
+
+
+## Every key of the dev pack's picture table (a row of a file or an alias), in order: the pictures a pack of a higher scale holds to cover everything the engine needs of a chain on the dev pack, and more. Read from the table, not from the engine's own account of the needs.
+static func dev_picture_keys() -> Array[String]:
+	var keys := Packs.dev().picture_table().keys()
+	keys.sort()
+	return keys
+
+
 ## A copy of sector `source` (original or not) as sector `index` of the pack: its script re-written for the new number, as the sector editor
 ## does (`SectorFactory.copied_script_text`). The source is not changed.
 func add_sector_copy(source: int, index: int) -> SectorData:
