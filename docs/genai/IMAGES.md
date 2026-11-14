@@ -43,9 +43,12 @@ submarine with a signal light for an incoming problem) and do not adjust the ori
   (its `pictures.json` and sprite frames), as numbers only.
 - A spec for each key, kept beside the work: key, size, frames, what it must convey in play (the readable states, a danger colour, where an
   opening is, the hitbox it must fill), and its neighbours in the set it must match.
-- **Counts the game's texts rely on** belong in the spec: the squares of a grid, the marks of a scale, the boxes of a diagram. A
-  problem's worked answer counts them ("100 - 15 = 85" needs a grid of 100 squares), and no layout or routine limit states them. Take
-  each from the problem's texts or measure it on the original picture locally, as a number only, and check it in the gate.
+- **What the game's texts rely on** belongs in the spec: the counts (the squares of a grid, the marks of a scale, the boxes of a
+  diagram), which record field each labelled place shows, and the reading the problem teaches (a 24-hour clock). A problem's worked
+  answer counts and names them ("100 - 15 = 85" needs a grid of 100 squares; "yesterday's minus today's" needs the bars labelled as the
+  diagram draws those fields), and no layout or routine limit states them. Take each from the problem's texts and the diagram's fields,
+  or measure it on the original picture locally, as a number only. A number a picture adds (a ring or tick label) must agree with every
+  record's value. Check them in the gate.
 
 ## Technique
 
