@@ -75,8 +75,8 @@ Commands below are written for a terminal in the repository root with the projec
 ## 1. Before you start
 
 1. **Know which pack you are on, and name it.** Start the game with the pack you mean: `-- --pack=legacy` (or `mise run godot:play <id>`), `--pack=dev`,
-   or your own pack's id. Without the flag the game takes the first pack found in the order of the ids, which changes as soon as you install
-   another pack ([section 11](#11-install-choose-share), step 3). If you built legacy ([`LEGACY.md`](../play/LEGACY.md)) and have no other pack, it is
+   or your own pack's id. Without the flag the game takes the pack last chosen on the pack screen (Use this pack), else the first pack found in the order
+   of the ids, which changes as soon as you install another pack ([section 11](#11-install-choose-share), step 3). If you built legacy ([`LEGACY.md`](../play/LEGACY.md)) and have no other pack, it is
    what the game and the editor use. With no pack the game opens on a warning screen (no pack was found, so the dev pack, which is not meant for play, is all there is; or the pack
    asked for is not there) and runs on dev, which is fine for this tutorial (in the editor and in a debug build; a release build refuses to play it). `tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --list` prints the packs found and the chain in use.
 2. **Open the project in Godot 4.7.2**: in the Project Manager, import `godot/project.godot`; or from a terminal, `tools/godot.sh --path godot -e`. Let it
@@ -482,7 +482,7 @@ the game, started with such a pack, falls back on dev and says so on its warning
 (the data form); a pack that needs the files themselves lives in `godot/packs/` and is part of the project.
 
 **Installing and choosing.** Installed packs live in `user://packs/` (the pack screen, P on the sign-in screen, or `pack_tool --install=PATH`); the project's own are in `godot/packs/`. The game uses **one** pack and the
-packs under it: `-- --pack=<id>` chooses, and without it the first pack found by id is used. `pack_tool --list` shows the packs found and the chain in use. A game shipped to someone else carries no pack; a player
+packs under it: `-- --pack=<id>` chooses for a run, the pack screen's Use this pack chooses while the game runs and for the next starts, and without either the first pack found by id is used. `pack_tool --list` shows the packs found and the chain in use. A game shipped to someone else carries no pack; a player
 who has `legacy.larissa` puts it next to the game (or in `user://packs/`, or the pack's folder there) ([`LEGACY.md`](../play/LEGACY.md)). More in [`CONTENT.md`](CONTENT.md), section 4, "Installing and checking packs".
 
 The manifest, `pack.json`, is written for you by the exporter and by `--new`; its fields are in [`CONTENT.md`](CONTENT.md), section 4.

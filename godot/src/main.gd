@@ -9,14 +9,15 @@ extends Node
 ##     main -> [pack warning, when the chain is not whole] -> opening (title, story; skippable) -> sign-in -> game (sectors, finale, closing) -> Hall of Fame -> sign-in
 ##                                                    \-> practice mode -> sign-in
 ##
-## The pack is chosen first (`Packs.start`: `--pack=<id>` after `--`, else the first pack found, and the packs it is laid over), before any screen asks for a sector
+## The pack is chosen first (`Packs.start`: `--pack=<id>` after `--`, else the pack the player chose on the pack screen (`PackChoice.remembered`), else the first pack
+## found, and the packs it is laid over), before any screen asks for a sector
 ## or a picture. When the chain could not be made or lacks what the game needs, `Packs.fallback_reason()` says why and the game opens on the warning screen
 ## (`PackWarning`) before everything else: with `dev` at the bottom of the chain and a key to go on (`Packs.dev_fallback`, a debug build), or as a refusal that quits
 ## (`Packs.is_refused()`). `--pack=dev` is a choice, not a fallback, and opens on the title as usual.
 
 
 func _ready() -> void:
-	Packs.start()
+	Packs.start(OS.get_cmdline_user_args(), PackChoice.remembered())
 	SceneRouter.go_to.call_deferred(first_scene())
 
 

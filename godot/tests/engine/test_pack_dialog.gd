@@ -3,18 +3,23 @@ extends GdUnitTestSuite
 ## Teaches: the player-facing side of packs. The pack screen lists what `PackChoice` knows (every pack found, which of them the game
 ## uses, and why) and calls the same functions the tests of `test_pack_install.gd` call; it is reached from the sign-in screen by the P key, and a small "Packs"
 ## button appears there only once a pack is installed in the player's folder, so a game with no pack installed looks as the original did (the screen's four
-## buttons are untouched either way). There is nothing to switch on: the game uses the pack `--pack=<id>` names, else the first pack found. Checking a pack shows
-## its report, and a pack with an error says why. No pack asks for trust: nothing a pack holds runs.
+## buttons are untouched either way). Use this pack switches the chain while the game runs and keeps the choice for the next start (`PackChoice.use`): choosing a
+## pack laid over another turns it on, choosing its base turns it off, and a pack whose chain is not whole is not taken. `--pack=<id>` wins over the kept choice.
+## Checking a pack shows its report, and a pack with an error says why. No pack asks for trust: nothing a pack holds runs.
 
 const SIGN_IN_SCENE := "res://src/ui/sign_in.tscn"
 const ID := &"harvest_box"
+## A pack laid over a pack that is not there: its chain is never whole.
+const ASTRAY := &"astray_box"
 const ROSTER := "user://test_pack_dialog_roster.json"
 const HALL := "user://test_pack_dialog_hall.json"
 const EXPORTS := "user://test_pack_dialog_exports"
+const MEMORY := "user://test_pack_dialog_choice.cfg"
 
 var _old_roster: String
 var _old_hall: String
 var _old_players: Array[PlayerProfile]
+var _old_memory: String
 var _shelves: Array[PackShelf] = []
 var _baseline: int                                  ## how many packs the screen lists before the test installs any (the game's own: more or less, whatever is on disk)
 
@@ -23,6 +28,8 @@ func before_test() -> void:
 	_old_roster = SaveStore.roster_path
 	_old_hall = SaveStore.hall_path
 	_old_players = SaveStore.players.duplicate()
+	_old_memory = PackChoice.memory_path
+	PackChoice.memory_path = MEMORY
 	SaveStore.roster_path = ROSTER
 	SaveStore.hall_path = HALL
 	SaveStore.players = []
@@ -43,6 +50,7 @@ func after_test() -> void:
 	SaveStore.roster_path = _old_roster
 	SaveStore.hall_path = _old_hall
 	SaveStore.players = _old_players
+	PackChoice.memory_path = _old_memory
 	SceneRouter.dry_run = false
 	SignIn.welcome_enabled = true
 	SignIn.prompt_when_empty = true
@@ -52,7 +60,8 @@ func after_test() -> void:
 func _clean() -> void:
 	PackFiles.remove_tree("%s/%s" % [PackInstall.DIR, ID])
 	PackFiles.remove_tree(EXPORTS)
-	for path in [ROSTER, HALL]:
+	PackFiles.remove_tree("%s/%s" % [PackInstall.DIR, ASTRAY])
+	for path in [ROSTER, HALL, MEMORY]:
 		DirAccess.remove_absolute(path)
 
 
@@ -187,6 +196,70 @@ func test_the_records_of_a_campaign_are_playable_only_while_its_pack_is_in_use()
 	screen.refresh()
 	assert_bool(screen.start_button.disabled).is_true()
 	assert_bool(Catalog.campaigns().any(func(c: Campaign) -> bool: return c.id == ID)).is_false()
+
+
+func test_use_turns_a_pack_on_and_its_base_turns_it_off_while_the_game_runs() -> void:
+	_install_harvest()
+	var screen := _screen()
+	var dialog := _open(screen)
+	var changes: Array[int] = [0]
+	dialog.changed.connect(func() -> void: changes[0] += 1)
+	assert_bool(dialog.use_button.visible).is_true()
+	dialog.select(PackShelf.base_id())
+	assert_bool(dialog.use_button.disabled).override_failure_message("the chosen pack is chosen already").is_true()
+	dialog.select(ID)
+	assert_bool(dialog.use_button.disabled).is_false()
+	dialog.use_selected()
+	assert_array(Packs.chain_ids()).is_equal([ID, PackShelf.base_id()])
+	assert_bool(Catalog.campaigns().any(func(c: Campaign) -> bool: return c.id == ID)).is_true()
+	assert_int(changes[0]).is_equal(1)
+	assert_str(dialog.tree.get_selected().get_text(2)).is_equal("in use")
+	assert_str(dialog.intro.text).contains("In use: harvest_box > ").contains("Chosen on this screen")
+	assert_str(dialog.details.text).contains("In use now: harvest_box > ")
+	assert_str(PackChoice.remembered()).is_equal(ID)
+	# its base, chosen, turns it off
+	dialog.select(PackShelf.base_id())
+	assert_bool(dialog.use_button.disabled).is_false()
+	dialog.use_selected()
+	assert_array(Packs.chain_ids()).is_equal([PackShelf.base_id()])
+	assert_bool(Catalog.campaigns().any(func(c: Campaign) -> bool: return c.id == ID)).is_false()
+	assert_str(PackChoice.remembered()).is_equal(PackShelf.base_id())
+
+
+func test_the_choice_is_kept_for_the_next_start_and_the_command_line_wins() -> void:
+	_install_harvest()
+	PackChoice.remember(ID)
+	Packs.start(PackedStringArray(), PackChoice.remembered())                                # (what `main.gd` does)
+	assert_array(Packs.chain_ids()).is_equal([ID, PackShelf.base_id()])
+	assert_bool(Packs.chosen_on_screen()).is_true()
+	assert_str(PackChoice.summary()).contains("Chosen on this screen")
+	Packs.start(PackedStringArray(["--pack=" + String(PackShelf.base_id())]), PackChoice.remembered())
+	assert_array(Packs.chain_ids()).is_equal([PackShelf.base_id()])
+	assert_bool(Packs.chosen_on_screen()).is_false()
+
+
+func test_a_kept_choice_whose_pack_is_gone_says_so_and_the_first_pack_found_is_used() -> void:
+	PackChoice.remember(&"gone_box")
+	Packs.start(PackedStringArray(), PackChoice.remembered())
+	assert_bool(Packs.chosen_on_screen()).is_false()
+	assert_bool(Packs.chain_ids().has(&"gone_box")).is_false()
+	assert_str(PackChoice.summary()).contains("The pack 'gone_box' chosen on the pack screen is not installed: the first pack found is used instead.")
+	Packs.start()
+	assert_str(PackChoice.summary()).not_contains("gone_box")
+
+
+func test_a_pack_whose_chain_is_not_whole_is_not_taken_and_the_game_keeps_its_chain() -> void:
+	PackFiles.write_text("%s/%s/pack.json" % [PackInstall.DIR, ASTRAY], JSON.stringify({"id": String(ASTRAY), "title": "Astray", "version": "1", "base": "nowhere_box"}))
+	var before := Packs.chain_ids()
+	var screen := _screen()
+	var dialog := _open(screen)
+	dialog.select(ASTRAY)
+	assert_bool(dialog.use_button.disabled).is_false()
+	dialog.use_selected()
+	assert_array(Packs.chain_ids()).is_equal(before)
+	assert_object(Packs.fallback_reason()).is_null()
+	assert_str(dialog.details.text).contains("Astray was not chosen").contains("'nowhere_box'").contains("The game goes on with")
+	assert_str(PackChoice.remembered()).is_empty()
 
 
 func test_checking_a_pack_shows_its_report_and_a_pack_with_an_error_says_why() -> void:

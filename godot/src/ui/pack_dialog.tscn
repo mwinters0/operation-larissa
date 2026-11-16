@@ -68,7 +68,6 @@ alignment = 1
 
 [node name="Use" type="Button" parent="Center/Panel/Rows/Buttons"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 text = "Use this pack"
 

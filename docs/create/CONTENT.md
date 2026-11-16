@@ -356,8 +356,12 @@ therefore starts with `dev.larissa` from the creator download.
 
 ### Choosing the pack
 
-- **`--pack=<id>`**, after `--` on the command line, chooses: `tools/godot.sh --path godot -- --pack=orchard`.
-- **Without it**, the first pack found in the lexical order of the ids is chosen. The common case needs no flag: one complete pack that is installed
+- **`--pack=<id>`**, after `--` on the command line, chooses for that run: `tools/godot.sh --path godot -- --pack=orchard`.
+- **The pack screen** (P on the sign-in screen) chooses while the game runs: select a pack and press **Use this pack**. The choice is kept for the next start
+  (`user://pack_choice.cfg`). Choosing a pack laid over another turns it on; choosing its base (say `legacy` under a pack of new pictures) turns it off. A pack
+  whose chain is not whole is not taken, and the screen says why. A kept choice whose pack is gone or has errors is told in the log and on the pack screen, and the
+  next rule chooses.
+- **Without either**, the first pack found in the lexical order of the ids is chosen. The common case needs no flag: one complete pack that is installed
   (only `legacy`, say) is simply played, alone, with no warning and without dev.
 - **When the chain is not whole** the game opens on a **warning screen** that says why and where to read about it. The reasons (`Packs.Fallback.Why`): no pack was
   found; the pack asked for is not there; a pack has errors; a pack names a `base` that is not there; the `base` links go round in a circle; the chain lacks files or things the game needs (the start-up check, `PackNeeds`; a campaign that names a sector nobody has counts, a
@@ -371,7 +375,7 @@ therefore starts with `dev.larissa` from the creator download.
 - **`--pack=dev`** chooses dev on purpose: no warning, and a pack whose `base` is `dev` is whole too, in both kinds of build. The engine's tests run this way (`tools/run_tests.sh`).
   When there is no dev pack, both are refused in both kinds of build, with the advice to get `dev.larissa`.
 
-There is no pack-choosing menu yet. The pack screen (P on the sign-in screen) shows which packs were found, the chain in use and why it is that one.
+The pack screen also shows which packs were found, the chain in use and why it is that one.
 
 ### The layout of a pack
 
@@ -676,7 +680,8 @@ symlinked as `godot/packs/<id>` (`res://packs/<id>`); if it is also in `user://p
    win; `dev` too, so a project without a dev takes the one you install). Installing runs nothing and does not change what the game uses.
 3. **Check** runs the quick check (the sector checks without the reachability search, and a look that the pack and the packs under it hold every file the game needs) and shows the report. Nothing a pack holds runs, so none asks for trust.
 4. **Remove** deletes an installed pack from `user://packs/`, folder or file.
-5. To play it, start the game with `--pack=<id>` (an installed pack that names a `base` needs that pack found too).
+5. To play it, select it and press **Use this pack** (or start the game with `--pack=<id>`); an installed pack that names a `base` needs that pack found too.
+   Use its base to play without it again.
 
 A small **Packs** button also appears beside the player list, but only once a pack you installed is in `user://packs/` (the `legacy` and `dev` pack files a game carries next to it are no reason). The P key is always there.
 

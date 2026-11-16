@@ -53,11 +53,13 @@ is [`../create/CONTENT.md`](../create/CONTENT.md), section 4; this page is the c
     `index.html` into the virtual file system. They are read where they lie, and are the last place `Packs._places` looks, so a pack of the same id in the project or in
     `user://packs/` is used instead.
   - **Installed.** `PackInstall.install` copies a pack file whole to `user://packs/<id>.larissa` ("Pack tools"); an id is installed in one form, folder or file, at a time.
-- **Chosen.** `main.gd` calls `Packs.start(args)` once: `--pack=<id>` after `--`, else the first pack found in the lexical order of the
-  ids. `Packs.choose(id)` chooses in code; `Packs.resolve` follows the `base` links. `start` writes a report to stdout, each line once and
+- **Chosen.** `main.gd` calls `Packs.start(args, PackChoice.remembered())` once: `--pack=<id>` after `--`, else the pack the player chose on
+  the pack screen in an earlier run (kept in `PackChoice.memory_path`, `user://pack_choice.cfg`) when it is found and has no errors, else the first pack found in
+  the lexical order of the ids. A kept choice that cannot be used is a warning and a line of the pack screen's summary (`Packs.remembered_note`). `Packs.choose(id, on_screen)`
+  chooses in code (`Packs.chosen_on_screen` says which way it came); `Packs.resolve` follows the `base` links. `start` writes a report to stdout, each line once and
   prefixed `Packs:`: where it looks (`search_report`: `folders` with the real path of `user://`, the bundled pack files and `archive_folders`, debug or release),
-  what it found (`found_report`: each id and where it is, the dev pack), the packs it left out and why, and what it chose (`choice_report`: `--pack=` or
-  the first id, then the chain with each pack's place, and whether dev stands in or the chain is refused). An exported game says this way which pack file it plays.
+  what it found (`found_report`: each id and where it is, the dev pack), the packs it left out and why, and what it chose (`choice_report`: `--pack=`, the pack
+  screen's choice or the first id, then the chain with each pack's place, and whether dev stands in or the chain is refused). An exported game says this way which pack file it plays.
 - **Checked, once per choice.** A chain that resolves is asked what it lacks: `PackNeeds.gaps` on the chain with no `dev` under it and
   no skin (a pack is complete whatever skin is on), see "What a chain needs". A hard gap makes the chain incomplete; a soft gap is only
   logged. A chain that holds `dev` for real (`--pack=dev`, a pack whose `base` is `dev`) is whole and not asked: dev is complete.
@@ -71,8 +73,8 @@ is [`../create/CONTENT.md`](../create/CONTENT.md), section 4; this page is the c
     things are missing and that dev's placeholders stand in for them, and any key or click goes on into the game.
   - **`dev_fallback` off** (a release build): nothing is added and the game does not play the chain (`Packs.is_refused()`; the chain is
     whatever was found, empty when nothing was). `PackWarning` is a refusal: the problem, the missing count, where to read; `go_on` does
-    nothing. P (or the Pack screen button) opens the pack screen with a Use button (`PackDialog.choosing`): `Packs.choose` makes the
-    choice, the check runs again, a whole chain goes on to the opening and anything else is shown again. Any other key, any click that
+    nothing. P (or the Pack screen button) opens the pack screen with `PackDialog.choosing` set: its Use button takes any choice, the check runs
+    again, a whole chain goes on to the opening (and is kept for the next start) and anything else is shown again. Any other key, any click that
     is not on a button, or Quit, quits (`SceneRouter.dry_run` keeps a test alive). The buttons take no key focus, so a key never
     presses one.
   - The sentences are by situation, never by pack id: no pack at all (build the content with the importer, `docs/play/LEGACY.md`); a
@@ -244,6 +246,7 @@ All plain objects in `src/packs/`, so the editor, a terminal, the game and the t
 | `PackInstall.install(source)` / `uninstall(id)` | copy a folder to `user://packs/<id>/`, or a `.larissa` pack file to `user://packs/<id>.larissa` (judged by `PackArchive` first, then copied whole); an id is installed in one form at a time (installing either takes the other away), and `uninstall` removes whichever is there; refuses an id the project has in `res://packs/` (`dev` too: a project with no dev takes the installed one); runs nothing |
 | `PackCopy.make(new_id, from, title)` | copies `res://packs/<from>` (default dev; with no dev pack it says so) to `res://packs/<new_id>`, rewrites its `res://packs/<from>/` paths, gives every file with a uid a new one, writes a `pack.json` with no `base` |
 | `PackChoice.entries()` / `summary()` / `chain_text()` / `any()` | what the pack screen and `--list` say: the packs found, the chain in use and why |
+| `PackChoice.use(id, even_if_not_whole)` / `remember(id)` / `remembered()` | the pack screen's Use: `Packs.choose` while the game runs, a chain that is not whole put back (unless `even_if_not_whole`), a whole one kept in `PackChoice.memory_path` for `main.gd`'s next `Packs.start` |
 | `src/packs/pack_tool.tscn` | the command line; `addons/pack_tools/` (Project > Tools > "Export pack..." exports a campaign or a complete pack; "Check pack..."; "New pack from dev...") is a window that runs this scene in a process of its own and shows what it prints |
 | `src/ui/pack_dialog.tscn` | the player's pack screen (P on the sign-in screen) |
 
@@ -320,9 +323,12 @@ tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --new=o
 
 **The pack screen** (`PackDialog`, P on the sign-in screen): the packs found ("project" or "installed", "in use" / "base"), the chain and why
 (`PackChoice.summary()`), details, Check (the quick check: no reachability search, `PackChoice.check_options`; a pack outside the project is read as data and its one kind of code is a sandboxed mod, so no pack asks for trust),
-Install... (a folder or a `.larissa` pack file; `dev` too, when the project has none), Remove. A small **Packs** button appears beside the player
-list only when a pack the player installed is in `user://packs/` (not the `legacy` and `dev` pack files a game carries next to it), so a game with no pack installed looks as the original did. Nothing is switched
-there: `--pack=` chooses.
+Install... (a folder or a `.larissa` pack file; `dev` too, when the project has none), Remove, and **Use this pack** (`PackChoice.use`): the selected pack is
+chosen while the game runs and kept for the next start, so choosing a pack laid over another turns it on and choosing its base turns it off. What was made from the
+chain follows `Packs.events.changed` (`Catalog`, `Pictures`, `ModHost.sync`, which takes off a skin of a mod that stopped); the sign-in screen lists its roster again.
+A pack whose chain is not whole is not taken there: the chain in use is chosen again and the details say why. The button is off for the chosen pack. A small **Packs**
+button appears beside the player list only when a pack the player installed is in `user://packs/` (not the `legacy` and `dev` pack files a game carries next to it), so a
+game with no pack installed looks as the original did. `--pack=` wins over the kept choice for its run.
 
 ## Mod packs
 

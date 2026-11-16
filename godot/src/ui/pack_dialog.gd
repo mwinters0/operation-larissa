@@ -1,10 +1,11 @@
 class_name PackDialog
 extends Control
 ## The pack screen: the packs that are installed or come with the game, the chain of packs the game is using and why, and the buttons to check one, install one
-## and remove one. It is OUR addition, not the original's, so the sign-in screen reaches it by a key (P) and shows a small "Packs"
-## button only once there is a pack to talk about (see `SignIn`): a game with no pack installed looks as the original did. There is nothing to switch on: the
-## game uses the pack `--pack=<id>` names, else the first pack found, and the packs it is laid over (`Packs`). The one exception: when the game refused its choice
-## (`Packs.is_refused`), `PackWarning` opens it with `choosing` set and it also has a button that chooses the selected pack (`used`).
+## and remove one, and Use this pack, which chooses the selected pack for this run and the next ones (`PackChoice.use`): choosing a pack laid over another turns it
+## on, choosing its base turns it off. It is OUR addition, not the original's, so the sign-in screen reaches it by a key (P) and shows a small "Packs"
+## button only once there is a pack to talk about (see `SignIn`): a game with no pack installed looks as the original did. A pack whose chain is not whole is not
+## taken there: the game keeps the chain it plays. When the game refused its choice (`Packs.is_refused`), `PackWarning` opens it with `choosing` set: any choice is
+## taken, and `used` tells the warning screen.
 ##
 ## Teaches: a dialog that only asks questions and shows answers, like the sign-in screen's others. What is true about a pack is worked out by
 ## `PackCheck` and kept by `PackChoice`, `PackInstall` and `PackExport`; this scene lists `PackChoice.entries()` and calls them. Checking a pack runs the quick
@@ -12,9 +13,9 @@ extends Control
 
 ## The player closed the screen (Done or Esc). Every change is already made and kept.
 signal closed
-## The player chose the pack `id` with the Use button (`choosing`): `Packs.choose` has been called, `Packs.fallback_reason()` says if the chain is whole.
+## The player chose the pack `id` with the Use button and it was taken (always, with `choosing`): `Packs.fallback_reason()` says if the chain is whole.
 signal used(id: StringName)
-## A pack was installed or removed: whoever shows campaigns or skins should look again.
+## A pack was installed, removed or chosen: whoever shows campaigns or skins should look again.
 signal changed
 
 @onready var tree: Tree = %PackList
@@ -27,7 +28,8 @@ signal changed
 @onready var done_button: Button = %Done
 @onready var folder_label: Label = %Folder
 
-## Does the screen offer to choose a pack? Set before the screen is added to the tree (`PackWarning` does, when the game refused its choice).
+## Is the chain in use refused, so that any choice is taken, whole or not (`PackChoice.use`'s `even_if_not_whole`)? Set before the screen is added to the tree
+## (`PackWarning` does).
 var choosing := false
 ## What the next press of the Remove button must confirm ("remove:<id>"), or "".
 var _confirming := ""
@@ -49,7 +51,6 @@ func _ready() -> void:
 	tree.set_column_custom_minimum_width(2, 96)
 	tree.item_selected.connect(_on_selected)
 	tree.item_activated.connect(check)
-	use_button.visible = choosing
 	use_button.pressed.connect(use_selected)
 	check_button.pressed.connect(check)
 	install_button.pressed.connect(_ask_for_a_pack)
@@ -117,7 +118,7 @@ func _on_selected() -> void:
 
 func _update_buttons() -> void:
 	var entry := selected_entry()
-	use_button.disabled = entry == null or not entry.pack.is_valid()
+	use_button.disabled = entry == null or not entry.pack.is_valid() or entry.position == 0
 	use_button.text = "Use this pack"
 	check_button.disabled = entry == null
 	check_button.text = "Check"
@@ -184,15 +185,26 @@ func check() -> void:
 	_update_buttons()
 
 
-## Chooses the selected pack (`Packs.choose`) and says so (`used`). Only on a screen that offers it (`choosing`).
+## Chooses the selected pack for this run and the next ones (`PackChoice.use`) and says so (`used`, `changed`); a chain that is not whole is not taken, and the
+## details say why (unless `choosing`).
 func use_selected() -> void:
 	var entry := selected_entry()
-	if not choosing or entry == null or not entry.pack.is_valid():
+	if entry == null or not entry.pack.is_valid() or entry.position == 0:
 		return
 	_confirming = ""
-	Packs.choose(entry.id())
+	var refusal := PackChoice.use(entry.id(), choosing)
 	refresh()
+	if refusal != null and not choosing:
+		details.text = "[color=#ff6666]%s was not chosen, because its chain is not whole. Had it been: %s[/color]\nThe game goes on with %s." % [_plain(_title(entry.pack)), _plain(refusal.text()), PackChoice.chain_text()]
+		return
+	if refusal == null:
+		details.text = "In use now: %s. The next start uses it too.\n\n%s" % [PackChoice.chain_text(), details.text]
+	changed.emit()
 	used.emit(entry.id())
+
+
+static func _title(pack: Pack) -> String:
+	return pack.title if not pack.title.is_empty() else String(pack.id)
 
 
 ## Asks the player for a folder or a `.larissa` pack file to install.

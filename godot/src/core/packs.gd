@@ -4,7 +4,7 @@ extends RefCounted
 ##
 ## THE CHAIN. A manifest may say `"base": "<id>"`, the pack it is laid over; a pack with no `base` is complete. The game chooses one pack
 ## (`--pack=<id>` after `--`, else the first pack found in the lexical order of the ids) and follows the `base` links: the chosen pack, its base,
-## the base's base. `chain()` is that list, chosen pack first. A thing is asked of the chain in that order and the first pack that has it wins, so
+## the base's base (`--pack=` wins over a pack the player chose on the pack screen, which `main.gd` hands to `start` as `remembered`: `PackChoice.remember`). `chain()` is that list, chosen pack first. A thing is asked of the chain in that order and the first pack that has it wins, so
 ## a pack that holds only a few files changes a game that it does not hold. Nothing is special about the original game: `legacy` is a pack like any
 ## other, a folder the importer writes. When the chain cannot be made (no pack at all, the pack asked for is not there, a base is missing, the
 ## links go round in a circle) or does not hold what the game needs (`PackNeeds`: checked once, when the chain is chosen), `fallback_reason()` says why, and
@@ -73,6 +73,10 @@ static var _fallback: Fallback
 static var _picture_decision: PictureScale.Decision
 ## What `choose` was last asked for ("" is the default choice): `reset` makes the same choice again.
 static var _wanted: StringName = &""
+## Was `_wanted` chosen on the pack screen (now, or remembered from an earlier run) rather than by `--pack=`?
+static var _on_screen := false
+## Why the pack the player chose on the pack screen in an earlier run is not used (it is gone, or has errors), or "".
+static var _remembered_note := ""
 ## Has a choice been made (`_chain` may be empty after one: a refused chain that holds no pack)?
 static var _started := false
 ## Is `_chain` already built into the lookups (the start-up check built the chain it is about to judge)? `_settle` then does not build them again.
@@ -260,9 +264,10 @@ static func is_refused() -> bool:
 	return _fallback != null and _fallback.refused
 
 
-## Chooses the pack the command line asks for (`--pack=<id>` among `args`), else the first pack found. The game does this once, in `main.gd`; the first
-## lookup does it by itself when nobody has (a tool, the editor, a test).
-static func start(args: PackedStringArray = OS.get_cmdline_user_args()) -> void:
+## Chooses the pack the command line asks for (`--pack=<id>` among `args`), else `remembered` (the pack the player chose on the pack screen in an earlier run,
+## `PackChoice.remembered`) when it is found and has no errors, else the first pack found. The game does this once, in `main.gd`; the first lookup does it by itself
+## when nobody has (a tool, the editor, a test), with nothing remembered.
+static func start(args: PackedStringArray = OS.get_cmdline_user_args(), remembered: StringName = &"") -> void:
 	var asked: StringName = &""
 	for arg in args:
 		if arg.begins_with(PACK_OPTION):
@@ -272,7 +277,17 @@ static func start(args: PackedStringArray = OS.get_cmdline_user_args()) -> void:
 	var found := available()                                   # (prints why a pack was left out, `_leave_out`)
 	for line in found_report(found):
 		_log_once("found", line)
-	_choose_among(asked, found)                                # (prints the fallback, `_settle`)
+	_remembered_note = ""
+	var on_screen := false
+	if asked == &"" and remembered != &"":
+		var kept := _found(remembered, found)
+		if kept != null and kept.is_valid():
+			asked = remembered
+			on_screen = true
+		else:
+			_remembered_note = "The pack '%s' chosen on the pack screen %s: the first pack found is used instead." % [remembered, "is not installed" if kept == null else "has errors"]
+			push_warning("Packs: ", _remembered_note)
+	_choose_among(asked, found, on_screen)                     # (prints the fallback, `_settle`)
 	for line in choice_report(asked, found):
 		_log_once("chose", line)
 
@@ -311,7 +326,9 @@ static func found_report(found: Array[Pack]) -> PackedStringArray:
 ## What was chosen and why: the `--pack=` asked for (`asked`, `&""` for none) or the default among `found`, then the chain, chosen pack first.
 static func choice_report(asked: StringName, found: Array[Pack]) -> PackedStringArray:
 	var lines := PackedStringArray()
-	if asked != &"":
+	if asked != &"" and _on_screen:
+		lines.append("chose '%s', the pack chosen on the pack screen" % asked)
+	elif asked != &"":
 		lines.append("%s%s asked for '%s'" % [PACK_OPTION, asked, asked])
 	else:
 		var ids := PackedStringArray(found.filter(func(each: Pack) -> bool: return each.is_valid()).map(func(each: Pack) -> String: return String(each.id)))
@@ -336,14 +353,16 @@ static func _place_text(path: String) -> String:
 
 ## Chooses the pack `id` among the packs found (`available`, and `dev`) and builds its chain; `&""` is the default choice, the first pack found in the
 ## lexical order of the ids. True when the chain is whole; false when it is not (`fallback_reason` says why; `dev` is put at the bottom of it, or the chain is refused,
-## by `dev_fallback`). A chain that resolves is then checked for what the game needs (`_checked`), once.
-static func choose(id: StringName = &"") -> bool:
-	return _choose_among(id, available())
+## by `dev_fallback`). A chain that resolves is then checked for what the game needs (`_checked`), once. `on_screen`: the player chose it on the pack screen (`PackChoice.use`),
+## which the pack screen's summary says.
+static func choose(id: StringName = &"", on_screen := false) -> bool:
+	return _choose_among(id, available(), on_screen)
 
 
 ## `choose` among the packs `found` (what `available` just listed).
-static func _choose_among(id: StringName, found: Array[Pack]) -> bool:
+static func _choose_among(id: StringName, found: Array[Pack], on_screen := false) -> bool:
 	_wanted = id
+	_on_screen = on_screen and id != &""
 	var first: Pack = null
 	if id == &"":
 		for each in found:
@@ -365,16 +384,28 @@ static func use(first: Pack) -> bool:
 	return _settle(resolve(first))
 
 
+## Was the pack in use chosen on the pack screen (now, or in an earlier run: `start`'s `remembered`) rather than by `--pack=` or by default?
+static func chosen_on_screen() -> bool:
+	chain()
+	return _on_screen
+
+
+## Why the pack chosen on the pack screen in an earlier run is not the one in use (gone, or with errors), one sentence; "" when there is nothing to say.
+static func remembered_note() -> String:
+	return _remembered_note
+
+
 ## The chain in use, to give back to `restore` (a check or a test borrows the chain for a while).
 static func snapshot() -> Dictionary:
 	chain()
-	return {"chain": _chain, "fallback": _fallback, "wanted": _wanted, "pictures": _picture_decision}
+	return {"chain": _chain, "fallback": _fallback, "wanted": _wanted, "on_screen": _on_screen, "pictures": _picture_decision}
 
 
 static func restore(saved: Dictionary) -> void:
 	_chain = saved["chain"]
 	_fallback = saved["fallback"]
 	_wanted = saved["wanted"]
+	_on_screen = saved["on_screen"]
 	_changed(saved.get("pictures"))                            # (the same chain: its decision is given back, not made again)
 
 
@@ -391,7 +422,7 @@ static func lend(packs: Array[Pack], body: Callable) -> void:
 
 ## Makes the choice again (the packs on the disk changed, or a test is over): what `choose` was last asked for, the default if nothing was.
 static func reset() -> bool:
-	return choose(_wanted)
+	return choose(_wanted, _on_screen)
 
 
 ## The chain that starts with `first`: it, its base, its base's base; with `dev` under it and the reason when a link is broken (unless `with_dev` is false:

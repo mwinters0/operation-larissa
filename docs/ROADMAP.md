@@ -49,7 +49,7 @@ hand in a window.
   The hooks are three (the judging of an answer, a creature instruction, the sub's velocity and invulnerability); another point (a piece, a trigger, a contact, a creature that a mod adds) is a new named hook in `RuleHooks`.
 - A type a pack adds is worded from its texts and fields only and never uses the combination lock or the ballast panel; the lock and the ballast panels of the original cannot be drawn by a mod. A type a pack adds can build up from its data (`intro`) but has no success replay: `ProblemFlow.SUCCESS_REPLAY_TYPES` names the original's eight.
 - Story timelines other than the news cartoon are preloaded by their scenes, so no pack can replace them.
-- No player-facing menu to choose a pack or a skin (`--pack=`, `--skin=`, F3 then S); the soundfont is per `Audio`, not per skin.
+- No player-facing menu to choose a skin (`--skin=`, F3 then S); the soundfont is per `Audio`, not per skin.
 - There is no supported "this skin draws creature N" hook (`creatures` hides `Foe.sprite`); `SimView` events reach a skin before
   `OriginalPresenter`'s handlers.
 - The theme of a skin mod (`create/SKIN_API.md` "The menus' theme") reaches the sign-in screen, the dialogs, the message box and the problem screen, but not the screens that colour their text by hand from the original's palette: the canister's log screen (`LogScreen`), the surface-ship message (`SurfaceShipScreen`) and the story pages. A diagram's text is the engine's font by design (the original puts each word at a pixel and a width).
