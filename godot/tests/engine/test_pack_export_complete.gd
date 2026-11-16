@@ -1,7 +1,7 @@
 class_name TestPackExportComplete
 extends GdUnitTestSuite
 ## Teaches: a COMPLETE pack leaves the project in the data form. `PackExport.complete` writes the dev pack (a folder of the project, `.tres` and imported
-## files) as JSON, `.foe` text, PNG, WAV, OGG and MIDI in a folder of `user://`; `PackCheck` accepts it (every data file parses to the class its place calls
+## files) as JSON, `.foe` text, PNG, WAV, OGG and MIDI in a scratch folder; `PackCheck` accepts it (every data file parses to the class its place calls
 ## for, the closure of `PackNeeds` holds on it alone) and refuses a `.tres`, a scene or a script put into it; choosing it, the game's own lookups answer
 ## from its files. The round trip of every kind field by field is `test_data_form` (dev) and `test_pack_export_legacy` (legacy).
 
@@ -13,7 +13,7 @@ var _root := ""
 
 
 func before() -> void:
-	_dir = "user://test_complete_export_%d" % Time.get_ticks_usec()
+	_dir = Scratch.folder("complete_export")
 	var options := PackExport.Options.new()
 	options.pack_id = ID
 	options.reach = false

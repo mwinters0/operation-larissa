@@ -7,7 +7,7 @@ extends GdUnitTestSuite
 ## `FoeData.problems()`. Saving goes into a COPY of the data (user://), never the committed files.
 
 const SECTORS := DevPack.SECTORS_DIR
-const TEMP := "user://screen_editor_foes_test"
+var _temp := Scratch.path("screen_editor_foes_test")
 
 
 func _editor(sector: int, screen: int, dir: String = SECTORS, in_tree: bool = false) -> ScreenEditor:
@@ -23,21 +23,21 @@ func _editor(sector: int, screen: int, dir: String = SECTORS, in_tree: bool = fa
 
 
 func _temp_copy(s: int) -> String:
-	DirAccess.make_dir_recursive_absolute(Catalog.sector_dir(s, TEMP))
-	DirAccess.copy_absolute(Catalog.sector_path(s, SECTORS), Catalog.sector_path(s, TEMP))
+	DirAccess.make_dir_recursive_absolute(Catalog.sector_dir(s, _temp))
+	DirAccess.copy_absolute(Catalog.sector_path(s, SECTORS), Catalog.sector_path(s, _temp))
 	for m in Catalog.SCREENS_PER_SECTOR:
-		DirAccess.copy_absolute(ScreenFile.screen_path(SECTORS, s, m), ScreenFile.screen_path(TEMP, s, m))
-	return TEMP
+		DirAccess.copy_absolute(ScreenFile.screen_path(SECTORS, s, m), ScreenFile.screen_path(_temp, s, m))
+	return _temp
 
 
 func after_test() -> void:
-	if DirAccess.dir_exists_absolute(TEMP):
+	if DirAccess.dir_exists_absolute(_temp):
 		for s in Ground.clean_sectors():
 			for m in Catalog.SCREENS_PER_SECTOR:
-				DirAccess.remove_absolute(ScreenFile.screen_path(TEMP, s, m))
-			DirAccess.remove_absolute(Catalog.sector_path(s, TEMP))
-			DirAccess.remove_absolute(Catalog.sector_dir(s, TEMP))
-		DirAccess.remove_absolute(TEMP)
+				DirAccess.remove_absolute(ScreenFile.screen_path(_temp, s, m))
+			DirAccess.remove_absolute(Catalog.sector_path(s, _temp))
+			DirAccess.remove_absolute(Catalog.sector_dir(s, _temp))
+		DirAccess.remove_absolute(_temp)
 
 
 func _markers(editor: ScreenEditor) -> Array[ScreenEditorFoe]:

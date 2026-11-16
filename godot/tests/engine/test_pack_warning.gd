@@ -15,8 +15,8 @@ var _real_mode: bool
 
 
 func before_test() -> void:
-	_scratch = "user://test_warning_%d" % Time.get_ticks_usec()
-	DirAccess.make_dir_recursive_absolute(_scratch)
+	_scratch = Scratch.folder("warning")
+	Scratch.isolate_user_data()                              # (Use on the pack screen keeps the choice: in a scratch file, not the player's own)
 	_real_folders = Packs.folders.duplicate()
 	_real_mode = Packs.dev_fallback
 	SceneRouter.dry_run = true
@@ -28,7 +28,8 @@ func after_test() -> void:
 	Packs.dev_fallback = _real_mode
 	Packs.folders = _real_folders
 	PackFiles.remove_tree(_scratch)
-	Packs.start()                                            # (the command-line choice again: no test of this suite leaves a choice of its own behind)
+	PackShelf.remove_empty_packs()
+	Scratch.release_user_data()                              # (and the command-line choice again: no test of this suite leaves a choice of its own behind)
 
 
 func _screen() -> PackWarning:
@@ -258,6 +259,7 @@ func test_release_choosing_a_whole_pack_on_the_pack_screen_checks_again_and_goes
 	dialog.select(&"whole")
 	dialog.use_selected()
 	assert_array(Packs.chain_ids()).is_equal([&"whole", Packs.DEV])
+	assert_str(PackChoice.remembered()).is_equal(&"whole")                                   # (kept in the scratch file `Scratch.isolate_user_data` made)
 	assert_object(Packs.fallback_reason()).is_null()
 	assert_str(SceneRouter.last_path).is_equal(SceneRouter.OPENING)
 

@@ -103,7 +103,7 @@ func test_it_follows_a_change_of_the_chain_and_tells_its_holders() -> void:
 
 
 func test_a_ref_is_a_sub_resource_with_a_key_in_a_tres() -> void:
-	var path := "user://picture_ref_test.tres"
+	var path := Scratch.path("picture_ref_test.tres")
 	assert_int(ResourceSaver.save(PictureRef.of("frame/eel_swim_0"), path)).is_equal(OK)
 	var back := load(path) as PictureRef
 	assert_str(back.key).is_equal("frame/eel_swim_0")

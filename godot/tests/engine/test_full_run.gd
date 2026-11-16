@@ -6,8 +6,8 @@ extends GdUnitTestSuite
 ## Animations are switched off (`SectorWorld.skip_animations`), the router only records where it would go,
 ## and the roster goes to scratch files.
 
-const ROSTER := "user://test_full_roster.json"
-const HALL := "user://test_full_hall.json"
+var _roster := Scratch.path("test_full_roster.json")
+var _hall := Scratch.path("test_full_hall.json")
 
 var _old_roster: String
 var _old_hall: String
@@ -18,8 +18,8 @@ func before_test() -> void:
 	_old_roster = SaveStore.roster_path
 	_old_hall = SaveStore.hall_path
 	_old_players = SaveStore.players.duplicate()
-	SaveStore.roster_path = ROSTER
-	SaveStore.hall_path = HALL
+	SaveStore.roster_path = _roster
+	SaveStore.hall_path = _hall
 	SaveStore.players = []
 	SaveStore.hall = HallOfFame.new()
 	SectorWorld.skip_animations = true
@@ -38,7 +38,7 @@ func after_test() -> void:
 	GameClock.paused = false
 	GameState.hints.reset()
 	GameState.reset()
-	for path in [ROSTER, HALL]:
+	for path in [_roster, _hall]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 

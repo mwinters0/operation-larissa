@@ -9,8 +9,8 @@ extends GdUnitTestSuite
 const GAME_SCENE := "res://src/gameplay/game.tscn"
 const FINALE_SECTOR := 160
 const FINALE_SCENE := "res://src/story/generic_finale.tscn"
-const ROSTER := "user://test_generic_finale_roster.json"
-const HALL := "user://test_generic_finale_hall.json"
+var _roster := Scratch.path("test_generic_finale_roster.json")
+var _hall := Scratch.path("test_generic_finale_hall.json")
 
 var _shelf: CampaignShelf
 var _old_roster: String
@@ -22,8 +22,8 @@ func before_test() -> void:
 	_old_roster = SaveStore.roster_path
 	_old_hall = SaveStore.hall_path
 	_old_players = SaveStore.players.duplicate()
-	SaveStore.roster_path = ROSTER
-	SaveStore.hall_path = HALL
+	SaveStore.roster_path = _roster
+	SaveStore.hall_path = _hall
 	SaveStore.players = []
 	SaveStore.hall = HallOfFame.new()
 	SceneRouter.dry_run = true
@@ -44,7 +44,7 @@ func after_test() -> void:
 	GameState.hints.reset()
 	GameState.reset()
 	Audio.stop_voice()
-	for path in [ROSTER, HALL]:
+	for path in [_roster, _hall]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 
@@ -247,7 +247,7 @@ func _hall_then_sign_in(game: Game) -> void:
 	assert_str(SaveStore.hall.entries[0].campaign_id).is_equal(&"orchard")
 	assert_int(SaveStore.hall.entries[0].tries).is_equal(5)
 	assert_array(SaveStore.players).is_empty()                                    # the winner left the roster
-	var saved: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(HALL))
+	var saved: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(_hall))
 	assert_str(saved["entries"][0]["campaign"]).is_equal("orchard")
 	var view := game.dialog_layer.get_child(game.dialog_layer.get_child_count() - 1) as HallOfFameView
 	assert_object(view).is_not_null()

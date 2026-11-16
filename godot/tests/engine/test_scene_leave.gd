@@ -8,8 +8,8 @@ extends GdUnitTestSuite
 ## with other numbers, no hold of the clock or the losses, no pause of the sound. See docs/engine/ARCHITECTURE.md, "Lifetimes of state".
 
 const GAME_SCENE := "res://src/gameplay/game.tscn"
-const ROSTER := "user://test_scene_leave_roster.json"
-const HALL := "user://test_scene_leave_hall.json"
+var _roster := Scratch.path("test_scene_leave_roster.json")
+var _hall := Scratch.path("test_scene_leave_hall.json")
 ## A dev sector with a math trigger on this screen.
 const SECTOR := 150
 const SCREEN := 5
@@ -26,8 +26,8 @@ func before_test() -> void:
 	_old_roster = SaveStore.roster_path
 	_old_hall = SaveStore.hall_path
 	_old_players = SaveStore.players.duplicate()
-	SaveStore.roster_path = ROSTER
-	SaveStore.hall_path = HALL
+	SaveStore.roster_path = _roster
+	SaveStore.hall_path = _hall
 	SaveStore.players = []
 	SaveStore.hall = HallOfFame.new()
 	SectorWorld.skip_animations = true
@@ -51,7 +51,7 @@ func after_test() -> void:
 	Audio.reset_pauses()
 	GameState.hints.reset()
 	GameState.reset()
-	for path in [ROSTER, HALL]:
+	for path in [_roster, _hall]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 

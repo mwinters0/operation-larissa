@@ -4,8 +4,8 @@ extends GdUnitTestSuite
 ## pointed at scratch files in `user://`, and the files are deleted afterwards.
 
 const SaveStoreScript := preload("res://src/autoload/save_store.gd")
-const ROSTER := "user://test_roster.json"
-const HALL := "user://test_hall.json"
+var _roster := Scratch.path("test_roster.json")
+var _hall := Scratch.path("test_hall.json")
 
 var _store: Node
 
@@ -13,8 +13,8 @@ var _store: Node
 func before_test() -> void:
 	_cleanup()
 	_store = auto_free(SaveStoreScript.new())
-	_store.roster_path = ROSTER
-	_store.hall_path = HALL
+	_store.roster_path = _roster
+	_store.hall_path = _hall
 
 
 func after_test() -> void:
@@ -22,15 +22,15 @@ func after_test() -> void:
 
 
 func _cleanup() -> void:
-	for path in [ROSTER, HALL, ROSTER + ".tmp", HALL + ".tmp"]:
+	for path in [_roster, _hall, _roster + ".tmp", _hall + ".tmp"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 
 
 func _reload() -> Node:
 	var fresh: Node = auto_free(SaveStoreScript.new())
-	fresh.roster_path = ROSTER
-	fresh.hall_path = HALL
+	fresh.roster_path = _roster
+	fresh.hall_path = _hall
 	fresh.load_all()
 	return fresh
 
@@ -86,12 +86,12 @@ func test_a_longer_name_sorts_after_its_prefix() -> void:
 
 
 func test_a_nine_character_name_of_an_older_save_still_loads() -> void:
-	var file := FileAccess.open(ROSTER, FileAccess.WRITE)
+	var file := FileAccess.open(_roster, FileAccess.WRITE)
 	file.store_string(JSON.stringify({"version": 1, "players": [{"name": "Christoph", "tanks": 3}]}))
 	file.close()
 	var fresh := _reload()
 	assert_str(fresh.players[0].name).is_equal("Christoph")      # the record's name field holds nine characters
-	var hall := FileAccess.open(HALL, FileAccess.WRITE)
+	var hall := FileAccess.open(_hall, FileAccess.WRITE)
 	hall.store_string(JSON.stringify({"version": 1, "entries": [{"name": "Christoph", "game": 0, "tries": 2}]}))
 	hall.close()
 	assert_str(_reload().hall.entries[0].name).is_equal("Christoph")
@@ -129,7 +129,7 @@ func test_the_roster_holds_99_players_and_no_more() -> void:
 
 
 func test_corrupt_json_gives_an_empty_roster_instead_of_a_crash() -> void:
-	var file := FileAccess.open(ROSTER, FileAccess.WRITE)
+	var file := FileAccess.open(_roster, FileAccess.WRITE)
 	file.store_string("{ this is not json")
 	file.close()
 	var fresh := _reload()
@@ -137,13 +137,13 @@ func test_corrupt_json_gives_an_empty_roster_instead_of_a_crash() -> void:
 
 
 func test_a_wrong_shape_or_bad_entries_are_ignored() -> void:
-	var file := FileAccess.open(ROSTER, FileAccess.WRITE)
+	var file := FileAccess.open(_roster, FileAccess.WRITE)
 	file.store_string(JSON.stringify({"version": 1, "players": [5, {"name": ""}, {"name": "Ok", "tanks": 3}, {"name": "ok"}]}))
 	file.close()
 	var fresh := _reload()
 	assert_int(fresh.players.size()).is_equal(2)                 # (no duplicate check, as in the original)
 	assert_int(fresh.players[0].tanks).is_equal(3)
-	file = FileAccess.open(ROSTER, FileAccess.WRITE)
+	file = FileAccess.open(_roster, FileAccess.WRITE)
 	file.store_string("[1, 2, 3]")
 	file.close()
 	assert_int(_reload().players.size()).is_equal(0)

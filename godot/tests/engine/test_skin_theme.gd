@@ -10,8 +10,8 @@ const FONT := "skin/hud.ttf"
 const KEY := "ui_picture/ui_1195"
 const SIGN_IN := "res://src/ui/sign_in.tscn"
 const DIALOG := "res://src/ui/new_player_dialog.tscn"
-const ROSTER := "user://test_skin_theme_roster.json"
-const HALL := "user://test_skin_theme_hall.json"
+var _roster := Scratch.path("test_skin_theme_roster.json")
+var _hall := Scratch.path("test_skin_theme_hall.json")
 
 var _shelves: Array[PackShelf] = []
 var _old_roster: String
@@ -25,12 +25,13 @@ func before_test() -> void:
 	_old_roster = SaveStore.roster_path
 	_old_hall = SaveStore.hall_path
 	_old_players = SaveStore.players.duplicate()
-	SaveStore.roster_path = ROSTER
-	SaveStore.hall_path = HALL
+	SaveStore.roster_path = _roster
+	SaveStore.hall_path = _hall
 	SaveStore.players = []
 	SceneRouter.dry_run = true
 	SignIn.welcome_enabled = false
 	SignIn.prompt_when_empty = false
+	Scratch.isolate_user_data()                       # (the sign-in screen shows its Packs button only when a pack is installed: none is, whatever the machine has)
 
 
 func after_test() -> void:
@@ -44,8 +45,9 @@ func after_test() -> void:
 	SceneRouter.dry_run = false
 	SignIn.welcome_enabled = true
 	SignIn.prompt_when_empty = true
+	Scratch.release_user_data()
 	GameState.reset()
-	for path in [ROSTER, HALL]:
+	for path in [_roster, _hall]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 

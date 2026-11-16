@@ -1,7 +1,7 @@
 class_name TestPacks
 extends GdUnitTestSuite
 ## Teaches: a layered lookup that leaves the game alone until a pack is in the chain. A pack is a root and relative paths under
-## it; the first pack of the chain that has a thing answers, and the packs it is laid over answer the rest. This test puts scratch packs in `user://` (`PackShelf`) over
+## it; the first pack of the chain that has a thing answers, and the packs it is laid over answer the rest. This test puts scratch packs (`PackShelf`) over
 ## the pack the suite runs on and watches each kind of lookup: sectors, campaigns, texts, speech groups, problem types, pictures, sounds, songs and speech clips. After every
 ## test the game is as it shipped, which the first test states for itself. (How the chain is chosen and built is `test_pack_chain.gd`.)
 
@@ -10,11 +10,15 @@ const BLIP := "res://tests/fixtures/pack_blip.ogg.bin"
 var _shelves: Array[PackShelf] = []
 
 
+func before_test() -> void:
+	Scratch.isolate_user_data()                                # (the packs a test installs are a scratch folder's, and none the player has is listed)
+
+
 func after_test() -> void:
 	for shelf in _shelves:
 		shelf.remove()
 	_shelves.clear()
-	Packs.start()
+	Scratch.release_user_data()
 
 
 func _shelf(pack_id: StringName = &"", base: StringName = &"") -> PackShelf:
@@ -93,7 +97,7 @@ func test_a_manifest_that_says_tier_is_read_and_the_key_is_ignored() -> void:
 	var shelf := _shelf(&"sneaky")
 	shelf.write_json("pack.json", {"id": "sneaky", "title": "Sneaky", "version": "1", "base": String(PackShelf.base_id())})
 	shelf.write_text("data/evil.tres", "[gd_resource type=\"Resource\" format=3]\n")
-	var pack := shelf.mount()                                    # (a folder in user:// that claims to be code, so that its .tres could be loaded)
+	var pack := shelf.mount()                                    # (a folder outside the project that claims to be code, so that its .tres could be loaded)
 	assert_object(pack).is_not_null()
 	assert_bool(pack.trusted).is_false()
 	assert_object(pack.resource("data/evil.tres")).is_null()
@@ -386,7 +390,7 @@ func test_a_file_that_is_not_a_picture_or_a_sound_is_nothing_with_a_warning() ->
 # --- what can be chosen (the list G4 shows) ----------------------------------------------------------------------------------
 
 func test_available_lists_the_packs_in_the_packs_folder_of_the_user() -> void:
-	var folder := Packs.USER_PACKS_DIR + "/test_listed_pack"
+	var folder := Packs.installed_dir + "/test_listed_pack"
 	DirAccess.make_dir_recursive_absolute(folder)
 	var manifest := FileAccess.open(folder + "/pack.json", FileAccess.WRITE)
 	manifest.store_string(JSON.stringify({"id": "test_listed_pack", "title": "Listed", "version": "2", "base": String(PackShelf.base_id())}))
@@ -403,9 +407,9 @@ func test_available_lists_the_packs_in_the_packs_folder_of_the_user() -> void:
 func test_dev_is_never_offered_and_a_pack_linked_into_the_project_is_listed_once() -> void:
 	var ids: Array = Packs.available().map(func(p: Pack) -> StringName: return p.id)
 	assert_array(ids).not_contains([Packs.DEV])
-	# a pack that lives in `user://packs/` and is linked into the project as `res://packs/<id>` is one pack, not two
+	# a pack that lives in the installed folder and is linked into the project as `res://packs/<id>` is one pack, not two
 	var id := "test_linked_pack"
-	var folder := Packs.USER_PACKS_DIR + "/" + id
+	var folder := Packs.installed_dir + "/" + id
 	var link := Packs.PROJECT_PACKS_DIR + "/" + id
 	DirAccess.make_dir_recursive_absolute(folder)
 	FileAccess.open(folder + "/pack.json", FileAccess.WRITE).store_string(JSON.stringify({"id": id, "title": "Linked", "version": "1"}))

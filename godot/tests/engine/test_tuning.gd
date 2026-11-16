@@ -7,8 +7,8 @@ extends GdUnitTestSuite
 ## sim made BEFORE a run began must still play by the numbers of the run (no copy that outlives the run it was made for).
 
 const GAME_STATE_SCRIPT := "res://src/autoload/game_state.gd"
-const PACK_FILE := "user://test_tuning_pack.json"
-const OTHER_FILE := "user://test_tuning_other.json"
+var _pack_file := Scratch.path("test_tuning_pack.json")
+var _other_file := Scratch.path("test_tuning_other.json")
 
 ## A file that changes some of them: more air and ink, a slower sub, a longer trigger countdown, a slower lock, a lower script limit.
 const PACK := {
@@ -23,14 +23,14 @@ const PACK := {
 
 func after_test() -> void:
 	Tuning.extra_files = []
-	for path in [PACK_FILE, OTHER_FILE]:
+	for path in [_pack_file, _other_file]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 	GameState.reset()
 
 
 ## Lays `layer` (a Dictionary, written as the JSON file it would be) over the project's tuning, as one more file.
-func _mount(layer: Dictionary = PACK, path: String = PACK_FILE) -> void:
+func _mount(layer: Dictionary = PACK, path: String = _pack_file) -> void:
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	file.store_string(JSON.stringify(layer))
 	file.close()
@@ -156,11 +156,11 @@ func test_a_file_laid_over_changes_what_it_names_and_keeps_the_rest() -> void:
 
 func test_extra_files_are_laid_in_order_and_the_last_has_the_last_word() -> void:
 	_mount({"air": {"max_oxygen": 5, "max_tanks": 7}})
-	_mount({"air": {"max_oxygen": 6}}, OTHER_FILE)
+	_mount({"air": {"max_oxygen": 6}}, _other_file)
 	var t := Tuning.resolve()
 	assert_int(t.max_oxygen).is_equal(6)
 	assert_int(t.max_tanks).is_equal(7)
-	assert_array(Tuning.files().slice(-2)).is_equal([PACK_FILE, OTHER_FILE])
+	assert_array(Tuning.files().slice(-2)).is_equal([_pack_file, _other_file])
 
 
 # --- the run owns it ------------------------------------------------------------------------------------

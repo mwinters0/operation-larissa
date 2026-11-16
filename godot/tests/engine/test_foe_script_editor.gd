@@ -5,8 +5,8 @@ extends GdUnitTestSuite
 ## so the test never touches the project. What needs the real editor (the tab, the double
 ## click, Ctrl+S reaching the panel) is checked by hand in the editor.
 
-const TEMP_A := "user://test_foe_editor_a.foe"
-const TEMP_B := "user://test_foe_editor_b.foe"
+var _temp_a := Scratch.path("test_foe_editor_a.foe")
+var _temp_b := Scratch.path("test_foe_editor_b.foe")
 const GOOD := "start:\n    Move_Foe_Relative_XY 2 0 1   ; step\n    Jump_To start\n"
 
 var _panel: FoeEditorPanel
@@ -19,8 +19,8 @@ func before_test() -> void:
 
 func after_test() -> void:
 	_panel.free()
-	DirAccess.remove_absolute(TEMP_A)
-	DirAccess.remove_absolute(TEMP_B)
+	DirAccess.remove_absolute(_temp_a)
+	DirAccess.remove_absolute(_temp_b)
 
 
 ## Writes `text` to `path` and returns the FoeScript the loader gives back for it.
@@ -89,7 +89,7 @@ func test_code_edit_asks_the_highlighter_line_by_line() -> void:
 # --- panel: load, edit, save -------------------------------------------------
 
 func test_opening_a_file_shows_its_text_and_is_clean() -> void:
-	var doc := _panel.open_script(_file(TEMP_A, GOOD))
+	var doc := _panel.open_script(_file(_temp_a, GOOD))
 	assert_object(doc).is_not_null()
 	assert_str(doc.edit.text).is_equal(GOOD)
 	assert_bool(doc.is_dirty()).is_false()
@@ -106,47 +106,47 @@ func test_a_script_without_a_file_is_refused() -> void:
 
 
 func test_edit_save_round_trip_is_byte_exact() -> void:
-	var doc := _panel.open_script(_file(TEMP_A, GOOD))
+	var doc := _panel.open_script(_file(_temp_a, GOOD))
 	var edited := "start:\n    Hide_Foe\n    Jump_To start\n; caf\u00e9 \u2192 no final newline"
 	doc.edit.text = edited
 	doc.edit.text_changed.emit()
 	assert_bool(doc.is_dirty()).is_true()
-	assert_array(_panel.unsaved_paths()).contains_exactly([TEMP_A])
-	assert_str(FileAccess.get_file_as_string(TEMP_A)).is_equal(GOOD)      # nothing written yet
+	assert_array(_panel.unsaved_paths()).contains_exactly([_temp_a])
+	assert_str(FileAccess.get_file_as_string(_temp_a)).is_equal(GOOD)      # nothing written yet
 	assert_int(_panel.save_document(doc)).is_equal(OK)
-	assert_bool(FileAccess.get_file_as_bytes(TEMP_A) == edited.to_utf8_buffer()).is_true()
+	assert_bool(FileAccess.get_file_as_bytes(_temp_a) == edited.to_utf8_buffer()).is_true()
 	assert_bool(doc.is_dirty()).is_false()
 	assert_str(doc.resource.source).is_equal(edited)
-	var loaded := ResourceLoader.load(TEMP_A, "", ResourceLoader.CACHE_MODE_IGNORE) as FoeScript
+	var loaded := ResourceLoader.load(_temp_a, "", ResourceLoader.CACHE_MODE_IGNORE) as FoeScript
 	assert_str(loaded.source).is_equal(edited)
 
 
 func test_ctrl_s_in_the_editor_saves() -> void:
-	var doc := _panel.open_script(_file(TEMP_A, GOOD))
+	var doc := _panel.open_script(_file(_temp_a, GOOD))
 	doc.edit.text = "start:\n    Return\n"
 	var key := InputEventKey.new()
 	key.keycode = KEY_S
 	key.ctrl_pressed = true
 	key.pressed = true
 	doc.edit.gui_input.emit(key)
-	assert_str(FileAccess.get_file_as_string(TEMP_A)).is_equal("start:\n    Return\n")
+	assert_str(FileAccess.get_file_as_string(_temp_a)).is_equal("start:\n    Return\n")
 
 
 func test_save_all_writes_only_the_changed_files_and_apply_syncs_the_scripts() -> void:
-	var a := _panel.open_script(_file(TEMP_A, GOOD))
-	var b := _panel.open_script(_file(TEMP_B, GOOD))
+	var a := _panel.open_script(_file(_temp_a, GOOD))
+	var b := _panel.open_script(_file(_temp_b, GOOD))
 	a.edit.text = "start:\n    Return\n"
 	_panel.apply_to_scripts()
 	assert_str(a.resource.source).is_equal("start:\n    Return\n")
-	assert_str(FileAccess.get_file_as_string(TEMP_A)).is_equal(GOOD)
+	assert_str(FileAccess.get_file_as_string(_temp_a)).is_equal(GOOD)
 	assert_int(_panel.save_all()).is_equal(OK)
-	assert_str(FileAccess.get_file_as_string(TEMP_A)).is_equal("start:\n    Return\n")
+	assert_str(FileAccess.get_file_as_string(_temp_a)).is_equal("start:\n    Return\n")
 	assert_bool(b.is_dirty()).is_false()
 	assert_bool(_panel.has_unsaved()).is_false()
 
 
 func test_closing_drops_unsaved_edits_from_the_script_too() -> void:
-	var doc := _panel.open_script(_file(TEMP_A, GOOD))
+	var doc := _panel.open_script(_file(_temp_a, GOOD))
 	var script := doc.resource
 	doc.edit.text = "start:\n    Return\n"
 	_panel.apply_to_scripts()
@@ -156,8 +156,8 @@ func test_closing_drops_unsaved_edits_from_the_script_too() -> void:
 
 
 func test_switching_files_keeps_each_buffer() -> void:
-	var a := _panel.open_script(_file(TEMP_A, GOOD))
-	var b := _panel.open_script(_file(TEMP_B, "x:\n    Return\n"))
+	var a := _panel.open_script(_file(_temp_a, GOOD))
+	var b := _panel.open_script(_file(_temp_b, "x:\n    Return\n"))
 	assert_object(_panel.current_document()).is_same(b)
 	assert_bool(b.edit.visible).is_true()
 	assert_bool(a.edit.visible).is_false()
@@ -170,7 +170,7 @@ func test_switching_files_keeps_each_buffer() -> void:
 # --- panel: errors -----------------------------------------------------------
 
 func test_a_bad_script_lists_its_errors_and_marks_the_lines() -> void:
-	var doc := _panel.open_script(_file(TEMP_A, "start:\n    Fly_Away 1\n    Jump_To nowhere\n"))
+	var doc := _panel.open_script(_file(_temp_a, "start:\n    Fly_Away 1\n    Jump_To nowhere\n"))
 	assert_array(doc.errors).has_size(2)
 	assert_str(doc.errors[0]).starts_with("line 2:")
 	assert_str(doc.errors[1]).starts_with("line 3:")
@@ -180,7 +180,7 @@ func test_a_bad_script_lists_its_errors_and_marks_the_lines() -> void:
 
 
 func test_fixing_the_text_clears_the_errors() -> void:
-	var doc := _panel.open_script(_file(TEMP_A, "start:\n    Fly_Away 1\n"))
+	var doc := _panel.open_script(_file(_temp_a, "start:\n    Fly_Away 1\n"))
 	assert_array(doc.errors).has_size(1)
 	doc.edit.text = GOOD
 	_panel.check(doc)
@@ -190,7 +190,7 @@ func test_fixing_the_text_clears_the_errors() -> void:
 
 
 func test_go_to_problem_moves_the_caret_to_the_line() -> void:
-	var doc := _panel.open_script(_file(TEMP_A, "start:\n    Return\n    Fly_Away 1\n"))
+	var doc := _panel.open_script(_file(_temp_a, "start:\n    Return\n    Fly_Away 1\n"))
 	_panel.go_to_problem(0)
 	assert_int(doc.edit.get_caret_line()).is_equal(2)
 	_panel.go_to_problem(5)                          # no such problem: nothing happens
@@ -200,8 +200,8 @@ func test_go_to_problem_moves_the_caret_to_the_line() -> void:
 # --- panel: files changing on disk ------------------------------------------
 
 func test_a_clean_buffer_follows_the_file_on_disk() -> void:
-	var doc := _panel.open_script(_file(TEMP_A, GOOD))
-	_file(TEMP_A, "start:\n    Return\n")             # another program saves
+	var doc := _panel.open_script(_file(_temp_a, GOOD))
+	_file(_temp_a, "start:\n    Return\n")             # another program saves
 	_panel.check_disk_changes()
 	assert_str(doc.edit.text).is_equal("start:\n    Return\n")
 	assert_str(doc.resource.source).is_equal("start:\n    Return\n")
@@ -209,9 +209,9 @@ func test_a_clean_buffer_follows_the_file_on_disk() -> void:
 
 
 func test_unsaved_edits_survive_a_change_on_disk_and_are_flagged() -> void:
-	var doc := _panel.open_script(_file(TEMP_A, GOOD))
+	var doc := _panel.open_script(_file(_temp_a, GOOD))
 	doc.edit.text = "mine:\n    Return\n"
-	_file(TEMP_A, "theirs:\n    Return\n")
+	_file(_temp_a, "theirs:\n    Return\n")
 	_panel.check_disk_changes()
 	assert_str(doc.edit.text).is_equal("mine:\n    Return\n")
 	assert_bool(doc.conflict).is_true()
@@ -233,19 +233,19 @@ func test_a_sector_file_opens_clean_and_assembles() -> void:
 
 
 func test_a_crlf_file_opens_clean_and_is_saved_with_lf() -> void:
-	var doc := _panel.open_script(_file(TEMP_A, "start:\r\n    Return\r\n"))
+	var doc := _panel.open_script(_file(_temp_a, "start:\r\n    Return\r\n"))
 	assert_str(doc.edit.text).is_equal("start:\n    Return\n")      # CodeEdit keeps only "\n"
 	assert_bool(doc.is_dirty()).is_false()
 	_panel.check_disk_changes()                                     # no phantom change either
 	assert_bool(doc.conflict).is_false()
 	doc.edit.text = "start:\n    Return\n    Return\n"
 	assert_int(_panel.save_document(doc)).is_equal(OK)
-	assert_str(FileAccess.get_file_as_string(TEMP_A)).is_equal("start:\n    Return\n    Return\n")
+	assert_str(FileAccess.get_file_as_string(_temp_a)).is_equal("start:\n    Return\n    Return\n")
 
 
 # --- names and comments: rename a label, store them -----------------------------------------
 
-const TEMP_DIR := "user://foe_names_test"
+var _temp_dir := Scratch.path("foe_names_test")
 const WALK := "start:\n    Move_Foe_Relative_XY 2 0 1  ; step\nagain:\n    Wait_Next_Tick\n    Jump_To again ; again2\n    Jump_To start\n"
 
 
@@ -257,20 +257,20 @@ func _write(path: String, text: String) -> void:
 
 ## A scratch copy of sector `index` (its .foe and .tres) in user://, named like sector `as_index`.
 func _sector_copy(index: int, as_index: int) -> FoeScript:
-	DirAccess.make_dir_recursive_absolute(Catalog.sector_dir(as_index, TEMP_DIR))
-	_write(Catalog.sector_path(as_index, TEMP_DIR), FileAccess.get_file_as_string(Catalog.sector_path(index)))
-	_write(Catalog.foe_path(as_index, TEMP_DIR), FileAccess.get_file_as_string(Catalog.foe_path(index)))
-	return ResourceLoader.load(Catalog.foe_path(as_index, TEMP_DIR), "", ResourceLoader.CACHE_MODE_REPLACE) as FoeScript
+	DirAccess.make_dir_recursive_absolute(Catalog.sector_dir(as_index, _temp_dir))
+	_write(Catalog.sector_path(as_index, _temp_dir), FileAccess.get_file_as_string(Catalog.sector_path(index)))
+	_write(Catalog.foe_path(as_index, _temp_dir), FileAccess.get_file_as_string(Catalog.foe_path(index)))
+	return ResourceLoader.load(Catalog.foe_path(as_index, _temp_dir), "", ResourceLoader.CACHE_MODE_REPLACE) as FoeScript
 
 
 func _clear_temp_dir() -> void:
-	for folder in DirAccess.get_directories_at(TEMP_DIR):
-		for file_name in DirAccess.get_files_at(TEMP_DIR + "/" + folder):
-			DirAccess.remove_absolute(TEMP_DIR + "/" + folder + "/" + file_name)
-		DirAccess.remove_absolute(TEMP_DIR + "/" + folder)
-	for file_name in DirAccess.get_files_at(TEMP_DIR):
-		DirAccess.remove_absolute(TEMP_DIR + "/" + file_name)
-	DirAccess.remove_absolute(TEMP_DIR)
+	for folder in DirAccess.get_directories_at(_temp_dir):
+		for file_name in DirAccess.get_files_at(_temp_dir + "/" + folder):
+			DirAccess.remove_absolute(_temp_dir + "/" + folder + "/" + file_name)
+		DirAccess.remove_absolute(_temp_dir + "/" + folder)
+	for file_name in DirAccess.get_files_at(_temp_dir):
+		DirAccess.remove_absolute(_temp_dir + "/" + file_name)
+	DirAccess.remove_absolute(_temp_dir)
 
 
 func test_dead_code_is_a_warning_in_the_problems_area_not_an_error() -> void:
@@ -326,7 +326,7 @@ func test_a_reached_padding_is_a_warning_and_padding_nobody_reaches_is_not() -> 
 
 
 func test_a_text_without_a_sector_gets_no_dead_code_warnings() -> void:
-	var doc := _panel.open_script(_file(TEMP_A, "start:\n    Jump_To start\n    Hide_Foe\n"))
+	var doc := _panel.open_script(_file(_temp_a, "start:\n    Jump_To start\n    Hide_Foe\n"))
 	assert_array(doc.errors).is_empty()
 	assert_array(doc.warnings).is_empty()
 
@@ -348,7 +348,7 @@ func test_rename_label_changes_whole_words_outside_comments_only() -> void:
 
 
 func test_the_rename_checks_the_new_name() -> void:
-	var doc := _panel.open_script(_file(TEMP_A, WALK))
+	var doc := _panel.open_script(_file(_temp_a, WALK))
 	assert_str(_panel.rename_problem(doc, "again", "2bad")).is_not_empty()
 	assert_str(_panel.rename_problem(doc, "again", "has space")).is_not_empty()
 	assert_str(_panel.rename_problem(doc, "again", "start")).contains("already")
@@ -358,11 +358,11 @@ func test_the_rename_checks_the_new_name() -> void:
 
 
 func test_renaming_a_label_changes_the_buffer_in_one_undoable_step() -> void:
-	var doc := _panel.open_script(_file(TEMP_A, WALK))
+	var doc := _panel.open_script(_file(_temp_a, WALK))
 	assert_str(_panel.rename_label(doc, "again", "loop_a")).is_empty()
 	assert_str(doc.edit.text).is_equal(WALK.replace("again:", "loop_a:").replace("Jump_To again", "Jump_To loop_a"))
 	assert_bool(doc.is_dirty()).is_true()
-	assert_str(FileAccess.get_file_as_string(TEMP_A)).is_equal(WALK)         # a plain label only changes the buffer
+	assert_str(FileAccess.get_file_as_string(_temp_a)).is_equal(WALK)         # a plain label only changes the buffer
 	doc.edit.undo()
 	assert_str(doc.edit.text).is_equal(WALK)
 	assert_str(_panel.rename_label(doc, "again", "start")).is_not_empty()      # refused: nothing changed
@@ -372,11 +372,11 @@ func test_renaming_a_label_changes_the_buffer_in_one_undoable_step() -> void:
 func test_renaming_an_entry_label_changes_the_tres_and_saves_both_files() -> void:
 	var script := _sector_copy(DevCreatures.ARENA, DevCreatures.ARENA)
 	var doc := _panel.open_script(script)
-	var tres_before := FileAccess.get_file_as_string(Catalog.sector_path(DevCreatures.ARENA, TEMP_DIR))
+	var tres_before := FileAccess.get_file_as_string(Catalog.sector_path(DevCreatures.ARENA, _temp_dir))
 	assert_str(_panel.rename_label(doc, "quiet_hit", "touch_return")).is_empty()
 	assert_bool(doc.is_dirty()).is_false()                                    # saved together with the .tres
-	assert_str(FileAccess.get_file_as_string(Catalog.foe_path(DevCreatures.ARENA, TEMP_DIR))).contains("touch_return:").not_contains("quiet_hit")
-	var tres := FileAccess.get_file_as_string(Catalog.sector_path(DevCreatures.ARENA, TEMP_DIR))
+	assert_str(FileAccess.get_file_as_string(Catalog.foe_path(DevCreatures.ARENA, _temp_dir))).contains("touch_return:").not_contains("quiet_hit")
+	var tres := FileAccess.get_file_as_string(Catalog.sector_path(DevCreatures.ARENA, _temp_dir))
 	assert_str(tres).contains('hit_label = "touch_return"').not_contains('hit_label = "quiet_hit"')
 	assert_bool(tres.replace("touch_return", "quiet_hit") == tres_before).is_true()      # nothing else changed
 	assert_bool(_panel.current_document().notes.is_empty()).is_false()
@@ -385,10 +385,10 @@ func test_renaming_an_entry_label_changes_the_tres_and_saves_both_files() -> voi
 
 func test_a_jump_target_label_rename_leaves_the_tres_alone() -> void:
 	var doc := _panel.open_script(_sector_copy(DevCreatures.ARENA, DevCreatures.ARENA))
-	var tres_before := FileAccess.get_file_as_string(Catalog.sector_path(DevCreatures.ARENA, TEMP_DIR))
+	var tres_before := FileAccess.get_file_as_string(Catalog.sector_path(DevCreatures.ARENA, _temp_dir))
 	assert_str(_panel.rename_label(doc, "swim_right", "paddle_right")).is_empty()
 	assert_bool(doc.is_dirty()).is_true()
-	assert_str(FileAccess.get_file_as_string(Catalog.sector_path(DevCreatures.ARENA, TEMP_DIR))).is_equal(tres_before)
+	assert_str(FileAccess.get_file_as_string(Catalog.sector_path(DevCreatures.ARENA, _temp_dir))).is_equal(tres_before)
 	_clear_temp_dir()
 
 
@@ -397,8 +397,8 @@ func test_a_sector_without_an_original_is_never_stored_but_renames_like_any_othe
 	var doc := _panel.open_script(_sector_copy(DevCreatures.ARENA, 40))
 	assert_str(_panel.store_problem(doc)).contains("not one of the original sectors")
 	assert_bool(_panel.store_annotations(doc)).is_false()
-	assert_bool(FileAccess.file_exists(TEMP_DIR + "/foe_annotations.json")).is_false()
+	assert_bool(FileAccess.file_exists(_temp_dir + "/foe_annotations.json")).is_false()
 	assert_bool(FoeAnnotations.has_original(40)).is_false()
 	assert_str(_panel.rename_label(doc, "quiet_hit", "touch_return")).is_empty()      # rename works the same
-	assert_str(FileAccess.get_file_as_string(Catalog.sector_path(40, TEMP_DIR))).contains('hit_label = "touch_return"')
+	assert_str(FileAccess.get_file_as_string(Catalog.sector_path(40, _temp_dir))).contains('hit_label = "touch_return"')
 	_clear_temp_dir()

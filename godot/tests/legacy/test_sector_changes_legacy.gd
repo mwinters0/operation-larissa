@@ -11,17 +11,17 @@ extends GdUnitTestSuite
 ## The tests that need the importer's original bytes skip with a message without them (like the fidelity tests); the others always run.
 
 const NO_ORIGINAL_BYTES := "res://tests/fixtures/no_such_folder/"
-const PATCHED_DIR := "user://sector_changes_patched/"
+var _patched_dir := Scratch.path("sector_changes_patched/")
 const NEED_THE_IMPORTER := "run tools/import/import_all.py on your copy of the game"
 
 const SECTOR := 3
 
 
 func after_test() -> void:
-	if DirAccess.dir_exists_absolute(PATCHED_DIR):
-		for file in DirAccess.get_files_at(PATCHED_DIR):
-			DirAccess.remove_absolute(PATCHED_DIR + file)
-		DirAccess.remove_absolute(PATCHED_DIR)
+	if DirAccess.dir_exists_absolute(_patched_dir):
+		for file in DirAccess.get_files_at(_patched_dir):
+			DirAccess.remove_absolute(_patched_dir + file)
+		DirAccess.remove_absolute(_patched_dir)
 
 
 ## A copy of an original sector that is safe to change: the loaded resources are shared and cached, and `duplicate_deep` only copies
@@ -376,20 +376,20 @@ func test_original_bytes_that_are_not_the_ones_the_fixture_hashes_are_not_truste
 	if source.is_empty():
 		prints("SKIPPED: %ssector_headers.json is missing; %s" % [FixtureHash.ORIGINAL_DIR, NEED_THE_IMPORTER])
 		return
-	DirAccess.make_dir_recursive_absolute(PATCHED_DIR)
+	DirAccess.make_dir_recursive_absolute(_patched_dir)
 	var parsed: Dictionary = JSON.parse_string(source)
 	var entry: Dictionary = parsed["sectors"][SECTOR]
 	var hex: String = entry["header_hex"]
 	entry["header_hex"] = ("ff" if not hex.begins_with("ff") else "00") + hex.substr(2)
-	var file := FileAccess.open(PATCHED_DIR + "sector_headers.json", FileAccess.WRITE)
+	var file := FileAccess.open(_patched_dir + "sector_headers.json", FileAccess.WRITE)
 	file.store_string(JSON.stringify(parsed))
 	file.close()
-	var options := _options(PATCHED_DIR)
+	var options := _options(_patched_dir)
 	var report := SectorChanges.report(_copy_of(), options)
 	assert_bool(report.is_same()).override_failure_message(report.text()).is_true()
 	assert_bool(_item(report, "header").hash_only).is_false()           # unchanged header: the hash agrees, no bytes needed
 	var changed := _copy_of()
 	changed.neighbors_left[1] = 4
-	report = SectorChanges.report(changed, _options(PATCHED_DIR))
+	report = SectorChanges.report(changed, _options(_patched_dir))
 	assert_bool(_item(report, "header").hash_only).is_true()
 	assert_str(report.text()).contains("does not match the SHA-256 committed")

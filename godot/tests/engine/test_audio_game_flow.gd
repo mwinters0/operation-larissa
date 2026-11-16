@@ -4,11 +4,13 @@ extends GdUnitTestSuite
 ## sign-in speech and the mission-control message on the map.
 
 const GAME_SCENE := "res://src/gameplay/game.tscn"
-const ROSTER := "user://test_audio_roster.json"
-const HALL := "user://test_audio_hall.json"
+var _roster := Scratch.path("test_audio_roster.json")
+var _hall := Scratch.path("test_audio_hall.json")
+var _audio_settings := Scratch.path("test_audio_game_flow_settings.cfg")      # (closing the audio dialog saves the volumes: to a scratch file, not the player's)
 
 var _old_roster: String
 var _old_hall: String
+var _old_audio_settings: String
 var _old_players: Array[PlayerProfile]
 var _player: PlayerProfile
 var _probe: AudioProbe
@@ -18,9 +20,11 @@ var _undo: Array[Callable] = []                 ## puts back what a test changed
 func before_test() -> void:
 	_old_roster = SaveStore.roster_path
 	_old_hall = SaveStore.hall_path
+	_old_audio_settings = Audio.settings_path
+	Audio.settings_path = _audio_settings
 	_old_players = SaveStore.players.duplicate()
-	SaveStore.roster_path = ROSTER
-	SaveStore.hall_path = HALL
+	SaveStore.roster_path = _roster
+	SaveStore.hall_path = _hall
 	SaveStore.players = []
 	SaveStore.hall = HallOfFame.new()
 	SectorWorld.skip_animations = true
@@ -41,6 +45,8 @@ func after_test() -> void:
 	Audio.apply_profile(null)
 	SaveStore.roster_path = _old_roster
 	SaveStore.hall_path = _old_hall
+	Audio.settings_path = _old_audio_settings
+	DirAccess.remove_absolute(_audio_settings)
 	SaveStore.players = _old_players
 	SaveStore.hall = HallOfFame.new()
 	SectorWorld.skip_animations = false
@@ -49,7 +55,7 @@ func after_test() -> void:
 	GameClock.paused = false
 	GameState.hints.reset()
 	GameState.reset()
-	for path in [ROSTER, HALL]:
+	for path in [_roster, _hall]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 

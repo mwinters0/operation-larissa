@@ -12,7 +12,7 @@ extends RefCounted
 ## Teaches: a view that asks the state instead of keeping a copy of it: `Packs` is the one owner of the chain, and the one thing kept here is the player's
 ## choice for the next start, in a `ConfigFile`.
 
-## Where the pack chosen on the pack screen is kept for the next start (`main.gd` hands `remembered()` to `Packs.start`). A test points it at a scratch file.
+## Where the pack chosen on the pack screen is kept for the next start (`main.gd` hands `remembered()` to `Packs.start`). A test points it at a scratch file (`Scratch.isolate_user_data`).
 static var memory_path := "user://pack_choice.cfg"
 const MEMORY_SECTION := "packs"
 const MEMORY_KEY := "chosen"
@@ -38,7 +38,7 @@ static func check_options() -> PackCheck.Options:
 	return options
 
 
-## Everything the screen lists: the packs found (`Packs.available`, in `res://packs/` and `user://packs/`), an installed `dev` (it is not among those: `Packs.dev`), and
+## Everything the screen lists: the packs found (`Packs.available`, in `res://packs/` and `Packs.installed_dir`), an installed `dev` (it is not among those: `Packs.dev`), and
 ## the packs of the chain that are not among them (the project's `dev` at the bottom of a chain that could not be made).
 static func entries() -> Array[Entry]:
 	var found: Array[Entry] = []
@@ -47,7 +47,7 @@ static func entries() -> Array[Entry]:
 		seen[pack.id] = true
 		found.append(_entry_of(pack))
 	var stand_in := Packs.dev()
-	if stand_in != null and stand_in.root.begins_with(PackInstall.DIR + "/") and not seen.has(stand_in.id):
+	if stand_in != null and stand_in.root.begins_with(Packs.installed_dir + "/") and not seen.has(stand_in.id):
 		seen[stand_in.id] = true
 		found.append(_entry_of(stand_in))
 	for pack in Packs.chain():
@@ -105,7 +105,7 @@ static func entry(id: StringName) -> Entry:
 ## Does anything need showing? (A pack is installed in the player's folder: the sign-in screen shows its small "Packs" button only then; the project's own
 ## packs and the pack files a game carries next to it (`Packs.bundled`, read where they lie) are no reason to.)
 static func any() -> bool:
-	return Packs.available().any(func(pack: Pack) -> bool: return pack.root.begins_with(Packs.USER_PACKS_DIR + "/") and not Packs.bundled.has(pack.id))
+	return Packs.available().any(func(pack: Pack) -> bool: return pack.root.begins_with(Packs.installed_dir + "/") and not Packs.bundled.has(pack.id))
 
 
 ## "in use", "base of legacy" or "": the third column of the list.

@@ -1,13 +1,12 @@
 class_name TestPackBundled
 extends GdUnitTestSuite
 ## Teaches: how a game gets the packs it carries. `legacy` and `dev` ship as pack files (`<id>.larissa`, `Pack.FILE_EXTENSION`) next to the executable (or preloaded by the Web page) and are READ WHERE THEY LIE
-## (`PackArchive`): nothing is extracted into `user://packs`. A bundled pack file is one place among the others `Packs` looks in, last in the order (a pack of the project, an installed folder and an installed
+## (`PackArchive`): nothing is extracted into the installed folder. A bundled pack file is one place among the others `Packs` looks in, last in the order (a pack of the project, an installed folder and an installed
 ## pack file are all used instead of it, and `ignored()` says so); a pack file whose `pack.json` names another id than its file is left out, and so is one that is not a zip.
 ## The packs are scratch ids of the test (`Packs.bundled`), so a pack installed on this machine is left alone.
 
 const ID := &"zz_bundled_probe"
 const PROJECT_ID := &"zz_bundled_project"
-const DEV_ID := &"zz_dev_installed"
 
 var _scratch: String
 var _real_folders: Array[String]
@@ -15,8 +14,8 @@ var _real_bundled: Array[StringName]
 
 
 func before_test() -> void:
-	_scratch = "user://test_pack_bundled_%d" % Time.get_ticks_usec()
-	DirAccess.make_dir_recursive_absolute(_scratch)
+	_scratch = Scratch.folder("bundled")
+	Scratch.isolate_user_data()                              # (an installed dev is written into a scratch installed folder)
 	_real_folders = Packs.folders.duplicate()
 	_real_bundled = Packs.bundled.duplicate()
 	Packs.bundled = [ID, PROJECT_ID]
@@ -25,15 +24,11 @@ func before_test() -> void:
 func after_test() -> void:
 	Packs.bundled = _real_bundled
 	Packs.folders = _real_folders
-	PackFiles.remove_tree("%s/%s" % [PackInstall.DIR, ID])
-	PackFiles.remove_tree("%s/%s" % [PackInstall.DIR, DEV_ID])
 	PackFiles.remove_tree("%s/%s" % [Packs.PROJECT_PACKS_DIR, PROJECT_ID])
 	PackFiles.remove_tree(_scratch)
-	Packs.installed_dev_root = "%s/%s" % [Packs.USER_PACKS_DIR, Packs.DEV]
 	PackShelf.with_dev_again()
 	Packs.archive_folders = Packs.default_archive_folders(OS.has_feature("web"), OS.has_feature("editor"), OS.get_executable_path())
-	Packs.forget_dev()
-	Packs.start()
+	Scratch.release_user_data()
 
 
 ## Zips a pack `id` at the version `version` (with a file of `text`) into `<scratch>/shipped/<id>.larissa`, as `PackExport.complete` with `archive` does.
@@ -116,18 +111,18 @@ func test_the_bundled_dev_is_dev_in_place_and_an_installed_dev_comes_before_it()
 	assert_str(Packs.dev().root).is_equal(file)
 	assert_bool(Packs.dev().is_archive()).is_true()
 	assert_array(Packs.available().filter(func(pack: Pack) -> bool: return pack.id == Packs.DEV)).is_empty()
-	PackFiles.write_text("%s/%s/pack.json" % [PackInstall.DIR, DEV_ID], JSON.stringify({"id": "dev", "title": "Installed dev", "version": "1"}))
-	Packs.installed_dev_root = "%s/%s" % [PackInstall.DIR, DEV_ID]
+	Packs.installed_dev_override = ""                                         # (dev installed where the game keeps it)
+	PackFiles.write_text("%s/pack.json" % Packs.installed_dev_root(), JSON.stringify({"id": "dev", "title": "Installed dev", "version": "1"}))
 	Packs.forget_dev()
-	assert_str(Packs.dev().root).is_equal(Packs.installed_dev_root)
+	assert_str(Packs.dev().root).is_equal(Packs.installed_dev_root())
 	Packs.available()
-	assert_array(_notes_about("%s: dev is %s, so this copy is left out" % [file, Packs.installed_dev_root])).has_size(1)
+	assert_array(_notes_about("%s: dev is %s, so this copy is left out" % [file, Packs.installed_dev_root()])).has_size(1)
 
 
 func test_an_installed_dev_is_listed_by_the_pack_screen_and_is_the_fallback() -> void:
-	PackFiles.write_text("%s/%s/pack.json" % [PackInstall.DIR, DEV_ID], JSON.stringify({"id": "dev", "title": "Installed dev", "version": "1"}))
+	PackFiles.write_text("%s/pack.json" % Packs.installed_dev_root(), JSON.stringify({"id": "dev", "title": "Installed dev", "version": "1"}))
 	PackShelf.without_dev()
-	Packs.installed_dev_root = "%s/%s" % [PackInstall.DIR, DEV_ID]
+	Packs.installed_dev_override = ""                                         # (dev installed where the game keeps it)
 	Packs.forget_dev()
 	assert_bool(Packs.has_dev()).is_true()
 	assert_bool(Packs.dev().trusted).is_false()

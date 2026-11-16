@@ -8,8 +8,8 @@ extends GdUnitTestSuite
 const GAME_SCENE := "res://src/gameplay/game.tscn"
 const SIGN_IN_SCENE := "res://src/ui/sign_in.tscn"
 const WORLD_SCENE := "res://src/gameplay/sector_world.tscn"
-const ROSTER := "user://test_fidelity_roster.json"
-const HALL := "user://test_fidelity_hall.json"
+var _roster := Scratch.path("test_fidelity_roster.json")
+var _hall := Scratch.path("test_fidelity_hall.json")
 
 var _old_roster: String
 var _old_hall: String
@@ -22,8 +22,8 @@ func before_test() -> void:
 	_old_roster = SaveStore.roster_path
 	_old_hall = SaveStore.hall_path
 	_old_players = SaveStore.players.duplicate()
-	SaveStore.roster_path = ROSTER
-	SaveStore.hall_path = HALL
+	SaveStore.roster_path = _roster
+	SaveStore.hall_path = _hall
 	SaveStore.players = []
 	SaveStore.hall = HallOfFame.new()
 	SectorWorld.skip_animations = true
@@ -52,7 +52,7 @@ func after_test() -> void:
 	GameClock.paused = false
 	GameState.hints.reset()
 	GameState.reset()
-	for path in [ROSTER, HALL]:
+	for path in [_roster, _hall]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 
@@ -154,7 +154,7 @@ func test_yes_saves_and_goes_back_to_sign_in() -> void:
 	game.ask_to_return_to_sign_in()
 	game.messages.close_current(0)
 	assert_str(SceneRouter.last_path).is_equal(SceneRouter.SIGN_IN)
-	assert_bool(FileAccess.file_exists(ROSTER)).is_true()
+	assert_bool(FileAccess.file_exists(_roster)).is_true()
 
 
 # --- Options > Sound Effects / Music / Voice / New Player Hints (0x42bcdf ...) --------------------------

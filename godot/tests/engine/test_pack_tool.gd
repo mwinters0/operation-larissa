@@ -6,21 +6,25 @@ extends GdUnitTestSuite
 ## process, the way the window and a terminal do, and read its output and exit code.
 
 const ID := &"harvest_cli"
-const EXPORTS := "user://test_pack_tool_exports"
+var _exports := Scratch.path("test_pack_tool_exports")
 
 var _shelves: Array[PackShelf] = []
+
+
+func before_test() -> void:
+	Scratch.isolate_user_data()                                             # (the tool installs into a scratch installed folder, which the tool is told of: `_tool`)
 
 
 func after_test() -> void:
 	for shelf in _shelves:
 		shelf.remove()
 	_shelves.clear()
-	PackFiles.remove_tree("%s/%s" % [PackInstall.DIR, ID])
-	PackFiles.remove_tree(EXPORTS)
+	PackFiles.remove_tree(_exports)
+	Scratch.release_user_data()
 
 
 func _tool(args: PackedStringArray) -> Array:
-	return PackToolDialog.run_tool(PackShelf.pin_args() + args)               # (a Godot of its own: it gets the pin too)
+	return PackToolDialog.run_tool(PackShelf.pin_args() + PackedStringArray(["--packs-dir=" + Packs.installed_dir]) + args)      # (a Godot of its own: it gets the pin and the installed folder too)
 
 
 ## A pack with a campaign of copies of dev's sectors 0, 1, 180 as 70, 71, 72, in a scratch folder (not installed).
@@ -107,32 +111,32 @@ func test_install_list_check_by_id_and_uninstall_work_from_the_command_line() ->
 	var first := _tool(PackedStringArray(["--install=" + shelf.root, "--check=harvest_cli", "--no-reach", "--list"]))
 	assert_int(first[0]).is_equal(0)
 	assert_str(first[1]).contains("installed 'harvest_cli'").contains("harvest_cli: no problems")
-	assert_bool(FileAccess.file_exists("user://packs/%s/pack.json" % ID)).is_true()
-	assert_str(first[1]).contains("In use:").contains("harvest_cli").contains("user://packs/harvest_cli")
+	assert_bool(FileAccess.file_exists(PackInstall.folder_of(ID) + "/pack.json")).is_true()
+	assert_str(first[1]).contains("In use:").contains("harvest_cli").contains(PackInstall.folder_of(ID))
 	var gone := _tool(PackedStringArray(["--uninstall=harvest_cli", "--install=user://no_such_pack"]))
 	assert_int(gone[0]).is_equal(1)                                                         # (the second fails: the exit code says so; the first still happened)
 	assert_str(gone[1]).contains("uninstalled harvest_cli").contains("is not a folder")
-	assert_bool(DirAccess.dir_exists_absolute("user://packs/%s" % ID)).is_false()
+	assert_bool(DirAccess.dir_exists_absolute(PackInstall.folder_of(ID))).is_false()
 
 
 func test_a_complete_pack_is_exported_checked_and_listed_from_the_command_line() -> void:
-	var done := _tool(PackedStringArray(["--export-pack=dev", "--pack-id=dev_cli_data", "--out=" + EXPORTS, "--no-reach"]))
+	var done := _tool(PackedStringArray(["--export-pack=dev", "--pack-id=dev_cli_data", "--out=" + _exports, "--no-reach"]))
 	assert_int(done[0]).override_failure_message(done[1]).is_equal(0)
-	assert_str(done[1]).contains("exported").contains("%s/dev_cli_data" % EXPORTS)
-	assert_bool(FileAccess.file_exists("%s/dev_cli_data/data/zones.json" % EXPORTS)).is_true()
-	assert_bool(FileAccess.file_exists("%s/dev_cli_data/data/zones.tres" % EXPORTS)).is_false()
-	var checked := _tool(PackedStringArray(["--check=%s/dev_cli_data" % EXPORTS, "--no-reach"]))
+	assert_str(done[1]).contains("exported").contains("%s/dev_cli_data" % _exports)
+	assert_bool(FileAccess.file_exists("%s/dev_cli_data/data/zones.json" % _exports)).is_true()
+	assert_bool(FileAccess.file_exists("%s/dev_cli_data/data/zones.tres" % _exports)).is_false()
+	var checked := _tool(PackedStringArray(["--check=%s/dev_cli_data" % _exports, "--no-reach"]))
 	assert_int(checked[0]).override_failure_message(checked[1]).is_equal(0)
 	assert_str(checked[1]).contains("Pack dev_cli_data").not_contains("error:")
-	var refused := _tool(PackedStringArray(["--export-pack=no_such_pack", "--out=" + EXPORTS]))
+	var refused := _tool(PackedStringArray(["--export-pack=no_such_pack", "--out=" + _exports]))
 	assert_int(refused[0]).is_equal(1)
 	assert_str(refused[1]).contains("there is no pack 'no_such_pack'")
 
 
 func test_export_from_the_command_line_refuses_what_cannot_be_exported_with_a_nonzero_exit_code() -> void:
-	var refused := _tool(PackedStringArray(["--export-campaign=no_such_campaign", "--out=" + EXPORTS, "--no-reach"]))
+	var refused := _tool(PackedStringArray(["--export-campaign=no_such_campaign", "--out=" + _exports, "--no-reach"]))
 	assert_int(refused[0]).is_equal(1)
 	assert_str(refused[1]).contains("there is no campaign 'no_such_campaign'")
-	assert_bool(DirAccess.dir_exists_absolute(EXPORTS)).is_false()
+	assert_bool(DirAccess.dir_exists_absolute(_exports)).is_false()
 	var bad_option := _tool(PackedStringArray(["--frobnicate"]))
 	assert_int(bad_option[0]).is_equal(2)

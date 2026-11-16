@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 ## `Catalog.sector(index)` finds it. The playability checks are the judge, as the fidelity tests are for the originals (a new sector has
 ## no original bytes to compare with). The Python half (the importer and the reset tools refuse such numbers) is tools/import/test_new_sectors.py.
 
-const ROOT := "user://f4_new_sector_test"
+var _root := Scratch.path("f4_new_sector_test")
 
 static var _serial := 0
 var _dir := ""
@@ -15,14 +15,14 @@ var _project_ids: Array = []
 
 func before_test() -> void:
 	_serial += 1
-	_dir = "%s/t%d" % [ROOT, _serial]                  # a folder of its own for every test: loaded resources are cached by path
+	_dir = "%s/t%d" % [_root, _serial]                  # a folder of its own for every test: loaded resources are cached by path
 	DirAccess.make_dir_recursive_absolute(_dir)
 	_project_ids = Array(Catalog.sector_ids())
 
 
 func after_test() -> void:
 	Catalog.sectors_dir = Catalog.SECTORS_DIR
-	_remove_tree(ROOT)
+	_remove_tree(_root)
 
 
 func _remove_tree(path: String) -> void:

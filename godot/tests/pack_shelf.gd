@@ -1,6 +1,6 @@
 class_name PackShelf
 extends RefCounted
-## A scratch pack (outside the project, so read in the data form) for a test: a folder in `user://` with a `pack.json` and whatever the test writes into it, used with `Packs.use` as the chosen pack
+## A scratch pack (outside the project, so read in the data form) for a test: a folder in the process's `Scratch` folder with a `pack.json` and whatever the test writes into it, used with `Packs.use` as the chosen pack
 ## (over the pack its `base` names: by default the complete pack at the bottom of the chain in use). `remove` chooses again and deletes the folder, so the next
 ## test starts with the game as it ships. Each shelf has a folder of its own (the campaigns and sectors a pack holds are cached by what they are called).
 ##
@@ -18,7 +18,7 @@ var pack: Pack
 func _init(pack_id: StringName = &"", base: StringName = &"") -> void:
 	_count += 1
 	id = pack_id if pack_id != &"" else StringName("scratch_%d" % _count)
-	root = "user://test_packs_%d_%d/%s" % [Time.get_ticks_msec(), _count, id]
+	root = "%s/%s" % [Scratch.folder("shelf_%d" % _count), id]
 	DirAccess.make_dir_recursive_absolute(root)
 	Packs.folders.append(root.get_base_dir())                  # (so that a pack laid over this one finds it: `Packs.available` looks here too)
 	var manifest := {"id": String(id), "title": "Scratch %s" % id, "version": "1.0"}
@@ -151,21 +151,26 @@ func mount() -> Pack:
 	return pack
 
 
-## A complete pack that holds only its manifest: the folder `user://test_empty_packs/<id>/`. Choosing it finds everything missing. Returns the folder it is in, to put in
+## A complete pack that holds only its manifest: the folder `empty_packs/<id>/` of the scratch folder (`remove_empty_packs` deletes them). Choosing it finds everything missing. Returns the folder it is in, to put in
 ## `Packs.folders`.
 static func empty_complete_pack_dir(pack_id: StringName) -> String:
-	const DIR := "user://test_empty_packs"
-	PackFiles.write_text("%s/%s/pack.json" % [DIR, pack_id], JSON.stringify({"id": String(pack_id), "title": "Empty %s" % pack_id, "version": "1"}))
-	return DIR
+	var dir := Scratch.path("empty_packs")
+	PackFiles.write_text("%s/%s/pack.json" % [dir, pack_id], JSON.stringify({"id": String(pack_id), "title": "Empty %s" % pack_id, "version": "1"}))
+	return dir
 
 
-## Makes the dev pack absent for a test: `Packs.dev_root` and `Packs.installed_dev_root` point at folders that do not exist, and the bundled pack files are looked for only in
+## Deletes the packs `empty_complete_pack_dir` made.
+static func remove_empty_packs() -> void:
+	PackFiles.remove_tree(Scratch.path("empty_packs"))
+
+
+## Makes the dev pack absent for a test: `Packs.dev_root` and `Packs.installed_dev_override` point at folders that do not exist, and the bundled pack files are looked for only in
 ## `shipped_dirs` (none by default). The folders and the chain are left as they are; `with_dev_again` puts everything back, and every test that calls this must call that in `after_test`.
 static func without_dev(shipped_dirs: Array[String] = []) -> void:
 	if _dev_saved.is_empty():
-		_dev_saved = {"root": Packs.dev_root, "installed": Packs.installed_dev_root, "archives": Packs.archive_folders.duplicate()}
+		_dev_saved = {"root": Packs.dev_root, "installed": Packs.installed_dev_override, "archives": Packs.archive_folders.duplicate()}
 	Packs.dev_root = "%s/zz_no_dev_here" % Packs.PROJECT_PACKS_DIR
-	Packs.installed_dev_root = "%s/zz_no_dev_here" % Packs.USER_PACKS_DIR
+	Packs.installed_dev_override = "%s/zz_no_dev_here" % Packs.installed_dir
 	Packs.archive_folders = shipped_dirs.duplicate()
 	Packs.forget_dev()
 
@@ -175,7 +180,7 @@ static func with_dev_again() -> void:
 	if _dev_saved.is_empty():
 		return
 	Packs.dev_root = _dev_saved["root"]
-	Packs.installed_dev_root = _dev_saved["installed"]
+	Packs.installed_dev_override = _dev_saved["installed"]
 	Packs.archive_folders.assign(_dev_saved["archives"])
 	_dev_saved = {}
 	Packs.forget_dev()
@@ -205,16 +210,6 @@ static func base_id() -> StringName:
 
 ## Makes the command-line choice again (`Packs.start`: the pinned pack, the game as it ships) and deletes the pack's folder.
 func remove() -> void:
-	_delete(root.get_base_dir())
+	PackFiles.remove_tree(root.get_base_dir())
 	Packs.folders.erase(root.get_base_dir())
 	Packs.start()
-
-
-static func _delete(dir: String) -> void:
-	if not DirAccess.dir_exists_absolute(dir):
-		return
-	for file in DirAccess.get_files_at(dir):
-		DirAccess.remove_absolute("%s/%s" % [dir, file])
-	for folder in DirAccess.get_directories_at(dir):
-		_delete("%s/%s" % [dir, folder])
-	DirAccess.remove_absolute(dir)

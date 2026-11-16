@@ -1,7 +1,7 @@
 class_name TestPackNoDev
 extends GdUnitTestSuite
 ## Teaches: what the game does when the dev pack is absent, and where dev comes from when the project has no `res://packs/dev`. Dev is the folder of the project (the editor,
-## these tests) or the installed `user://packs/dev` (the pack file `dev.larissa` extracted, `test_pack_bundled.gd`, or installed from the pack screen). With neither, `Packs.dev()` is null and nothing can fall back to it: a chain that needs a fallback is refused in a debug build too, with a sentence that says so, a
+## these tests) or the installed `dev` in `Packs.installed_dir` (the pack file `dev.larissa` extracted, `test_pack_bundled.gd`, or installed from the pack screen). With neither, `Packs.dev()` is null and nothing can fall back to it: a chain that needs a fallback is refused in a debug build too, with a sentence that says so, a
 ## pack laid over `dev` or `--pack=dev` is refused with the advice to get `dev.larissa`, and the pack tools say what is missing instead of failing. The suite makes dev absent with
 ## `PackShelf.without_dev`.
 
@@ -14,8 +14,7 @@ var _shelves: Array[PackShelf] = []
 
 
 func before_test() -> void:
-	_scratch = "user://test_no_dev_%d" % Time.get_ticks_usec()
-	DirAccess.make_dir_recursive_absolute(_scratch)
+	_scratch = Scratch.folder("no_dev")
 	_real_folders = Packs.folders.duplicate()
 	_real_mode = Packs.dev_fallback
 
@@ -27,7 +26,8 @@ func after_test() -> void:
 	Packs.dev_fallback = _real_mode
 	Packs.folders = _real_folders
 	PackFiles.remove_tree(_scratch)
-	Packs.installed_dev_root = "%s/%s" % [Packs.USER_PACKS_DIR, Packs.DEV]       # (a test of this suite points it at a scratch folder)
+	PackShelf.remove_empty_packs()
+	Packs.installed_dev_override = ""                        # (a test of this suite points it at a scratch folder)
 	Packs.forget_dev()
 	PackShelf.with_dev_again()                               # (and `Packs.start`: the command-line choice again)
 
@@ -224,7 +224,7 @@ func _installed_dev(manifest_id := "dev") -> String:
 func test_an_installed_dev_is_dev_when_the_project_has_none() -> void:
 	var folder := _installed_dev()
 	PackShelf.without_dev()
-	Packs.installed_dev_root = folder
+	Packs.installed_dev_override = folder
 	Packs.forget_dev()
 	Packs.folders = [_scratch]
 	assert_str(Packs.dev().root).is_equal(folder)
@@ -234,7 +234,7 @@ func test_an_installed_dev_is_dev_when_the_project_has_none() -> void:
 
 func test_the_projects_dev_wins_over_an_installed_one_and_the_reason_is_kept() -> void:
 	var folder := _installed_dev()
-	Packs.installed_dev_root = folder
+	Packs.installed_dev_override = folder
 	Packs.forget_dev()
 	assert_str(Packs.dev().root).is_equal("res://packs/dev")
 	Packs.available()
@@ -246,7 +246,7 @@ func test_the_projects_dev_wins_over_an_installed_one_and_the_reason_is_kept() -
 func test_an_installed_dev_that_says_it_is_another_pack_is_left_out() -> void:
 	var folder := _installed_dev("elsewhere")
 	PackShelf.without_dev()
-	Packs.installed_dev_root = folder
+	Packs.installed_dev_override = folder
 	Packs.forget_dev()
 	assert_object(Packs.dev()).is_null()
 	Packs.available()

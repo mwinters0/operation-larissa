@@ -13,7 +13,7 @@ extends GdUnitTestSuite
 ## Everything is written under user://, never into res://data.
 
 const SECTORS := DevPack.SECTORS_DIR
-const TEMP := "user://sector_editing_test"
+var _temp := Scratch.path("sector_editing_test")
 
 var _savers: Array[ResourceFormatSaver] = []
 
@@ -23,16 +23,16 @@ func before_test() -> void:
 	for saver in _savers:
 		ResourceSaver.add_resource_format_saver(saver, true)
 	ScreenFile.last_refusal = ""
-	DirAccess.make_dir_recursive_absolute(TEMP)
+	DirAccess.make_dir_recursive_absolute(_temp)
 
 
 func after_test() -> void:
 	for saver in _savers:
 		ResourceSaver.remove_resource_format_saver(saver)
 	_savers.clear()
-	for file in DirAccess.get_files_at(TEMP):
-		DirAccess.remove_absolute(TEMP.path_join(file))
-	DirAccess.remove_absolute(TEMP)
+	for file in DirAccess.get_files_at(_temp):
+		DirAccess.remove_absolute(_temp.path_join(file))
+	DirAccess.remove_absolute(_temp)
 
 
 ## A fresh, private copy of a sector of the dev pack (the catalog's are shared and cached).
@@ -41,7 +41,7 @@ func _load(sector: int) -> SectorData:
 
 
 func _copy_file(sector: int) -> String:
-	var path := TEMP.path_join("sector_%02d.tres" % sector)
+	var path := _temp.path_join("sector_%02d.tres" % sector)
 	assert_int(DirAccess.copy_absolute(Catalog.sector_path(sector, SECTORS), path)).is_equal(OK)
 	return path
 

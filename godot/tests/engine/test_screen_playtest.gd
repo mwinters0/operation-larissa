@@ -541,7 +541,7 @@ func test_playing_hands_the_game_the_words_and_refuses_what_it_cannot_play() -> 
 	assert_int(played.screen).is_equal(5)
 	assert_int(played.tanks).is_equal(Tuning.resolve().max_tanks)
 	# an editor on a copy of the data is not the game's data
-	var copy := _editor(Ground.MAIN, 5, "user://not_the_game")
+	var copy := _editor(Ground.MAIN, 5, Scratch.path("not_the_game"))
 	assert_str(ScreenEditorPlaytest.run(copy, setup, func(words: String) -> void: started.append(words))).starts_with("Not played")    # (no files there)
 	copy.load_error = ""
 	assert_str(ScreenEditorPlaytest.why_not(copy)).contains("copy")

@@ -17,8 +17,7 @@ var _real_mode: bool
 
 
 func before_test() -> void:
-	_scratch = "user://test_start_check_%d" % Time.get_ticks_usec()
-	DirAccess.make_dir_recursive_absolute(_scratch)
+	_scratch = Scratch.folder("start_check")
 	_real_folders = Packs.folders.duplicate()
 	_real_mode = Packs.dev_fallback
 
@@ -27,6 +26,7 @@ func after_test() -> void:
 	Packs.dev_fallback = _real_mode
 	Packs.folders = _real_folders
 	PackFiles.remove_tree(_scratch)
+	PackShelf.remove_empty_packs()
 	Packs.start()                                            # (the command-line choice again: no test of this suite leaves a choice of its own behind)
 
 

@@ -12,8 +12,8 @@ func before(do_skip := not LegacyPack.present(), skip_reason := "run the importe
 
 
 const GAME_SCENE := "res://src/gameplay/game.tscn"
-const ROSTER := "user://test_flow_roster.json"
-const HALL := "user://test_flow_hall.json"
+var _roster := Scratch.path("test_flow_roster.json")
+var _hall := Scratch.path("test_flow_hall.json")
 
 var _old_roster: String
 var _old_hall: String
@@ -25,8 +25,8 @@ func before_test() -> void:
 	_old_roster = SaveStore.roster_path
 	_old_hall = SaveStore.hall_path
 	_old_players = SaveStore.players.duplicate()
-	SaveStore.roster_path = ROSTER
-	SaveStore.hall_path = HALL
+	SaveStore.roster_path = _roster
+	SaveStore.hall_path = _hall
 	SaveStore.players = []
 	SaveStore.hall = HallOfFame.new()
 	SectorWorld.skip_animations = true
@@ -52,7 +52,7 @@ func after_test() -> void:
 	GameClock.paused = false
 	GameState.hints.reset()
 	GameState.reset()
-	for path in [ROSTER, HALL]:
+	for path in [_roster, _hall]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 
@@ -92,7 +92,7 @@ func _finish_closing_and_check_hall(game: Game, expected_tries: int) -> void:
 	assert_int(SaveStore.hall.entries[0].tries).is_equal(expected_tries)
 	# G27: `add_player_to_hall` (0x4315ac) -> `RemoveRosterSlot` (0x42f6eb) -> `SaveRosterData`: the winner leaves the roster, in memory and on disk
 	assert_array(SaveStore.players).is_empty()
-	assert_int(JSON.parse_string(FileAccess.get_file_as_string(ROSTER))["players"].size()).is_equal(0)
+	assert_int(JSON.parse_string(FileAccess.get_file_as_string(_roster))["players"].size()).is_equal(0)
 	var view := game.dialog_layer.get_child(game.dialog_layer.get_child_count() - 1) as HallOfFameView
 	assert_object(view).is_not_null()
 	view.close()

@@ -56,7 +56,7 @@ func _ready() -> void:
 	install_button.pressed.connect(_ask_for_a_pack)
 	remove_button.pressed.connect(remove_selected)
 	done_button.pressed.connect(close)
-	folder_label.text = "Packs are kept in %s" % ProjectSettings.globalize_path(PackInstall.DIR)
+	folder_label.text = "Packs are kept in %s" % ProjectSettings.globalize_path(Packs.installed_dir)
 	refresh()
 	tree.grab_focus()
 
@@ -128,7 +128,7 @@ func _update_buttons() -> void:
 
 ## Was this pack put in the player's folder (and so can be taken out again)? The game's own packs (`res://packs/`) cannot.
 static func is_installed_by_player(entry: PackChoice.Entry) -> bool:
-	return entry.pack.root.begins_with(PackInstall.DIR + "/")
+	return entry.pack.root.begins_with(Packs.installed_dir + "/")
 
 
 ## What the details box says about `entry`: who made it, what it holds, why it is not loaded.

@@ -8,8 +8,8 @@ func before(do_skip := not LegacyPack.present(), skip_reason := "run the importe
 
 
 const SaveStoreScript := preload("res://src/autoload/save_store.gd")
-const ROSTER := "user://test_roster.json"
-const HALL := "user://test_hall.json"
+var _roster := Scratch.path("test_roster.json")
+var _hall := Scratch.path("test_hall.json")
 
 var _store: Node
 
@@ -17,8 +17,8 @@ var _store: Node
 func before_test() -> void:
 	_cleanup()
 	_store = auto_free(SaveStoreScript.new())
-	_store.roster_path = ROSTER
-	_store.hall_path = HALL
+	_store.roster_path = _roster
+	_store.hall_path = _hall
 
 
 func after_test() -> void:
@@ -26,7 +26,7 @@ func after_test() -> void:
 
 
 func _cleanup() -> void:
-	for path in [ROSTER, HALL, ROSTER + ".tmp", HALL + ".tmp"]:
+	for path in [_roster, _hall, _roster + ".tmp", _hall + ".tmp"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 

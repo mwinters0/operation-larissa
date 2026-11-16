@@ -5,6 +5,7 @@ extends Node
 ## Run from the repository root (a scene, not `-s`: the scripts it loads need the autoloads, like `check_sector.tscn`). Options after `--`:
 ##   --list                    the packs that are installed or come with the game, the chain the game uses and why
 ##   --pack=<id>               (before the tools run) choose the pack the game uses, as `godot ... -- --pack=<id>` does
+##   --packs-dir=<folder>      (before the tools run) the folder installed packs live in (default user://packs/, `Packs.installed_dir`): --list, --install, --uninstall and a pack found by its id use it
 ##   --check=<where>           check a pack: a folder with a pack.json, or the id of a pack that was found (repeatable)
 ##   --no-reach                (with --check, --export-*) skip the reachability search
 ##   --export-campaign=<id>    export the campaign <id> in the data form into --out (a folder; with --archive one .larissa pack file)
@@ -12,9 +13,9 @@ extends Node
 ##   --archive-folder=<folder> write a pack folder you made by hand (an example pack) as the pack file <id>.larissa in --out, checked first, with the pack it is laid over found as usual (repeatable)
 ##   --out=<dir>               where exports go (default user://pack_exports)
 ##   --pack-id= --title= --version= --author= --description=   what goes in the manifest (the campaign's or source pack's own by default)
-##   --install=<where>         copy a pack (a folder or a .larissa pack file) into user://packs/ (dev included, unless the project has its own)
+##   --install=<where>         copy a pack (a folder or a .larissa pack file) into the installed-packs folder (dev included, unless the project has its own)
 ##   --base=<id>               (with --export-campaign) the pack the exported pack is laid over (default: the complete pack at the bottom of the chain in use)
-##   --uninstall=<id>          delete an installed pack from user://packs/
+##   --uninstall=<id>          delete an installed pack from the installed-packs folder
 ##   --pictures-table=<folder> write <folder>/pictures.json from the <kind>/<name>.png files under it (a row for each file no row names; the rows it holds stay), then check it with --check=<folder>
 ##   --new=<id>                start a pack of your own: copy the pack --from (default dev) to res://packs/<id>, with new paths and UIDs and a new pack.json
 ##                             (--title= names it); refuses an id that is taken or reserved (dev). Import it afterwards (`godot --headless --path godot --import`).
@@ -26,11 +27,17 @@ extends Node
 ## The exit code is 1 when a check found an error, an export left nothing behind, or an install failed; 2 for a bad option.
 ## (user:// is the game's data folder: `ProjectSettings.globalize_path("user://")`.)
 
+## The option that says where installed packs live: `--packs-dir=<folder>`.
+const PACKS_DIR_OPTION := "--packs-dir="
+
 var _failed := 0
 
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
+	for arg in args:
+		if arg.begins_with(PACKS_DIR_OPTION):
+			Packs.installed_dir = arg.trim_prefix(PACKS_DIR_OPTION)
 	Packs.start(args)                       # (`--pack=<id>` chooses the pack the checks and exports see)
 	var values := {}
 	var to_install: Array[String] = []
@@ -63,7 +70,7 @@ func _ready() -> void:
 				"export-campaign": campaigns.append(value)
 				"export-pack": packs.append(value)
 				"archive-folder": folders.append(value)
-				"out", "pack-id", "title", "version", "author", "description", "base", "pack", "from": values[key] = value
+				"out", "pack-id", "title", "version", "author", "description", "base", "pack", "from", "packs-dir": values[key] = value
 				_:
 					_bad(arg)
 					return
@@ -145,6 +152,6 @@ func _list() -> void:
 	print(PackChoice.summary())
 	var entries := PackChoice.entries()
 	if entries.is_empty():
-		print("no packs are installed (packs go in %s)" % ProjectSettings.globalize_path(PackInstall.DIR))
+		print("no packs are installed (packs go in %s)" % ProjectSettings.globalize_path(Packs.installed_dir))
 	for entry in entries:
 		print("%-20s %-7s %s  (%s)" % [entry.id(), PackChoice.state_text(entry), entry.pack.title, entry.pack.root])

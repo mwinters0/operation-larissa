@@ -510,7 +510,7 @@ func test_typing_a_word_opens_the_menu_only_while_the_editor_has_the_focus() -> 
 func test_the_panel_uses_the_foe_code_edit() -> void:
 	var panel := FoeEditorPanel.new()
 	add_child(panel)
-	var path := "user://test_foe_help.foe"
+	var path := Scratch.path("test_foe_help.foe")
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	file.store_string("start:\n    Return\n")
 	file.close()

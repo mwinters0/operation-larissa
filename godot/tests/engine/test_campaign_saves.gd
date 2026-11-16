@@ -8,8 +8,8 @@ extends GdUnitTestSuite
 
 const SaveStoreScript := preload("res://src/autoload/save_store.gd")
 const GAME_STATE_SCRIPT := "res://src/autoload/game_state.gd"
-const ROSTER := "user://test_campaign_saves_roster.json"
-const HALL := "user://test_campaign_saves_hall.json"
+var _roster := Scratch.path("test_campaign_saves_roster.json")
+var _hall := Scratch.path("test_campaign_saves_hall.json")
 
 ## A roster of the first release, byte for byte what it wrote: no `campaign`, no `pieces_total`, `game` 0 / 1, the progress words of the
 ## original (28 = sector 14 of Voyager; 0x3E = the Expert finale, midpoint flag off; 0x21 = Expert sector 16, flag on).
@@ -31,8 +31,8 @@ var _store: Node
 func before_test() -> void:
 	_cleanup()
 	_store = auto_free(SaveStoreScript.new())
-	_store.roster_path = ROSTER
-	_store.hall_path = HALL
+	_store.roster_path = _roster
+	_store.hall_path = _hall
 
 
 func after_test() -> void:
@@ -43,7 +43,7 @@ func after_test() -> void:
 
 
 func _cleanup() -> void:
-	for path in [ROSTER, HALL, ROSTER + ".tmp", HALL + ".tmp"]:
+	for path in [_roster, _hall, _roster + ".tmp", _hall + ".tmp"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 
@@ -60,8 +60,8 @@ func _write(path: String, text: String) -> void:
 
 func _reload() -> Node:
 	var fresh: Node = auto_free(SaveStoreScript.new())
-	fresh.roster_path = ROSTER
-	fresh.hall_path = HALL
+	fresh.roster_path = _roster
+	fresh.hall_path = _hall
 	fresh.load_all()
 	return fresh
 
@@ -111,13 +111,13 @@ func test_the_roster_of_another_campaign_is_saved_loaded_and_the_winner_enters_t
 	assert_int(again.hall.entries.size()).is_equal(1)
 	assert_str(again.hall.entries[0].campaign_id).is_equal(&"garden")
 	assert_str(again.hall.entries[0].level_text()).is_equal("Garden of Tests " + Catalog.text(&"customized_marker"))
-	assert_int(int(_file_json(HALL)["version"])).is_equal(SaveStoreScript.FORMAT_VERSION)
+	assert_int(int(_file_json(_hall)["version"])).is_equal(SaveStoreScript.FORMAT_VERSION)
 
 
 # --- a file of the first release ----------------------------------------------------------------------------------------------
 
 func test_a_version_1_roster_loads_with_every_game_and_progress_as_it_meant() -> void:
-	_write(ROSTER, V1_ROSTER)
+	_write(_roster, V1_ROSTER)
 	var fresh := _reload()
 	var by_name := {}
 	for player: PlayerProfile in fresh.players:
@@ -146,12 +146,12 @@ func test_a_version_1_roster_loads_with_every_game_and_progress_as_it_meant() ->
 
 
 func test_a_version_1_file_is_written_back_as_version_2_with_the_campaign_added() -> void:
-	_write(ROSTER, V1_ROSTER)
-	_write(HALL, V1_HALL)
+	_write(_roster, V1_ROSTER)
+	_write(_hall, V1_HALL)
 	var fresh := _reload()
 	assert_bool(fresh.save_roster()).is_true()
 	assert_bool(fresh.save_hall()).is_true()
-	var roster := _file_json(ROSTER)
+	var roster := _file_json(_roster)
 	assert_int(int(roster["version"])).is_equal(2)
 	var rows: Array = roster["players"]
 	var names: Array = rows.map(func(row: Dictionary) -> Variant: return row["name"])
@@ -161,7 +161,7 @@ func test_a_version_1_file_is_written_back_as_version_2_with_the_campaign_added(
 	assert_int(int(rows[0]["progress"])).is_equal(28)
 	assert_str(rows[1]["campaign"]).is_equal("expert")
 	assert_int(int(rows[1]["progress"])).is_equal(62)
-	var hall := _file_json(HALL)
+	var hall := _file_json(_hall)
 	assert_int(int(hall["version"])).is_equal(2)
 	assert_str(hall["entries"][0]["campaign"]).is_equal("expert")
 	assert_str(hall["entries"][1]["campaign"]).is_equal("voyager")
@@ -171,7 +171,7 @@ func test_a_version_1_file_is_written_back_as_version_2_with_the_campaign_added(
 
 
 func test_a_version_1_hall_of_fame_loads_with_its_games() -> void:
-	_write(HALL, V1_HALL)
+	_write(_hall, V1_HALL)
 	var fresh := _reload()
 	assert_int(fresh.hall.entries.size()).is_equal(2)
 	assert_str(fresh.hall.entries[0].campaign_id).is_equal(&"expert")
@@ -197,7 +197,7 @@ func test_a_row_without_a_campaign_takes_it_from_game_and_a_silly_game_is_clampe
 
 
 func test_a_file_of_a_newer_release_is_still_read() -> void:
-	_write(ROSTER, '{"version": 99, "players": [{"name": "Zoe", "campaign": "voyager", "progress": 4, "extra": "from the future"}]}')
+	_write(_roster, '{"version": 99, "players": [{"name": "Zoe", "campaign": "voyager", "progress": 4, "extra": "from the future"}]}')
 	var fresh := _reload()
 	assert_int(fresh.players.size()).is_equal(1)
 	assert_int(fresh.players[0].progress).is_equal(4)
@@ -206,7 +206,7 @@ func test_a_file_of_a_newer_release_is_still_read() -> void:
 # --- a campaign that is not installed ----------------------------------------------------------------------------------------
 
 func test_a_player_of_an_unknown_campaign_is_kept_but_cannot_be_played() -> void:
-	_write(ROSTER, '{"version": 2, "players": [{"name": "Lost", "campaign": "vanished", "progress": 77, "tanks": 4, "pieces_mask": 3, "tries": 5}]}')
+	_write(_roster, '{"version": 2, "players": [{"name": "Lost", "campaign": "vanished", "progress": 77, "tanks": 4, "pieces_mask": 3, "tries": 5}]}')
 	var fresh := _reload()
 	assert_int(fresh.players.size()).is_equal(1)
 	var lost: PlayerProfile = fresh.players[0]
@@ -217,7 +217,7 @@ func test_a_player_of_an_unknown_campaign_is_kept_but_cannot_be_played() -> void
 	assert_str(lost.campaign_title()).is_equal("vanished")
 	assert_str(lost.campaign().id).is_equal(Catalog.default_campaign_id())     # (the pack's first, so that a screen has something to draw; it never gets as far as the game)
 	assert_bool(fresh.save_roster()).is_true()                        # saving does not lose it either
-	var row: Dictionary = _file_json(ROSTER)["players"][0]
+	var row: Dictionary = _file_json(_roster)["players"][0]
 	assert_str(row["campaign"]).is_equal("vanished")
 	assert_int(int(row["progress"])).is_equal(77)
 	assert_int(int(row["tanks"])).is_equal(4)
@@ -225,7 +225,7 @@ func test_a_player_of_an_unknown_campaign_is_kept_but_cannot_be_played() -> void
 
 
 func test_the_record_comes_back_to_life_when_the_campaign_is_installed_again() -> void:
-	_write(ROSTER, '{"version": 2, "players": [{"name": "Gus", "campaign": "garden", "progress": 353}]}')
+	_write(_roster, '{"version": 2, "players": [{"name": "Gus", "campaign": "garden", "progress": 353}]}')
 	var without := _reload()
 	assert_bool(without.players[0].is_playable()).is_false()
 	_install([CampaignShelf.garden()])

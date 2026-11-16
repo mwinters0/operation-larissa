@@ -8,7 +8,7 @@ extends GdUnitTestSuite
 
 const WORLD_SCENE := "res://src/gameplay/sector_world.tscn"
 const GAME_STATE_SCRIPT := "res://src/autoload/game_state.gd"
-const PACK_FILE := "user://test_durations_pack.json"
+var _pack_file := Scratch.path("test_durations_pack.json")
 
 ## A file that changes some of them: a dock of 37 ticks (7 opening, 5 closing, 4 px per tick over the pack's 100), a balloon at 11 px per
 ## tick, a dissolve of 30 ticks, messages of 100. It leaves the rest (and the launch) alone.
@@ -38,16 +38,16 @@ func after_test() -> void:
 	PresenterChoice.forced = &""
 	SkinChoice.select(SkinChoice.original())
 	GameState.reset()
-	if FileAccess.file_exists(PACK_FILE):
-		DirAccess.remove_absolute(PACK_FILE)
+	if FileAccess.file_exists(_pack_file):
+		DirAccess.remove_absolute(_pack_file)
 
 
 ## Lays the pack `layer` (a Dictionary, written as the JSON file it would be) over the base game's durations.
 func _mount(layer: Dictionary = PACK) -> void:
-	var file := FileAccess.open(PACK_FILE, FileAccess.WRITE)
+	var file := FileAccess.open(_pack_file, FileAccess.WRITE)
 	file.store_string(JSON.stringify(layer))
 	file.close()
-	Durations.extra_files = [PACK_FILE]
+	Durations.extra_files = [_pack_file]
 	Durations.read_files()
 
 

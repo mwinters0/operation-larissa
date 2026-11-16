@@ -4,13 +4,13 @@ extends GdUnitTestSuite
 ## HUD's layout, named by the picture key a pack's `pictures.json` uses, at the size of the picture in the layout, with the key and the size written on it, and one for each layer of the console a script may draw, at the size of the
 ## layer's rectangle in the layout: so these tests read the layout, ask for the same keys and sizes, and look at the files. Another phase's pictures are one more layout in `SkinTemplates.SOURCES`, and the same tests cover them.
 
-const OUT := "user://test_skin_templates"
+var _out := Scratch.path("test_skin_templates")
 
 var _layout: HudLayout = Catalog.pack_resource("data/ui/hud_layout.tres") as HudLayout
 
 
 func after_test() -> void:
-	PackFiles.remove_tree(OUT)
+	PackFiles.remove_tree(_out)
 
 
 ## key -> size of the entries that are pictures a pack redraws (`ui_picture/...`).
@@ -117,10 +117,10 @@ func test_the_frame_and_the_panels_of_the_problem_screen_have_entries_at_the_lay
 	assert_object(sizes[_key_of(calculator.answer_panel)]).is_equal(calculator.answer_size)
 	assert_bool(_key_of(screen.background).begins_with("problem_art/")).is_true()
 	assert_object(sizes["problem_layer/window"]).is_equal(Vector2i(DiagramBase.WINDOW_SIZE))
-	var written := SkinTemplates.write(OUT)
-	assert_bool(written.has("%s/problem_layer/window.png" % OUT)).is_true()
-	assert_bool(written.has("%s/%s.png" % [OUT, _key_of(screen.background)])).is_true()
-	assert_object(_read("%s/problem_layer/window.png" % OUT).get_size()).is_equal(Vector2i(640, 400))
+	var written := SkinTemplates.write(_out)
+	assert_bool(written.has("%s/problem_layer/window.png" % _out)).is_true()
+	assert_bool(written.has("%s/%s.png" % [_out, _key_of(screen.background)])).is_true()
+	assert_object(_read("%s/problem_layer/window.png" % _out).get_size()).is_equal(Vector2i(640, 400))
 
 
 func test_the_senders_pictures_have_entries_at_the_size_the_screen_stretches_them_to() -> void:
@@ -140,16 +140,16 @@ func test_the_senders_pictures_have_entries_at_the_size_the_screen_stretches_the
 
 func test_it_writes_one_png_per_key_at_the_layout_size() -> void:
 	var failures: Array[String] = []
-	var written := SkinTemplates.write(OUT, failures)
+	var written := SkinTemplates.write(_out, failures)
 	assert_array(failures).is_empty()
 	var entries := SkinTemplates.entries()
 	assert_int(written.size()).is_equal(entries.size())
 	for entry in entries:
-		var path := "%s/%s" % [OUT, entry.rel_path()]
+		var path := "%s/%s" % [_out, entry.rel_path()]
 		assert_bool(written.has(path)).is_true()
 		assert_object(_read(path).get_size()).is_equal(entry.size)
-	assert_bool(FileAccess.file_exists("%s/ui_picture/%s.png" % [OUT, _key_of(_layout.bezel).get_slice("/", 1)])).is_true()
-	assert_bool(FileAccess.file_exists("%s/hud_layer/hud_oxygen.png" % OUT)).is_true()
+	assert_bool(FileAccess.file_exists("%s/ui_picture/%s.png" % [_out, _key_of(_layout.bezel).get_slice("/", 1)])).is_true()
+	assert_bool(FileAccess.file_exists("%s/hud_layer/hud_oxygen.png" % _out)).is_true()
 
 
 func test_a_template_is_one_flat_colour_with_the_words_in_another() -> void:
@@ -188,11 +188,11 @@ func _tool(args: PackedStringArray) -> Array:
 
 
 func test_the_tool_writes_the_templates_of_the_pack_in_use() -> void:
-	var ran := _tool(PackedStringArray(["--out=" + ProjectSettings.globalize_path(OUT)]))
+	var ran := _tool(PackedStringArray(["--out=" + ProjectSettings.globalize_path(_out)]))
 	assert_int(ran[0]).is_equal(0)
 	assert_str(ran[1]).contains("wrote %d templates" % SkinTemplates.entries().size())
 	for entry in SkinTemplates.entries():
-		assert_object(_read("%s/%s" % [OUT, entry.rel_path()]).get_size()).is_equal(entry.size)
+		assert_object(_read("%s/%s" % [_out, entry.rel_path()]).get_size()).is_equal(entry.size)
 
 
 func test_the_tool_lists_the_keys_and_sizes_and_refuses_an_option_it_does_not_know() -> void:

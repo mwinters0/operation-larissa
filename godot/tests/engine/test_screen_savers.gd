@@ -7,7 +7,7 @@ extends GdUnitTestSuite
 ## the way the editor does, and look at the bytes. Everything is written under user://, never into res://data.
 
 const SECTORS := DevPack.SECTORS_DIR
-const TEMP := "user://screen_savers_test"
+var _temp := Scratch.path("screen_savers_test")
 
 var _savers: Array[ResourceFormatSaver] = []
 
@@ -18,14 +18,14 @@ func before_test() -> void:
 	for saver in _savers:
 		ResourceSaver.add_resource_format_saver(saver, true)
 	ScreenFile.last_refusal = ""
-	DirAccess.make_dir_recursive_absolute(TEMP)
+	DirAccess.make_dir_recursive_absolute(_temp)
 
 
 func after_test() -> void:
 	for saver in _savers:
 		ResourceSaver.remove_resource_format_saver(saver)
 	_savers.clear()
-	_remove_tree(TEMP)
+	_remove_tree(_temp)
 
 
 func _remove_tree(path: String) -> void:
@@ -42,7 +42,7 @@ func _load_screen(sector: int, screen: int, dir: String = SECTORS) -> ScreenData
 
 ## A copy of the sector file under user:// (its screens and script are still the res:// ones). Returns its path.
 func _copy_sector(sector: int) -> String:
-	var path := Catalog.sector_path(sector, TEMP)
+	var path := Catalog.sector_path(sector, _temp)
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	assert_int(DirAccess.copy_absolute(Catalog.sector_path(sector, SECTORS), path)).is_equal(OK)
 	return path
@@ -55,7 +55,7 @@ func _load_sector(path: String) -> SectorData:
 # --- screens --------------------------------------------------------------------------------------------------------------
 
 func test_every_screen_of_the_pack_is_saved_byte_for_byte_by_resource_saver() -> void:
-	var path := TEMP + "/screen.tres"
+	var path := _temp + "/screen.tres"
 	var problems: Array[String] = []
 	var with_anim := 0
 	for s in Ground.clean_sectors():
@@ -70,7 +70,7 @@ func test_every_screen_of_the_pack_is_saved_byte_for_byte_by_resource_saver() ->
 
 
 func test_the_text_is_the_importers_not_godots() -> void:
-	var path := TEMP + "/screen.tres"
+	var path := _temp + "/screen.tres"
 	assert_int(ResourceSaver.save(_load_screen(Ground.MAIN, 5), path)).is_equal(OK)
 	var text := FileAccess.get_file_as_string(path)
 	assert_str(text).starts_with('[gd_resource type="Resource" script_class="ScreenData" format=3]')
@@ -80,7 +80,7 @@ func test_the_text_is_the_importers_not_godots() -> void:
 
 func test_an_unchanged_screen_does_not_touch_an_existing_file() -> void:
 	# Saving the same text again must not even touch the file (no new modification time, so no re-import and no editor reload).
-	var path := TEMP + "/screen.tres"
+	var path := _temp + "/screen.tres"
 	var screen := _load_screen(Ground.MAIN, 5)
 	assert_int(ResourceSaver.save(screen, path)).is_equal(OK)
 	var first := FileAccess.get_modified_time(path)
@@ -90,7 +90,7 @@ func test_an_unchanged_screen_does_not_touch_an_existing_file() -> void:
 
 
 func test_an_edited_screen_is_saved_exactly_as_the_screen_editor_would_write_it() -> void:
-	var path := TEMP + "/screen.tres"
+	var path := _temp + "/screen.tres"
 	var screen := _load_screen(Ground.MAIN, 5)
 	screen.tiles[40] = 0x41                                            # a wall tile picture 1
 	screen.bg_decos[0].pos += Vector2i(8, 4)
@@ -110,7 +110,7 @@ func _overfill(screen: ScreenData) -> void:
 
 
 func test_a_screen_that_cannot_be_encoded_is_refused_and_the_file_stays() -> void:
-	var path := TEMP + "/screen.tres"
+	var path := _temp + "/screen.tres"
 	assert_int(ResourceSaver.save(_load_screen(Ground.MAIN, 5), path)).is_equal(OK)
 	var before := FileAccess.get_file_as_bytes(path)
 	var cases := {
@@ -130,7 +130,7 @@ func test_a_screen_that_cannot_be_encoded_is_refused_and_the_file_stays() -> voi
 
 
 func test_a_refused_screen_does_not_create_a_file() -> void:
-	var path := TEMP + "/new.tres"
+	var path := _temp + "/new.tres"
 	var screen := ScreenData.new()                                     # no tiles at all: 0 bytes instead of 684
 	ScreenFile.last_refusal = ""
 	assert_int(ResourceSaver.save(screen, path)).is_equal(OK)
@@ -259,7 +259,7 @@ func test_a_supported_change_is_not_written_when_an_unsupported_one_comes_with_i
 
 
 func test_a_sector_file_that_does_not_exist_is_not_created() -> void:
-	var path := TEMP + "/nothing/sector_99.tres"
+	var path := _temp + "/nothing/sector_99.tres"
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	assert_int(ResourceSaver.save(_load_sector(Catalog.sector_path(Ground.EDIT, SECTORS)), path)).is_equal(OK)
 	assert_str(ScreenFile.last_refusal).contains("can only be changed")

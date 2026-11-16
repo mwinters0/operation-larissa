@@ -7,8 +7,8 @@ extends GdUnitTestSuite
 ## would go.
 
 const GAME_SCENE := "res://src/gameplay/game.tscn"
-const ROSTER := "user://test_flow_roster.json"
-const HALL := "user://test_flow_hall.json"
+var _roster := Scratch.path("test_flow_roster.json")
+var _hall := Scratch.path("test_flow_hall.json")
 
 var _old_roster: String
 var _old_hall: String
@@ -20,8 +20,8 @@ func before_test() -> void:
 	_old_roster = SaveStore.roster_path
 	_old_hall = SaveStore.hall_path
 	_old_players = SaveStore.players.duplicate()
-	SaveStore.roster_path = ROSTER
-	SaveStore.hall_path = HALL
+	SaveStore.roster_path = _roster
+	SaveStore.hall_path = _hall
 	SaveStore.players = []
 	SaveStore.hall = HallOfFame.new()
 	SectorWorld.skip_animations = true
@@ -47,7 +47,7 @@ func after_test() -> void:
 	GameClock.paused = false
 	GameState.hints.reset()
 	GameState.reset()
-	for path in [ROSTER, HALL]:
+	for path in [_roster, _hall]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 
@@ -108,7 +108,7 @@ func test_the_midpoint_screen_plus_the_early_pieces_set_the_midpoint_and_it_is_s
 			GameState.collect_piece(i)
 	GameState.screen_entered(Tuning.resolve().midpoint_screen, sector)
 	assert_bool(GameState.past_midpoint).is_true()
-	var fresh := PlayerProfile.from_dict(JSON.parse_string(FileAccess.get_file_as_string(ROSTER))["players"][0])
+	var fresh := PlayerProfile.from_dict(JSON.parse_string(FileAccess.get_file_as_string(_roster))["players"][0])
 	assert_bool(fresh.past_midpoint()).is_true()                     # `midpoint_changed` saved it at once
 
 
@@ -243,8 +243,8 @@ func test_result_0_the_lock_opens_the_next_sector() -> void:
 	assert_int(game.world.screen_index).is_equal(0)
 	assert_int(GameState.oxygen()).is_equal(GameState.tuning.max_oxygen)
 	assert_int(GameState.ink).is_equal(GameState.tuning.ink_max)
-	assert_bool(FileAccess.file_exists(ROSTER)).is_true()
-	assert_int(PlayerProfile.from_dict(JSON.parse_string(FileAccess.get_file_as_string(ROSTER))["players"][0]).progress).is_equal(2)
+	assert_bool(FileAccess.file_exists(_roster)).is_true()
+	assert_int(PlayerProfile.from_dict(JSON.parse_string(FileAccess.get_file_as_string(_roster))["players"][0]).progress).is_equal(2)
 
 
 func _finish_closing_and_check_hall(game: Game, expected_tries: int) -> void:
@@ -254,7 +254,7 @@ func _finish_closing_and_check_hall(game: Game, expected_tries: int) -> void:
 	assert_int(SaveStore.hall.entries[0].tries).is_equal(expected_tries)
 	# G27: `add_player_to_hall` (0x4315ac) -> `RemoveRosterSlot` (0x42f6eb) -> `SaveRosterData`: the winner leaves the roster, in memory and on disk
 	assert_array(SaveStore.players).is_empty()
-	assert_int(JSON.parse_string(FileAccess.get_file_as_string(ROSTER))["players"].size()).is_equal(0)
+	assert_int(JSON.parse_string(FileAccess.get_file_as_string(_roster))["players"].size()).is_equal(0)
 	var view := game.dialog_layer.get_child(game.dialog_layer.get_child_count() - 1) as HallOfFameView
 	assert_object(view).is_not_null()
 	view.close()
@@ -291,7 +291,7 @@ func test_leaving_saves_the_game() -> void:
 	GameState.collect_piece(1)
 	GameState.fire_ink()
 	game.leave_to_sign_in()
-	var saved := PlayerProfile.from_dict(JSON.parse_string(FileAccess.get_file_as_string(ROSTER))["players"][0])
+	var saved := PlayerProfile.from_dict(JSON.parse_string(FileAccess.get_file_as_string(_roster))["players"][0])
 	assert_int(saved.pieces_mask).is_equal(0b10)
 	assert_int(saved.ink).is_equal(GameState.tuning.ink_max - 1)
 	assert_str(SceneRouter.last_path).is_equal(SceneRouter.SIGN_IN)

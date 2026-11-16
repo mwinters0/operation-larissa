@@ -34,7 +34,7 @@ func test_comments_and_strings_are_blanked_and_the_lines_stay_where_they_were() 
 
 
 func test_a_word_is_a_hit_only_when_it_stands_alone_and_is_reported_with_its_line() -> void:
-	var path := "user://source_scan_sample.gd"
+	var path := Scratch.path("source_scan_sample.gd")
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	file.store_string(SAMPLE)
 	file.close()

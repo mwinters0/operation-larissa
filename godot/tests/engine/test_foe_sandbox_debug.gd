@@ -7,7 +7,7 @@ extends GdUnitTestSuite
 ## into a signal; the panel marks the lines. What needs the real editor (the button, `play_custom_scene`, the debugger channel
 ## carrying the message between two processes) is checked by hand.
 
-const TEMP_DIR := "user://foe_sandbox_test"
+var _temp_dir := Scratch.path("foe_sandbox_test")
 ## The sector the sandbox is opened on: the dev arena, whose creatures are on several screens.
 const SECTOR := DevCreatures.ARENA
 
@@ -26,13 +26,13 @@ func after_test() -> void:
 	_panel.free()
 	OS.unset_environment(FoeSandbox.ARGS_ENV)
 	GameClock.paused = false
-	if not DirAccess.dir_exists_absolute(TEMP_DIR):
+	if not DirAccess.dir_exists_absolute(_temp_dir):
 		return
-	for folder in DirAccess.get_directories_at(TEMP_DIR):
-		for file_name in DirAccess.get_files_at(TEMP_DIR + "/" + folder):
-			DirAccess.remove_absolute(TEMP_DIR + "/" + folder + "/" + file_name)
-		DirAccess.remove_absolute(TEMP_DIR + "/" + folder)
-	DirAccess.remove_absolute(TEMP_DIR)
+	for folder in DirAccess.get_directories_at(_temp_dir):
+		for file_name in DirAccess.get_files_at(_temp_dir + "/" + folder):
+			DirAccess.remove_absolute(_temp_dir + "/" + folder + "/" + file_name)
+		DirAccess.remove_absolute(_temp_dir + "/" + folder)
+	DirAccess.remove_absolute(_temp_dir)
 
 
 ## The first creature of `sector` whose screen is not 0 (so that "opens on its screen" means something).
@@ -146,13 +146,13 @@ func test_changing_or_reloading_the_sector_starts_its_collecting_over() -> void:
 
 ## A scratch copy of sector `index` (its .foe and .tres) in user://, so that the panel may save it.
 func _sector_copy(index: int) -> FoeScript:
-	var dir := Catalog.sector_dir(index, TEMP_DIR)
+	var dir := Catalog.sector_dir(index, _temp_dir)
 	DirAccess.make_dir_recursive_absolute(dir)
 	for path in [Catalog.sector_path(index), Catalog.foe_path(index)]:
 		var file := FileAccess.open(dir + "/" + path.get_file(), FileAccess.WRITE)
 		file.store_string(FileAccess.get_file_as_string(path))
 		file.close()
-	return ResourceLoader.load(Catalog.foe_path(index, TEMP_DIR), "", ResourceLoader.CACHE_MODE_REPLACE) as FoeScript
+	return ResourceLoader.load(Catalog.foe_path(index, _temp_dir), "", ResourceLoader.CACHE_MODE_REPLACE) as FoeScript
 
 
 ## Puts the caret on the first instruction line under the label `label`.
@@ -214,8 +214,8 @@ func test_unsaved_text_is_saved_before_the_run_and_a_broken_text_is_not_run() ->
 
 
 func test_a_file_without_a_sector_is_not_run() -> void:
-	var path := TEMP_DIR + "/loose.foe"
-	DirAccess.make_dir_recursive_absolute(TEMP_DIR)
+	var path := _temp_dir + "/loose.foe"
+	DirAccess.make_dir_recursive_absolute(_temp_dir)
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	file.store_string("a:\n    Wait_Next_Tick\n    Jump_To a\n")
 	file.close()

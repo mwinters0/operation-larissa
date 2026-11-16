@@ -10,15 +10,15 @@ var _real_folders: Array[String]
 
 
 func before_test() -> void:
-	_scratch = "user://test_chain_%d" % Time.get_ticks_usec()
-	DirAccess.make_dir_recursive_absolute(_scratch)
+	_scratch = Scratch.folder("chain")
+	Scratch.isolate_user_data()                              # (the installed packs are a scratch folder's: a test that installs one leaves the player's alone)
 	_real_folders = Packs.folders.duplicate()
 
 
 func after_test() -> void:
 	Packs.folders = _real_folders
 	PackFiles.remove_tree(_scratch)
-	Packs.start()                                            # (the command-line choice again: no test of this suite leaves a choice of its own behind)
+	Scratch.release_user_data()                              # (and the command-line choice again: no test of this suite leaves a choice of its own behind)
 
 
 ## A pack called `id` in the scratch folder, laid over `base` (none when empty), with the files `rel -> text` given.
@@ -73,7 +73,7 @@ func test_the_default_choice_on_this_machine_is_the_first_pack_of_the_project_or
 func test_the_only_pack_found_with_no_base_is_chosen_alone_and_asked_what_it_holds() -> void:
 	# a pack with no "base" is complete. This one is only a manifest, so it is chosen and then found incomplete (the start-up check, `test_pack_start_check.gd`): dev under it,
 	# or nothing in a release build.
-	var project_scratch := "user://test_chain_alone_%d" % Time.get_ticks_usec()
+	var project_scratch := Scratch.folder("chain_alone")
 	PackFiles.write_text(project_scratch + "/alone/pack.json", JSON.stringify({"id": "alone", "title": "Alone", "version": "1", "format": 1}))
 	Packs.folders = [project_scratch]
 	var real_mode := Packs.dev_fallback
@@ -108,7 +108,7 @@ func test_a_chain_follows_the_bases_down_to_a_pack_with_none() -> void:
 
 func test_the_project_wins_when_the_same_id_is_in_both_places() -> void:
 	var project_copy := "%s/test_both" % Packs.PROJECT_PACKS_DIR
-	var user_copy := "%s/test_both" % Packs.USER_PACKS_DIR
+	var user_copy := "%s/test_both" % Packs.installed_dir
 	PackFiles.write_text(project_copy + "/pack.json", JSON.stringify({"id": "test_both", "title": "In the project", "version": "1", "base": "dev"}))
 	PackFiles.write_text(user_copy + "/pack.json", JSON.stringify({"id": "test_both", "title": "In the user folder", "version": "1", "base": "dev"}))
 	var listed: Array = Packs.available().filter(func(p: Pack) -> bool: return p.id == &"test_both")

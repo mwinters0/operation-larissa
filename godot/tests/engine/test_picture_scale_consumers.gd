@@ -284,7 +284,7 @@ func test_a_png_has_its_size_in_its_header_for_a_folder_and_for_a_pack_file_alik
 	assert_that(pack.png_size("art/b.png")).is_equal(Vector2i.ZERO)
 	assert_that(pack.png_size("art/c.png")).is_equal(Vector2i.ZERO)
 	assert_that(pack.png_size("art/missing.png")).is_equal(Vector2i.ZERO)
-	var file := "user://test_png_size.larissa"
+	var file := Scratch.path("test_png_size.larissa")
 	assert_int(PackFiles.zip_folder(shelf.root, file, String(shelf.id))).is_equal(OK)
 	var archived := Pack.open(file)
 	assert_that(archived.png_size("art/a.png")).is_equal(Vector2i(300, 7))

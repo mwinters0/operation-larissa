@@ -364,7 +364,7 @@ func test_a_problem_aborted_by_customization_is_not_counted_deliberate_deviation
 func test_escape_yes_in_practice_after_a_sign_in_leaves_the_roster_unchanged_deliberate_deviation_g39() -> void:
 	var old_roster := SaveStore.roster_path
 	var old_players: Array[PlayerProfile] = SaveStore.players.duplicate()
-	SaveStore.roster_path = "user://test_practice_roster.json"
+	SaveStore.roster_path = Scratch.path("test_practice_roster.json")
 	SaveStore.players = []
 	var player := SaveStore.add_player("Signed", 0)                           # (the player who signed in before Math Practice)
 	GameState.profile = player

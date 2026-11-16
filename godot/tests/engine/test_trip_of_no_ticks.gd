@@ -7,7 +7,7 @@ extends GdUnitTestSuite
 ## Teaches: a wait on a signal needs the signal to be certain, so the number that decides it is clamped where it is made (`StationSequence._init`), and the test asks the world, which awaits, not only the arithmetic.
 
 const WORLD_SCENE := "res://src/gameplay/sector_world.tscn"
-const PACK_FILE := "user://test_trip_of_no_ticks.json"
+var _pack_file := Scratch.path("test_trip_of_no_ticks.json")
 
 ## Every trip made as short as the data can make it.
 const NO_TICKS := {
@@ -31,15 +31,15 @@ func after_test() -> void:
 	GameClock.paused = false
 	SectorWorld.skip_animations = false
 	GameState.reset()
-	if FileAccess.file_exists(PACK_FILE):
-		DirAccess.remove_absolute(PACK_FILE)
+	if FileAccess.file_exists(_pack_file):
+		DirAccess.remove_absolute(_pack_file)
 
 
 func _mount() -> void:
-	var file := FileAccess.open(PACK_FILE, FileAccess.WRITE)
+	var file := FileAccess.open(_pack_file, FileAccess.WRITE)
 	file.store_string(JSON.stringify(NO_TICKS))
 	file.close()
-	Durations.extra_files = [PACK_FILE]
+	Durations.extra_files = [_pack_file]
 	Durations.read_files()
 
 

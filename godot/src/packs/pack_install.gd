@@ -1,16 +1,13 @@
 class_name PackInstall
 extends RefCounted
-## Puts a pack where the game looks for packs (`user://packs/`) and takes it away again. A pack comes as a FOLDER with a `pack.json` or a PACK FILE, `<id>.larissa`
+## Puts a pack where the game looks for packs (`Packs.installed_dir`, `user://packs/` by default) and takes it away again. A pack comes as a FOLDER with a `pack.json` or a PACK FILE, `<id>.larissa`
 ## (`Pack.FILE_EXTENSION`: a zip of the folder, what `PackExport` makes with `archive`). Installing copies; it runs nothing: a pack outside the project is read as data (`Pack.trusted`), and the script of a mod
-## pack runs, sandboxed, only while the pack is in the chain in use (`ModHost`). A folder is installed as the folder `user://packs/<id>`. A pack file is installed as the FILE `user://packs/<id>.larissa`
+## pack runs, sandboxed, only while the pack is in the chain in use (`ModHost`). A folder is installed as the folder `<installed_dir>/<id>`. A pack file is installed as the FILE `<installed_dir>/<id>.larissa`
 ## (its `pack.json` names the id; the file is checked by `PackArchive` first and is never extracted: the game reads it where it lies). An id is installed in one form at a time: installing either form of an id
 ## takes away the other, and `uninstall` takes away whichever is there. Whether the game uses the pack is `Packs`' business (`--pack=<id>`, or the first pack found), not something installing decides.
 ## The pack files a game carries next to it (`legacy.larissa`, `dev.larissa`) are not installed: they are read where they are (`Packs`, "Where packs are found").
 ##
 ## Teaches: putting a file in a folder is harmless; running what is in it is the decision. And why a pack file is let go of (`Pack.close`) before the file under it is replaced or deleted.
-
-## Where installed packs live (`Packs.available` looks here and in `res://packs/`).
-const DIR := Packs.USER_PACKS_DIR
 
 
 class Result extends RefCounted:
@@ -40,7 +37,7 @@ static func _install(source: String) -> Result:
 	return result
 
 
-## Puts the pack file `source` in `DIR` as `<id>.larissa`: opened and judged first (`PackArchive`: a pack, safe paths, sizes within bounds), then copied whole.
+## Puts the pack file `source` in `Packs.installed_dir` as `<id>.larissa`: opened and judged first (`PackArchive`: a pack, safe paths, sizes within bounds), then copied whole.
 static func _install_file(source: String, result: Result) -> Result:
 	var pack := Pack.open(source)
 	if not pack.is_valid():
@@ -68,7 +65,7 @@ static func _install_file(source: String, result: Result) -> Result:
 	return result
 
 
-## Puts the pack folder `source` in `DIR`, copied.
+## Puts the pack folder `source` in `Packs.installed_dir`, copied.
 static func _install_folder(source: String, result: Result) -> Result:
 	var pack := Pack.open(source)
 	if not pack.is_valid():
@@ -95,12 +92,12 @@ static func _install_folder(source: String, result: Result) -> Result:
 
 ## Where the pack `id` is installed as a folder.
 static func folder_of(id: StringName) -> String:
-	return "%s/%s" % [DIR, id]
+	return "%s/%s" % [Packs.installed_dir, id]
 
 
 ## Where the pack `id` is installed as a pack file.
 static func file_of(id: StringName) -> String:
-	return "%s/%s.%s" % [DIR, id, Pack.FILE_EXTENSION]
+	return "%s/%s.%s" % [Packs.installed_dir, id, Pack.FILE_EXTENSION]
 
 
 ## Is the pack `id` installed, as a folder or as a pack file?
@@ -108,20 +105,20 @@ static func is_installed(id: StringName) -> bool:
 	return DirAccess.dir_exists_absolute(folder_of(id)) or FileAccess.file_exists(file_of(id))
 
 
-## Why `id` cannot be installed, or "": a pack of the project (`res://packs/<id>`, `dev` among them) would always win over a copy in `user://packs/`.
+## Why `id` cannot be installed, or "": a pack of the project (`res://packs/<id>`, `dev` among them) would always win over an installed copy.
 static func refusal(id: StringName) -> String:
 	if DirAccess.dir_exists_absolute("%s/%s" % [Packs.PROJECT_PACKS_DIR, id]):
 		return "the project itself has a pack called '%s' (in %s), which would be used instead of this one" % [id, Packs.PROJECT_PACKS_DIR]
 	return ""
 
 
-## Removes the installed pack `id`, folder or pack file (both, if both are there). "" or what went wrong. Only `user://packs/` is touched, never the project's own packs. If the game was using it,
+## Removes the installed pack `id`, folder or pack file (both, if both are there). "" or what went wrong. Only `Packs.installed_dir` is touched, never the project's own packs. If the game was using it,
 ## it chooses again (`Packs.reset`).
 static func uninstall(id: StringName) -> String:
 	if RegEx.create_from_string(Pack.ID_PATTERN).search(String(id)) == null:
 		return "'%s' is not a pack id: nothing removed" % id
 	if not is_installed(id):
-		return "'%s' is not installed in %s" % [id, DIR]
+		return "'%s' is not installed in %s" % [id, Packs.installed_dir]
 	var was_in_use := Packs.in_chain(id)
 	_take_away(id)
 	if was_in_use:

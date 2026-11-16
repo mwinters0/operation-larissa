@@ -1,6 +1,6 @@
 class_name TestPackFilePlays
 extends GdUnitTestSuite
-## Teaches: a pack that is ONE file (`<id>.larissa`, read in place, `PackArchive`) is a pack in every way the game asks. The dev pack is exported whole as a pack file into a scratch folder of `user://` (`PackExport.complete`
+## Teaches: a pack that is ONE file (`<id>.larissa`, read in place, `PackArchive`) is a pack in every way the game asks. The dev pack is exported whole as a pack file into a scratch folder (`PackExport.complete`
 ## with `archive`) and chosen as the pack; then the lookups answer from the file (the catalog's sectors and campaigns, a picture, a sound, the rule values and durations the file lays over the project's, a MIDI
 ## song), a sector is played with the rules alone and comes out tick for tick as it does under dev, and the tools that read a pack (`PackExport` of a pack laid over it, of the pack itself, `PackCopy` from it) work
 ## from the file. Nothing is extracted: the virtual path of a file in it (`Pack.path_of`) names the file and no file system could open it. `test_pack_paths_go_through_pack` keeps the source honest.
@@ -10,7 +10,7 @@ const SECTOR := 2
 const COPY_ID := &"zz_from_a_file"
 const COPY_ROOT := "res://packs/zz_from_a_file"
 
-var _scratch := "user://test_pack_file_plays_%d" % Time.get_ticks_msec()
+var _scratch := ""
 var _file := ""
 var _exported: PackExport.Result
 var _dev_trace: Array = []
@@ -22,6 +22,7 @@ var _dev_files: Array[String] = []
 
 
 func before() -> void:
+	_scratch = Scratch.folder("pack_file_plays")
 	var dev := Packs.dev()
 	_dev_files = dev.all_files()
 	_dev_trace = _played(SECTOR)

@@ -9,8 +9,8 @@ extends GdUnitTestSuite
 
 const SaveStoreScript := preload("res://src/autoload/save_store.gd")
 const GAME_STATE_SCRIPT := "res://src/autoload/game_state.gd"
-const ROSTER := "user://test_campaign_saves_roster.json"
-const HALL := "user://test_campaign_saves_hall.json"
+var _roster := Scratch.path("test_campaign_saves_roster.json")
+var _hall := Scratch.path("test_campaign_saves_hall.json")
 
 ## A roster of the first release, byte for byte what it wrote: no `campaign`, no `pieces_total`, `game` 0 / 1, the progress words of the
 ## original (28 = sector 14 of Voyager; 0x3E = the Expert finale, midpoint flag off; 0x21 = Expert sector 16, flag on).
@@ -32,8 +32,8 @@ var _store: Node
 func before_test() -> void:
 	_cleanup()
 	_store = auto_free(SaveStoreScript.new())
-	_store.roster_path = ROSTER
-	_store.hall_path = HALL
+	_store.roster_path = _roster
+	_store.hall_path = _hall
 
 
 func after_test() -> void:
@@ -44,7 +44,7 @@ func after_test() -> void:
 
 
 func _cleanup() -> void:
-	for path in [ROSTER, HALL, ROSTER + ".tmp", HALL + ".tmp"]:
+	for path in [_roster, _hall, _roster + ".tmp", _hall + ".tmp"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 
@@ -61,8 +61,8 @@ func _write(path: String, text: String) -> void:
 
 func _reload() -> Node:
 	var fresh: Node = auto_free(SaveStoreScript.new())
-	fresh.roster_path = ROSTER
-	fresh.hall_path = HALL
+	fresh.roster_path = _roster
+	fresh.hall_path = _hall
 	fresh.load_all()
 	return fresh
 
@@ -109,8 +109,8 @@ func test_an_original_progress_is_checked_against_its_own_campaign_only() -> voi
 
 
 func test_a_version_1_roster_and_hall_of_the_originals_mean_what_they_meant() -> void:
-	_write(ROSTER, V1_ROSTER)
-	_write(HALL, V1_HALL)
+	_write(_roster, V1_ROSTER)
+	_write(_hall, V1_HALL)
 	var fresh := _reload()
 	var by_name := {}
 	for player: PlayerProfile in fresh.players:

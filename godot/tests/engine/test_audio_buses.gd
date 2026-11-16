@@ -2,7 +2,7 @@ class_name TestAudioBuses
 extends GdUnitTestSuite
 ## The audio buses (Master > Music, SFX, Voice): names, switches, volumes and the saved settings.
 
-const SCRATCH := "user://test_audio_settings.cfg"
+var _scratch := Scratch.path("test_audio_settings.cfg")
 
 var _old_path: String
 var _old_set: int
@@ -11,7 +11,7 @@ var _old_set: int
 func before_test() -> void:
 	_old_path = Audio.settings_path
 	_old_set = Audio.sound_set
-	Audio.settings_path = SCRATCH
+	Audio.settings_path = _scratch
 
 
 func after_test() -> void:
@@ -20,8 +20,8 @@ func after_test() -> void:
 	for bus in AudioService.BUSES:
 		Audio.set_bus_enabled(bus, true)
 		Audio.set_bus_volume(bus, AudioService.DEFAULT_VOLUMES[bus])
-	if FileAccess.file_exists(SCRATCH):
-		DirAccess.remove_absolute(SCRATCH)
+	if FileAccess.file_exists(_scratch):
+		DirAccess.remove_absolute(_scratch)
 
 
 func test_the_bus_layout_has_music_sfx_and_voice_under_master() -> void:
@@ -111,7 +111,7 @@ func test_a_missing_or_damaged_settings_file_gives_the_defaults() -> void:
 	Audio.set_bus_volume(AudioService.MUSIC, 0.1)
 	Audio.load_settings()                                       # no file at the scratch path
 	assert_float(Audio.get_bus_volume(AudioService.MUSIC)).is_equal_approx(AudioService.DEFAULT_VOLUMES[AudioService.MUSIC], 0.001)
-	var file := FileAccess.open(SCRATCH, FileAccess.WRITE)
+	var file := FileAccess.open(_scratch, FileAccess.WRITE)
 	file.store_string("[volume]\nMusic = \"loud\"\n[music]\nsound_set = 99\n(garbage")
 	file.close()
 	Audio.load_settings()

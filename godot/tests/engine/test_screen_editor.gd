@@ -6,7 +6,7 @@ extends GdUnitTestSuite
 ## travels with a screen, and saving into a COPY of the data (user://), never the committed files.
 
 const SECTORS := DevPack.SECTORS_DIR
-const TEMP := "user://screen_editor_test"
+var _temp := Scratch.path("screen_editor_test")
 const INVISIBLE := TileCodec.INVISIBLE_WALL_SOURCE
 
 
@@ -25,23 +25,17 @@ func _editor(sector: int, screen: int, dir: String = SECTORS, in_tree: bool = fa
 
 ## Copies sector `s` (the sector file and its screen folder) into a temp folder and returns it.
 func _temp_copy(s: int) -> String:
-	DirAccess.make_dir_recursive_absolute(Catalog.sector_dir(s, TEMP))
-	DirAccess.copy_absolute(Catalog.sector_path(s, SECTORS), Catalog.sector_path(s, TEMP))
+	DirAccess.make_dir_recursive_absolute(Catalog.sector_dir(s, _temp))
+	DirAccess.copy_absolute(Catalog.sector_path(s, SECTORS), Catalog.sector_path(s, _temp))
 	for m in Catalog.SCREENS_PER_SECTOR:
-		DirAccess.copy_absolute(ScreenFile.screen_path(SECTORS, s, m), ScreenFile.screen_path(TEMP, s, m))
-	return TEMP
+		DirAccess.copy_absolute(ScreenFile.screen_path(SECTORS, s, m), ScreenFile.screen_path(_temp, s, m))
+	return _temp
 
 
 func after_test() -> void:
 	Catalog.sectors_dir = Catalog.SECTORS_DIR
-	PackFiles.remove_tree("user://screen_editor_test_own")
-	if DirAccess.dir_exists_absolute(TEMP):
-		for s in Ground.clean_sectors():
-			for m in Catalog.SCREENS_PER_SECTOR:
-				DirAccess.remove_absolute(ScreenFile.screen_path(TEMP, s, m))
-			DirAccess.remove_absolute(Catalog.sector_path(s, TEMP))
-			DirAccess.remove_absolute(Catalog.sector_dir(s, TEMP))
-		DirAccess.remove_absolute(TEMP)
+	PackFiles.remove_tree(_own)
+	PackFiles.remove_tree(_temp)
 
 
 func _deco_layer(editor: ScreenEditor, layer: String) -> Node:
@@ -513,16 +507,16 @@ func test_the_screen_is_found_from_the_file_path() -> void:
 
 # --- sectors of the designers' own ---------------------------------------------------------------------------------------------
 
-const OWN := "user://screen_editor_test_own"
+var _own := Scratch.path("screen_editor_test_own")
 
 
 ## A scratch folder with the template sector `index` in it (what "New sector..." makes), and `Catalog.sectors_dir` pointing at it.
 func _own_sector(index: int) -> String:
-	PackFiles.remove_tree(OWN)
-	DirAccess.make_dir_recursive_absolute(OWN)
-	var made := SectorFactory.new_from_template(index, 0, 0, OWN)
+	PackFiles.remove_tree(_own)
+	DirAccess.make_dir_recursive_absolute(_own)
+	var made := SectorFactory.new_from_template(index, 0, 0, _own)
 	assert_bool(made.ok()).override_failure_message(made.error).is_true()
-	return OWN
+	return _own
 
 
 func test_a_sector_of_the_designers_own_says_it_has_no_original_instead_of_a_missing_fixture() -> void:
@@ -530,7 +524,7 @@ func test_a_sector_of_the_designers_own_says_it_has_no_original_instead_of_a_mis
 	var editor := _editor(40, 0, dir, true)
 	assert_str(editor.status).contains("Sector 40, screen 0").contains("sector 40 is your own: there is no original to compare with")
 	assert_str(editor.status).not_contains("screens.json is missing")
-	PackFiles.remove_tree(OWN)
+	PackFiles.remove_tree(_own)
 
 
 func test_the_edit_screen_dialog_offers_every_sector_there_is() -> void:
@@ -541,9 +535,9 @@ func test_the_edit_screen_dialog_offers_every_sector_there_is() -> void:
 	_own_sector_more(41)
 	assert_int(ScreenEditorPlugin.sector_limit()).is_equal(41)          # a sector made later is offered at once: the limit is asked when the dialog opens
 	Catalog.sectors_dir = Catalog.SECTORS_DIR
-	PackFiles.remove_tree(OWN)
+	PackFiles.remove_tree(_own)
 
 
 func _own_sector_more(index: int) -> void:
-	var made := SectorFactory.new_from_template(index, 0, 0, OWN)
+	var made := SectorFactory.new_from_template(index, 0, 0, _own)
 	assert_bool(made.ok()).override_failure_message(made.error).is_true()

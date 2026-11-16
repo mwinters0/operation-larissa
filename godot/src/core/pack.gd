@@ -25,11 +25,11 @@ extends RefCounted
 ## `midi/` and `rules/` as the importer lays them out.
 ##
 ## FOLDER OR FILE. A pack is a folder, which editors can write to, or a pack file (`<id>.larissa`), which is read-only and read where it lies: its `root` is the path of the file, `path_of(rel)` is a
-## virtual path under it (`user://packs/legacy.larissa/data/zones.json`, which names the file and exists for no file system), and `has`, `read_bytes`, `files_in` and the rest answer from the
+## virtual path under it (`<Packs.installed_dir>/legacy.larissa/data/zones.json`, which names the file and exists for no file system), and `has`, `read_bytes`, `files_in` and the rest answer from the
 ## file's own index (`PackArchive`), the one owner of what the file holds. Code that reads a pack's file asks the pack (`has`, `read_bytes`, `size_of`, `files_in`), never the file system with `path_of`.
 ##
 ## TRUSTED OR NOT. A pack whose folder is inside the project (`res://packs/<id>`, `trusted`; a pack file never is) is as much the project's as its code: its `.tres` files are
-## loaded with `ResourceLoader` (the authoring form: editors, the Inspector and uids work on them). Every other pack (`user://packs/<id>`, anything
+## loaded with `ResourceLoader` (the authoring form: editors, the Inspector and uids work on them). Every other pack (`<Packs.installed_dir>/<id>`, anything
 ## installed) is read in the DATA FORM only: JSON, `.foe` text, PNG, OGG, WAV, MIDI, TTF, with `FileAccess` and the `load_from_buffer` of `Image` and the
 ## audio streams, and NEVER with `ResourceLoader` (a `.tres` can carry a script), so installing one from anyone runs nothing but the creature VM and, in a mod pack, a sandboxed script (`ModLoader`) that bounds what it can reach. The
 ## data form of `X.tres` is `X.json` at the same relative path (`ResourceJson`, `EngineJson`). `resource`, `texture` and `stream` are THE door: the one
@@ -76,7 +76,7 @@ var base: StringName = &""
 ## and takes the pictures of the packs of that scale only (`PictureScale`).
 var picture_scale: int = 1
 var format: int = FORMAT
-## The folder of the pack, without a trailing slash: `res://packs/<id>` or `user://packs/<id>`; or the pack file: `user://packs/<id>.larissa`.
+## The folder of the pack, without a trailing slash: `res://packs/<id>` or `<Packs.installed_dir>/<id>`; or the pack file: `<Packs.installed_dir>/<id>.larissa`.
 var root: String = ""
 ## Is the folder inside the project (`res://packs/<id>`)? Then its resources are loaded with `ResourceLoader`; else only its data form is read (see the header). Never true for a pack file.
 var trusted := false

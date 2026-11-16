@@ -10,7 +10,7 @@ func before(do_skip := not LegacyPack.present(), skip_reason := "run the importe
 
 const WORLD_SCENE := "res://src/gameplay/sector_world.tscn"
 const GAME_STATE_SCRIPT := "res://src/autoload/game_state.gd"
-const PACK_FILE := "user://test_durations_pack.json"
+var _pack_file := Scratch.path("test_durations_pack.json")
 ## Every key of the base file and its original number. The file may hold no other number (`test_the_base_file_holds_nothing_else`).
 const ORIGINAL := {
 	"station.launch.opening_ticks": 3, "station.launch.closing_ticks": 3, "station.launch.from_x": 0, "station.launch.to_x": 96,
@@ -45,8 +45,8 @@ func after_test() -> void:
 	PresenterChoice.forced = &""
 	SkinChoice.select(SkinChoice.original())
 	GameState.reset()
-	if FileAccess.file_exists(PACK_FILE):
-		DirAccess.remove_absolute(PACK_FILE)
+	if FileAccess.file_exists(_pack_file):
+		DirAccess.remove_absolute(_pack_file)
 
 
 func test_the_base_file_has_the_originals_numbers() -> void:

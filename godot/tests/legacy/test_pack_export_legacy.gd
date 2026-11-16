@@ -18,7 +18,7 @@ var _result: PackExport.Result
 func before() -> void:
 	if not LegacyPack.present():
 		return
-	_dir = "user://test_legacy_export_%d" % Time.get_ticks_usec()
+	_dir = Scratch.folder("legacy_export")
 	var options := PackExport.Options.new()
 	options.pack_id = &"legacy_as_data"
 	options.reach = false

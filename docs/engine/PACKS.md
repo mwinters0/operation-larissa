@@ -24,12 +24,15 @@ is [`../create/CONTENT.md`](../create/CONTENT.md), section 4; this page is the c
   `godot/packs/legacy` (git-ignored; no `base`), an ordinary pack. `LegacyPack` (`tests/legacy/legacy_pack.gd`) is a test helper
   that knows where legacy is; the engine does not.
 - **Where dev comes from.** `Packs.dev()` is the folder `Packs.dev_root` (`res://packs/dev`, committed: the editor and the tests), else the installed
-  `Packs.installed_dev_root` (the folder `user://packs/dev`, or the pack file `user://packs/dev.larissa`: installed from the pack screen or `pack_tool --install`),
+  `Packs.installed_dev_root()` (the folder `dev` in `Packs.installed_dir`, or the pack file `dev.larissa` there: installed from the pack screen or `pack_tool --install`),
   else the bundled `dev.larissa` (below), else null (`Packs.has_dev()`). The first of these that is a dev pack wins, in that order: the others are left out, and
   `Packs.ignored()` and the log say so (so does a `dev` whose manifest says another id). `Packs.available()` never lists dev: the id is reserved, and a folder of any other
   place that says it is `dev` is left out with a reason. `Packs.forget_dev()` makes the next call look again (and look for the pack files).
+- **Where packs are installed.** `Packs.installed_dir` (`user://packs` by default) is the one owner of the installed-packs folder: `PackInstall`, the pack screen, `PackChoice.any` and
+  `installed_dev_root()` ask it when they read, and `pack_tool --packs-dir=<folder>` sets it for a run. A test points it at a scratch folder (`Scratch.isolate_user_data`, [`DEVELOPING.md`](DEVELOPING.md)); setting it moves
+  the installed entry of `Packs.folders` with it.
 - **Found.** `Packs.available()` lists one pack per id, from the places `Packs._places` names, in this order: a folder with a `pack.json` in `Packs.folders`
-  (`res://packs/`, the project's, then `user://packs/`), a pack file `<id>.larissa` in those same folders, and the bundled pack files (below). The first place that has an
+  (`res://packs/`, the project's, then `Packs.installed_dir`), a pack file `<id>.larissa` in those same folders, and the bundled pack files (below). The first place that has an
   id wins; each other is left out and `Packs.ignored()` (the pack screen, the log) says which one is used. A pack file is used only when its `pack.json` names the id
   its file is called and `PackArchive` accepts it; else it is left out with the reason. A pack with errors in its manifest is listed (the pack screen shows them) but is
   never the default choice.

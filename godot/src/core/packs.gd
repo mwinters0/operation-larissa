@@ -11,16 +11,16 @@ extends RefCounted
 ## what happens next depends on `dev_fallback`: on (a debug build, the default there) the pack `dev`, which is not meant for play, goes at the bottom of whatever
 ## was found, so it answers only what the chain lacks; off (a release build) nothing is added and the game refuses the chain (`is_refused`). `--pack=dev` chooses
 ## dev on purpose, and so does a pack whose `base` is `dev`: those chains are whole and there is nothing to say. Dev may be absent (`dev()` is null): it is the
-## folder `res://packs/dev` of the project, else the installed `user://packs/dev`; with neither there is nothing to fall back to and the game refuses the chain in a
+## folder `res://packs/dev` of the project, else the installed `dev` (in `installed_dir`); with neither there is nothing to fall back to and the game refuses the chain in a
 ## debug build too.
 ##
 ## WHERE PACKS ARE FOUND (`available`, `dev`; the places are listed once, by `_places`, in the order that decides which pack is used when an id is in more than one): a folder with a
-## `pack.json` in `res://packs/` (the project's own: TRUSTED, its `.tres` files are loaded), a folder in `user://packs/` (installed: read in the data form only, `Pack.trusted`), a pack file
-## `user://packs/<id>.larissa` (`Pack.FILE_EXTENSION`: installed, read in place and never extracted, `PackArchive`) and a pack file the game carries next to it (`bundled`: `legacy.larissa`
+## `pack.json` in `res://packs/` (the project's own: TRUSTED, its `.tres` files are loaded), a folder in the installed-packs folder (`installed_dir`, by default `user://packs`: installed, read in the data form only, `Pack.trusted`), a pack file
+## `<installed_dir>/<id>.larissa` (`Pack.FILE_EXTENSION`: installed, read in place and never extracted, `PackArchive`) and a pack file the game carries next to it (`bundled`: `legacy.larissa`
 ## and `dev.larissa`, in `archive_folders`: the folder of the executable on a desktop build, the folder the Web page preloads into, also read in place). The first of these that has an
 ## id is the pack of that id; the others are left out and `ignored()` says which one is used. A pack file is used only when its `pack.json` names the id its file is called. The id `dev`
-## is reserved for the dev pack: it is not among the packs to choose from but is where `dev()` comes from (the project's `res://packs/dev`, else the installed `user://packs/dev` or
-## `user://packs/dev.larissa`, else the bundled `dev.larissa`), and a pack of another place that says it is `dev` is left out.
+## is reserved for the dev pack: it is not among the packs to choose from but is where `dev()` comes from (the project's `res://packs/dev`, else the installed `dev` folder or
+## `dev.larissa` in `installed_dir`, else the bundled `dev.larissa`), and a pack of another place that says it is `dev` is left out.
 ##
 ## THE DOOR, and the lookups, all down the chain: `resource(rel)`, `texture(rel)` and `stream(rel)` give the object a file of the first pack that provides it
 ## becomes (`Pack` decides how: a trusted pack's `.tres` is loaded, anything else is read in its data form), `file_at(path)` does the same for a path
@@ -36,7 +36,8 @@ extends RefCounted
 
 ## The folders `available` looks in, each holding `<id>/pack.json` folders.
 const PROJECT_PACKS_DIR := "res://packs"
-const USER_PACKS_DIR := "user://packs"
+## Where installed packs are kept unless a test says otherwise (`installed_dir`): the one place the path is written.
+const DEFAULT_INSTALLED_DIR := "user://packs"
 ## The dev pack (placeholder content, `dev()`): the bottom of a chain that could not be made. Its id is reserved.
 const DEV := StringName("dev")
 ## Where a Web build looks for the `<id>.larissa` pack files its page preloaded into the browser's virtual file system (`Engine.preloadFile(url, "/packs/<id>.larissa")`).
@@ -52,17 +53,26 @@ const CLIP_KINDS: Array[StringName] = [&"sound", &"music", &"voice"]
 ## not whole (`is_refused`) and the warning screen is a refusal. A test sets it and puts it back. The setting is read when the chain is chosen.
 static var dev_fallback := OS.is_debug_build()
 
-## The folders packs are found in (each holds `<id>/pack.json` folders and `<id>.larissa` pack files), in the order they are looked at (the first wins when an id is in two). A test adds a
-## scratch folder of its own, like adding a directory to `PATH`.
-static var folders: Array[String] = [PROJECT_PACKS_DIR, USER_PACKS_DIR]
+## The folders packs are found in (each holds `<id>/pack.json` folders and `<id>.larissa` pack files), in the order they are looked at (the first wins when an id is in two). It starts as the project's folder
+## and the installed one (`installed_dir`); a test adds a scratch folder of its own, like adding a directory to `PATH`, or sets the list to exactly the folders it wants.
+static var folders: Array[String] = [PROJECT_PACKS_DIR, DEFAULT_INSTALLED_DIR]
 ## The ids of the packs a game carries as pack files next to it (`archive_folders`), read in place; the Web shell's `PACK_IDS` lists the same two. A test gives it ids of its own.
 static var bundled: Array[StringName] = [StringName("legacy"), DEV]
 ## The folders that are looked in for the `<id>.larissa` of the `bundled` packs (a folder in them is not a pack): `default_archive_folders`. (Other pack files are looked for in `folders`.)
 static var archive_folders: Array[String] = default_archive_folders(OS.has_feature("web"), OS.has_feature("editor"), OS.get_executable_path())
-## Where the dev pack is: the folder of the project, and (when the project has none) the installed copy (the folder, or the same path with `.larissa` added: the pack file). A test
-## points them at folders that do not exist to make dev absent (`PackShelf.without_dev`).
+## Where installed packs live: the player's own folder (`PackInstall` writes there, the pack screen lists it, `PackChoice.any` asks about it). The one owner of the path: every reader asks it when it
+## reads, and a test points it at a scratch folder (`Scratch.isolate_user_data`) so that it never touches the packs of the person who runs the tests. Setting it moves the installed entry of `folders`
+## (the entry that is this folder) to the new place; a `folders` of a test's own is left as it is.
+static var installed_dir := DEFAULT_INSTALLED_DIR:
+	set(value):
+		var at := folders.find(installed_dir)
+		if at >= 0:
+			folders[at] = value
+		installed_dir = value
+## Where the dev pack is: the folder of the project, and (when the project has none) the installed copy (`installed_dev_root()`). A test points it at a folder that does not exist to make dev absent (`PackShelf.without_dev`).
 static var dev_root := "%s/%s" % [PROJECT_PACKS_DIR, DEV]
-static var installed_dev_root := "%s/%s" % [USER_PACKS_DIR, DEV]
+## Where the installed dev is when it is not in `installed_dir` ("" says it is: `installed_dir/dev`, the folder, or the same path with `.larissa` added, the pack file). A test points it at a scratch folder.
+static var installed_dev_override := ""
 ## The signal of a change in the chain. (A class cannot have a static signal: this object has it.)
 static var events := PackEvents.new()
 
@@ -111,7 +121,7 @@ class PackEvents extends RefCounted:
 ## `text()` says what happened and what it means in this mode, `advice()` where to read.
 class Fallback extends RefCounted:
 	enum Why {
-		## No pack was found in `res://packs/` or `user://packs/`.
+		## No pack was found in `res://packs/` or the installed-packs folder.
 		NO_PACK,
 		## `--pack=<id>` named a pack that is not there.
 		NOT_FOUND,
@@ -526,8 +536,8 @@ static func _found(id: StringName, found: Array[Pack]) -> Pack:
 	return null
 
 
-## The dev pack, or null when it is absent. It is the folder `res://packs/dev` of the project (the editor, the tests); with no such folder it is the installed `user://packs/dev` (a
-## folder) or `user://packs/dev.larissa` (a pack file, installed from the pack screen), and with neither the bundled `dev.larissa` next to the game, which is read in place. The first of
+## The dev pack, or null when it is absent. It is the folder `res://packs/dev` of the project (the editor, the tests); with no such folder it is the installed `dev` (a
+## folder in `installed_dir`) or `dev.larissa` there (a pack file, installed from the pack screen), and with neither the bundled `dev.larissa` next to the game, which is read in place. The first of
 ## these that is a dev pack wins: the others are left out and `ignored()` says so. The answer is kept until `forget_dev`.
 static func dev() -> Pack:
 	if not _dev_looked:
@@ -541,13 +551,18 @@ static func has_dev() -> bool:
 	return dev() != null
 
 
-## Looks for dev again the next time it is asked (a test changed `dev_root`, `installed_dev_root` or `archive_folders`, or a dev pack was installed or removed).
+## Looks for dev again the next time it is asked (a test changed `dev_root`, `installed_dir`, `installed_dev_override` or `archive_folders`, or a dev pack was installed or removed).
 static func forget_dev() -> void:
 	if _dev != null:
 		_dev.close()
 	_dev = null
 	_dev_looked = false
 	_dev_notes = []
+
+
+## Where the installed dev is (a folder; the same path with `.larissa` added is the pack file): `installed_dir/dev`, or where a test put it (`installed_dev_override`).
+static func installed_dev_root() -> String:
+	return installed_dev_override if not installed_dev_override.is_empty() else "%s/%s" % [installed_dir, DEV]
 
 
 static func _find_dev() -> Pack:
@@ -573,9 +588,9 @@ static func _find_dev() -> Pack:
 	return found
 
 
-## The places `dev()` looks in: where the project and the installed dev are (`dev_root`, `installed_dev_root` and its `.larissa`) and the bundled `dev.larissa`.
+## The places `dev()` looks in: where the project and the installed dev are (`dev_root`, `installed_dev_root()` and its `.larissa`) and the bundled `dev.larissa`.
 static func _dev_places() -> Array[String]:
-	var places: Array[String] = [dev_root, installed_dev_root, "%s.%s" % [installed_dev_root, Pack.FILE_EXTENSION]]
+	var places: Array[String] = [dev_root, installed_dev_root(), "%s.%s" % [installed_dev_root(), Pack.FILE_EXTENSION]]
 	for dir in archive_folders:
 		places.append("%s/%s.%s" % [dir, DEV, Pack.FILE_EXTENSION])
 	return places
@@ -594,7 +609,7 @@ static func default_archive_folders(web: bool, in_editor: bool, executable: Stri
 # --- finding packs ----------------------------------------------------------------------------------------------------
 
 ## Every place that holds a pack, in the order that decides which pack is used when an id is in more than one: the folders (with a `pack.json`) of each of `folders` (the project's
-## `res://packs/` first, then `user://packs/`), dev's own folders (`dev_root`, `installed_dev_root`), the `.larissa` pack files of each of `folders`, the installed dev's pack file, and the
+## `res://packs/` first, then `installed_dir`), dev's own folders (`dev_root`, `installed_dev_root()`), the `.larissa` pack files of each of `folders`, the installed dev's pack file, and the
 ## bundled pack files (`archive_folders`, the ids of `bundled`). Nothing is opened: this is the one search, `available` and `dev` open what they want of it. A folder that
 ## is the same folder as another (a link to it) is listed once, and so is a pack file.
 static func _places() -> Array[String]:
@@ -606,7 +621,7 @@ static func _places() -> Array[String]:
 			for folder in DirAccess.get_directories_at(dir):
 				folder_places.append("%s/%s" % [dir, folder])
 	folder_places.append(dev_root)
-	folder_places.append(installed_dev_root)
+	folder_places.append(installed_dev_root())
 	for where in folder_places:
 		if FileAccess.file_exists("%s/%s" % [where, Pack.MANIFEST]) and not seen.has(real_folder(where)):
 			seen.append(real_folder(where))
@@ -617,7 +632,7 @@ static func _places() -> Array[String]:
 			for file in DirAccess.get_files_at(dir):
 				if file.get_extension() == Pack.FILE_EXTENSION:
 					file_places.append("%s/%s" % [dir, file])
-	file_places.append("%s.%s" % [installed_dev_root, Pack.FILE_EXTENSION])
+	file_places.append("%s.%s" % [installed_dev_root(), Pack.FILE_EXTENSION])
 	for dir in archive_folders:
 		for id in bundled:
 			file_places.append("%s/%s.%s" % [dir, id, Pack.FILE_EXTENSION])
@@ -641,8 +656,8 @@ static func available() -> Array[Pack]:
 		if not note.is_empty():
 			_leave_out(note)
 		elif candidate.id == DEV:
-			if not _dev_places().has(where) and not ["%s/%s" % [PROJECT_PACKS_DIR, DEV], "%s/%s" % [USER_PACKS_DIR, DEV], "%s/%s.%s" % [USER_PACKS_DIR, DEV, Pack.FILE_EXTENSION]].has(where):
-				_leave_out("%s: the id 'dev' is reserved for the dev pack (the folder res://packs/dev, or dev installed in %s), so this one is left out; copy the dev pack under an id of your own" % [where, USER_PACKS_DIR])
+			if not _dev_places().has(where) and not ["%s/%s" % [PROJECT_PACKS_DIR, DEV], "%s/%s" % [installed_dir, DEV], "%s/%s.%s" % [installed_dir, DEV, Pack.FILE_EXTENSION]].has(where):
+				_leave_out("%s: the id 'dev' is reserved for the dev pack (the folder res://packs/dev, or dev installed in %s), so this one is left out; copy the dev pack under an id of your own" % [where, installed_dir])
 		else:
 			var used := found.filter(func(held: Pack) -> bool: return held.id == candidate.id)
 			if used.is_empty():

@@ -15,8 +15,7 @@ var dir: String
 
 func _init(campaigns: Array[Campaign] = []) -> void:
 	_count += 1
-	dir = "user://test_campaigns_%d_%d" % [Time.get_ticks_msec(), _count]
-	DirAccess.make_dir_recursive_absolute(dir)
+	dir = Scratch.folder("campaigns_%d" % _count)
 	for each in Packs.chain():                                       # (the project's own campaigns, `res://data/campaigns`, are left out)
 		var folder := each.path_of("data/campaigns")
 		for entry in ResourceLoader.list_directory(folder):
@@ -32,9 +31,7 @@ func _init(campaigns: Array[Campaign] = []) -> void:
 func remove() -> void:
 	Catalog.campaigns_dir = Catalog.CAMPAIGNS_DIR
 	Catalog.reload_campaigns()
-	for file in DirAccess.get_files_at(dir):
-		DirAccess.remove_absolute("%s/%s" % [dir, file])
-	DirAccess.remove_absolute(dir)
+	PackFiles.remove_tree(dir)
 
 
 ## A student's campaign whose sectors are numbers no sector file has (175-177, the end of batch D's range): enough for everything that only asks "is this sector in the

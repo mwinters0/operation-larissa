@@ -81,7 +81,7 @@ static func _chain(pack: Pack, report: PackReport) -> void:
 		Packs.Fallback.Why.MISSING_BASE when made.fallback.needs_dev():
 			report.error("base", "the pack is laid over the dev pack, which is not here. " + Packs.Fallback.ADVICE_NEEDS_DEV)
 		Packs.Fallback.Why.MISSING_BASE:
-			report.error("base", "the pack is laid over '%s', which is not installed (packs are found in %s and %s)" % [made.fallback.detail, Packs.PROJECT_PACKS_DIR, Packs.USER_PACKS_DIR])
+			report.error("base", "the pack is laid over '%s', which is not installed (packs are found in %s and %s)" % [made.fallback.detail, Packs.PROJECT_PACKS_DIR, Packs.installed_dir])
 		Packs.Fallback.Why.CYCLE:
 			report.error("base", "the pack '%s' is laid over itself through its bases" % made.fallback.pack_id)
 		_:

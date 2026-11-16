@@ -11,8 +11,8 @@ extends GdUnitTestSuite
 ## The first sector of the chain's campaign (dev's: `DevPack.TOUR_SECTORS`) has a math trigger on screen 5: the test reads its place and slot from the data.
 
 const GAME_SCENE := "res://src/gameplay/game.tscn"
-const ROSTER := "user://test_hints_roster.json"
-const HALL := "user://test_hints_hall.json"
+var _roster := Scratch.path("test_hints_roster.json")
+var _hall := Scratch.path("test_hints_hall.json")
 const TRIGGER_SCREEN := 5
 
 var _old_roster: String
@@ -27,8 +27,8 @@ func before_test() -> void:
 	_old_roster = SaveStore.roster_path
 	_old_hall = SaveStore.hall_path
 	_old_players = SaveStore.players.duplicate()
-	SaveStore.roster_path = ROSTER
-	SaveStore.hall_path = HALL
+	SaveStore.roster_path = _roster
+	SaveStore.hall_path = _hall
 	SaveStore.players = []
 	SaveStore.hall = HallOfFame.new()
 	SectorWorld.skip_animations = true
@@ -50,7 +50,7 @@ func after_test() -> void:
 	GameClock.paused = false
 	GameState.hints.reset()
 	GameState.reset()
-	for path in [ROSTER, HALL]:
+	for path in [_roster, _hall]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 

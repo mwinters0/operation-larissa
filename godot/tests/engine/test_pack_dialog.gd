@@ -11,32 +11,28 @@ const SIGN_IN_SCENE := "res://src/ui/sign_in.tscn"
 const ID := &"harvest_box"
 ## A pack laid over a pack that is not there: its chain is never whole.
 const ASTRAY := &"astray_box"
-const ROSTER := "user://test_pack_dialog_roster.json"
-const HALL := "user://test_pack_dialog_hall.json"
-const EXPORTS := "user://test_pack_dialog_exports"
-const MEMORY := "user://test_pack_dialog_choice.cfg"
+var _roster := Scratch.path("test_pack_dialog_roster.json")
+var _hall := Scratch.path("test_pack_dialog_hall.json")
+var _exports := Scratch.path("test_pack_dialog_exports")
 
 var _old_roster: String
 var _old_hall: String
 var _old_players: Array[PlayerProfile]
-var _old_memory: String
 var _shelves: Array[PackShelf] = []
-var _baseline: int                                  ## how many packs the screen lists before the test installs any (the game's own: more or less, whatever is on disk)
+var _baseline: int                                  ## how many packs the screen lists before the test installs any (the packs of the project: the scratch installed folder holds none)
 
 
 func before_test() -> void:
 	_old_roster = SaveStore.roster_path
 	_old_hall = SaveStore.hall_path
 	_old_players = SaveStore.players.duplicate()
-	_old_memory = PackChoice.memory_path
-	PackChoice.memory_path = MEMORY
-	SaveStore.roster_path = ROSTER
-	SaveStore.hall_path = HALL
+	SaveStore.roster_path = _roster
+	SaveStore.hall_path = _hall
 	SaveStore.players = []
 	SceneRouter.dry_run = true
 	SignIn.welcome_enabled = false
 	SignIn.prompt_when_empty = false
-	Packs.start()
+	Scratch.isolate_user_data()                       # (the installed packs and the kept choice of a person who runs the tests are not these)
 	_clean()
 	_baseline = PackChoice.entries().size()
 
@@ -46,11 +42,10 @@ func after_test() -> void:
 		shelf.remove()
 	_shelves.clear()
 	_clean()
-	Packs.start()
+	Scratch.release_user_data()
 	SaveStore.roster_path = _old_roster
 	SaveStore.hall_path = _old_hall
 	SaveStore.players = _old_players
-	PackChoice.memory_path = _old_memory
 	SceneRouter.dry_run = false
 	SignIn.welcome_enabled = true
 	SignIn.prompt_when_empty = true
@@ -58,14 +53,12 @@ func after_test() -> void:
 
 
 func _clean() -> void:
-	PackFiles.remove_tree("%s/%s" % [PackInstall.DIR, ID])
-	PackFiles.remove_tree(EXPORTS)
-	PackFiles.remove_tree("%s/%s" % [PackInstall.DIR, ASTRAY])
-	for path in [ROSTER, HALL, MEMORY]:
+	PackFiles.remove_tree(_exports)
+	for path in [_roster, _hall]:
 		DirAccess.remove_absolute(path)
 
 
-## A campaign pack `ID` (copies of the dev pack's sectors 0, 1, 180 as 60, 61, 62) installed in `user://packs/`, laid over the pack the suite runs on (not chosen).
+## A campaign pack `ID` (copies of the dev pack's sectors 0, 1, 180 as 60, 61, 62) installed in the scratch installed folder, laid over the pack the suite runs on (not chosen).
 func _install_harvest() -> void:
 	var shelf := PackShelf.new(ID)
 	_shelves.append(shelf)
@@ -113,13 +106,15 @@ func test_with_no_installed_pack_the_sign_in_screen_is_unchanged_and_the_p_key_s
 	assert_int(screen.overlay.get_child_count()).is_equal(1)
 	var dialog := screen.overlay.get_child(0) as PackDialog
 	assert_int(dialog.entry_count()).is_equal(_baseline)                                  # the project's own packs, whichever are on disk
+	assert_bool(PackChoice.entries().any(func(entry: PackChoice.Entry) -> bool: return entry.pack.root.begins_with(Packs.installed_dir))).is_false()      # (none is installed)
+	assert_bool(PackChoice.any()).is_false()
 	dialog.select(PackShelf.base_id())
 	assert_str(dialog.selected_id()).is_equal(PackShelf.base_id())
 	assert_str(dialog.tree.get_selected().get_text(2)).is_equal("in use")
 	assert_str(dialog.intro.text).contains("In use: " + PackShelf.base_id()).contains("Chosen with --pack=" + PackShelf.base_id())
 	assert_bool(dialog.check_button.disabled).is_false()
 	assert_bool(dialog.remove_button.disabled).is_true()                                  # (a pack of the project cannot be removed)
-	assert_str(dialog.folder_label.text).contains("packs")
+	assert_str(dialog.folder_label.text).contains(ProjectSettings.globalize_path(Packs.installed_dir))
 	# Escape closes it and the list is the screen's again
 	dialog._unhandled_key_input(_key(KEY_ESCAPE))
 	await await_idle_frame()
@@ -158,15 +153,15 @@ func test_the_screen_shows_the_chain_in_use_and_why() -> void:
 
 
 func test_an_installed_dev_is_left_out_when_the_project_has_its_own_and_the_screen_says_so() -> void:
-	PackFiles.write_text("%s/dev/pack.json" % PackInstall.DIR, JSON.stringify({"id": "dev", "title": "Installed dev", "version": "1"}))
+	PackFiles.write_text("%s/dev/pack.json" % Packs.installed_dir, JSON.stringify({"id": "dev", "title": "Installed dev", "version": "1"}))
 	Packs.forget_dev()
 	Packs.dev()                                                                              # (looks for dev again: the project's wins, the installed one is noted)
 	var screen := _screen()
 	var dialog := _open(screen)
 	var text := dialog.intro.text
-	PackFiles.remove_tree("%s/dev" % PackInstall.DIR)
+	PackFiles.remove_tree("%s/dev" % Packs.installed_dir)
 	Packs.forget_dev()
-	assert_str(text).contains("user://packs/dev").contains("dev is res://packs/dev").contains("left out")
+	assert_str(text).contains("%s/dev" % Packs.installed_dir).contains("dev is res://packs/dev").contains("left out")
 
 
 # --- using it -------------------------------------------------------------------------------------------------------------------
@@ -249,7 +244,7 @@ func test_a_kept_choice_whose_pack_is_gone_says_so_and_the_first_pack_found_is_u
 
 
 func test_a_pack_whose_chain_is_not_whole_is_not_taken_and_the_game_keeps_its_chain() -> void:
-	PackFiles.write_text("%s/%s/pack.json" % [PackInstall.DIR, ASTRAY], JSON.stringify({"id": String(ASTRAY), "title": "Astray", "version": "1", "base": "nowhere_box"}))
+	PackFiles.write_text("%s/%s/pack.json" % [Packs.installed_dir, ASTRAY], JSON.stringify({"id": String(ASTRAY), "title": "Astray", "version": "1", "base": "nowhere_box"}))
 	var before := Packs.chain_ids()
 	var screen := _screen()
 	var dialog := _open(screen)
@@ -270,14 +265,14 @@ func test_checking_a_pack_shows_its_report_and_a_pack_with_an_error_says_why() -
 	dialog.check_button.pressed.emit()
 	assert_str(dialog.details.text).contains("passes the check")
 	assert_bool(Packs.in_chain(ID)).override_failure_message("checking uses nothing").is_false()
-	FileAccess.open("user://packs/%s/sectors/sector_61/sector_61.foe" % ID, FileAccess.WRITE).store_string("not a creature script\n")
+	FileAccess.open("%s/%s/sectors/sector_61/sector_61.foe" % [Packs.installed_dir, ID], FileAccess.WRITE).store_string("not a creature script\n")
 	dialog.check()
 	assert_str(dialog.details.text).contains("has errors").contains("sector 61")
 	assert_array(Packs.chain_ids()).is_equal([PackShelf.base_id()])
 
 
 func test_installing_from_a_path_selects_the_pack_and_a_bad_path_says_so() -> void:
-	var source := EXPORTS + "/source"                                        # (a plain folder: a shelf would be found as a pack by itself)
+	var source := _exports + "/source"                                        # (a plain folder: a shelf would be found as a pack by itself)
 	PackFiles.write_text(source + "/pack.json", JSON.stringify({"id": String(ID), "title": "Harvest Moon", "version": "1", "base": String(PackShelf.base_id())}))
 	PackFiles.write_text(source + "/texts.json", JSON.stringify({"harvest_hello": "Hello."}))
 	var screen := _screen()
@@ -294,7 +289,7 @@ func test_installing_from_a_path_selects_the_pack_and_a_bad_path_says_so() -> vo
 	# Remove asks once
 	dialog.remove_button.pressed.emit()
 	assert_str(dialog.remove_button.text).is_equal("Really remove")
-	assert_bool(DirAccess.dir_exists_absolute("user://packs/%s" % ID)).is_true()
+	assert_bool(DirAccess.dir_exists_absolute(PackInstall.folder_of(ID))).is_true()
 	dialog.remove_button.pressed.emit()
-	assert_bool(DirAccess.dir_exists_absolute("user://packs/%s" % ID)).is_false()
+	assert_bool(DirAccess.dir_exists_absolute(PackInstall.folder_of(ID))).is_false()
 	assert_int(dialog.entry_count()).is_equal(_baseline)

@@ -10,7 +10,7 @@ extends GdUnitTestSuite
 ## Everything is done on COPIES of the data under user://, never the committed files.
 
 const SECTORS := DevPack.SECTORS_DIR
-const TEMP := "user://screen_editor_markers_test"
+var _temp := Scratch.path("screen_editor_markers_test")
 
 var _dirs: Array[String] = []
 var _history: UndoRedo
@@ -35,7 +35,7 @@ func after_test() -> void:
 
 ## A copy of sector `s` (and its 12 screens) in a folder of its own; the folder is removed after the test.
 func _temp_copy(s: int) -> String:
-	var dir := "%s_%d" % [TEMP, Time.get_ticks_usec()]
+	var dir := "%s_%d" % [_temp, Time.get_ticks_usec()]
 	_dirs.append(dir)
 	DirAccess.make_dir_recursive_absolute(Catalog.sector_dir(s, dir))
 	DirAccess.copy_absolute(Catalog.sector_path(s, SECTORS), Catalog.sector_path(s, dir))

@@ -5,7 +5,7 @@ extends RefCounted
 ## Resources of the game are compared by their own `@export` fields, arrays and dictionaries element by element, the rest with `==` (a number is the
 ## same number as an int or a float, a StringName the same words as a String). A picture or a sound is the same when it came from the same file of
 ## a pack (the path under the pack's folder: a trusted pack's `.tres` loads `res://packs/dev/assets/x.png`, its data form in a copy of the pack reads
-## `user://packs/copy/assets/x.png`), else when the bytes are. The engine classes the data form describes are compared through their methods:
+## `<a scratch folder>/copy/assets/x.png`), else when the bytes are. The engine classes the data form describes are compared through their methods:
 ## `SpriteFrames` by animation, `TileSet` by layers, sources and tiles.
 ##
 ## Teaches: comparing by what a thing IS (the file it came from) when its identity differs by construction, and walking an engine class with its

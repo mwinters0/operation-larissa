@@ -456,9 +456,7 @@ func test_without_a_host_opening_a_screen_zooms_in() -> void:
 
 
 func test_the_number_box_follows_a_sector_made_after_the_panel_was_built() -> void:
-	var dir := "user://overview_range_test"
-	PackFiles.remove_tree(dir)
-	DirAccess.make_dir_recursive_absolute(dir)
+	var dir := Scratch.folder("overview_range_test")
 	assert_bool(SectorFactory.new_from_template(32, 0, 0, dir).ok()).is_true()
 	Catalog.sectors_dir = dir
 	var overview := auto_free((load(SCENE) as PackedScene).instantiate()) as SectorOverview

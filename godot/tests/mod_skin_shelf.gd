@@ -4,7 +4,7 @@ extends RefCounted
 ## sizes a skin draws them at) and the shader text the manifests list, or of a whole pack folder (`EXAMPLE_MODERN`: the example pack, which holds its own pictures and shaders), laid over the pack the suite runs on and running (`Mods.sync`). `mount` makes them, `release` takes them away and chooses the
 ## suite's own pack again, so the next test starts with the game as it ships. The scripted ones need the godot-sandbox extension (`uv run tools/fetch_sandbox.py`); the data skin does not.
 ##
-## Teaches: a test double for a pack that carries code: a real folder in `user://`, written from a fixture and deleted afterwards, so the code under test reads the disk as it does in the game.
+## Teaches: a test double for a pack that carries code: a real folder in the `Scratch` place of the process, written from a fixture and deleted afterwards, so the code under test reads the disk as it does in the game.
 
 const FIXTURES := "res://tests/mods"
 ## The pictures every skin fixture gets: file -> [colour, size].

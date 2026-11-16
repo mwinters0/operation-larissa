@@ -7,8 +7,8 @@ extends GdUnitTestSuite
 const WORLD_SCENE := "res://src/gameplay/sector_world.tscn"
 const GAME_SCENE := "res://src/gameplay/game.tscn"
 const GAME_STATE_SCRIPT := "res://src/autoload/game_state.gd"
-const ROSTER := "user://test_identical_roster.json"
-const HALL := "user://test_identical_hall.json"
+var _roster := Scratch.path("test_identical_roster.json")
+var _hall := Scratch.path("test_identical_hall.json")
 
 var _old_roster: String
 var _old_hall: String
@@ -42,7 +42,7 @@ func after_test() -> void:
 	GameState.profile = null
 	GameState.hints.reset()
 	GameState.reset()
-	for path in [ROSTER, HALL]:
+	for path in [_roster, _hall]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 
@@ -51,8 +51,8 @@ func after_test() -> void:
 ## launch to the supply message (a problem opened by a trigger, the dock with a piece missing, the lock "solved") and the finale to
 ## the Hall of Fame. Returns the trace of the rules. With `skin`, the game is started wearing it (its presenter, its HUD, its render settings).
 func _mission(kind: StringName, skin: GameSkin = null) -> Array[String]:
-	SaveStore.roster_path = ROSTER
-	SaveStore.hall_path = HALL
+	SaveStore.roster_path = _roster
+	SaveStore.hall_path = _hall
 	SaveStore.players = []
 	SaveStore.hall = HallOfFame.new()
 	SectorWorld.skip_animations = true               # (the steps with real time in them are in the tests above; here the FLOW is looked at)

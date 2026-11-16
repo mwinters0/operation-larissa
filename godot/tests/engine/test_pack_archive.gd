@@ -16,8 +16,8 @@ var _real_bundled: Array[StringName]
 
 
 func before_test() -> void:
-	_scratch = "user://test_pack_archive_%d" % Time.get_ticks_usec()
-	DirAccess.make_dir_recursive_absolute(_scratch)
+	_scratch = Scratch.folder("archive")
+	Scratch.isolate_user_data()                      # (a pack file installed here is a scratch folder's)
 	_real_folders = Packs.folders.duplicate()
 	_real_bundled = Packs.bundled.duplicate()
 
@@ -25,12 +25,9 @@ func before_test() -> void:
 func after_test() -> void:
 	Packs.folders = _real_folders
 	Packs.bundled = _real_bundled
-	PackFiles.remove_tree("%s/%s" % [PackInstall.DIR, ID])
-	DirAccess.remove_absolute(PackInstall.file_of(ID))
 	PackFiles.remove_tree(_scratch)
 	PackShelf.with_dev_again()
-	Packs.forget_dev()
-	Packs.start()
+	Scratch.release_user_data()
 
 
 # --- making archives -----------------------------------------------------------------------------------------------------------
@@ -404,7 +401,7 @@ func test_dev_is_found_in_the_project_then_installed_as_a_folder_then_as_a_file_
 	DirAccess.make_dir_recursive_absolute(shipped)
 	PackShelf.without_dev([shipped])
 	Packs.dev_root = project
-	Packs.installed_dev_root = installed
+	Packs.installed_dev_override = installed
 	_folder_of(_scratch + "/project", Packs.DEV, "project")
 	_folder_of(_scratch + "/installed", Packs.DEV, "installed folder")
 	_pack_file_of(_scratch + "/installed", Packs.DEV, "installed file")

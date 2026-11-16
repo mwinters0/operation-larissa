@@ -26,6 +26,7 @@ func after_test() -> void:
 	GameClock.paused = false
 	ModRuleShelf.release(_shelf)
 	_shelf = null
+	Scratch.release_user_data()                      # (a test that installed a pack made it: nothing of the player's was touched)
 	GameState.reset()
 
 
@@ -675,19 +676,18 @@ func test_no_presenter_and_no_skin_names_the_rule_hooks() -> void:
 
 ## A mod pack is installed like any pack and the game asks nothing: no confirmation, no trust dialog, no warning on the pack screen, because everything it can do is bounded by the sandbox, the limits and the hook table.
 func test_installing_a_mod_pack_asks_no_trust_question() -> void:
-	const SOURCE := "user://test_mod_rules_stranger"
+	var source := Scratch.folder("mod_rules_stranger")
 	const ID := &"mod_rules"
-	PackFiles.remove_tree(SOURCE)
-	PackFiles.remove_tree("%s/%s" % [PackInstall.DIR, ID])             # (a run that failed half way leaves nothing behind)
+	Scratch.isolate_user_data()                                        # (the pack is installed into a scratch folder, not the player's own)
 	var manifest: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/mods/rules/pack.json"))
 	manifest["base"] = String(PackShelf.base_id())
-	PackFiles.write_text(SOURCE + "/pack.json", JSON.stringify(manifest))
-	PackFiles.write_text(SOURCE + "/rules.sgd", FileAccess.get_file_as_string("res://tests/mods/rules/rules.sgd"))
-	PackFiles.write_text(SOURCE + "/data/problems/problem_type_%02d.json" % TYPE, JSON.stringify(ResourceJson.new().data_of(ModRuleShelf.problem_type())))
+	PackFiles.write_text(source + "/pack.json", JSON.stringify(manifest))
+	PackFiles.write_text(source + "/rules.sgd", FileAccess.get_file_as_string("res://tests/mods/rules/rules.sgd"))
+	PackFiles.write_text(source + "/data/problems/problem_type_%02d.json" % TYPE, JSON.stringify(ResourceJson.new().data_of(ModRuleShelf.problem_type())))
 	var dialog: PackDialog = load("res://src/ui/pack_dialog.tscn").instantiate()
 	add_child(dialog)
 	var before := dialog.entry_count()
-	dialog.install_from(SOURCE)
+	dialog.install_from(source)
 	assert_int(dialog.entry_count()).override_failure_message(dialog.details.text).is_equal(before + 1)
 	assert_str(dialog.selected_id()).is_equal(ID)
 	assert_str(dialog.details.text).contains("installed 'mod_rules'")
@@ -698,7 +698,7 @@ func test_installing_a_mod_pack_asks_no_trust_question() -> void:
 	assert_array(get_tree().root.find_children("*", "AcceptDialog", true, false).filter(func(node: Node) -> bool: return (node as Window).visible)).is_empty()
 	# it is data to the game (not trusted: read as plain files), and installing chose and ran nothing
 	assert_bool(Packs.in_chain(ID)).is_false()
-	var pack := Pack.open("%s/%s" % [PackInstall.DIR, ID])
+	var pack := Pack.open(PackInstall.folder_of(ID))
 	assert_bool(pack.trusted).is_false()
 	assert_array(pack.errors).is_empty()
 	assert_object(ModHost.mod(String(ID))).is_null()
@@ -710,6 +710,6 @@ func test_installing_a_mod_pack_asks_no_trust_question() -> void:
 	# taken away again
 	dialog.free()
 	assert_str(PackInstall.uninstall(ID)).is_empty()
-	PackFiles.remove_tree(SOURCE)
-	Packs.start()
+	PackFiles.remove_tree(source)
+	Scratch.release_user_data()                                        # (chooses again)
 	Mods.sync()

@@ -10,7 +10,7 @@ extends GdUnitTestSuite
 ## the way the editor does, and look at the bytes. Everything is written under user://, never into res://data.
 
 const SECTORS := LegacyPack.SECTORS_DIR
-const TEMP := "user://screen_savers_test"
+var _temp := Scratch.path("screen_savers_test")
 
 var _savers: Array[ResourceFormatSaver] = []
 
@@ -21,14 +21,14 @@ func before_test() -> void:
 	for saver in _savers:
 		ResourceSaver.add_resource_format_saver(saver, true)
 	ScreenFile.last_refusal = ""
-	DirAccess.make_dir_recursive_absolute(TEMP)
+	DirAccess.make_dir_recursive_absolute(_temp)
 
 
 func after_test() -> void:
 	for saver in _savers:
 		ResourceSaver.remove_resource_format_saver(saver)
 	_savers.clear()
-	_remove_tree(TEMP)
+	_remove_tree(_temp)
 
 
 func _remove_tree(path: String) -> void:
@@ -45,7 +45,7 @@ func _load_screen(sector: int, screen: int, dir: String = SECTORS) -> ScreenData
 
 ## A copy of the sector file under user:// (its screens and script are still the res:// ones). Returns its path.
 func _copy_sector(sector: int) -> String:
-	var path := Catalog.sector_path(sector, TEMP)
+	var path := Catalog.sector_path(sector, _temp)
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	assert_int(DirAccess.copy_absolute(Catalog.sector_path(sector, SECTORS), path)).is_equal(OK)
 	return path
@@ -58,7 +58,7 @@ func _load_sector(path: String) -> SectorData:
 # --- the originals ---------------------------------------------------------------------------------------------------
 
 func test_every_original_screen_is_saved_byte_for_byte_by_resource_saver() -> void:
-	var path := TEMP + "/screen.tres"
+	var path := _temp + "/screen.tres"
 	var problems: Array[String] = []
 	var with_stale := 0
 	for s in Catalog.ORIGINAL_SECTOR_COUNT:

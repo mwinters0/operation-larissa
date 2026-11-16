@@ -30,7 +30,7 @@ func test_the_midi_file_of_a_song_follows_the_sound_set() -> void:
 
 
 func test_only_a_soundfont_2_file_is_taken_for_one() -> void:
-	var path := "user://test_midi_music_fake.sf2"
+	var path := Scratch.path("test_midi_music_fake.sf2")
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	file.store_string("RIFF\u0000\u0000\u0000\u0000WAVEfmt ")                 # a RIFF file, but a wave
 	file.close()
@@ -42,7 +42,7 @@ func test_only_a_soundfont_2_file_is_taken_for_one() -> void:
 	assert_bool(MidiMusic.is_soundfont("user://no_such_file.sf2")).is_false()
 	assert_bool(MidiMusic.is_soundfont("res://project.godot")).is_false()
 	assert_bool(MidiMusic.is_soundfont("")).is_false()
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	DirAccess.remove_absolute(path)
 
 
 func test_without_a_soundfont_the_rendered_song_plays() -> void:
@@ -64,7 +64,7 @@ func test_a_song_that_has_no_midi_file_is_not_found() -> void:
 	var music := MidiMusic.new()
 	assert_str(music.find_midi("NO_SUCH_SONG.MID")).is_equal("")
 	assert_str(music.find_midi("")).is_equal("")
-	music.add_midi_dir("user://campaign_midi")
+	music.add_midi_dir(Scratch.path("campaign_midi"))
 	assert_str(music.find_midi("NO_SUCH_SONG.MID")).is_equal("")
 	music.free()
 

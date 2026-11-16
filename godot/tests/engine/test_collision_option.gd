@@ -7,7 +7,7 @@ extends GdUnitTestSuite
 const WORLD_SCENE := "res://src/gameplay/sector_world.tscn"
 
 var _world: SectorWorld
-var _settings_file := "user://test_machine_settings.cfg"
+var _settings_file := Scratch.path("test_machine_settings.cfg")
 
 
 func before_test() -> void:

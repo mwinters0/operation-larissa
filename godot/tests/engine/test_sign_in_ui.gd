@@ -5,8 +5,8 @@ extends GdUnitTestSuite
 ## own scene in place (the router then only records where it would have gone).
 
 const SCENE := "res://src/ui/sign_in.tscn"
-const ROSTER := "user://test_signin_roster.json"
-const HALL := "user://test_signin_hall.json"
+var _roster := Scratch.path("test_signin_roster.json")
+var _hall := Scratch.path("test_signin_hall.json")
 
 var _old_roster: String
 var _old_hall: String
@@ -17,8 +17,8 @@ func before_test() -> void:
 	_old_roster = SaveStore.roster_path
 	_old_hall = SaveStore.hall_path
 	_old_players = SaveStore.players.duplicate()
-	SaveStore.roster_path = ROSTER
-	SaveStore.hall_path = HALL
+	SaveStore.roster_path = _roster
+	SaveStore.hall_path = _hall
 	SaveStore.players = []
 	SceneRouter.dry_run = true
 	SceneRouter.last_path = ""
@@ -42,7 +42,7 @@ func after_test() -> void:
 	SignIn.prompt_when_empty = true
 	SignIn.welcome_enabled = true
 	SignIn.returning_from_practice = false
-	for path in [ROSTER, HALL]:
+	for path in [_roster, _hall]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 
@@ -71,7 +71,7 @@ func test_a_new_player_is_added_listed_selected_and_saved() -> void:
 	assert_int(screen.tree.get_root().get_child_count()).is_equal(1)
 	assert_object(screen.selected_profile()).is_same(profile)
 	assert_bool(screen.start_button.disabled).is_false()
-	assert_bool(FileAccess.file_exists(ROSTER)).is_true()
+	assert_bool(FileAccess.file_exists(_roster)).is_true()
 
 
 func test_the_list_is_sorted_and_shows_game_and_sector() -> void:

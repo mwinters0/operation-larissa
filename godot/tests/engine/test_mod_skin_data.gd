@@ -381,7 +381,7 @@ func test_the_font_is_read_from_a_pack_file_and_goes_with_an_export() -> void:
 	_shelves.append(shelf)
 	shelf.add_mod_fixture(FIXTURE)
 	ModSkinShelf.add_files(shelf)
-	var zip := "user://test_font_%d.%s" % [Time.get_ticks_usec(), Pack.FILE_EXTENSION]
+	var zip := Scratch.path("test_font.%s" % Pack.FILE_EXTENSION)
 	assert_int(PackFiles.zip_folder(shelf.root, zip, String(shelf.id))).is_equal(OK)
 	var archived := Pack.open(zip)
 	assert_bool(archived.is_archive()).is_true()
@@ -391,7 +391,7 @@ func test_the_font_is_read_from_a_pack_file_and_goes_with_an_export() -> void:
 	assert_array(ModParts.problems(archived)).is_empty()
 	archived.close()
 	DirAccess.remove_absolute(zip)
-	var stage := "user://test_font_export_%d" % Time.get_ticks_usec()
+	var stage := Scratch.path("test_font_export")
 	var source := Pack.open(shelf.root)
 	assert_str(PackExport._write_complete_file(source, stage, FONT)).is_empty()                         # (the export copies the file as it is)
 	assert_array(FileAccess.get_file_as_bytes("%s/%s" % [stage, FONT])).is_equal(source.read_bytes(FONT))

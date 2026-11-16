@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 
 const ID := &"orchard_pack"
 const BOX := &"orchard_box"
-const EXPORTS := "user://test_pack_exports"
+var _exports := Scratch.path("test_pack_exports")
 const TONE_SHORT := "res://tests/fixtures/pack_tone_short.ogg.bin"
 const TINY := "res://tests/skins/tiny"
 
@@ -16,7 +16,7 @@ var _scratch: Array[String] = []
 
 
 func before_test() -> void:
-	PackFiles.remove_tree(EXPORTS)
+	PackFiles.remove_tree(_exports)
 
 
 func after_test() -> void:
@@ -32,7 +32,7 @@ func after_test() -> void:
 	for dir in _scratch:
 		PackFiles.remove_tree(dir)
 	_scratch.clear()
-	PackFiles.remove_tree(EXPORTS)
+	PackFiles.remove_tree(_exports)
 	if not _sectors_dir.is_empty():
 		PackFiles.remove_tree(_sectors_dir)
 		_sectors_dir = ""
@@ -68,9 +68,9 @@ func _quick() -> PackExport.Options:
 
 func test_a_campaign_of_a_mounted_pack_exports_as_a_folder_that_is_a_sound_pack() -> void:
 	_orchard()
-	var result := PackExport.campaign(ID, EXPORTS, _quick())
+	var result := PackExport.campaign(ID, _exports, _quick())
 	assert_bool(result.ok()).override_failure_message(result.text()).is_true()
-	assert_str(result.path).is_equal("%s/%s" % [EXPORTS, ID])
+	assert_str(result.path).is_equal("%s/%s" % [_exports, ID])
 	for rel in ["pack.json", "campaigns/orchard_pack.json", "sectors/sector_40/sector_40.json", "sectors/sector_40/sector_40.foe", "sectors/sector_41/sector_41.json",
 			"sectors/sector_42/sector_42.foe", "pictures.json", "art/ui_picture_orchard_finale.png", "texts.json"]:
 		assert_bool(result.files.has(rel)).override_failure_message("%s is missing from %s" % [rel, result.files]).is_true()
@@ -90,12 +90,12 @@ func test_a_campaign_of_a_mounted_pack_exports_as_a_folder_that_is_a_sound_pack(
 func test_the_rule_values_of_the_pack_go_with_the_campaign_and_a_bad_one_stops_the_export() -> void:
 	var shelf := _orchard()
 	shelf.write_json(Tuning.PACK_PATH, {"air": {"max_oxygen": 4}, "ink": {"max": 12}})
-	var result := PackExport.campaign(ID, EXPORTS, _quick())
+	var result := PackExport.campaign(ID, _exports, _quick())
 	assert_bool(result.ok()).override_failure_message(result.text()).is_true()
 	assert_bool(result.files.has(Tuning.PACK_PATH)).is_true()
 	assert_array(Array(FileAccess.get_file_as_bytes("%s/%s" % [result.path, Tuning.PACK_PATH]))).is_equal(Array(FileAccess.get_file_as_bytes("%s/%s" % [shelf.root, Tuning.PACK_PATH])))
 	shelf.write_json(Tuning.PACK_PATH, {"air": {"max_oxygen": 0}})
-	var refused := PackExport.campaign(ID, EXPORTS, _quick())
+	var refused := PackExport.campaign(ID, _exports, _quick())
 	assert_bool(refused.ok()).is_false()
 	assert_str(refused.text()).contains("air.max_oxygen is 0")
 
@@ -103,7 +103,7 @@ func test_the_rule_values_of_the_pack_go_with_the_campaign_and_a_bad_one_stops_t
 func test_the_exported_pack_plays_as_the_source_did_once_the_source_is_gone() -> void:
 	var shelf := _orchard()
 	var before := Catalog.sector(41)
-	var result := PackExport.campaign(ID, EXPORTS, _quick())
+	var result := PackExport.campaign(ID, _exports, _quick())
 	assert_bool(result.ok()).override_failure_message(result.text()).is_true()
 	shelf.remove()                                                                     # the source is gone ...
 	assert_object(Catalog.campaign(ID)).is_null()
@@ -129,7 +129,7 @@ func test_a_pack_can_be_exported_under_the_id_it_is_mounted_as() -> void:
 	options.title = "Orchard Again"
 	options.author = "Pip"
 	options.version = "2.0"
-	var result := PackExport.campaign(ID, EXPORTS, options)
+	var result := PackExport.campaign(ID, _exports, options)
 	assert_bool(result.ok()).override_failure_message(result.text()).is_true()
 	var pack := Pack.open(result.path)
 	assert_str(pack.id).is_equal(BOX)
@@ -144,18 +144,18 @@ func test_a_campaign_with_errors_leaves_nothing_behind() -> void:
 	var shelf := _orchard()
 	shelf.write_text(SectorJson.foe_rel(41), "this is not a creature script\n")
 	Packs.refresh()
-	var result := PackExport.campaign(ID, EXPORTS, _quick())
+	var result := PackExport.campaign(ID, _exports, _quick())
 	assert_bool(result.ok()).is_false()
 	assert_str(result.path).is_empty()
 	assert_bool(result.report.passes()).is_false()
 	assert_bool(result.report.errors().any(func(f: PackReport.Finding) -> bool: return f.area == "sector 41")).is_true()
-	assert_bool(DirAccess.dir_exists_absolute("%s/%s" % [EXPORTS, ID])).is_false()
+	assert_bool(DirAccess.dir_exists_absolute("%s/%s" % [_exports, ID])).is_false()
 	assert_str(result.text()).contains("nothing was exported")
 
 
 func test_a_campaign_that_does_not_exist_is_refused() -> void:
-	assert_str(PackExport.campaign(&"no_such_campaign", EXPORTS).error).contains("no campaign 'no_such_campaign'")
-	assert_bool(DirAccess.dir_exists_absolute(EXPORTS)).is_false()
+	assert_str(PackExport.campaign(&"no_such_campaign", _exports).error).contains("no campaign 'no_such_campaign'")
+	assert_bool(DirAccess.dir_exists_absolute(_exports)).is_false()
 
 
 func test_an_id_that_is_not_a_pack_id_is_refused_before_anything_is_written() -> void:
@@ -163,26 +163,26 @@ func test_an_id_that_is_not_a_pack_id_is_refused_before_anything_is_written() ->
 	var options := _quick()
 	for bad in ["../escape", "Upper", "a/b", "with space", ".."]:
 		options.pack_id = StringName(bad)
-		assert_str(PackExport.campaign(ID, EXPORTS, options).error).contains("is not a pack id")
-	assert_str(PackExport.campaign(&"../escape", EXPORTS, _quick()).error).is_not_empty()
-	assert_bool(DirAccess.dir_exists_absolute(EXPORTS)).is_false()
-	assert_bool(DirAccess.dir_exists_absolute(EXPORTS.get_base_dir() + "/escape")).is_false()
+		assert_str(PackExport.campaign(ID, _exports, options).error).contains("is not a pack id")
+	assert_str(PackExport.campaign(&"../escape", _exports, _quick()).error).is_not_empty()
+	assert_bool(DirAccess.dir_exists_absolute(_exports)).is_false()
+	assert_bool(DirAccess.dir_exists_absolute(_exports.get_base_dir() + "/escape")).is_false()
 
 
 func test_a_folder_that_is_not_a_pack_is_never_overwritten() -> void:
 	_orchard()
-	DirAccess.make_dir_recursive_absolute("%s/%s" % [EXPORTS, ID])
-	FileAccess.open("%s/%s/precious.txt" % [EXPORTS, ID], FileAccess.WRITE).store_string("mine")
-	var result := PackExport.campaign(ID, EXPORTS, _quick())
+	DirAccess.make_dir_recursive_absolute("%s/%s" % [_exports, ID])
+	FileAccess.open("%s/%s/precious.txt" % [_exports, ID], FileAccess.WRITE).store_string("mine")
+	var result := PackExport.campaign(ID, _exports, _quick())
 	assert_str(result.error).contains("is not a pack")
-	assert_bool(FileAccess.file_exists("%s/%s/precious.txt" % [EXPORTS, ID])).is_true()
+	assert_bool(FileAccess.file_exists("%s/%s/precious.txt" % [_exports, ID])).is_true()
 
 
 func test_exporting_again_replaces_the_earlier_export() -> void:
 	_orchard()
-	var first := PackExport.campaign(ID, EXPORTS, _quick())
+	var first := PackExport.campaign(ID, _exports, _quick())
 	FileAccess.open(first.path + "/stale.txt", FileAccess.WRITE).store_string("left over")
-	var second := PackExport.campaign(ID, EXPORTS, _quick())
+	var second := PackExport.campaign(ID, _exports, _quick())
 	assert_bool(second.ok()).is_true()
 	assert_bool(FileAccess.file_exists(second.path + "/stale.txt")).is_false()
 
@@ -191,10 +191,10 @@ func test_a_pack_file_holds_the_same_pack_and_installs_like_a_folder() -> void:
 	_orchard()
 	var options := _quick()
 	options.archive = true
-	var result := PackExport.campaign(ID, EXPORTS, options)
+	var result := PackExport.campaign(ID, _exports, options)
 	assert_bool(result.ok()).override_failure_message(result.text()).is_true()
-	assert_str(result.path).is_equal("%s/%s.larissa" % [EXPORTS, ID])
-	assert_bool(DirAccess.dir_exists_absolute("%s/%s" % [EXPORTS, ID])).is_false()      # (only the pack file is left)
+	assert_str(result.path).is_equal("%s/%s.larissa" % [_exports, ID])
+	assert_bool(DirAccess.dir_exists_absolute("%s/%s" % [_exports, ID])).is_false()      # (only the pack file is left)
 	assert_str(PackArchive.open(result.path).folder).is_equal(String(ID))
 	var in_place := Pack.open(result.path)                                              # (the pack file itself, read where it lies)
 	assert_array(in_place.errors).is_empty()
@@ -209,9 +209,9 @@ func test_a_pack_folder_written_by_hand_becomes_a_pack_file_as_it_is() -> void:
 	_shelves.append(shelf)
 	shelf.add_mod_fixture("res://tests/mods/skin_data")
 	ModSkinShelf.add_files(shelf)
-	var result := PackExport.archive_folder(shelf.root, EXPORTS, _quick())
+	var result := PackExport.archive_folder(shelf.root, _exports, _quick())
 	assert_bool(result.ok()).override_failure_message(result.text()).is_true()
-	assert_str(result.path).is_equal("%s/%s.larissa" % [EXPORTS, shelf.id])
+	assert_str(result.path).is_equal("%s/%s.larissa" % [_exports, shelf.id])
 	assert_str(PackArchive.open(result.path).folder).is_equal(String(shelf.id))
 	var in_place := Pack.open(result.path)
 	assert_array(in_place.errors).is_empty()
@@ -224,18 +224,17 @@ func test_a_pack_folder_with_an_error_leaves_no_pack_file() -> void:
 	var shelf := PackShelf.new()
 	_shelves.append(shelf)
 	shelf.add_mod_fixture("res://tests/mods/skin_data")                                          # (the pictures its manifest maps are not there)
-	var result := PackExport.archive_folder(shelf.root, EXPORTS, _quick())
+	var result := PackExport.archive_folder(shelf.root, _exports, _quick())
 	assert_bool(result.ok()).is_false()
 	assert_bool(result.report.passes()).is_false()
-	assert_bool(FileAccess.file_exists("%s/%s.larissa" % [EXPORTS, shelf.id])).is_false()
-	assert_str(PackExport.archive_folder("user://no_such_folder", EXPORTS, _quick()).error).contains("is not a pack")
+	assert_bool(FileAccess.file_exists("%s/%s.larissa" % [_exports, shelf.id])).is_false()
+	assert_str(PackExport.archive_folder("user://no_such_folder", _exports, _quick()).error).contains("is not a pack")
 
 
 # --- a campaign of the project ----------------------------------------------------------------------------------------------------
 
 func test_a_campaign_of_the_project_exports_with_its_pictures_and_its_source_folder() -> void:
-	_sectors_dir = "user://test_pack_export_sectors_%d" % Time.get_ticks_msec()
-	DirAccess.make_dir_recursive_absolute(_sectors_dir)
+	_sectors_dir = Scratch.folder("pack_export_sectors")
 	for pair in [[0, 40], [1, 41], [DevPack.test_sector("e", 0), 42]]:
 		var made := SectorFactory.new_from_copy(pair[0], pair[1], _sectors_dir, DevPack.SECTORS_DIR)
 		assert_bool(made.ok()).override_failure_message(made.error).is_true()
@@ -257,7 +256,7 @@ func test_a_campaign_of_the_project_exports_with_its_pictures_and_its_source_fol
 	campaign.banner_index = -1
 	campaign.banner = load(TINY + "/marker.png")
 	_campaigns = CampaignShelf.new([campaign])
-	var source := "user://test_pack_export_source_%d" % Time.get_ticks_msec()
+	var source := Scratch.folder("pack_export_source")
 	_scratch.append(source)
 	DirAccess.make_dir_recursive_absolute(source + "/seaside/audio/voice")
 	DirAccess.make_dir_recursive_absolute(source + "/seaside/art")
@@ -267,7 +266,7 @@ func test_a_campaign_of_the_project_exports_with_its_pictures_and_its_source_fol
 	FileAccess.open(source + "/seaside/art/shells.png", FileAccess.WRITE).store_buffer(FileAccess.get_file_as_bytes(TINY + "/marker.png"))
 	FileAccess.open(source + "/seaside/pictures.json", FileAccess.WRITE).store_string(JSON.stringify({"format": 1, "pictures": {"ui_picture/shells": "art/shells.png"}}))      # (the designer's own table: the exporter adds the campaign's pictures to it)
 	PackExport.source_dir = source
-	var result := PackExport.campaign(&"seaside", EXPORTS, _quick())
+	var result := PackExport.campaign(&"seaside", _exports, _quick())
 	assert_bool(result.ok()).override_failure_message(result.text()).is_true()
 	assert_bool(result.files.has("ui_picture/marker.png") and result.files.has("pictures.json")).is_true()           # (the banner is a file of the project: it goes in with a row)
 	assert_bool(result.files.has("texts.json")).is_true()
@@ -300,8 +299,8 @@ const TINY_SIZE := 16
 func test_a_campaign_over_sectors_that_another_campaign_has_is_exported_but_fails_the_check() -> void:
 	var campaign := CampaignShelf.orchard()                                              # sectors 0, 1 and the finale of the campaign the chain starts with, in the pack under it
 	_campaigns = CampaignShelf.new([campaign])
-	var result := PackExport.campaign(&"orchard", EXPORTS, _quick())
+	var result := PackExport.campaign(&"orchard", _exports, _quick())
 	assert_str(result.error).is_empty()                                                  # (no sector is the game's own: nothing protects them, the campaign rule does)
 	assert_bool(result.ok()).is_false()
 	assert_bool(result.report.errors().any(func(f: PackReport.Finding) -> bool: return f.message.contains("also in the campaign '%s'" % Catalog.default_campaign().id))).override_failure_message(result.text()).is_true()
-	assert_bool(DirAccess.dir_exists_absolute(EXPORTS + "/orchard")).is_false()
+	assert_bool(DirAccess.dir_exists_absolute(_exports + "/orchard")).is_false()

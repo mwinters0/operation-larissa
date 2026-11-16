@@ -5,8 +5,8 @@ extends GdUnitTestSuite
 ## hint 4 (calculator) when it is on, hint 6 (fractions) at EduLevel 1 or 3; none for the lock and the ballast panels.
 
 const GAME_SCENE := "res://src/gameplay/game.tscn"
-const ROSTER := "user://test_hint_cond_roster.json"
-const HALL := "user://test_hint_cond_hall.json"
+var _roster := Scratch.path("test_hint_cond_roster.json")
+var _hall := Scratch.path("test_hint_cond_hall.json")
 
 var _old_roster: String
 var _old_hall: String
@@ -17,8 +17,8 @@ func before_test() -> void:
 	_old_roster = SaveStore.roster_path
 	_old_hall = SaveStore.hall_path
 	_old_players = SaveStore.players.duplicate()
-	SaveStore.roster_path = ROSTER
-	SaveStore.hall_path = HALL
+	SaveStore.roster_path = _roster
+	SaveStore.hall_path = _hall
 	SaveStore.players = []
 	SaveStore.hall = HallOfFame.new()
 	SectorWorld.skip_animations = true
@@ -38,7 +38,7 @@ func after_test() -> void:
 	GameClock.paused = false
 	GameState.hints.reset()
 	GameState.reset()
-	for path in [ROSTER, HALL]:
+	for path in [_roster, _hall]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 

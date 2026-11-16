@@ -7,8 +7,8 @@ extends GdUnitTestSuite
 ## of sector 14 whose hit script ends its own interrupt (G42).
 
 const EXAMPLE := "res://tests/fixtures/foe_annotations_example/"
-const TEMP_DIR := "user://foe_names_test"
-const TEMP_A := "user://foe_script_editor_a.foe"
+var _temp_dir := Scratch.path("foe_names_test")
+var _temp_a := Scratch.path("foe_script_editor_a.foe")
 
 var _panel: FoeEditorPanel
 
@@ -24,11 +24,7 @@ func after_test() -> void:
 
 
 func _clear_temp_dir() -> void:
-	if not DirAccess.dir_exists_absolute(TEMP_DIR):
-		return
-	for file_name in DirAccess.get_files_at(TEMP_DIR):
-		DirAccess.remove_absolute(TEMP_DIR + "/" + file_name)
-	DirAccess.remove_absolute(TEMP_DIR)
+	PackFiles.remove_tree(_temp_dir)
 
 
 func _write(path: String, text: String) -> void:
@@ -39,10 +35,10 @@ func _write(path: String, text: String) -> void:
 
 ## A scratch copy of sector `index` (its .foe and .tres) in user://, named like sector `as_index`.
 func _sector_copy(index: int, as_index: int) -> FoeScript:
-	DirAccess.make_dir_recursive_absolute(Catalog.sector_dir(as_index, TEMP_DIR))
-	_write(Catalog.sector_path(as_index, TEMP_DIR), FileAccess.get_file_as_string(Catalog.sector_path(index, LegacyPack.SECTORS_DIR)))       # (the authoring files of the project's legacy folder)
-	_write(Catalog.foe_path(as_index, TEMP_DIR), FileAccess.get_file_as_string(Catalog.foe_path(index, LegacyPack.SECTORS_DIR)))
-	return ResourceLoader.load(Catalog.foe_path(as_index, TEMP_DIR), "", ResourceLoader.CACHE_MODE_REPLACE) as FoeScript
+	DirAccess.make_dir_recursive_absolute(Catalog.sector_dir(as_index, _temp_dir))
+	_write(Catalog.sector_path(as_index, _temp_dir), FileAccess.get_file_as_string(Catalog.sector_path(index, LegacyPack.SECTORS_DIR)))       # (the authoring files of the project's legacy folder)
+	_write(Catalog.foe_path(as_index, _temp_dir), FileAccess.get_file_as_string(Catalog.foe_path(index, LegacyPack.SECTORS_DIR)))
+	return ResourceLoader.load(Catalog.foe_path(as_index, _temp_dir), "", ResourceLoader.CACHE_MODE_REPLACE) as FoeScript
 
 
 func _example_json() -> String:
@@ -193,11 +189,11 @@ func test_storing_names_and_comments_needs_a_saved_original_sector() -> void:
 	_panel.rename_label(doc, "loc_529", "swim_back")
 	assert_str(_panel.store_problem(doc)).contains("unsaved")
 	assert_bool(_panel.store_annotations(doc)).is_false()
-	assert_bool(FileAccess.file_exists(TEMP_DIR + "/foe_annotations.json")).is_false()
+	assert_bool(FileAccess.file_exists(_temp_dir + "/foe_annotations.json")).is_false()
 	assert_int(_panel.save_document(doc)).is_equal(OK)
-	assert_bool(FileAccess.file_exists(TEMP_DIR + "/foe_annotations.json")).override_failure_message("saving must not store").is_false()
+	assert_bool(FileAccess.file_exists(_temp_dir + "/foe_annotations.json")).override_failure_message("saving must not store").is_false()
 	assert_bool(_panel.store_annotations(doc)).is_true()
-	var store := FoeAnnotations.load_store(TEMP_DIR + "/foe_annotations.json").store
+	var store := FoeAnnotations.load_store(_temp_dir + "/foe_annotations.json").store
 	assert_array(store[3]["labels"].values()).contains_exactly(["swim_back"])
 	_clear_temp_dir()
 
@@ -210,12 +206,12 @@ func test_store_then_reset_style_round_trip_for_an_entry_rename_and_comments() -
 	doc.edit.text = "; header\n\n" + doc.edit.text.replace("    Return\n", "    Return  ; bounce\n")
 	assert_int(_panel.save_document(doc)).is_equal(OK)
 	assert_bool(_panel.store_annotations(doc)).is_true()
-	var parsed := FoeAnnotations.load_store(TEMP_DIR + "/foe_annotations.json")
+	var parsed := FoeAnnotations.load_store(_temp_dir + "/foe_annotations.json")
 	assert_str(parsed.error).is_empty()
 	var original := FoeAnnotations.original(3)
 	var regenerated := FoeAsm.disassemble(original["script"], original["base"], original["entries"], parsed.store[3], FoeNames.for_sector(Catalog.sector(3)))
-	assert_bool(regenerated == FileAccess.get_file_as_string(Catalog.foe_path(3, TEMP_DIR))).is_true()
-	assert_str(FileAccess.get_file_as_string(Catalog.foe_path(3, TEMP_DIR))).starts_with("; header\n\ntouch_return:\n    Return  ; bounce\n")
+	assert_bool(regenerated == FileAccess.get_file_as_string(Catalog.foe_path(3, _temp_dir))).is_true()
+	assert_str(FileAccess.get_file_as_string(Catalog.foe_path(3, _temp_dir))).starts_with("; header\n\ntouch_return:\n    Return  ; bounce\n")
 	_clear_temp_dir()
 
 
@@ -227,7 +223,7 @@ func test_storing_is_refused_when_the_instructions_differ_from_the_original() ->
 	assert_int(_panel.save_document(doc)).is_equal(OK)
 	assert_bool(_panel.store_annotations(doc)).is_false()
 	assert_str(doc.notes[0]).contains("not stored").contains("original has")
-	assert_bool(FileAccess.file_exists(TEMP_DIR + "/foe_annotations.json")).is_false()
+	assert_bool(FileAccess.file_exists(_temp_dir + "/foe_annotations.json")).is_false()
 	_clear_temp_dir()
 
 
