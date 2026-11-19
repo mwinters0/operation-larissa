@@ -40,10 +40,12 @@ func _list(parts: Array[OpeningPart], starts_over := false) -> OpeningList:
 	return list
 
 
-## A scratch pack over dev that holds `list` as its opening.
-func _with(list: OpeningList) -> void:
+## A scratch pack over dev that holds `list` as its opening (and the deaf scene `DeafScene` when `deaf`).
+func _with(list: OpeningList, deaf := false) -> void:
 	_shelf = PackShelf.new()
 	_shelf.write_json("data/story/opening.json", ResourceJson.new().data_of(list))
+	if deaf:
+		DeafScene.write(_shelf)
 	_shelf.mount()
 	TroubleLog.new_run()
 
@@ -132,16 +134,16 @@ func test_a_pack_that_holds_an_opening_of_its_own_plays_it_and_nothing_else() ->
 	assert_array(TroubleLog.session.told).is_empty()
 
 
-## Space / Escape skip the whole opening only when the part playing hears them: a scene deaf until `listen` (dev's closing, here as a part of an opening) drops them, and when it later ends by Enter the opening goes on to its next
+## Space / Escape skip the whole opening only when the part playing hears them: a scene deaf until `listen` (a scratch one, `DeafScene`, here as a part of an opening) drops them, and when it later ends by Enter the opening goes on to its next
 ## part as after any part that ends by itself.
 func test_space_in_a_part_that_drops_it_does_not_skip_the_opening() -> void:
-	_with(_list([_part(OpeningPart.SCENE, &"dev_closing"), _part(OpeningPart.SCENE, &"logo")]))
+	_with(_list([_part(OpeningPart.SCENE, DeafScene.SCENE), _part(OpeningPart.SCENE, &"logo")]), true)
 	var opening := _opening()
 	await await_idle_frame()
-	assert_str(_scene_of(opening)).is_equal("dev_closing")
+	assert_str(_scene_of(opening)).is_equal(String(DeafScene.SCENE))
 	opening._unhandled_key_input(_space())
 	await await_idle_frame()
-	assert_str(_scene_of(opening)).override_failure_message("the deaf scene dropped Space: it plays on").is_equal("dev_closing")
+	assert_str(_scene_of(opening)).override_failure_message("the deaf scene dropped Space: it plays on").is_equal(String(DeafScene.SCENE))
 	opening.current.cue(&"listen")
 	opening.current.advance()                                                        # (Enter, heard now: the part ends)
 	await await_idle_frame()

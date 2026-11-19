@@ -29,13 +29,29 @@ frames = &"sub"
 
 [sub_resource type="Resource" id="Actor_4"]
 script = ExtResource("2_stage_actor")
+name = &"helicopter"
+picture = &"heli_body"
+position = Vector2(16, 32)
+parent = &"playfield"
+visible = false
+
+[sub_resource type="Resource" id="Actor_5"]
+script = ExtResource("2_stage_actor")
+name = &"rotor"
+picture = &"heli_rotor_0"
+position = Vector2(16, 32)
+parent = &"playfield"
+visible = false
+
+[sub_resource type="Resource" id="Actor_6"]
+script = ExtResource("2_stage_actor")
 name = &"deck"
 kind = &"group"
 position = Vector2(16, 32)
 visible = false
 size = Vector2(608, 288)
 
-[sub_resource type="Resource" id="Actor_5"]
+[sub_resource type="Resource" id="Actor_7"]
 script = ExtResource("2_stage_actor")
 name = &"water"
 kind = &"fill"
@@ -44,14 +60,14 @@ parent = &"deck"
 size = Vector2(608, 288)
 color = Color(0, 0, 0.667, 1)
 
-[sub_resource type="Resource" id="Actor_6"]
+[sub_resource type="Resource" id="Actor_8"]
 script = ExtResource("2_stage_actor")
 name = &"ship"
 picture = &"deck_ship"
 position = Vector2(232, 32)
 parent = &"deck"
 
-[sub_resource type="Resource" id="Actor_7"]
+[sub_resource type="Resource" id="Actor_9"]
 script = ExtResource("2_stage_actor")
 name = &"deck_creature"
 kind = &"frames"
@@ -60,7 +76,7 @@ position = Vector2(200, 180)
 parent = &"deck"
 frames = &"zone_creatures"
 
-[sub_resource type="Resource" id="Actor_8"]
+[sub_resource type="Resource" id="Actor_10"]
 script = ExtResource("2_stage_actor")
 name = &"deck_sub"
 kind = &"frames"
@@ -68,14 +84,14 @@ position = Vector2(184, 160)
 parent = &"deck"
 frames = &"sub"
 
-[sub_resource type="Resource" id="Actor_9"]
+[sub_resource type="Resource" id="Actor_11"]
 script = ExtResource("2_stage_actor")
 name = &"lamp"
 picture = &"deck_pod_0"
 position = Vector2(568, 104)
 parent = &"deck"
 
-[sub_resource type="Resource" id="Actor_10"]
+[sub_resource type="Resource" id="Actor_12"]
 script = ExtResource("2_stage_actor")
 name = &"sea"
 picture = &"deck_sea"
@@ -84,5 +100,5 @@ parent = &"deck"
 
 [resource]
 script = ExtResource("1_cutscene_stage")
-provenance = "Dev pack: the closing's actors: two shots, the sub and a creature of the zone, a lamp (tools/dev_pack/dev_story.py)."
-actors = Array[ExtResource("2_stage_actor")]([SubResource("Actor_1"), SubResource("Actor_2"), SubResource("Actor_3"), SubResource("Actor_4"), SubResource("Actor_5"), SubResource("Actor_6"), SubResource("Actor_7"), SubResource("Actor_8"), SubResource("Actor_9"), SubResource("Actor_10")])
+provenance = "Dev pack: the closing's actors: two shots, the sub and a creature of the zone, a lamp, and the helicopter the sub changes into (tools/dev_pack/dev_story.py)."
+actors = Array[ExtResource("2_stage_actor")]([SubResource("Actor_1"), SubResource("Actor_2"), SubResource("Actor_3"), SubResource("Actor_4"), SubResource("Actor_5"), SubResource("Actor_6"), SubResource("Actor_7"), SubResource("Actor_8"), SubResource("Actor_9"), SubResource("Actor_10"), SubResource("Actor_11"), SubResource("Actor_12")])

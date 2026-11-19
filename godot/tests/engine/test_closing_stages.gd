@@ -1,12 +1,11 @@
 class_name TestClosingStages
 extends GdUnitTestSuite
 ## Teaches: the closings are scenes whose nodes a stage file owns. The new kinds of actor (a picture set the view holds, a chain that one number lowers, a fill, a group that clips) are tried on a small stage of a scratch
-## pack; the dev pack's two closing scenes (the film and the flight) are then built from the dev pack's stages and held to them (`StageNodes`), and what is told when a pack's stage lacks an actor a closing's timeline names, or names a picture set the
+## pack; the dev pack's closing scene (a film, then a flight of the sub) is then built from the dev pack's stage and held to it (`StageNodes`), and what is told when a pack's stage lacks an actor a closing's timeline names, or names a picture set the
 ## closing does not hand in, is pinned (`PackCheck`, `StageBuilder`, `StageChain`), each once and with the pack.
 
 const PROBE := &"probe_stage"
 const DEV_CLOSING := &"dev_closing"
-const DEV_FLIGHT_CLOSING := &"dev_flight_closing"
 const DEV_ZONE := 4                                    # the zone of the dev tour's finale sector
 
 var _shelf: PackShelf
@@ -157,10 +156,10 @@ func test_a_picture_set_the_scene_does_not_hand_in_leaves_its_actor_out_and_is_t
 
 # --- the closings on the dev pack's stages -------------------------------------------------------------------------
 
-## The closing the dev pack's campaign names, played over a sector of zone 4 (its finale's): the stage built from the stage file, the two timelines on the one player that plays them in turn, no backdrop.
-func test_the_dev_closing_is_built_from_the_stage_and_plays_its_timelines_in_turn() -> void:
+## The closing the dev pack's campaign names, played over a sector of zone 4 (its finale's) with the sub at a place: the stage built from the stage file, the film and the flight (made for the place of the sub) on the one player that plays them in turn, no backdrop.
+func test_the_dev_closing_is_built_from_the_stage_and_plays_the_film_then_the_flight_made_for_the_place_of_the_sub() -> void:
 	TroubleLog.new_run()
-	var closing: TimelineSegment = auto_free(TimelineSegment.of(DEV_CLOSING, ScenePlace.over(DEV_ZONE)))
+	var closing: TimelineSegment = auto_free(TimelineSegment.of(DEV_CLOSING, ScenePlace.over(DEV_ZONE, Vector2i(184, 212), 6)))
 	add_child(closing)
 	assert_array(StageNodes.differences(Catalog.story_stage(&"dev_closing_stage"), closing.stage)).is_empty()
 	assert_array(TroubleLog.session.told).is_empty()
@@ -169,35 +168,25 @@ func test_the_dev_closing_is_built_from_the_stage_and_plays_its_timelines_in_tur
 	assert_object(closing.get_node_or_null("Backdrop")).is_null()
 	assert_bool((closing.cast.node_of(&"deck") as CanvasItem).visible).is_false()
 	assert_bool((closing.cast.node_of(&"playfield") as CanvasItem).visible).is_true()
-	for timeline_name: StringName in [&"dev_closing_film", &"dev_closing_wait"]:
+	assert_bool((closing.cast.node_of(&"helicopter") as CanvasItem).visible).is_false()
+	for timeline_name: StringName in [&"dev_closing_film", &"dev_flight"]:
 		assert_bool(closing.script_player.has_animation(timeline_name)).is_true()
-	assert_bool(closing.listening).is_false()
-	closing.script_player.advance(closing.script_player.get_animation(&"dev_closing_film").length + 0.01)
-	await await_idle_frame()
-	assert_str(String(closing.script_player.current_animation)).is_equal("dev_closing_wait")
-	assert_bool((closing.cast.node_of(&"deck") as CanvasItem).visible).is_true()                 # the cut: keys of the film's own timeline
+	var film := closing.script_player.get_animation(&"dev_closing_film")
+	closing.script_player.play(&"dev_closing_film")
+	closing.script_player.seek(CutsceneTimeline.seconds(8 * 12.0 + 6.0), true)                                  # (past the cut to the deck)
+	assert_bool((closing.cast.node_of(&"deck") as CanvasItem).visible).is_true()                                 # the cut: keys of the film's own timeline
 	assert_bool((closing.cast.node_of(&"playfield") as CanvasItem).visible).is_false()
-	assert_bool(closing.listening).is_true()                                                     # the cue `listen` at the first moment of the wait
-	var count := [0]
-	closing.finished.connect(func() -> void: count[0] += 1)
-	closing.advance()
-	closing.advance()
-	assert_int(count[0]).is_equal(1)
-
-
-func test_the_dev_flight_closing_is_built_from_the_stage_and_its_flight_is_made_for_the_place_of_the_sub() -> void:
-	TroubleLog.new_run()
-	var closing: TimelineSegment = auto_free(TimelineSegment.of(DEV_FLIGHT_CLOSING, ScenePlace.over(DEV_ZONE, Vector2i(184, 212), 6)))
-	add_child(closing)
-	assert_array(StageNodes.differences(Catalog.story_stage(&"dev_flight_stage"), closing.stage)).is_empty()
-	assert_array(TroubleLog.session.told).is_empty()
-	assert_array(closing.cast.frame_sets.keys()).is_equal(Array(FrameSets.offered(DEV_ZONE)))
-	assert_object(closing.get_node_or_null("Backdrop")).is_null()
+	closing.script_player.seek(film.length, true)                                                                # (and the cut back, at the film's last step)
+	assert_bool((closing.cast.node_of(&"deck") as CanvasItem).visible).is_false()
+	assert_bool((closing.cast.node_of(&"playfield") as CanvasItem).visible).is_true()
+	assert_bool((closing.cast.node_of(&"creature") as CanvasItem).visible).is_false()
+	closing.advance()                                                                                            # (Enter: the film is over, the flight is next)
 	var animation := closing.script_player.get_animation(&"dev_flight")
-	closing.script_player.play(&"dev_flight")
+	assert_str(String(closing.script_player.current_animation)).is_equal("dev_flight")
 	closing.script_player.seek(animation.length - 0.05, true)
 	assert_bool((closing.cast.node_of(&"helicopter") as CanvasItem).visible).is_true()
 	assert_bool((closing.cast.node_of(&"sub") as CanvasItem).visible).is_false()
+	assert_bool(closing.listening).is_false()
 	closing.skip()
 
 
@@ -233,8 +222,7 @@ func _without(stage_name: StringName, actor_name: StringName) -> CutsceneStage:
 
 func test_the_check_tells_an_actor_a_timeline_of_the_dev_closing_names_that_its_stage_lacks() -> void:
 	var lines := _story_lines_of_a_pack_with(&"dev_closing_stage", _without(&"dev_closing_stage", &"lamp"))
-	assert_array(lines).is_equal(["timeline 'dev_closing_film' names the actor 'lamp', which stage 'dev_closing_stage' does not hold: nothing moves or changes for it",
-			"timeline 'dev_closing_wait' names the actor 'lamp', which stage 'dev_closing_stage' does not hold: nothing moves or changes for it"])
+	assert_array(lines).is_equal(["timeline 'dev_closing_film' names the actor 'lamp', which stage 'dev_closing_stage' does not hold: nothing moves or changes for it"])
 
 
 func test_the_check_tells_a_picture_set_the_closing_does_not_hand_in() -> void:

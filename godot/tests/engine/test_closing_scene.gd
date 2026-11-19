@@ -2,15 +2,15 @@ class_name TestClosingScene
 extends GdUnitTestSuite
 ## Teaches: the end of a game is a scene FILE that a campaign names, played by the same segment as the opening. What a closing needs of the engine is scene data and verbs: no black backdrop (it is laid over the sector), keys and clicks
 ## read and dropped until the verb `listen`, picture sets of the engine by fixed names (`FrameSets`: the sub's, the creatures of the zone of the sector in play, which the director hands in), and a name the chain does not hold is told once
-## and the generic finale plays. The dev pack's closing (`dev_closing`, two timelines and a stage of its own shape) is played through the real `Game` here; the legacy pack's Expert closing is pinned in tests/legacy/test_closing_sequences.gd.
-## A closing may also FLY the sub and show the surface ship's message: a flight file among the scene's timelines is made at the start for the place the director hands in (`ScenePlace`), its last step is a mark that Enter goes to, and the verb
-## `messages` shows the scene's pages in the message box (`dev_flight_closing`: a flight and two pages, played through `Game` and on its own; the legacy pack's Voyager closing is pinned in tests/legacy/test_closing_sequences.gd).
+## and the generic finale plays. The dev pack's one closing (`dev_closing`: a film, a flight and two pages, a stage of its own shape) is played through the real `Game` here; the legacy pack's Expert closing is pinned in tests/legacy/test_closing_sequences.gd.
+## A closing may FLY the sub and show the surface ship's message: a flight file among the scene's timelines is made at the start for the place the director hands in (`ScenePlace`), its last step is a mark that Enter goes to, and the verb
+## `messages` shows the scene's pages in the message box (`dev_closing`'s second and third parts, played through `Game` and on its own; the legacy pack's Voyager closing is pinned in tests/legacy/test_closing_sequences.gd). Deafness and the verb `listen` are
+## tested on a scene of the test's own, written into a scratch pack (`DeafScene`): the dev pack holds none, the legacy Expert closing is the one that is deaf.
 
 const GAME_SCENE := "res://src/gameplay/game.tscn"
 const FINALE_SECTOR := 160
 const DEV_CLOSING := &"dev_closing"
 const DEV_ZONE := 4
-const DEV_FLIGHT_CLOSING := &"dev_flight_closing"
 const FLIGHT_AT := Vector2i(184, 212)                 # where the sub is when the flight begins, and the cell it shows
 const FLIGHT_CELL := 6
 
@@ -18,6 +18,7 @@ var _roster := Scratch.path("test_closing_scene_roster.json")
 var _hall := Scratch.path("test_closing_scene_hall.json")
 
 var _shelf: CampaignShelf
+var _pack: PackShelf
 var _old_roster: String
 var _old_hall: String
 var _old_players: Array[PlayerProfile]
@@ -41,6 +42,9 @@ func after_test() -> void:
 	if _shelf != null:
 		_shelf.remove()
 		_shelf = null
+	if _pack != null:
+		_pack.remove()
+		_pack = null
 	SaveStore.roster_path = _old_roster
 	SaveStore.hall_path = _old_hall
 	SaveStore.players = _old_players
@@ -61,6 +65,15 @@ func _segment(scene_name: StringName = DEV_CLOSING, zone := DEV_ZONE) -> Timelin
 	var segment: TimelineSegment = auto_free(TimelineSegment.of(scene_name, ScenePlace.over(zone)))
 	add_child(segment)
 	return segment
+
+
+## A scratch pack over dev that holds the deaf scene (`DeafScene`), mounted; the scene's name.
+func _deaf() -> StringName:
+	_pack = PackShelf.new()
+	DeafScene.write(_pack)
+	_pack.mount()
+	TroubleLog.new_run()
+	return DeafScene.SCENE
 
 
 func _key(code: Key) -> InputEventKey:
@@ -92,8 +105,9 @@ func _every_way_to_end() -> Dictionary[String, Callable]:
 
 func test_every_key_and_click_is_dropped_until_the_verb_listen() -> void:
 	var ways := _every_way_to_end()
+	var deaf := _deaf()
 	for way: String in ways:
-		var segment := _segment()
+		var segment := _segment(deaf)
 		assert_bool(segment.scene.deaf_until_listen).is_true()
 		for each: Callable in ways.values():
 			each.call(segment)
@@ -103,8 +117,9 @@ func test_every_key_and_click_is_dropped_until_the_verb_listen() -> void:
 
 func test_from_the_verb_listen_any_key_or_click_ends_the_scene_once() -> void:
 	var ways := _every_way_to_end()
+	var deaf := _deaf()
 	for way: String in ways:
-		var segment := _segment()
+		var segment := _segment(deaf)
 		var count := [0]
 		segment.finished.connect(func() -> void: count[0] += 1)
 		segment.cue(&"listen")
@@ -117,7 +132,7 @@ func test_from_the_verb_listen_any_key_or_click_ends_the_scene_once() -> void:
 
 
 func test_a_key_that_is_held_down_or_let_go_is_no_key_press() -> void:
-	var segment := _segment()
+	var segment := _segment(_deaf())
 	segment.cue(&"listen")
 	var echo := _key(KEY_A)
 	echo.echo = true
@@ -128,6 +143,18 @@ func test_a_key_that_is_held_down_or_let_go_is_no_key_press() -> void:
 	for event: InputEvent in [echo, release, mouse_release]:
 		segment._unhandled_input(event)
 	assert_bool(segment.done).is_false()
+
+
+func test_the_dev_closing_is_not_deaf_and_enter_goes_on_with_its_parts() -> void:
+	var closing := _segment()
+	assert_bool(closing.scene.deaf_until_listen).is_false()
+	assert_bool(closing.listening).is_false()
+	assert_str(String(closing.script_player.current_animation)).is_equal("dev_closing_film")
+	closing.advance()                                                               # (Enter ends the film: the flight is next)
+	assert_str(String(closing.script_player.current_animation)).is_equal("dev_flight")
+	assert_bool(closing.done).is_false()
+	closing.skip()
+	assert_bool(closing.done).is_true()
 
 
 func test_a_scene_that_is_not_deaf_goes_on_with_enter_as_the_opening_does() -> void:
@@ -214,22 +241,28 @@ func _scene(timelines: Array[StringName], deaf: bool) -> StoryScene:
 	return scene
 
 
-func test_the_dev_closing_scene_is_fine_and_a_looping_last_timeline_is_accepted() -> void:
-	var scene := Catalog.story_scene(DEV_CLOSING)
+func test_the_dev_closing_scene_is_fine() -> void:
+	assert_array(Array(Catalog.story_scene(DEV_CLOSING).unresolved())).is_empty()
+
+
+func test_a_deaf_scene_whose_last_timeline_loops_and_says_listen_is_fine() -> void:
+	var scene := Catalog.story_scene(_deaf())
 	assert_array(Array(scene.unresolved())).is_empty()
 	assert_bool(Catalog.story_timeline(scene.timelines[scene.timelines.size() - 1]).loop).is_true()
-	assert_array(Array(_scene([&"dev_closing_film", &"dev_closing_wait"], true).unresolved())).is_empty()
+	assert_array(Array(_scene([&"dev_closing_film", DeafScene.WAIT], true).unresolved())).is_empty()
 
 
 func test_a_looping_timeline_that_is_not_the_last_is_told_because_the_ones_after_it_never_play() -> void:
-	var lines := _scene([&"dev_closing_wait", &"dev_closing_film"], true).unresolved()
-	assert_array(Array(lines)).is_equal(["lists the timeline 'dev_closing_wait' to play once, but it loops and is not the last: the timelines after it are never played"])
+	_deaf()
+	var lines := _scene([DeafScene.WAIT, &"dev_closing_film"], true).unresolved()
+	assert_array(Array(lines)).is_equal(["lists the timeline 'zz_deaf_wait' to play once, but it loops and is not the last: the timelines after it are never played"])
 
 
 func test_a_scene_that_drops_every_key_but_never_listens_and_a_listen_with_nothing_to_wait_for_are_told() -> void:
 	var never := _scene([&"dev_closing_film"], true).unresolved()
 	assert_array(Array(never)).is_equal(["drops every key and click until the cue 'listen', which no timeline of it has: no key or click ends it, only the cue 'end'"])
-	var needless := _scene([&"dev_closing_film", &"dev_closing_wait"], false).unresolved()
+	_deaf()
+	var needless := _scene([&"dev_closing_film", DeafScene.WAIT], false).unresolved()
 	assert_array(Array(needless)).is_equal(["has the cue 'listen', but does not drop keys until it (deaf_until_listen is off): the cue does nothing"])
 
 
@@ -284,26 +317,40 @@ func test_the_closing_scene_a_campaign_names_is_played_over_the_sector_in_play_a
 	assert_object(closing.get_parent()).is_same(game.problem_layer)
 	assert_bool(game.world.sim.sub.active).is_false()
 	assert_str(Audio.song).is_equal(&"closing")                                                 # the scene's `song`
+	assert_str(String(closing.script_player.current_animation)).is_equal("dev_closing_film")
+	game._unhandled_input(_key(KEY_ENTER))                                                      # Enter in the film: to the flight
+	assert_object(game.closing).is_same(closing)
+	assert_str(String(closing.script_player.current_animation)).is_equal("dev_flight")
+	assert_array(TroubleLog.session.told).is_empty()
+
+
+func test_a_deaf_closing_drops_enter_and_space_until_its_wait_says_listen_and_then_a_key_ends_the_game_through_the_hall_of_fame() -> void:
+	var deaf := _deaf()
+	var game := await _start(deaf)
+	_dock_at_the_finale(game)
+	var closing := game.closing as TimelineSegment
+	assert_str(closing.scene_name).is_equal(deaf)
+	assert_str(Audio.song).is_equal(&"closing")
 	game._unhandled_input(_key(KEY_ENTER))                                                      # Enter and Space are thrown away until `listen`
 	game._unhandled_input(_key(KEY_SPACE))
 	assert_object(game.closing).is_same(closing)
 	assert_int(SaveStore.hall.entries.size()).is_equal(0)
-	closing.cue(&"listen")                                                                      # (the real thing: the first moment of the last timeline)
-	game._unhandled_input(_key(KEY_ENTER))
+	closing.script_player.advance(closing.script_player.get_animation(&"dev_closing_film").length + 0.01)
+	await await_idle_frame()
+	assert_bool(closing.listening).is_true()                                                    # the cue `listen` at the first moment of the wait
+	closing._unhandled_input(_key(KEY_A))                                                       # any key, which the director (`Game`) does not read
 	assert_object(game.closing).is_null()
 	assert_str(Audio.song).is_equal(AudioService.NO_MUSIC)                                       # not carried into the Hall of Fame
 	await _hall_then_sign_in(game)
 	assert_array(TroubleLog.session.told).is_empty()
 
 
-func test_the_dev_closing_reaches_its_wait_and_a_key_there_ends_the_game_through_the_hall_of_fame() -> void:
-	var game := await _start(DEV_CLOSING)
+func test_enter_in_a_deaf_closing_that_listens_ends_it_through_the_director() -> void:
+	var game := await _start(_deaf())
 	_dock_at_the_finale(game)
 	var closing := game.closing as TimelineSegment
-	closing.script_player.advance(closing.script_player.get_animation(&"dev_closing_film").length + 0.01)
-	await await_idle_frame()
-	assert_bool(closing.listening).is_true()
-	closing._unhandled_input(_key(KEY_A))                                                       # any key, which the director (`Game`) does not read
+	closing.cue(&"listen")
+	game._unhandled_input(_key(KEY_ENTER))
 	assert_object(game.closing).is_null()
 	await _hall_then_sign_in(game)
 
@@ -336,10 +383,10 @@ func test_what_the_closings_name_is_derived_from_the_campaigns_of_the_chain() ->
 	assert_str(named["data/story/dev_closing.tres"]).is_equal("StoryScene")
 	assert_str(named["data/story/dev_closing_stage.tres"]).is_equal("CutsceneStage")
 	assert_str(named["data/story/dev_closing_film.tres"]).is_equal("CutsceneTimeline")
-	assert_str(named["data/story/dev_closing_wait.tres"]).is_equal("CutsceneTimeline")
-	assert_str(PackNeeds.class_of("data/story/dev_closing_wait.tres")).is_equal("CutsceneTimeline")
-	assert_str(named["data/story/dev_flight_closing.tres"]).is_equal("StoryScene")               # (the dev pack's second closing is named by its campaign `test_c`, which has no finale)
-	assert_str(named["data/story/dev_flight.tres"]).is_equal("SubFlight")
+	assert_str(PackNeeds.class_of("data/story/dev_closing_film.tres")).is_equal("CutsceneTimeline")
+	assert_str(named["data/story/dev_flight.tres"]).is_equal("SubFlight")                         # (the flight file it plays)
+	assert_str(PackNeeds.class_of("data/story/dev_flight.tres")).is_equal("SubFlight")
+	assert_array(named.keys().filter(func(rel: String) -> bool: return rel.contains("dev_"))).has_size(4)      # (the one closing of dev: its scene, stage, film and flight; `test_c` has no finale and names none)
 	for rel: String in PackNeeds.FILES:
 		assert_bool(rel.contains("expert") or rel.contains("dev_closing")).override_failure_message("%s is listed in FILES, but a campaign names it" % rel).is_false()
 	for rel: String in PackNeeds.FILES:
@@ -358,8 +405,11 @@ func test_a_campaign_that_names_no_scene_the_chain_holds_still_names_the_file() 
 
 # --- a flight file among a scene's timelines: made at the start for the place the sub is in ----------------------------------
 
+## The dev closing over `DEV_ZONE` with the sub at `at` showing `cell`, Enter pressed once: the film is over and the flight plays.
 func _flight_segment(at := FLIGHT_AT, cell := FLIGHT_CELL) -> TimelineSegment:
-	return _segment_at(DEV_FLIGHT_CLOSING, ScenePlace.over(DEV_ZONE, at, cell))
+	var closing := _segment_at(DEV_CLOSING, ScenePlace.over(DEV_ZONE, at, cell))
+	closing.advance()
+	return closing
 
 
 func _segment_at(scene_name: StringName, place: ScenePlace) -> TimelineSegment:
@@ -398,6 +448,7 @@ func test_the_segment_makes_the_flight_when_it_is_built_for_the_place_it_is_hand
 	assert_str(String(closing.script_player.current_animation)).is_equal("dev_flight")
 	assert_object(closing.get_node_or_null("Backdrop")).is_null()
 	assert_array(TroubleLog.session.told).is_empty()
+	assert_str(String(_segment_at(DEV_CLOSING, closing.place).script_player.current_animation)).is_equal("dev_closing_film")      # (a scene begins with its first timeline: the flight is the second)
 
 
 func test_a_flight_is_not_made_when_it_cannot_end_and_the_scene_says_so() -> void:
@@ -426,7 +477,7 @@ func test_the_flights_last_step_is_a_mark_with_the_cue_the_flight_names() -> voi
 	var cues := flight.cues.filter(func(entry: CutsceneCue) -> bool: return entry.kind == CutsceneCue.EVENT)
 	assert_array(cues.map(func(entry: CutsceneCue) -> StringName: return entry.cue_name)).is_equal([&"messages"])
 	assert_float((cues[0] as CutsceneCue).tick).is_equal(last_step)
-	assert_array(Array(Catalog.story_scene(DEV_FLIGHT_CLOSING).unresolved())).is_empty()
+	assert_array(Array(Catalog.story_scene(DEV_CLOSING).unresolved())).is_empty()
 
 
 func test_enter_during_the_flight_goes_to_its_last_step_and_the_first_page_shows_with_the_helicopter_gone() -> void:
@@ -525,7 +576,7 @@ func test_a_scene_with_messages_has_the_box_over_everything_and_one_without_has_
 	assert_object(closing.message_view).is_not_null()
 	assert_int(closing.message_view.get_index()).is_equal(closing.get_child_count() - 1)
 	assert_bool(closing.message_view.visible).is_false()
-	var film := _segment()
+	var film := _segment(&"news_cartoon", FrameSets.NO_ZONE)
 	assert_object(film.messages).is_null()
 	assert_object(film.message_view).is_null()
 	assert_object(film.modals).is_null()
@@ -563,10 +614,10 @@ func test_the_text_of_a_message_loses_its_own_heading_line_because_the_box_draws
 
 # --- what the new scene data is judged for ------------------------------------------------------------------------------------
 
-## A copy of the dev flight closing that a test may change (`Resource.duplicate` drops the typed array of messages, so the fields are copied one by one).
+## A copy of the dev closing that a test may change (`Resource.duplicate` drops the typed array of messages, so the fields are copied one by one).
 func _flight_scene() -> StoryScene:
 	var scene := StoryScene.new()
-	var held := Catalog.story_scene(DEV_FLIGHT_CLOSING)
+	var held := Catalog.story_scene(DEV_CLOSING)
 	scene.stage = held.stage
 	scene.timelines = held.timelines.duplicate()
 	scene.backdrop = held.backdrop
@@ -612,9 +663,9 @@ func test_a_scene_that_names_a_flight_that_is_not_sound_is_told_what_is_wrong_wi
 	var lines := _flight_scene().unresolved()
 	assert_bool(Array(lines).has("names the flight 'dev_flight', which has no rotor pictures: it is not played")).is_true()
 	TroubleLog.new_run()
-	var closing := _segment_at(DEV_FLIGHT_CLOSING, ScenePlace.over(DEV_ZONE, FLIGHT_AT, FLIGHT_CELL))
+	var closing := _segment_at(DEV_CLOSING, ScenePlace.over(DEV_ZONE, FLIGHT_AT, FLIGHT_CELL))
 	assert_array(TroubleLog.session.told.filter(func(line: String) -> bool: return line.contains("names the flight 'dev_flight'"))).has_size(1)
-	assert_str(TroubleLog.session.told[0]).contains("[story] pack 'dev'").contains("the scene 'dev_flight_closing'").contains("which has no rotor pictures: it is not played")
+	assert_str(TroubleLog.session.told[0]).contains("[story] pack 'dev'").contains("the scene 'dev_closing'").contains("which has no rotor pictures: it is not played")
 	assert_bool(closing.script_player.has_animation(&"dev_flight")).is_false()
 	closing.skip()
 	pack.remove()
@@ -623,11 +674,11 @@ func test_a_scene_that_names_a_flight_that_is_not_sound_is_told_what_is_wrong_wi
 
 func test_the_closing_files_a_campaign_names_include_a_flight_file_as_a_sub_flight() -> void:
 	var orchard := CampaignShelf.orchard()
-	orchard.closing_scene = DEV_FLIGHT_CLOSING
+	orchard.closing_scene = DEV_CLOSING
 	_shelf = CampaignShelf.new([orchard])
 	var named := PackNeeds.named_by_closings()
-	assert_str(named["data/story/dev_flight_closing.tres"]).is_equal("StoryScene")
-	assert_str(named["data/story/dev_flight_stage.tres"]).is_equal("CutsceneStage")
+	assert_str(named["data/story/dev_closing.tres"]).is_equal("StoryScene")
+	assert_str(named["data/story/dev_closing_stage.tres"]).is_equal("CutsceneStage")
 	assert_str(named["data/story/dev_flight.tres"]).is_equal("SubFlight")
 	assert_str(PackNeeds.class_of("data/story/dev_flight.tres")).is_equal("SubFlight")
 
@@ -635,19 +686,22 @@ func test_the_closing_files_a_campaign_names_include_a_flight_file_as_a_sub_flig
 # --- the game hands the scene the place of the sub -------------------------------------------------------------------------------
 
 func test_the_game_hands_the_flight_the_zone_and_the_place_and_cell_of_the_sub_and_enter_goes_to_the_pages() -> void:
-	var game := await _start(DEV_FLIGHT_CLOSING)
+	var game := await _start(DEV_CLOSING)
 	_dock_at_the_finale(game)
 	var at: Vector2i = game.world.sim.sub.original_position()
 	var cell: int = game.world.sim.sub.cell
 	var closing := game.closing as TimelineSegment
 	assert_object(closing).is_not_null()
-	assert_str(closing.scene_name).is_equal(DEV_FLIGHT_CLOSING)
+	assert_str(closing.scene_name).is_equal(DEV_CLOSING)
 	assert_int(closing.place.zone).is_equal(game.world.sector.zone)
 	assert_bool(closing.place.sub_at == at).is_true()
 	assert_int(closing.place.sub_cell).is_equal(cell)
 	assert_float(closing.script_player.get_animation(&"dev_flight").length).is_equal_approx(CutsceneTimeline.seconds(Catalog.story_flight(&"dev_flight").timeline(at.x, at.y, cell).length), 0.0001)
 	assert_bool(game.world.sim.sub.active).is_false()
-	assert_str(Audio.song).is_equal(AudioService.NO_MUSIC)                                       # (the sector's song stopped before the closing; the scene has none)
+	assert_str(Audio.song).is_equal(&"closing")                                                 # (the sector's song stopped before the closing; the scene's starts)
+	game._unhandled_input(_key(KEY_ENTER))                                                      # Enter in the film: to the flight
+	assert_str(String(closing.script_player.current_animation)).is_equal("dev_flight")
+	assert_bool(closing.messages.is_open()).is_false()
 	game._unhandled_input(_key(KEY_ENTER))                                                      # Enter in the flight: to the pages
 	assert_object(game.closing).is_same(closing)
 	assert_bool(closing.messages.is_open()).is_true()
@@ -661,9 +715,10 @@ func test_the_game_hands_the_flight_the_zone_and_the_place_and_cell_of_the_sub_a
 
 
 func test_space_during_the_pages_of_the_game_ends_the_closing_and_goes_to_the_hall_of_fame() -> void:
-	var game := await _start(DEV_FLIGHT_CLOSING)
+	var game := await _start(DEV_CLOSING)
 	_dock_at_the_finale(game)
 	var closing := game.closing as TimelineSegment
+	closing.advance()
 	closing.advance()
 	game._unhandled_input(_key(KEY_SPACE))
 	assert_object(game.closing).is_null()

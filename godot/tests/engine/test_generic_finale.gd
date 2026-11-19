@@ -56,6 +56,17 @@ func _key(code: Key) -> InputEventKey:
 	return key
 
 
+# --- the dev pack's campaigns ---------------------------------------------------------------------------------------------------
+
+func test_the_dev_pack_names_a_closing_for_the_campaign_that_has_a_finale_and_none_for_the_one_without() -> void:
+	assert_str(Catalog.campaign(&"dev_tour").closing_scene).is_equal(&"dev_closing")
+	assert_int(Catalog.campaign(&"dev_tour").finales.size()).is_greater(0)
+	var test_c := Catalog.campaign(&"test_c")
+	assert_int(test_c.finales.size()).is_equal(0)                                         # (it has no finale: its end is the generic finale)
+	assert_str(test_c.closing_scene).is_equal(&"")
+	assert_bool(PackNeeds.named_by_closings().keys().any(func(rel: String) -> bool: return rel.contains("flight_closing"))).is_false()
+
+
 # --- words that are names, and words that are words --------------------------------------------------------------------------
 
 func test_a_text_is_a_registry_name_or_the_words_themselves() -> void:

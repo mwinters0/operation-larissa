@@ -273,7 +273,7 @@ func _flier_shelf(scene: StoryScene) -> PackShelf:
 
 func _flight_scene() -> StoryScene:
 	var scene := StoryScene.new()
-	var held := Catalog.story_scene(&"dev_flight_closing")
+	var held := Catalog.story_scene(&"dev_closing")
 	scene.stage = held.stage
 	scene.timelines = held.timelines.duplicate()
 	scene.backdrop = held.backdrop
@@ -288,14 +288,14 @@ func _flight_scene() -> StoryScene:
 func test_a_closing_scene_that_flies_the_sub_and_shows_messages_is_sound_and_its_stage_is_judged_with_the_flight() -> void:
 	var report := _check(_flier_shelf(_flight_scene()))
 	assert_array(report.findings.filter(func(finding: PackReport.Finding) -> bool: return finding.area == "story")).is_empty()
-	var stage := Catalog.story_stage(&"dev_flight_stage").duplicate(true) as CutsceneStage
+	var stage := Catalog.story_stage(&"dev_closing_stage").duplicate(true) as CutsceneStage
 	stage.actors = stage.actors.filter(func(actor: StageActor) -> bool: return actor.name != &"rotor")
 	var shelf := _flier_shelf(_flight_scene())
-	shelf.write_json("data/story/dev_flight_stage.json", ResourceJson.new().data_of(stage))
+	shelf.write_json("data/story/dev_closing_stage.json", ResourceJson.new().data_of(stage))
 	var lines: Array = _check(shelf).findings.filter(func(finding: PackReport.Finding) -> bool: return finding.area == "story").map(func(finding: PackReport.Finding) -> String: return finding.message)
-	var told := "timeline 'dev_flight' names the actor 'rotor', which stage 'dev_flight_stage' does not hold: nothing moves or changes for it"
+	var told := "timeline 'dev_flight' names the actor 'rotor', which stage 'dev_closing_stage' does not hold: nothing moves or changes for it"
 	assert_bool(lines.has(told)).is_true()
-	assert_array(lines.filter(func(line: String) -> bool: return line != told)).is_empty()                  # (once for each scene that is played on the stage: the pack's and dev's `dev_flight_closing`, named by `test_c`)
+	assert_array(lines.filter(func(line: String) -> bool: return line != told)).is_empty()                  # (once for each scene that is played on the stage: the pack's and dev's `dev_closing`)
 
 
 func test_a_flight_that_is_not_sound_and_messages_that_cannot_be_shown_are_errors_with_what_the_player_gets() -> void:

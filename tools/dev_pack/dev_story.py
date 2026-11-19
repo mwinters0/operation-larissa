@@ -213,8 +213,9 @@ def title_reveal() -> st.Timeline:
 
 
 # --- the closing -------------------------------------------------------------------------------------------------
-# The dev pack's own closing (`dev_closing`, named by the campaign `dev_tour`): not the legacy pack's shape. Two timelines, not three (a film with the cut to the deck in the middle of it, then the wait), a stage with no crane and no sailors, a lamp that
-# blinks, and the creature that is hoisted is a picture of the zone the game ends in (the picture set `zone_creatures`: dev's finale sector is in zone 4, so the hammerhead's).
+# The dev pack's one closing (`dev_closing`, named by the campaign `dev_tour`): not the legacy pack's shapes. It has three parts where the legacy closings have two: a FILM (the sub and a creature of the zone rise over the sector, the shot cuts to a deck, the sub rises again and a lamp
+# blinks, the shot cuts back), then a FLIGHT of the sub, made at the start for the place the sub is in (`dev_flight`, a `SubFlight`: steps of 4 ticks, 6 up, a turn, a change into a helicopter, a surge and off to the left), then two pages of the surface ship's message in the message box,
+# the first after the jingle. The scene is not deaf: Enter goes on to the next part, and the flight's last step is the mark it goes to. The creature that is hoisted is a picture of the zone the game ends in (the picture set `zone_creatures`: dev's finale sector is in zone 4, so the hammerhead's).
 
 FILM_LIFT_STEPS = 8                         # the sub and the creature rise 12 pixels a step
 FILM_DECK_STEPS = 5                         # then the deck's shot: the sub rises again, the lamp blinks
@@ -223,12 +224,15 @@ LAMP = ("deck_pod_0", "deck_pod_1", "deck_pod_2", "deck_pod_1")
 
 
 def dev_closing_film() -> st.Timeline:
-    """The sub and the creature rise for 8 steps of 12 ticks over the sector's shot; at the 9th step the shot cuts to the deck (the groups' visibility), where the sub rises again for 5 steps and the lamp blinks."""
+    """The sub and the creature rise for 8 steps of 12 ticks over the sector's shot; at the 9th step the shot cuts to the deck, where the sub rises again for 5 steps and the lamp blinks; one step later the shot cuts back to the sector's (the creature is gone, the flight that follows
+    places the sub itself)."""
     steps = FILM_LIFT_STEPS + FILM_DECK_STEPS
     cut = FILM_LIFT_STEPS * STEP
-    t = timeline(steps * STEP, "the closing's film: the lift (%d steps of %d ticks), the cut to the deck, the deck's shot (%d steps)" % (FILM_LIFT_STEPS, STEP, FILM_DECK_STEPS))
-    t.track("playfield", "visible", [(0, "true"), (cut, "false")])
-    t.track("deck", "visible", [(0, "false"), (cut, "true")])
+    back = steps * STEP
+    t = timeline((steps + 1) * STEP, "the closing's film: the lift (%d steps of %d ticks), the cut to the deck, the deck's shot (%d steps), the cut back" % (FILM_LIFT_STEPS, STEP, FILM_DECK_STEPS))
+    t.track("playfield", "visible", [(0, "true"), (cut, "false"), (back, "true")])
+    t.track("deck", "visible", [(0, "false"), (cut, "true"), (back, "false")])
+    t.track("creature", "visible", [(0, "true"), (back, "false")])
     t.track("sub", "position", seq(STEP, [st.v2(184, 212 - 12 * i) for i in range(FILM_LIFT_STEPS)]))
     t.track("sub", "pose", seq(STEP, [st.v2i(6, i % 2) for i in range(FILM_LIFT_STEPS)]))
     t.track("creature", "position", seq(STEP, [st.v2(200, 232 - 12 * i) for i in range(FILM_LIFT_STEPS)]))
@@ -242,21 +246,14 @@ def dev_closing_film() -> st.Timeline:
     return t
 
 
-def dev_closing_wait() -> st.Timeline:
-    """The lamp blinks until a key or a click: a loop of four steps. The cue `listen` at its first moment makes the scene hear the keys and clicks it dropped."""
-    t = timeline(4 * STEP, "the lamp blinks until a key, a loop of 4 steps of %d ticks; from its first moment keys and clicks end the closing" % STEP, loop=True)
-    t.track("lamp", "picture", pictures(STEP, [LAMP[(FILM_DECK_STEPS + i) % 4] for i in range(4)]))
-    t.track("lamp", "mirror", flags(STEP, [(FILM_DECK_STEPS + i) % 4 == 3 for i in range(4)]))
-    t.cue(0, "event", "listen")
-    return t
-
-
 def dev_closing_stage() -> st.Stage:
-    """The dev closing's stage of its own: the playfield (the sub and the creature of the zone) and the hidden deck (water, the ship, the sub and the creature again, the lamp, the sea), without a crane or a crew."""
-    s = stage("the closing's actors: two shots, the sub and a creature of the zone, a lamp")
+    """The dev closing's stage: the playfield (the creature of the zone, the sub, the flight's helicopter body and rotor, hidden until the flight) and the hidden deck (water, the ship, the sub and the creature again, the lamp, the sea), without a crane or a crew."""
+    s = stage("the closing's actors: two shots, the sub and a creature of the zone, a lamp, and the helicopter the sub changes into")
     s.actor("playfield", kind="group", at=st.PLAYFIELD_AT, size=st.PLAYFIELD_SIZE)
     s.actor("creature", kind="frames", frames=st.CREATURE_FRAMES, picture=CREATURE[0], at=(200, 232), parent="playfield")
     s.actor("sub", kind="frames", frames=st.SUB_FRAMES, at=(184, 212), parent="playfield")
+    s.actor("helicopter", picture=st.picture(st.VOYAGER_BODY_PICTURE), at=st.PLAYFIELD_AT, visible=False, parent="playfield")
+    s.actor("rotor", picture=st.picture(st.VOYAGER_ROTOR_PICTURES[0]), at=st.PLAYFIELD_AT, visible=False, parent="playfield")
     s.actor("deck", kind="group", at=st.PLAYFIELD_AT, size=st.PLAYFIELD_SIZE, visible=False)
     s.actor("water", kind="fill", at=st.PLAYFIELD_AT, size=st.PLAYFIELD_SIZE, color=st.WATER_COLOR, parent="deck")
     s.actor("ship", picture=st.picture(st.SHIP_PICTURE), at=st.SHIP_AT, parent="deck")
@@ -268,22 +265,9 @@ def dev_closing_stage() -> st.Stage:
 
 
 def dev_closing_scene() -> st.Scene:
-    """The dev closing's scene: its stage, the film and the wait played in turn over the sector (no backdrop), the closing song, deaf to every key until the wait's cue `listen`."""
-    return st.Scene("Dev pack: a closing of our own for dev_tour: the film (the lift, the cut to the deck, the deck's shot) and the wait for a key, over the sector in play (tools/dev_pack/dev_story.py).",
-                    "dev_closing_stage", [], ["dev_closing_film", "dev_closing_wait"], "closing", [], backdrop=False, deaf_until_listen=True)
-
-
-# The dev pack's other closing (`dev_flight_closing`, named by the campaign `test_c`, which has no finale, and played by the tests through a campaign of their own): not a film but a FLIGHT of the sub, made at the start for the place the sub is in (`dev_flight`, a `SubFlight`: steps of 4 ticks, 6 up, a turn,
-# a change into a helicopter, a surge and off to the left), then two pages of the surface ship's message in the message box, the first after the jingle. The last step of the flight is the mark Enter goes to.
-
-def dev_flight_stage() -> st.Stage:
-    return st.flight_stage("Dev pack: the playfield, the sub, the helicopter's body and rotor, where the flight's first key finds them (tools/dev_pack/dev_story.py).")
-
-
-def dev_flight_scene() -> st.Scene:
-    """The dev flight closing's scene: its stage, the flight over the sector (no backdrop, no song: the sector's is stopped before), then two pages in the message box."""
-    return st.Scene("Dev pack: a closing of our own that flies the sub off and shows two pages of the surface ship's message: the flight (dev_flight, made for the place of the sub), then the pages (tools/dev_pack/dev_story.py).",
-                    "dev_flight_stage", [], ["dev_flight"], "", [], backdrop=False,
+    """The dev closing's scene: its stage, the film, the flight (made for the place of the sub) and two pages of the message, over the sector (no backdrop), the closing song, not deaf (Enter goes on to the next part)."""
+    return st.Scene("Dev pack: the closing of dev_tour: a film (the lift, the cut to the deck, the deck's shot, the cut back), the flight of the sub (dev_flight, made for the place of the sub) and two pages of the surface ship's message, over the sector in play (tools/dev_pack/dev_story.py).",
+                    "dev_closing_stage", [], ["dev_closing_film", "dev_flight"], "closing", [], backdrop=False,
                     messages=[("closing_page_0", ["jingle", "closing_page_0"]), ("closing_page_1", ["closing_page_1"])])
 
 
@@ -352,7 +336,7 @@ def dev_flight() -> str:
 def write_all() -> int:
     story = DEV / "data" / "story"
     for name, build in (("news_ambient", news_ambient), ("logo_show", logo_show), ("title_ship", title_ship), ("title_reveal", title_reveal),
-                        ("dev_closing_film", dev_closing_film), ("dev_closing_wait", dev_closing_wait)):
+                        ("dev_closing_film", dev_closing_film)):
         write_text(story / (name + ".tres"), build().render())
     write_text(story / "opening.tres", opening().render())
     write_text(story / "logo.tres", logo_scene().render())
@@ -363,8 +347,6 @@ def write_all() -> int:
     write_text(story / "title.tres", title_scene().render())
     write_text(story / "dev_closing_stage.tres", dev_closing_stage().render())
     write_text(story / "dev_closing.tres", dev_closing_scene().render())
-    write_text(story / "dev_flight_stage.tres", dev_flight_stage().render())
-    write_text(story / "dev_flight_closing.tres", dev_flight_scene().render())
     write_text(story / "story_script.tres", story_script())
     write_text(story / "dev_flight.tres", dev_flight())
-    return 19
+    return 16
