@@ -34,8 +34,6 @@ var pack_id: StringName = &""
 
 ## The song for a sector whose own song is unknown (`SectorData.music_name` empty or not one of the original's).
 const DEFAULT_SONG := &"sector_song_1"
-## The `closing_scene` that `Game.show_closing` plays with `VoyagerClosing`: it has no scene file yet. The one closing the game plays by name; every other `closing_scene` is a scene file of the pack chain.
-const VOYAGER_CLOSING := &"voyager_closing"
 
 ## Who made this data and where the original-derived numbers come from. A few words; the original's tables are named by address.
 @export var provenance: String = ""
@@ -94,8 +92,8 @@ const VOYAGER_CLOSING := &"voyager_closing"
 @export_group("Music and closing")
 ## The song of a sector whose own `music_name` is empty or unknown.
 @export var fallback_song: StringName = DEFAULT_SONG
-## The scene file that ends the game (`data/story/<name>.tres` of the pack chain, a `StoryScene` that a `TimelineSegment` plays over the sector: the legacy pack's Expert campaign names `expert_closing`; `Game.show_closing`). Empty: the generic finale
-## (`GenericFinale`: `finale_picture` and `finale_text`), which also plays, with a warning, when no pack of the chain holds the scene. The legacy Voyager campaign names `voyager_closing` (`VOYAGER_CLOSING`), which the game plays with code.
+## The scene file that ends the game (`data/story/<name>.tres` of the pack chain, a `StoryScene` that a `TimelineSegment` plays over the sector: the legacy pack's campaigns name `expert_closing` and `voyager_closing`; `Game.show_closing`). Empty: the generic finale
+## (`GenericFinale`: `finale_picture` and `finale_text`), which also plays, with a warning, when no pack of the chain holds the scene.
 @export var closing_scene: StringName = &""
 ## The generic finale's words: a `text` name or the words themselves (see `text`). Empty shows no text.
 @export_multiline var finale_text: String = ""

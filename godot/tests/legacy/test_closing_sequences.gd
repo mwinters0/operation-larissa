@@ -1,10 +1,12 @@
 class_name TestClosingSequences
 extends GdUnitTestSuite
-## Teaches: checking a choreography by sampling it. The Voyager closing is one animation built from loop counts;
+## Teaches: checking a choreography by sampling it. The Voyager closing (the scene `voyager_closing` played by a `TimelineSegment`: the flight file `voyager_flight` made for the sub's place, then the surface ship's three pages) is one animation built from loop counts;
 ## we seek to moments in it and look where the pieces are. The Expert closing (the scene `expert_closing` played by a `TimelineSegment`, over the zone of the Expert finale) is checked the same way,
 ## and both are checked for tracks that name no node.
 
-const VOYAGER := "res://src/story/voyager_closing.tscn"
+const VOYAGER := &"voyager_closing"                    # the scene file the Voyager campaign names
+const VOYAGER_FLIGHT := &"voyager_flight"               # the flight file its timeline is
+const VOYAGER_FINALE := 30                             # the sector it is played over
 const EXPERT := &"expert_closing"                      # the scene file the Expert campaign names
 const EXPERT_FINALE := 31                              # the sector the closing is played over: its zone is what the creature pictures are
 
@@ -79,22 +81,50 @@ func _unresolved(player: AnimationPlayer) -> PackedStringArray:
 	return missing
 
 
-func test_voyager_closing_flight() -> void:
-	var closing: VoyagerClosing = auto_free(load(VOYAGER).instantiate())
+func _voyager(at: Vector2i, cell: int) -> TimelineSegment:
+	var closing: TimelineSegment = auto_free(TimelineSegment.of(VOYAGER, ScenePlace.over(Catalog.sector(VOYAGER_FINALE).zone, at, cell)))
 	add_child(closing)
-	closing.start(184, 212, 6)
-	assert_array(_unresolved(closing.animations)).is_empty()
-	var animation := closing.animations.get_animation(&"closing")
+	return closing
+
+
+func test_the_voyager_closing_is_the_scene_the_voyager_campaign_names() -> void:
+	assert_str(Catalog.campaign(&"voyager").closing_scene).is_equal(VOYAGER)
+	var scene := Catalog.story_scene(VOYAGER)
+	assert_array(Array(scene.unresolved())).is_empty()
+	assert_array(scene.timelines).is_equal([VOYAGER_FLIGHT])
+	assert_str(scene.stage).is_equal(&"voyager_closing_stage")
+	assert_bool(scene.backdrop).is_false()
+	assert_bool(scene.deaf_until_listen).is_false()
+	assert_str(scene.song).is_equal(&"")                                                  # (the sector's song is stopped before the closing begins: `GameFlow.play_closing`)
+	assert_object(Catalog.story_flight(VOYAGER_FLIGHT)).is_not_null()
+	assert_object(Catalog.story_timeline(VOYAGER_FLIGHT)).is_null()
+	var named := PackNeeds.named_by_closings()
+	assert_str(named["data/story/voyager_closing.tres"]).is_equal("StoryScene")
+	assert_str(named["data/story/voyager_closing_stage.tres"]).is_equal("CutsceneStage")
+	assert_str(named["data/story/voyager_flight.tres"]).is_equal("SubFlight")
+	for rel: String in PackNeeds.FILES:
+		assert_bool(rel.contains("voyager")).override_failure_message("%s is listed in FILES, but a campaign names it" % rel).is_false()
+	assert_array(scene.messages.map(func(message: SceneMessage) -> StringName: return message.text)).is_equal([&"closing_page_0", &"closing_page_1", &"closing_page_2"])
+	assert_array(scene.messages[0].speech).is_equal([&"jingle", &"closing_page_0"])
+	assert_array(scene.messages[1].speech).is_equal([&"closing_page_1"])
+	assert_array(scene.messages[2].speech).is_equal([&"closing_page_2"])
+
+
+func test_voyager_closing_flight() -> void:
+	var closing := _voyager(Vector2i(184, 212), 6)
+	assert_array(_unresolved(closing.script_player)).is_empty()
+	var animation := closing.script_player.get_animation(VOYAGER_FLIGHT)
+	assert_str(String(closing.script_player.current_animation)).is_equal(String(VOYAGER_FLIGHT))
 	# 18 steps of 4 px up: after them the sub is 72 px higher
 	var sub := _node(closing, &"sub") as AnimatedSprite2D
 	var body := _node(closing, &"helicopter") as Sprite2D
 	var rotor := _node(closing, &"rotor") as Sprite2D
-	closing.animations.seek(18 * VOYAGER_STEP - 0.001, true)
+	closing.script_player.seek(18 * VOYAGER_STEP - 0.001, true)
 	assert_float(sub.position.y).is_equal_approx(212.0 - 72.0 - 32.0, 0.5)
 	assert_bool(sub.visible).is_true()
 	assert_bool(body.visible).is_false()
 	# the whole flight: the helicopter ends outside the playfield, to the left
-	closing.animations.seek(animation.length - 0.3, true)
+	closing.script_player.seek(animation.length - 0.3, true)
 	assert_bool(sub.visible).is_false()
 	assert_bool(body.visible).is_true()
 	assert_bool(rotor.visible).is_true()
@@ -112,24 +142,49 @@ func test_voyager_closing_turns_to_the_original_cell() -> void:
 			steps += 1
 			assert_int(steps).is_less(10)
 	# and the data the closing runs on is the same table
-	assert_array(Array(Catalog.voyager_closing_script().turn_table)).is_equal(VOYAGER_TURN_TABLE)
-	assert_int(Catalog.voyager_closing_script().turn_done_cell).is_equal(VOYAGER_TURN_DONE_CELL)
-	assert_int(Catalog.voyager_closing_script().fly_until_x).is_equal(VOYAGER_FLY_UNTIL_X)
+	var flight := Catalog.story_flight(VOYAGER_FLIGHT)
+	assert_array(Array(flight.turn_table)).is_equal(VOYAGER_TURN_TABLE)
+	assert_int(flight.turn_done_cell).is_equal(VOYAGER_TURN_DONE_CELL)
+	assert_int(flight.fly_until_x).is_equal(VOYAGER_FLY_UNTIL_X)
+	assert_array(Array(flight.problems())).is_empty()
 
 
 func test_voyager_pages_are_the_surface_ships_message() -> void:
-	assert_str(VoyagerClosing.page_text(0)).starts_with("Congratulations!")
-	assert_str(VoyagerClosing.page_text(0)).contains("Substance X")
-	assert_str(VoyagerClosing.page_text(1)).contains("other part must be recovered")
-	assert_str(VoyagerClosing.page_text(2)).starts_with("Return to the surface ship")
-	for page in VoyagerClosing.PAGES:
-		assert_array(Catalog.voice_cues().closing_page(page)).is_not_empty()
+	var pages := Catalog.story_scene(VOYAGER).messages
+	assert_str(pages[0].shown()).starts_with("Congratulations!")
+	assert_str(pages[0].shown()).contains("Substance X")
+	assert_str(pages[1].shown()).contains("other part must be recovered")
+	assert_str(pages[2].shown()).starts_with("Return to the surface ship")
+	for page in pages:
+		assert_bool(page.shown().contains("Surface Ship Message")).is_false()                      # (the box draws that heading)
+		assert_array(page.clips()).is_not_empty()
+	var cues := Catalog.voice_cues()
+	for page in 3:
+		assert_array(cues.clips("closing_page_%d" % page)).is_not_empty()
+		assert_array(pages[page].clips()).is_equal((cues.clips("jingle") if page == 0 else []) + cues.clips("closing_page_%d" % page))
+
+
+func test_voyager_closing_enter_during_the_flight_goes_to_the_pages_and_each_enter_closes_a_page() -> void:
+	var closing := _voyager(Vector2i(184, 212), 6)
+	var flight := closing.script_player.get_animation(VOYAGER_FLIGHT)
+	var made := StoryScene.timeline_named(VOYAGER_FLIGHT, closing.place)
+	assert_float(made.marks[SubFlight.END_MARK]).is_equal(made.length - 14.6)                        # (the mark is the last step: the cue the importer gave it is there)
+	assert_bool(closing.messages.is_open()).is_false()
+	closing.advance()                                                                               # Enter: skip the flight, show the three pages
+	var pages := closing.scene.messages
+	for page in 3:
+		assert_bool(closing.messages.is_open()).is_true()
+		assert_str(closing.messages.current.body).is_equal(pages[page].shown())
+		assert_bool(closing.done).is_false()
+		closing.advance()                                                                           # (Enter belongs to the box)
+		assert_bool(closing.done).is_false()
+		closing.messages.close_current()
+	assert_bool(closing.done).is_true()
+	assert_float(flight.length).is_greater(0.0)
 
 
 func test_voyager_closing_skip_ends_it_once() -> void:
-	var closing: VoyagerClosing = auto_free(load(VOYAGER).instantiate())
-	add_child(closing)
-	closing.start(184, 212, 6)
+	var closing := _voyager(Vector2i(184, 212), 6)
 	var count := [0]
 	closing.finished.connect(func() -> void: count[0] += 1)
 	closing.skip()
@@ -166,7 +221,7 @@ func _to_shot(closing: TimelineSegment, shot: Shot) -> void:
 
 
 func _expert() -> TimelineSegment:
-	var closing: TimelineSegment = auto_free(TimelineSegment.of(EXPERT, Catalog.sector(EXPERT_FINALE).zone))
+	var closing: TimelineSegment = auto_free(TimelineSegment.of(EXPERT, ScenePlace.over(Catalog.sector(EXPERT_FINALE).zone)))
 	add_child(closing)
 	return closing
 
@@ -186,8 +241,6 @@ func test_the_expert_closing_is_the_scene_the_expert_campaign_names() -> void:
 	for timeline_name in ["expert_hoist", "expert_deck", "expert_wait"]:
 		assert_str(named["data/story/%s.tres" % timeline_name]).is_equal("CutsceneTimeline")
 		assert_bool(PackNeeds.FILES.has("data/story/%s.tres" % timeline_name)).is_false()
-	assert_str(Catalog.campaign(&"voyager").closing_scene).is_equal(Campaign.VOYAGER_CLOSING)        # (no scene file until the Voyager closing is one: the game plays it)
-	assert_object(Catalog.story_scene(Campaign.VOYAGER_CLOSING)).is_null()
 	var closing := _expert()
 	assert_array(closing.cast.frame_sets.keys()).is_equal(FrameSets.offered(Catalog.sector(EXPERT_FINALE).zone))
 	assert_int(closing.cast.frame_zone).is_equal(Catalog.sector(EXPERT_FINALE).zone)

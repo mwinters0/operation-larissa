@@ -35,7 +35,6 @@ const HALL_OF_FAME := preload("res://src/ui/hall_of_fame.tscn")
 const HELP_VIEWER := preload("res://src/ui/help_viewer.tscn")
 const CUSTOMIZATION_DIALOG := preload("res://src/ui/customization_dialog.tscn")
 const AUDIO_SETTINGS_DIALOG := preload("res://src/ui/audio_settings_dialog.tscn")
-const VOYAGER_CLOSING := preload("res://src/story/voyager_closing.tscn")
 const GENERIC_FINALE := preload("res://src/story/generic_finale.tscn")
 
 ## Free play only: the sector to start in and the educational level of the demo player (0-3).
@@ -237,14 +236,12 @@ func show_problem(problem: ProblemInstance, calculator_allowed: bool, after_prom
 
 
 ## The closing sequence of the campaign on top of the sector (the sub is stopped): `campaign.closing_scene` names a scene file of the pack chain, which a `TimelineSegment` plays over the sector, told the zone of the sector in play (the creature pictures its stage shows).
-## A campaign with no `closing_scene` gets the generic finale (`GenericFinale`: its `finale_text` and `finale_picture`), and so does one that names a scene no pack of the chain holds (told once, with the campaign). The Voyager closing is still played by `VoyagerClosing`, which
-## gets the sub's place and picture. Returns when it is over, and the song stops with it (`StopBackgroundMusic`); the keys are `_closing_key`'s for all.
+## The scene is told where it is played (`ScenePlace`): the zone of the sector in play and the sub's place and cell (what a flight file makes its timeline for). A campaign with no `closing_scene` gets the generic finale (`GenericFinale`: its `finale_text` and
+## `finale_picture`), and so does one that names a scene no pack of the chain holds (told once, with the campaign): the only closing class here. Returns when it is over, and the song stops with it (`StopBackgroundMusic`); the keys are `_closing_key`'s for all.
 func show_closing(campaign: Campaign, sub_at: Vector2i, sub_cell: int) -> void:
-	closing = _closing_of(campaign)
+	closing = _closing_of(campaign, ScenePlace.over(world.sector.zone if world.sector != null else FrameSets.NO_ZONE, sub_at, sub_cell))
 	problem_layer.add_child(closing)
-	if closing is VoyagerClosing:
-		(closing as VoyagerClosing).start(sub_at.x, sub_at.y, sub_cell)
-	elif closing is GenericFinale:
+	if closing is GenericFinale:
 		(closing as GenericFinale).show_finale(campaign)
 	await closing.finished
 	closing.queue_free()
@@ -252,17 +249,15 @@ func show_closing(campaign: Campaign, sub_at: Vector2i, sub_cell: int) -> void:
 	Audio.stop_music()
 
 
-## The segment that plays the end of `campaign`.
-func _closing_of(campaign: Campaign) -> StorySegment:
+## The segment that plays the end of `campaign` at `place`.
+func _closing_of(campaign: Campaign, place: ScenePlace) -> StorySegment:
 	var scene_name := campaign.closing_scene
 	if scene_name == &"":
 		return GENERIC_FINALE.instantiate() as StorySegment
-	if scene_name == Campaign.VOYAGER_CLOSING:                            # (until the Voyager closing is a scene file too)
-		return VOYAGER_CLOSING.instantiate() as StorySegment
 	if Catalog.story_scene(scene_name) == null:
 		TroubleLog.session.tell("[story] campaign '%s' (pack '%s'): closing_scene '%s' is no scene any pack of the chain holds (data/story/%s.tres): the generic finale plays" % [campaign.id, campaign.pack_id, scene_name, scene_name])
 		return GENERIC_FINALE.instantiate() as StorySegment
-	return TimelineSegment.of(scene_name, world.sector.zone if world.sector != null else FrameSets.NO_ZONE)
+	return TimelineSegment.of(scene_name, place)
 
 
 func show_hall_of_fame() -> void:

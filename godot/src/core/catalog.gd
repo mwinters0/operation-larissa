@@ -36,7 +36,7 @@ const SCREENS_PER_SECTOR := 12
 ## The project's own data, committed in `res://data/`: the rules (`rules/durations.json`, `rules/tuning.json`), the menu layout, and the
 ## sectors and campaigns the designers make (under every pack of the chain). The cutscenes' choreography is a pack's (`story_timeline`).
 const PROJECT_DATA_DIR := "res://data/"
-## Where the story files of a pack are, by name: the opening (`opening`: the order of its parts), the scenes (`story_scene`), the cutscene timelines (`story_timeline`) and stages (`story_stage`), the story scripts (`story_script`), `voyager_closing_script`,
+## Where the story files of a pack are, by name: the opening (`opening`: the order of its parts), the scenes (`story_scene`), the cutscene timelines (`story_timeline`) and stages (`story_stage`), the story scripts (`story_script`), the flight files (`story_flight`),
 ## `closing_crew` (`PackNeeds.FILES` lists the files the engine always asks for; the opening names the scenes and stories, and a campaign's `closing_scene` its closing scene).
 const STORY_REL := "data/story/%s.tres"
 ## The string tables, in the order they are searched for a string id (the ids of all of them are one number space).
@@ -566,7 +566,7 @@ static func closing_crew() -> ClosingCrewScripts:
 	return _story(&"closing_crew") as ClosingCrewScripts
 
 
-## The cutscene timeline `timeline_name` (`news_report`, `news_ambient`, `title_ship`, `title_reveal`, `expert_hoist`, `expert_deck`, `expert_wait`, or one a scene file names): the
+## The cutscene timeline `timeline_name` (`news_report`, `news_ambient`, `title_ship`, `title_reveal`, `expert_hoist`, `expert_deck`, `expert_wait`, or one a scene file names; a flight file is no timeline, `story_flight`): the
 ## choreography is the first pack's of the chain that holds it (`STORY_REL`). Null for a name no pack holds (a scene that names it tells so, `StoryScene.unresolved`). Not skinned: how long a cutscene lasts is not a skin's to change.
 static func story_timeline(timeline_name: StringName) -> CutsceneTimeline:
 	return _story(timeline_name) as CutsceneTimeline
@@ -593,9 +593,10 @@ static func opening() -> OpeningList:
 	return _story(&"opening") as OpeningList
 
 
-## The loop counts of the Voyager closing's flight (`VoyagerClosing`): `voyager_closing_script` of the pack.
-static func voyager_closing_script() -> VoyagerClosingScript:
-	return _story(&"voyager_closing_script") as VoyagerClosingScript
+## The flight file `flight_name` (`voyager_flight`, or one a scene file names among its timelines): the loop counts that make the timeline of a sub's flight for the place the sub is in, the first pack's of the chain that holds it (`STORY_REL`). Null
+## for a name no pack holds as one (`StoryScene.timeline_named` answers a timeline for a timeline file or a flight file).
+static func story_flight(flight_name: StringName) -> SubFlight:
+	return _story(flight_name) as SubFlight
 
 
 static func pieces_frames() -> SpriteFrames:

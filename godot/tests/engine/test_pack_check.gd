@@ -261,6 +261,65 @@ func test_the_closing_scene_a_campaign_names_is_judged_like_a_scene_of_the_openi
 	assert_array(report.findings.filter(func(finding: PackReport.Finding) -> bool: return finding.area == "story")).is_empty()
 
 
+## A scene that flies the sub (a flight file among its timelines) and shows messages is judged like any: the flight at the window's origin (the actors it names against its stage, the flight's own soundness), the messages (a text, a voice group, the cue).
+func _flier_shelf(scene: StoryScene) -> PackShelf:
+	var shelf := _orchard()
+	var cued: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("%s/campaigns/%s.json" % [shelf.root, ID]))
+	cued["closing_scene"] = "orchard_flight"
+	shelf.write_json("campaigns/%s.json" % ID, cued)
+	shelf.write_json("data/story/orchard_flight.json", ResourceJson.new().data_of(scene))
+	return shelf
+
+
+func _flight_scene() -> StoryScene:
+	var scene := StoryScene.new()
+	var held := Catalog.story_scene(&"dev_flight_closing")
+	scene.stage = held.stage
+	scene.timelines = held.timelines.duplicate()
+	scene.backdrop = held.backdrop
+	for held_message in held.messages:
+		var message := SceneMessage.new()
+		message.text = held_message.text
+		message.speech = held_message.speech.duplicate()
+		scene.messages.append(message)
+	return scene
+
+
+func test_a_closing_scene_that_flies_the_sub_and_shows_messages_is_sound_and_its_stage_is_judged_with_the_flight() -> void:
+	var report := _check(_flier_shelf(_flight_scene()))
+	assert_array(report.findings.filter(func(finding: PackReport.Finding) -> bool: return finding.area == "story")).is_empty()
+	var stage := Catalog.story_stage(&"dev_flight_stage").duplicate(true) as CutsceneStage
+	stage.actors = stage.actors.filter(func(actor: StageActor) -> bool: return actor.name != &"rotor")
+	var shelf := _flier_shelf(_flight_scene())
+	shelf.write_json("data/story/dev_flight_stage.json", ResourceJson.new().data_of(stage))
+	var lines: Array = _check(shelf).findings.filter(func(finding: PackReport.Finding) -> bool: return finding.area == "story").map(func(finding: PackReport.Finding) -> String: return finding.message)
+	var told := "timeline 'dev_flight' names the actor 'rotor', which stage 'dev_flight_stage' does not hold: nothing moves or changes for it"
+	assert_bool(lines.has(told)).is_true()
+	assert_array(lines.filter(func(line: String) -> bool: return line != told)).is_empty()                  # (once for each scene that is played on the stage: the pack's and dev's `dev_flight_closing`, named by `test_c`)
+
+
+func test_a_flight_that_is_not_sound_and_messages_that_cannot_be_shown_are_errors_with_what_the_player_gets() -> void:
+	var scene := _flight_scene()
+	var ghost := SceneMessage.new()
+	ghost.text = &"no_such_text_anywhere"
+	scene.messages.append(ghost)
+	var mute := SceneMessage.new()
+	mute.text = scene.messages[0].text
+	mute.speech = [&"no_such_group"]
+	scene.messages.append(mute)
+	var shelf := _flier_shelf(scene)
+	var flight := Catalog.story_flight(&"dev_flight").duplicate(true) as SubFlight
+	flight.fly_pixels = 0
+	flight.rotor_pictures = []
+	shelf.write_json("data/story/dev_flight.json", ResourceJson.new().data_of(flight))
+	var report := _check(shelf)
+	assert_bool(_has(report, PackReport.Severity.ERROR, "scene 'orchard_flight' names the flight 'dev_flight', which moves the helicopter 0 pixels a step to the left, so it never leaves: it is not played")).is_true()
+	assert_bool(_has(report, PackReport.Severity.ERROR, "scene 'orchard_flight' names the flight 'dev_flight', which has no rotor pictures: it is not played")).is_true()
+	assert_bool(_has(report, PackReport.Severity.ERROR, "has a message whose text 'no_such_text_anywhere' no pack of the chain holds: that message is left out")).is_true()
+	assert_bool(_has(report, PackReport.Severity.ERROR, "speaks the voice group 'no_such_group' with the message 'closing_page_0', which no pack of the chain holds in voice_cues: that group is not spoken")).is_true()
+	assert_bool(_has(report, PackReport.Severity.ERROR, "has messages, but no timeline of it has the cue 'messages': they are never shown")).is_true()           # (the flight is not made, so its cue is not there)
+
+
 # --- names, pictures, clips ---------------------------------------------------------------------------------------------------------
 
 func test_a_voice_group_names_clips_the_game_or_the_pack_has() -> void:

@@ -33,11 +33,6 @@ func jingle() -> StringName:
 ## (What mission control says after a sector and the spoken log entries are the campaign's: `Campaign.supply_voice_name`, `log_voice_name`;
 ## hand the name to `clips`.)
 
-## The Voyager closing sequence speaks three pages (0-2).
-func closing_page(page: int) -> Array[StringName]:
-	return clips("closing_page_%d" % clampi(page, 0, 2))
-
-
 ## The opening story is nine pages (0-8) of one to three clips each (the opening shows them).
 func story_page(page: int) -> Array[StringName]:
 	return clips("story_page_%d" % clampi(page, 0, 8))

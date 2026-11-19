@@ -838,7 +838,7 @@
  "0x00415b6c": {
   "name": "WaitForInput",
   "status": "n/a",
-  "where": "n/a: blocking wait for a key / click; Godot is event driven (every wait loop of the original is a node waiting for input events, e.g. log_screen.gd:_input, ballast_panel_diagram.gd:_unhandled_key_input, timeline_segment.gd, voyager_closing.gd)"
+  "where": "n/a: blocking wait for a key / click; Godot is event driven (every wait loop of the original is a node waiting for input events, e.g. log_screen.gd:_input, ballast_panel_diagram.gd:_unhandled_key_input, timeline_segment.gd)"
  },
  "0x00415ce0": {
   "name": "PauseSoundForDialog",
@@ -944,7 +944,7 @@
  },
  "0x00416670": {
   "status": "ported",
-  "where": "godot/src/autoload/game_clock.gd (TICK_HZ 73 / 6 game frame), calculator.gd FLASH_TICKS Timer, diagram_timeline.gd, supply_station.gd TICK_SECONDS, data/story/voyager_closing_script.tres step_ticks, expert_hoist / deck / wait.tres"
+  "where": "godot/src/autoload/game_clock.gd (TICK_HZ 73 / 6 game frame), calculator.gd FLASH_TICKS Timer, diagram_timeline.gd, supply_station.gd TICK_SECONDS, data/story/voyager_flight.tres step_ticks, expert_hoist / deck / wait.tres"
  },
  "0x00416692": {
   "status": "ported",
@@ -1282,27 +1282,27 @@
  },
  "0x0041c206": {
   "status": "ported",
-  "where": "godot/src/resources/voyager_closing_script.gd:timeline (data/story/voyager_closing_script.tres) (18 rise steps of 4 px, turn table to cell 2 with sound 0x2c, 3 transformation pictures 12 ticks each, sound 0x2d, 15 steps of 8 px up, flight left 8 px/step until x <= -0x88, then the pages) + game.gd closing hook; tests test_closing_sequences.gd, test_closing_trigger.gd, test_full_voyager_run.gd. The dead PlayBackgroundMusic(0) branch is not ported (dead in the original). Music: StopSectorMusic at its start = game_flow.gd:play_closing (view.stop_music), so the flight and the pages are silent; the trailing StopBackgroundMusic stops nothing"
+  "where": "godot/src/resources/sub_flight.gd:timeline (data/story/voyager_flight.tres) (18 rise steps of 4 px, turn table to cell 2 with sound 0x2c, 3 transformation pictures 12 ticks each, sound 0x2d, 15 steps of 8 px up, flight left 8 px/step until x <= -0x88, then the pages: the last step is a mark with the cue messages) played by timeline_segment.gd as the scene data/story/voyager_closing.tres (game.gd:show_closing hands it the sub's place and cell); tests test_closing_sequences.gd, test_closing_trigger.gd, test_full_voyager_run.gd. The dead PlayBackgroundMusic(0) branch is not ported (dead in the original). Music: StopSectorMusic at its start = game_flow.gd:play_closing (view.stop_music), so the flight and the pages are silent; the trailing StopBackgroundMusic stops nothing"
  },
  "0x0041c350": {
   "name": "ClosingEraseSub",
   "status": "ported",
-  "where": "godot/src/resources/voyager_closing_script.gd:timeline (data/story/voyager_closing_script.tres) (the sub is a sprite moved per step; no erasing needed)"
+  "where": "godot/src/resources/sub_flight.gd:timeline (data/story/voyager_flight.tres) (the sub is a sprite moved per step; no erasing needed)"
  },
  "0x0041c418": {
   "name": "ClosingDrawSub",
   "status": "ported",
-  "where": "godot/src/resources/voyager_closing_script.gd:timeline (data/story/voyager_closing_script.tres) (propeller phase via SubTuning.picture_for; rotor pictures alternate through voyager_closing_script.gd:rotor_pictures[i % size])"
+  "where": "godot/src/resources/sub_flight.gd:timeline (data/story/voyager_flight.tres) (propeller phase via SubTuning.picture_for; rotor pictures alternate through sub_flight.gd:rotor_pictures[i % size])"
  },
  "0x0041c508": {
   "name": "PlayVoyagerClosingSpeech",
   "status": "ported",
-  "where": "godot/src/story/voyager_closing.gd:show_pages (jingle 4243 then the page clips via VoiceCues.closing_page; Enter / Esc cut the clip: stop_voice)"
+  "where": "godot/src/story/timeline_segment.gd:_verb_messages (the voice groups of each message of data/story/voyager_closing.tres: the jingle 4243, then the page clips closing_page_<n>; Enter on a page cuts the clip: stop_voice)"
  },
  "0x0041c5f2": {
   "name": "VoyagerClosingPages",
   "status": "ported",
-  "where": "godot/src/story/voyager_closing.gd:show_pages (three pages, bundle items 7-9 = texts 10715+, message queue boxes)"
+  "where": "godot/src/story/timeline_segment.gd:_verb_messages (three pages, bundle items 7-9 = texts 10715+ as the messages of data/story/voyager_closing.tres, message queue boxes)"
  },
  "0x0041c650": {
   "status": "ported",
@@ -2948,7 +2948,7 @@
  "0x00432d58": {
   "name": "DrawMessageBoxText",
   "status": "ported",
-  "where": "godot/src/story/surface_ship_screen.gd:show_supply_message, godot/src/story/voyager_closing.gd:show_pages"
+  "where": "godot/src/story/surface_ship_screen.gd:show_supply_message, godot/src/story/timeline_segment.gd:_verb_messages"
  },
  "0x00432ddb": {
   "name": "WaitEnterOrTicks",

@@ -20,6 +20,6 @@ log_voices = Array[StringName]([&"log_0", &"log_1", &"log_2", &"log_3", &"log_4"
 supply_texts = Array[StringName]([&"Test mission control: sector 140 is done.", &"Test mission control: sector 141 is done.", &"Test mission control: sector 142 is done.", &"Test mission control: sector 143 is done.", &"Test mission control: sector 144 is done.", &"Test mission control: sector 145 is done.", &"Test mission control: sector 146 is done.", &"Test mission control: sector 147 is done.", &"Test mission control: sector 148 is done."])
 supply_voices = Array[StringName]([&"", &"", &"", &"", &"", &"", &"", &"", &""])
 fallback_song = &"sector_song_1"
-closing_scene = &""
+closing_scene = &"dev_flight_closing"
 finale_text = "Test C is done."
 finale_picture = "ui_picture/title_sky"

@@ -28,7 +28,7 @@ var HOIST: CutsceneTimeline = _legacy("expert_hoist")
 var DECK: CutsceneTimeline = _legacy("expert_deck")
 var WAIT: CutsceneTimeline = _legacy("expert_wait")
 var STORY: StoryScript = _legacy("story_script")
-var VOYAGER: VoyagerClosingScript = _legacy("voyager_closing_script")
+var VOYAGER: SubFlight = _legacy("voyager_flight")
 
 var _json: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../extracted/tables/opening.json"))
 
@@ -347,5 +347,7 @@ func test_the_voyager_flight_depends_on_where_the_sub_is() -> void:
 	assert_array(sounds).is_equal([18.0 * 6.0, 18.0 * 6.0 + 36.0])
 	assert_str(facing.cues[0].cue_name).is_equal(&"closing_flash")
 	assert_str(facing.cues[1].cue_name).is_equal(&"closing_surge")
-	assert_str(facing.cues[2].cue_name).is_equal(&"pages")
+	assert_str(facing.cues[2].cue_name).is_equal(&"messages")
 	assert_float(facing.cues[2].tick).is_equal(facing.length - 14.6)
+	assert_array(facing.marks.keys()).is_equal([SubFlight.END_MARK])                                    # (the last step is a mark: Enter during the flight goes to it)
+	assert_float(facing.marks[SubFlight.END_MARK]).is_equal(facing.cues[2].tick)

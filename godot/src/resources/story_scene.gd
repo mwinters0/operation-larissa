@@ -2,9 +2,10 @@ class_name StoryScene
 extends Resource
 ## A scene of the opening as DATA: which stage it stands on, which timelines it plays (the ones that loop and the ones that play once, in order), which song starts with it and what is said. The pack holds
 ## it as `data/story/<scene>.tres` (`.json` in the data form; `Catalog.story_scene`); a `TimelineSegment` plays it. Every name in it is a file of the pack chain: `stage` a `CutsceneStage`
-## (`Catalog.story_stage`), `loops` and `timelines` `CutsceneTimeline`s (`Catalog.story_timeline`), `song` a song of the music catalog or of the pack, the groups of `speech` groups of `voice_cues`.
+## (`Catalog.story_stage`), `loops` and `timelines` `CutsceneTimeline`s (`Catalog.story_timeline`) or, among the one-shot ones, flight files (`SubFlight`, `Catalog.story_flight`: `timeline_named` is the one resolver of a name to a timeline), `song` a song of the music catalog or
+## of the pack, the groups of `speech` groups of `voice_cues`, the pages of `messages` texts and groups of the same.
 ##
-## What happens at a moment of a timeline is an EVENT cue whose name is a VERB of the engine and its words (`StoryVerbs.VERBS`): `end` finishes the scene, `listen` makes a scene that drops keys hear them, `speak <group>` speaks a voice group, `prompt` asks the player (the stage's buttons). A
+## What happens at a moment of a timeline is an EVENT cue whose name is a VERB of the engine and its words (`StoryVerbs.VERBS`): `end` finishes the scene, `listen` makes a scene that drops keys hear them, `speak <group>` speaks a voice group, `prompt` asks the player (the stage's buttons), `messages` shows the scene's `messages` in the message box. A
 ## pack arranges the verbs; what they do (input, waits, speech) is the engine's. `unresolved` is the one judgement of a scene against its chain: the game tells each line once when it plays the scene,
 ## `PackCheck` reports the same lines.
 ##
@@ -30,6 +31,8 @@ extends Resource
 @export var prompt_song: StringName = &""
 ## What is said, in order: each step a pause and a voice group. Empty: the scene is silent.
 @export var speech: Array[SpeechStep] = []
+## The pages of the surface ship's message the verb `messages` shows, in order, in the message box (each a text and the voice groups read with it). Empty: the scene has no message box.
+@export var messages: Array[SceneMessage] = []
 ## Where the numbers come from: the original's function, and which are our own.
 @export_multiline var provenance: String = ""
 
@@ -42,24 +45,40 @@ func all_timelines() -> Array[StringName]:
 	return found
 
 
+## The timeline a scene's `timeline_name` is, for a scene played at `place` (null: nowhere, `ScenePlace.nowhere`): the timeline file of the chain, or the timeline a flight file of the chain makes for the sub's place and cell (`SubFlight.timeline`). The one resolver: the
+## segment that plays a scene, `unresolved`, `has_cue` and the check of a pack all ask it. Null for a name no pack of the chain holds as either, and for a flight that is not sound (`SubFlight.problems`).
+static func timeline_named(timeline_name: StringName, place: ScenePlace = null) -> CutsceneTimeline:
+	var timeline := Catalog.story_timeline(timeline_name)
+	if timeline != null:
+		return timeline
+	var flight := Catalog.story_flight(timeline_name)
+	if flight == null or not flight.problems().is_empty():
+		return null
+	var where := place if place != null else ScenePlace.nowhere()
+	return flight.timeline(where.sub_at.x, where.sub_at.y, where.sub_cell)
+
+
 ## What is wrong with the scene when played on the chain in use, one sentence each that goes on after "the scene 'x'" and says what the player gets instead; empty when it is fine. The stage itself is not judged
-## here (the builder and `PackCheck` tell of the stage and of the actors a timeline names that it lacks); only what the scene needs of it, a button for its `prompt`.
-func unresolved() -> PackedStringArray:
+## here (the builder and `PackCheck` tell of the stage and of the actors a timeline names that it lacks); only what the scene needs of it, a button for its `prompt`. `place` is where the scene is played (null: nowhere): a flight's cues do not depend on it.
+func unresolved(place: ScenePlace = null) -> PackedStringArray:
 	var found := PackedStringArray()
+	var made: Dictionary[StringName, CutsceneTimeline] = {}
+	for timeline_name in all_timelines():
+		made[timeline_name] = timeline_named(timeline_name, place)
 	for timeline_name in loops:
-		var timeline := Catalog.story_timeline(timeline_name)
+		var timeline := made[timeline_name]
 		if timeline == null:
-			found.append("names the timeline '%s', which no pack of the chain holds: it is not played" % timeline_name)
+			found.append_array(_not_made(timeline_name))
 		elif not timeline.loop:
 			found.append("lists the timeline '%s' as looping, but it does not loop: it plays once and stops" % timeline_name)
 	for i in timelines.size():
-		var timeline := Catalog.story_timeline(timelines[i])
+		var timeline := made[timelines[i]]
 		if timeline == null:
-			found.append("names the timeline '%s', which no pack of the chain holds: it is not played" % timelines[i])
+			found.append_array(_not_made(timelines[i]))
 		elif timeline.loop and i < timelines.size() - 1:
 			found.append("lists the timeline '%s' to play once, but it loops and is not the last: the timelines after it are never played" % timelines[i])
-	for timeline_name in all_timelines():
-		var timeline := Catalog.story_timeline(timeline_name)
+	for timeline_name in made:
+		var timeline := made[timeline_name]
 		if timeline == null:
 			continue
 		for cue_entry in timeline.cues:
@@ -72,25 +91,63 @@ func unresolved() -> PackedStringArray:
 		found.append("names the prompt's song '%s', which is neither one of the game's nor audio/music/%s.ogg of a pack: the prompt has no music" % [prompt_song, prompt_song])
 	if song_stops_at != &"" and not timelines.has(song_stops_at):
 		found.append("stops the song at the timeline '%s', which it does not play once: the song plays on" % song_stops_at)
-	if deaf_until_listen and not has_cue(&"listen"):
+	if deaf_until_listen and not has_cue(&"listen", place):
 		found.append("drops every key and click until the cue 'listen', which no timeline of it has: no key or click ends it, only the cue 'end'")
-	elif has_cue(&"listen") and not deaf_until_listen:
+	elif has_cue(&"listen", place) and not deaf_until_listen:
 		found.append("has the cue 'listen', but does not drop keys until it (deaf_until_listen is off): the cue does nothing")
 	var stage_file := Catalog.story_stage(stage)
-	if stage_file != null and has_cue(&"prompt") and not stage_file.actors.any(func(actor: StageActor) -> bool: return actor.kind == StageActor.BUTTON):
+	if stage_file != null and has_cue(&"prompt", place) and not stage_file.actors.any(func(actor: StageActor) -> bool: return actor.kind == StageActor.BUTTON):
 		found.append("has the cue 'prompt', but its stage '%s' has no button: the prompt shows none, and only Enter, a click and the time-out answer it" % stage)
 	for step in speech:
 		if step.group == &"" or Catalog.voice_cues().clips(String(step.group)).is_empty():
 			found.append("speaks the voice group '%s', which no pack of the chain holds in voice_cues: that step is left out" % step.group)
 		if step.pause_ticks < 0:
 			found.append("has a speech step with a pause of %d ticks: it is taken as 0" % step.pause_ticks)
+	found.append_array(_message_lines(place))
 	return found
 
 
-## Does a timeline of the scene have the event cue `cue_name`?
-func has_cue(cue_name: StringName) -> bool:
+## Does a timeline of the scene have the event cue `cue_name`? (`place`: where the scene is played, null: nowhere.)
+func has_cue(cue_name: StringName, place: ScenePlace = null) -> bool:
 	for timeline_name in all_timelines():
-		var timeline := Catalog.story_timeline(timeline_name)
+		var timeline := timeline_named(timeline_name, place)
 		if timeline != null and timeline.cues.any(func(entry: CutsceneCue) -> bool: return entry.kind == CutsceneCue.EVENT and entry.cue_name == cue_name):
 			return true
 	return false
+
+
+## The pages the scene shows: the ones whose text a pack holds, in order (`SceneMessage.has_text`; `unresolved` tells of the others).
+func shown_messages() -> Array[SceneMessage]:
+	var found: Array[SceneMessage] = []
+	for message in messages:
+		if message != null and message.has_text():
+			found.append(message)
+	return found
+
+
+## Why the timeline `timeline_name` is not played: no pack holds it, or it is a flight file that is not sound.
+func _not_made(timeline_name: StringName) -> PackedStringArray:
+	var flight := Catalog.story_flight(timeline_name)
+	if flight == null:
+		return PackedStringArray(["names the timeline '%s', which no pack of the chain holds: it is not played" % timeline_name])
+	var found := PackedStringArray()
+	for problem in flight.problems():
+		found.append("names the flight '%s', which %s" % [timeline_name, problem])
+	return found
+
+
+## What is wrong with the pages of the scene (a text no pack holds, a voice group with no clips) and with the verb that shows them (messages without the cue, the cue without messages).
+func _message_lines(place: ScenePlace) -> PackedStringArray:
+	var found := PackedStringArray()
+	for message in messages:
+		if message == null or not message.has_text():
+			found.append("has a message whose text '%s' no pack of the chain holds: that message is left out" % (message.text if message != null else &""))
+			continue
+		for group in message.speech:
+			if Catalog.voice_cues().clips(String(group)).is_empty():
+				found.append("speaks the voice group '%s' with the message '%s', which no pack of the chain holds in voice_cues: that group is not spoken" % [group, message.text])
+	if not messages.is_empty() and not has_cue(&"messages", place):
+		found.append("has messages, but no timeline of it has the cue 'messages': they are never shown")
+	elif messages.is_empty() and has_cue(&"messages", place):
+		found.append("has the cue 'messages', but no messages: the cue shows nothing")
+	return found

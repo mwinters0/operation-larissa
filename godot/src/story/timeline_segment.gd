@@ -13,15 +13,19 @@ extends StorySegment
 ## that names a verb the engine lacks is told once and does nothing (`StoryVerbs.problem`, the same judgement `PackCheck` uses). The speech is NOT in an animation, because how long a clip lasts is not known
 ## when the animation is built: a coroutine (`_speak`) walks the scene's `speech` steps, waits each pause and `await`s the verb `speak` (the voice group of that name, `Audio.speak`). Space / Escape end the segment (`skip`); the director (`Opening`, `Game`) reads the keys and forwards them.
 ##
-## A scene laid over the running sector (a closing: `StoryScene.backdrop` off) is handed the zone of that sector (`of`): the picture sets its stage may show are the engine's by fixed names (`FrameSets`). One that drops every key and click until the verb `listen` (`StoryScene.deaf_until_listen`,
+## A scene laid over the running sector (a closing: `StoryScene.backdrop` off) is handed the place where it is played (`ScenePlace`, `of`): the zone of that sector, the picture sets its stage may show are the engine's by fixed names (`FrameSets`), and the sub's place and cell, for
+## which a flight file among its timelines makes its timeline when the scene is built (`StoryScene.timeline_named`: the one resolver of a scene's timelines). One that drops every key and click until the verb `listen` (`StoryScene.deaf_until_listen`,
 ## the Expert closing: `ExpertClosingSequence` 0x41c650 reads and throws away every key until its last stage and has its click area only there) hears Enter, Space / Escape, any other key and a click only from then on, and any of them ends it.
+
+## The message box that shows the pages of a scene's `messages`.
+const MESSAGE_BOX := preload("res://src/ui/message_box.tscn")
 
 ## The scene's name (`Catalog.story_scene`).
 var scene_name: StringName = &""
 ## The scene, null when no pack of the chain holds it (the segment then ends at once).
 var scene: StoryScene
-## The zone of the sector the scene is laid over (`FrameSets.NO_ZONE`: none, as in the opening): what the creature pictures of its stage are.
-var zone: int = FrameSets.NO_ZONE
+## Where the scene is played (`ScenePlace.nowhere` in the opening): the zone of the sector it is laid over (what the creature pictures of its stage are) and the sub's place and cell (what a flight file makes its timeline for).
+var place: ScenePlace = ScenePlace.nowhere()
 ## True from the verb `listen` on (a scene that is `deaf_until_listen` drops the keys and clicks before).
 var listening: bool = false
 ## Which node plays which actor of the scene's stage; the timelines' tracks are bound through it.
@@ -37,19 +41,26 @@ var prompting: bool = false
 var buttons: Dictionary[StringName, TextureButton] = {}
 ## How many ticks the prompt waits for an answer before it means Intro (`prompt.timeout_ticks`, read by the verb `prompt`); 0 before the prompt begins.
 var prompt_timeout_ticks: int = 0
+## The pages of the scene's `messages` (a scene that has none has no box): the queue they are posted to, the host that keeps focus and the box's view; null for a scene with no messages.
+var messages: MessageQueue
+var modals: ModalHost
+var message_view: MessageBoxView
 
 var _loop_names: Array[StringName] = []    # the timeline each of `loop_players` plays
 var _chain: Array[StringName] = []         # the one-shot timelines that are there to play, in order
 var _chain_index: int = 0
 var _keys: Dictionary = {}                 # keycode -> the choice of the button it presses
+var _timelines: Dictionary[StringName, CutsceneTimeline] = {}   # the scene's timelines as made for `place` (a flight file made its own)
+var _messages_started: bool = false
+var _messages_over: bool = false           # the page that shows is being closed because the scene ends: the verb `messages` does not go on to the next
 
 
-## A segment that plays the scene `name_of_scene` over the sector of `in_zone` (`FrameSets.NO_ZONE`: none): the scene is built when the segment enters the tree. It takes no mouse event of its own (the director forwards the clicks of the opening, and a scene laid over the sector
+## A segment that plays the scene `name_of_scene` at `where` (null: nowhere, as the opening's scenes): the scene is built when the segment enters the tree. It takes no mouse event of its own (the director forwards the clicks of the opening, and a scene laid over the sector
 ## hears the mouse through `_unhandled_input`; a stage's buttons are Controls of their own).
-static func of(name_of_scene: StringName, in_zone: int = FrameSets.NO_ZONE) -> TimelineSegment:
+static func of(name_of_scene: StringName, where: ScenePlace = null) -> TimelineSegment:
 	var segment := TimelineSegment.new()
 	segment.scene_name = name_of_scene
-	segment.zone = in_zone
+	segment.place = where if where != null else ScenePlace.nowhere()
 	segment.name = String(name_of_scene).to_pascal_case()
 	segment.size = Vector2(640, 400)
 	segment.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -76,7 +87,7 @@ func _ready() -> void:
 
 ## The nodes of the scene, all of them: the black backdrop (unless the scene has none), the stage with the actors, a player for each loop and one for the one-shot timelines, with every animation installed. The one place they are made.
 func _build() -> void:
-	for line in scene.unresolved():
+	for line in scene.unresolved(place):
 		TroubleLog.session.tell("[story] pack '%s': the scene '%s' %s" % [Catalog.story_pack_id(scene_name), scene_name, line])
 	if scene.backdrop:
 		var backdrop := ColorRect.new()
@@ -88,11 +99,13 @@ func _build() -> void:
 	stage = Node2D.new()
 	stage.name = "Stage"
 	add_child(stage)
-	cast = CutsceneCast.of(self, zone)
+	cast = CutsceneCast.of(self, place.zone)
 	cast.texts = _text
 	_wire_buttons(StageBuilder.build(scene.stage, stage, cast))
+	for timeline_name in scene.all_timelines():
+		_timelines[timeline_name] = StoryScene.timeline_named(timeline_name, place)
 	for timeline_name in scene.loops:
-		var timeline := Catalog.story_timeline(timeline_name)
+		var timeline := _timelines[timeline_name]
 		if timeline != null:
 			var player := _new_player(String(timeline_name))
 			Cutscene.install_timeline(player, timeline_name, timeline, cast)
@@ -100,11 +113,22 @@ func _build() -> void:
 			_loop_names.append(timeline_name)
 	script_player = _new_player("Script")
 	for timeline_name in scene.timelines:
-		var timeline := Catalog.story_timeline(timeline_name)
+		var timeline := _timelines[timeline_name]
 		if timeline != null:
 			Cutscene.install_timeline(script_player, timeline_name, timeline, cast)
 			_chain.append(timeline_name)
 	script_player.animation_finished.connect(_on_animation_finished)
+	if not scene.shown_messages().is_empty():
+		_build_message_box()
+
+
+## The message box of a scene that has messages, over everything the scene draws: its queue, the modal host that gives the focus to the box and back (nothing under it to put to sleep), and the view.
+func _build_message_box() -> void:
+	messages = MessageQueue.new(GameClock)
+	message_view = MESSAGE_BOX.instantiate() as MessageBoxView
+	add_child(message_view)
+	modals = ModalHost.new(self, [])
+	modals.attach(messages, message_view)
 
 
 ## The stage's buttons answer the prompt: a press chooses what the button says, its key does the same from the keyboard.
@@ -157,6 +181,9 @@ func _on_animation_finished(_finished: StringName) -> void:
 func finish() -> void:
 	if done:
 		return
+	if messages != null and messages.is_open():
+		_messages_over = true                      # (the verb `messages` ends with the page that shows)
+		messages.close_current()
 	for player in loop_players:
 		player.stop()
 	if script_player != null:
@@ -172,9 +199,10 @@ func finish() -> void:
 ##                     it never skips a picture)
 ##   another timeline follows    it begins in place of this one (the ship scene ends, the reveal starts from its first moment)
 ##   the last timeline (or none)    the scene ends
+##   the pages of `messages` show    nothing: Enter is the message box's (it closes the page)
 ## A scene that is `deaf_until_listen` hears Enter only once `listen` has run, and then Enter ends it.
 func advance() -> void:
-	if done:
+	if done or _messages_started:
 		return
 	if _is_deaf():
 		_heard()
@@ -193,7 +221,7 @@ func advance() -> void:
 func _end_hold() -> bool:
 	if _chain.is_empty():
 		return false
-	var timeline := Catalog.story_timeline(_chain[_chain_index])
+	var timeline := _timelines.get(_chain[_chain_index]) as CutsceneTimeline
 	if timeline == null:
 		return false
 	var position := script_player.current_animation_position
@@ -297,6 +325,22 @@ func _verb_end(_words: PackedStringArray) -> void:
 ## `listen`: from here on the scene hears the keys and clicks it dropped (`StoryScene.deaf_until_listen`), and any of them ends it.
 func _verb_listen(_words: PackedStringArray) -> void:
 	listening = true
+
+
+## `messages`: the scene's messages (`StoryScene.messages`) one after the other in the message box as the surface ship's (`MessageQueue.post_ship`), each read aloud while it shows (`SceneMessage.speech`); Enter closes a page and cuts its speech off
+## (`Audio.stop_voice`), and the scene is over once the last has been closed. A message whose text no pack holds is left out (`StoryScene.unresolved` told it); with none to show the scene is over at once. A coroutine: `cue` does not wait for it.
+func _verb_messages(_words: PackedStringArray) -> void:
+	if _messages_started or done:
+		return
+	_messages_started = true
+	for message in scene.shown_messages():
+		var posted := messages.post_ship(message.shown())
+		Audio.play_voice_sequence(message.clips())
+		await posted.closed
+		Audio.stop_voice()
+		if done or _messages_over:
+			return
+	finish()
 
 
 ## `speak <group>`: the clips of the voice group, one after the other, until the last has been heard (`Audio.speak`: as long as the recording, or a silent wait when Voice is off). A coroutine: `cue` does not wait for it, `_speak` does.

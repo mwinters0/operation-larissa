@@ -15,7 +15,8 @@ const TOLERANCE := 0.0015                      # ticks
 
 const NEWS := &"news_cartoon"          # the scene file the news cartoon is (data/story/news_cartoon.tres)
 const TITLE := &"title"                # the scene file the title is (data/story/title.tres)
-const VOYAGER := "res://src/story/voyager_closing.tscn"
+const VOYAGER := &"voyager_closing"      # the scene file the Voyager campaign names (data/story/voyager_closing.tres)
+const VOYAGER_FINALE := 30               # the sector it is played over
 const EXPERT := &"expert_closing"        # the scene file the Expert campaign names (data/story/expert_closing.tres)
 const EXPERT_FINALE := 31                # the sector it is played over
 
@@ -71,7 +72,7 @@ func test_the_timelines_of_the_data_files_have_the_recorded_lengths_and_moments(
 
 
 func test_the_voyager_flight_has_the_recorded_length_and_moments_for_every_starting_place() -> void:
-	var script: VoyagerClosingScript = load(STORY_DIR + "voyager_closing_script.tres")
+	var script: SubFlight = load(STORY_DIR + "voyager_flight.tres")
 	var tried := 0
 	for timeline_name: String in _fixture.cutscenes:
 		var expected: Dictionary = _fixture.cutscenes[timeline_name]
@@ -123,7 +124,7 @@ func test_the_story_page_fade_is_made_of_the_fade_and_the_captions_delay() -> vo
 
 
 func test_the_expert_closing_animations_have_the_recorded_lengths_and_moments() -> void:
-	var closing: TimelineSegment = auto_free(TimelineSegment.of(EXPERT, Catalog.sector(EXPERT_FINALE).zone))
+	var closing: TimelineSegment = auto_free(TimelineSegment.of(EXPERT, ScenePlace.over(Catalog.sector(EXPERT_FINALE).zone)))
 	add_child(closing)
 	for stage_name in ["hoist", "deck", "wait"]:
 		_check_animation(closing.script_player.get_animation(StringName("expert_" + stage_name)), "expert_" + stage_name)
@@ -135,9 +136,9 @@ func test_the_voyager_closing_animation_has_the_recorded_length_and_moments_for_
 		var expected: Dictionary = _fixture.cutscenes[timeline_name]
 		if not expected.has("start"):
 			continue
-		var closing: VoyagerClosing = auto_free(load(VOYAGER).instantiate())
-		add_child(closing)
 		var start: Array = expected.start
-		closing.start(int(start[0]), int(start[1]), int(start[2]))
-		_check_animation(closing.animations.get_animation(&"closing"), timeline_name)
+		var place := ScenePlace.over(Catalog.sector(VOYAGER_FINALE).zone, Vector2i(int(start[0]), int(start[1])), int(start[2]))
+		var closing: TimelineSegment = auto_free(TimelineSegment.of(VOYAGER, place))
+		add_child(closing)
+		_check_animation(closing.script_player.get_animation(&"voyager_flight"), timeline_name)
 		closing.skip()

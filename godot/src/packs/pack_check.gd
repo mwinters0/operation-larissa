@@ -342,26 +342,18 @@ static func _scene(scene_name: StringName, offered: Array[StringName], report: P
 	else:
 		var timelines: Dictionary = {}
 		for timeline_name in scene.all_timelines():
-			timelines[timeline_name] = Catalog.story_timeline(timeline_name)
+			timelines[timeline_name] = StoryScene.timeline_named(timeline_name)
 		_stage(scene.stage, timelines, offered, report)
 
 
-## The closings (they play from the game, not from the opening). The closing scene of each campaign of the chain is judged like a scene of the opening (`_scene`), given the picture sets a scene laid over a sector is offered (`FrameSets.over_a_sector`); a scene two campaigns
-## share is judged once. The Voyager closing is no scene file yet: its stage is judged with the timeline made from its script (`VoyagerClosingScript.timeline`, here for the sub at the window's origin: the actors it names do not depend on the place).
+## The closings (they play from the game, not from the opening). The closing scene of each campaign of the chain is judged like a scene of the opening (`_scene`), given the picture sets a scene laid over a sector is offered (`FrameSets.over_a_sector`; a flight file among its timelines is made for the window's origin, cell 0: the actors it names do not depend on the place); a scene two campaigns
+## share is judged once.
 static func _closings(report: PackReport) -> void:
 	var judged: Dictionary = {}
 	for campaign in Catalog.campaigns():
-		if campaign.closing_scene != &"" and campaign.closing_scene != Campaign.VOYAGER_CLOSING and not judged.has(campaign.closing_scene):
+		if campaign.closing_scene != &"" and not judged.has(campaign.closing_scene):
 			judged[campaign.closing_scene] = true
 			_scene(campaign.closing_scene, FrameSets.over_a_sector(), report)
-	var voyager: Dictionary = {}
-	var script := Catalog.voyager_closing_script()
-	if script != null:
-		voyager[&"voyager_closing_script"] = script.timeline(0, 0, 0)
-	if Catalog.story_stage(VoyagerClosing.STAGE) == null:
-		report.error("story", "the Voyager closing plays on the stage '%s', which no pack of the chain holds: nothing is drawn" % VoyagerClosing.STAGE)
-	else:
-		_stage(VoyagerClosing.STAGE, voyager, FrameSets.offered(FrameSets.NO_ZONE), report)
 
 
 ## A stage of the chain: each mistake of the stage itself (`CutsceneStage.problems`, given the picture sets the scene hands in), and an actor a timeline played on it names that it does not hold (the scene would leave that track out and nothing
@@ -464,7 +456,7 @@ static func _campaign_content(campaign: Campaign, live: Pack, report: PackReport
 			report.warn(area, "voice group '%s' has no clips: that line is not spoken" % group)
 	if campaign.fallback_song != Campaign.DEFAULT_SONG and not MusicCatalog.has_song(campaign.fallback_song):
 		report.warn(area, "fallback_song '%s' is neither one of the game's songs nor audio/music/%s.ogg of the pack: sectors without a song are silent" % [campaign.fallback_song, campaign.fallback_song])
-	if campaign.closing_scene != &"" and campaign.closing_scene != Campaign.VOYAGER_CLOSING and Catalog.story_scene(campaign.closing_scene) == null:
+	if campaign.closing_scene != &"" and Catalog.story_scene(campaign.closing_scene) == null:
 		report.warn(area, "closing_scene '%s' is no scene any pack of the chain holds (data/story/%s.tres): the generic finale plays" % [campaign.closing_scene, campaign.closing_scene])
 	if campaign.finales.is_empty():
 		report.warn(area, "no finale: the game never ends")

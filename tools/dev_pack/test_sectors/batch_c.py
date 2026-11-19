@@ -38,7 +38,8 @@ TRIGGER_SECTOR = 150
 
 
 def campaign_text() -> str:
-    """`test_c`: nine sectors, no finale, a log with its own words and voices."""
+    """`test_c`: nine sectors, no finale, a log with its own words and voices. It names the dev pack's second closing scene, `dev_flight_closing` (the game never plays it here: there is no finale; a campaign names it so that the pack closure, the check and
+    the exports know the scene's files, and the tests that play it do so through a campaign of their own)."""
     entries = len(LOG_UNLOCK_ORDER)
     t = tres.Tres("Resource", "Campaign", devlib.SCRIPTS + "campaign.gd")
     names = lambda items: tres.array("StringName", ["&%s" % tres.s(x) for x in items])
@@ -58,7 +59,7 @@ def campaign_text() -> str:
     t.set("supply_texts", names("Test mission control: sector %d is done." % s for s in CAMPAIGN_SECTORS))
     t.set("supply_voices", names("" for _ in CAMPAIGN_SECTORS))
     t.set("fallback_song", '&"sector_song_1"')
-    t.set("closing_scene", '&""')
+    t.set("closing_scene", '&"dev_flight_closing"')
     t.set("finale_text", tres.s("Test C is done."))
     t.set("finale_picture", tres.s("ui_picture/title_sky"))
     return t.render()

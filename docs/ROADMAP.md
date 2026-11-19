@@ -30,19 +30,6 @@ Tools for the technique of [`genai/IMAGES.md`](genai/IMAGES.md).
 - **G2. Slicer.** Cut a finished image of a layout back into the template files (`<kind>/<name>.png`) by the layout's rectangles, at the
   pack's picture scale.
 
-## Closings a pack makes
-
-The opening and the Expert closing are pack data played by one segment (`TimelineSegment`, scene files, verbs, a campaign's `closing_scene`); what still knows the original's other game is the Voyager closing: `VoyagerClosing`, and the branch of `Game._closing_of`
-that plays it for `Campaign.VOYAGER_CLOSING`, a name that has no scene file. This step makes it a scene file too, so the legacy pack holds both of the original's closings as the same kind of data and another pack can hold its own. The fidelity pins hold unchanged
-(`L: test_closing_sequences`, `test_cutscene_timing`, `test_game_flow_legacy`, `test_flow_fidelity_legacy`); `GenericFinale` stays the engine's closing for a campaign that names none.
-
-- **B2. The Voyager closing is a scene.** A one-shot timeline a scene names may be a flight file (`VoyagerClosingScript`, renamed for
-  what it is): the segment makes its timeline at the start for the place and cell of the sub the director hands in, through one
-  resolver of a scene's timelines (`PackCheck` judges it at the window's origin, as now). The flight's last step is a mark, so Enter
-  during the flight goes on to it. The surface ship's pages become scene data (each a text and the voice groups read with it, the
-  jingle included) shown in order by a verb in the message box, Enter closing a page and cutting its speech, the scene ending after
-  the last. `VoyagerClosing` and its `.tscn` go, the importer writes the scene `voyager_closing` that the legacy Voyager campaign already names, and `Campaign.VOYAGER_CLOSING` and the Voyager lines of `PackNeeds` / `PackCheck` go; `Game` holds no closing class but the generic finale.
-
 ## Open items
 
 Known gaps of the existing systems, by area. The engine's remaining assumptions about the original content are listed in

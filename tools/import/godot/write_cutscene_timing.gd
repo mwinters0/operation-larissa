@@ -30,7 +30,7 @@ func _init() -> void:
 	for timeline_name: String in TIMELINES:
 		var timeline: CutsceneTimeline = load(STORY_DIR + timeline_name + ".tres")
 		cutscenes[timeline_name] = {"sha256": CutsceneTimingRecord.digest(CutsceneTimingRecord.of_timeline(timeline))}
-	var script: VoyagerClosingScript = load(STORY_DIR + "voyager_closing_script.tres")
+	var script: SubFlight = load(STORY_DIR + "voyager_flight.tres")
 	for timeline_name: String in VOYAGER_STARTS:
 		var start: Array = VOYAGER_STARTS[timeline_name]
 		var timeline := script.timeline(start[0], start[1], start[2])

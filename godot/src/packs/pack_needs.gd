@@ -51,8 +51,6 @@ const FILES: Dictionary = {
 	"data/voice_cues.tres": "VoiceCues",
 	"data/music_catalog.tres": "MusicCatalog",
 	"data/story/opening.tres": "OpeningList",
-	"data/story/voyager_closing_stage.tres": "CutsceneStage",
-	"data/story/voyager_closing_script.tres": "VoyagerClosingScript",
 	"data/story/closing_crew.tres": "ClosingCrewScripts",
 	"data/ui/hud_layout.tres": "HudLayout",
 	"data/ui/calculator_layout.tres": "CalculatorLayout",
@@ -170,11 +168,11 @@ static func named_by_opening() -> Dictionary:
 	return named
 
 
-## The files the closings name, as `named_by_opening` does the opening's: the scene each campaign of the chain gives as its `closing_scene` (a `StoryScene`), its stage and its timelines. The Voyager closing is no scene file yet (`Campaign.VOYAGER_CLOSING`); `FILES` holds its files.
+## The files the closings name, as `named_by_opening` does the opening's: the scene each campaign of the chain gives as its `closing_scene` (a `StoryScene`), its stage and its timelines (a flight file is a `SubFlight`). `FILES` holds none of them.
 static func named_by_closings() -> Dictionary:
 	var named := {}
 	for campaign in Catalog.campaigns():
-		if campaign.closing_scene != &"" and campaign.closing_scene != Campaign.VOYAGER_CLOSING:
+		if campaign.closing_scene != &"":
 			_name_scene(campaign.closing_scene, named)
 	return named
 
@@ -187,7 +185,7 @@ static func _name_scene(scene_name: StringName, named: Dictionary) -> void:
 		return
 	named[Catalog.STORY_REL % scene.stage] = "CutsceneStage"
 	for timeline_name in scene.all_timelines():
-		named[Catalog.STORY_REL % timeline_name] = "CutsceneTimeline"
+		named[Catalog.STORY_REL % timeline_name] = "SubFlight" if Catalog.story_flight(timeline_name) != null else "CutsceneTimeline"
 
 
 ## The chain `first` and its bases make, with nothing under it: no `dev` is appended when a link is broken (the chain then stops at the broken link; `Packs.resolve`

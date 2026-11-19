@@ -180,7 +180,7 @@ func test_the_verbs_are_a_table_each_with_a_method() -> void:
 	assert_str(StoryVerbs.problem(&"end")).is_empty()
 	assert_str(StoryVerbs.problem(&"end now")).is_equal("'end' takes 0 words after it, not 1")
 	assert_str(StoryVerbs.problem(&"speak")).is_equal("'speak' takes 1 word after it, not 0")
-	assert_str(StoryVerbs.problem(&"jump")).is_equal("'jump' is not a verb of the engine (end, speak, listen, prompt)")
+	assert_str(StoryVerbs.problem(&"jump")).is_equal("'jump' is not a verb of the engine (end, speak, listen, prompt, messages)")
 	assert_str(StoryVerbs.problem(&"")).contains("is not a verb")
 	assert_str(StoryVerbs.problem(&"speak no_such_group")).is_equal("the voice group 'no_such_group' holds no clips in voice_cues")
 
@@ -193,7 +193,7 @@ func test_a_cue_with_a_verb_the_engine_lacks_does_nothing_and_is_told_once_with_
 	segment.cue(&"jump high")
 	await await_millis(100)
 	var told := _lines("'jump high'")
-	assert_array(told).is_equal(["[story] pack '%s': the scene 'probe_scene' has the cue 'jump high': 'jump' is not a verb of the engine (end, speak, listen, prompt); the cue does nothing" % _shelf.id])
+	assert_array(told).is_equal(["[story] pack '%s': the scene 'probe_scene' has the cue 'jump high': 'jump' is not a verb of the engine (end, speak, listen, prompt, messages); the cue does nothing" % _shelf.id])
 	assert_bool(segment.done).is_false()
 	segment.skip()
 
@@ -272,7 +272,7 @@ func test_the_check_of_a_pack_tells_each_thing_a_scene_names_that_the_chain_lack
 			"scene 'news_cartoon' names the timeline 'no_timeline', which no pack of the chain holds: it is not played",
 			"scene 'news_cartoon' names the song 'no_song', which is neither one of the game's nor audio/music/no_song.ogg of a pack: it has no music",
 			"scene 'news_cartoon' speaks the voice group 'no_group', which no pack of the chain holds in voice_cues: that step is left out",
-			"scene 'news_cartoon' has the cue 'jump': 'jump' is not a verb of the engine (end, speak, listen, prompt); the cue does nothing",
+			"scene 'news_cartoon' has the cue 'jump': 'jump' is not a verb of the engine (end, speak, listen, prompt, messages); the cue does nothing",
 			"scene 'news_cartoon' has the cue 'speak': 'speak' takes 1 word after it, not 0; the cue does nothing",
 			"scene 'news_cartoon' has the cue 'speak no_group_either': the voice group 'no_group_either' holds no clips in voice_cues; the cue does nothing"]:
 		assert_array(lines).override_failure_message("not told: %s\nthe check says:\n%s" % [expected, "\n".join(lines)]).contains([expected])

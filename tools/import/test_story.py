@@ -185,11 +185,15 @@ def test_the_stages_put_every_actor_at_its_point_of_the_position_table_in_draw_o
 
 @pytest.mark.legacy
 def test_every_actor_a_legacy_timeline_names_is_on_its_stage():
-    actors = {"news_cartoon_stage": step_story.build_news_stage(), "title_stage": step_story.build_title_stage(), "expert_closing_stage": step_story.build_expert_closing_stage()}
+    actors = {"news_cartoon_stage": step_story.build_news_stage(), "title_stage": step_story.build_title_stage(), "expert_closing_stage": step_story.build_expert_closing_stage(),
+              "voyager_closing_stage": step_story.build_voyager_closing_stage()}
     played_on = {scene.stage: scene.loops + scene.timelines for scene in step_story.scenes().values()}
     for stage_name, timeline_names in played_on.items():
         held = {a["name"] for a in actors[stage_name].actors}
         for name in timeline_names:
+            if name == step_story.VOYAGER_FLIGHT:
+                assert {"sub", "helicopter", "rotor"} <= held                 # (a flight file is run by the game: the actors `SubFlight.timeline` moves)
+                continue
             if name == "news_report":
                 continue                                        # (its builder reads the game's texts; the stage test above covers its actors)
             named = {actor for actor, *_ in step_story.timelines()[name].tracks}
@@ -272,7 +276,20 @@ def test_the_title_scene_plays_the_ship_then_the_reveal_stops_its_song_there_and
     assert (scene.song_stops_at, scene.prompt_song) == ("title_reveal", "opening") and scene.stage in step_story.stages()
     text = scene.render()
     assert 'script_class="StoryScene"' in text and 'song_stops_at = &"title_reveal"' in text and 'prompt_song = &"opening"' in text
-    assert set(step_story.scenes()) == {"news_cartoon", "title", "expert_closing"}
+    assert set(step_story.scenes()) == {"news_cartoon", "title", "expert_closing", "voyager_closing"}
+
+
+def test_the_voyager_closing_flies_the_sub_then_shows_the_surface_ships_three_pages_each_read_aloud_with_the_jingle_before_the_first():
+    scene = step_story.build_voyager_closing_scene()
+    assert (scene.stage, scene.loops, scene.timelines, scene.song, scene.speech) == ("voyager_closing_stage", [], [step_story.VOYAGER_FLIGHT], "", [])
+    assert scene.backdrop is False and scene.deaf_until_listen is False
+    assert scene.messages == [("closing_page_0", ["jingle", "closing_page_0"]), ("closing_page_1", ["closing_page_1"]), ("closing_page_2", ["closing_page_2"])]
+    text = scene.render()
+    assert 'script_class="StoryScene"' in text and 'timelines = Array[StringName]([&"voyager_flight"])' in text and "backdrop = false" in text
+    assert text.count('script = ExtResource("2_scene_message")') == 3 and 'speech = Array[StringName]([&"jingle", &"closing_page_0"])' in text
+    assert "deaf_until_listen" not in text and "\nsong = " not in text
+    flight = step_story.build_voyager_flight()
+    assert 'script_class="SubFlight"' in flight and 'end_cue = &"messages"' in flight and "sub_flight.gd" in flight
 
 
 def test_the_opening_lists_the_cartoon_the_title_that_leads_on_with_intro_and_the_story_and_starts_over():

@@ -1,7 +1,7 @@
 """The dev pack's cutscenes: choreography of its own, short and plain, played by the same scenes as the original's.
 
 The opening (`data/story/opening.tres`) lists the parts the game plays and the campaign `dev_tour` names its closing scene; the segments that play them (`src/story/`) ask the pack chain for `data/story/<name>.tres` (`Catalog.story_scene`,
-`story_timeline`, `story_script`, `voyager_closing_script`, `closing_crew`) and tell a `CutsceneCast` which node plays which actor. These timelines use the same actor names and the same property
+`story_timeline`, `story_flight`, `story_script`, `closing_crew`) and tell a `CutsceneCast` which node plays which actor. These timelines use the same actor names and the same property
 words as the original's, so every scene finds its nodes, but a few keys each: a ship that sails in and stops, a sub that sinks, a title
 that appears in three holds, a closing of its own shape (a sub and a creature of the zone that rise, a cut to a deck, a lamp that blinks), four story pages. Every number is
 dev's own (a step of 12 ticks, a hold of 100), none is read from the legacy pack; the pictures and sounds are named by the registry,
@@ -276,8 +276,18 @@ def dev_closing_scene() -> st.Scene:
                     "dev_closing_stage", [], ["dev_closing_film", "dev_closing_wait"], "closing", [], backdrop=False, deaf_until_listen=True)
 
 
-def voyager_closing_stage() -> st.Stage:
-    return st.voyager_closing_stage("Dev pack: the playfield, the sub, the helicopter's body and rotor, where the flight's first key finds them (tools/dev_pack/dev_story.py).")
+# The dev pack's other closing (`dev_flight_closing`, named by the campaign `test_c`, which has no finale, and played by the tests through a campaign of their own): not a film but a FLIGHT of the sub, made at the start for the place the sub is in (`dev_flight`, a `SubFlight`: steps of 4 ticks, 6 up, a turn,
+# a change into a helicopter, a surge and off to the left), then two pages of the surface ship's message in the message box, the first after the jingle. The last step of the flight is the mark Enter goes to.
+
+def dev_flight_stage() -> st.Stage:
+    return st.flight_stage("Dev pack: the playfield, the sub, the helicopter's body and rotor, where the flight's first key finds them (tools/dev_pack/dev_story.py).")
+
+
+def dev_flight_scene() -> st.Scene:
+    """The dev flight closing's scene: its stage, the flight over the sector (no backdrop, no song: the sector's is stopped before), then two pages in the message box."""
+    return st.Scene("Dev pack: a closing of our own that flies the sub off and shows two pages of the surface ship's message: the flight (dev_flight, made for the place of the sub), then the pages (tools/dev_pack/dev_story.py).",
+                    "dev_flight_stage", [], ["dev_flight"], "", [], backdrop=False,
+                    messages=[("closing_page_0", ["jingle", "closing_page_0"]), ("closing_page_1", ["closing_page_1"])])
 
 
 # --- the crew, the story and the Voyager's flight (the news cartoon is dev_ui.py's) ---------------------------------------------------------
@@ -336,9 +346,9 @@ def story_script() -> str:
     return t.render()
 
 
-def voyager_closing_script() -> str:
-    """The sub rises 6 steps, turns (every cell goes down to 2), changes into a helicopter, surges and flies off to the left."""
-    t = tres.Tres("Resource", "VoyagerClosingScript", SCRIPTS + "voyager_closing_script.gd")
+def dev_flight() -> str:
+    """The sub rises 6 steps, turns (every cell goes down to 2), changes into a helicopter, surges and flies off to the left; the last step's cue is `messages`."""
+    t = tres.Tres("Resource", "SubFlight", SCRIPTS + "sub_flight.gd")
     t.set("step_ticks", "4")
     t.set("rise_steps", "6")
     t.set("rise_pixels", "6")
@@ -354,6 +364,7 @@ def voyager_closing_script() -> str:
     t.set("fly_until_x", "-100")
     t.set("body_picture", st.sn("heli_body"))
     t.set("rotor_pictures", tres.array("StringName", (st.sn(n) for n in ("heli_rotor_0", "heli_rotor_1"))))
+    t.set("end_cue", st.sn("messages"))
     t.set("margin_ticks", "8")
     t.set("provenance", tres.s("Dev pack: a short flight of our own, steps of 4 ticks (tools/dev_pack/dev_story.py)."))
     return t.render()
@@ -373,8 +384,9 @@ def write_all() -> int:
     write_text(story / "title.tres", title_scene().render())
     write_text(story / "dev_closing_stage.tres", dev_closing_stage().render())
     write_text(story / "dev_closing.tres", dev_closing_scene().render())
-    write_text(story / "voyager_closing_stage.tres", voyager_closing_stage().render())
+    write_text(story / "dev_flight_stage.tres", dev_flight_stage().render())
+    write_text(story / "dev_flight_closing.tres", dev_flight_scene().render())
     write_text(story / "closing_crew.tres", closing_crew())
     write_text(story / "story_script.tres", story_script())
-    write_text(story / "voyager_closing_script.tres", voyager_closing_script())
-    return 19
+    write_text(story / "dev_flight.tres", dev_flight())
+    return 20

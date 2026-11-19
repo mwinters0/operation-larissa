@@ -21,7 +21,9 @@ belong to the original and the nodes belong to the view.
     expert_deck         the deck shot: the cut to the deck, the sub rises into the ship, six sailors act, the box blinks   (+ expert_closing.json)
     expert_wait         the box blinks until a key: from its first moment keys and clicks end the closing (the verb `listen`)
     story_script        the nine pages of the opening story and how long each one holds                  (OPENING.C, constants below)
-    voyager_closing_stage, voyager_closing_script  the Voyager closing's stage and loop counts; the timeline is run for the sub's place at the finale
+    voyager_closing     the scene: the Voyager game's closing, over the running sector: the flight, then the surface ship's three pages    (CLOSING.C, constants below)
+    voyager_closing_stage  the closing's actors: the playfield, the sub, the helicopter's body and rotor
+    voyager_flight      the flight's loop counts (a `SubFlight`); the game makes its timeline at the start of the closing, for the sub's place and cell
     closing_crew        the six sailors' programs of the deck shot                                       (expert_closing.json)
 
 Provenance (ground rule "Provenance is never lost"): every number is the original's, from extracted/tables/*.json or from the
@@ -52,7 +54,8 @@ STORY = PACK_DATA / "story"                     # the cutscenes' choreography is
 TIMELINE_NAMES = {"news_report", "news_ambient", "title_ship", "title_reveal", "expert_hoist", "expert_deck", "expert_wait"}      # `timelines()`
 TICKS_PER_SECOND = 73
 EXPERT_CLOSING_SCENE = "expert_closing"          # what the Expert campaign's `closing_scene` names (`step_campaigns`)
-VOYAGER_CLOSING_SCENE = "voyager_closing"        # what the Voyager campaign's `closing_scene` names: no scene file yet, the game plays that closing itself
+VOYAGER_CLOSING_SCENE = "voyager_closing"        # what the Voyager campaign's `closing_scene` names (`step_campaigns`)
+VOYAGER_FLIGHT = "voyager_flight"                # the flight file the scene's timelines name
 
 # --- our own numbers -----------------------------------------------------------------------------------------------
 # (nothing in the original: they exist only to make the animation player behave)
@@ -259,11 +262,13 @@ class Stage:
 
 class Scene:
     """A StoryScene being collected: the stage, the looping and the one-shot timelines it plays (by name), its song, the timeline at whose start the song stops, the song of its prompt, its speech steps (pause ticks, voice group), whether it has a black
-    backdrop (a closing is laid over the sector: none) and whether it drops every key and click until its cue `listen`."""
+    backdrop (a closing is laid over the sector: none), whether it drops every key and click until its cue `listen` and its messages (text name, voice groups read with it) that the verb `messages` shows."""
 
     def __init__(self, provenance: str, stage: str, loops: Sequence[str], timelines: Sequence[str], song: str, speech: Sequence[tuple[int, str]],
-                 song_stops_at: str = "", prompt_song: str = "", backdrop: bool = True, deaf_until_listen: bool = False):
+                 song_stops_at: str = "", prompt_song: str = "", backdrop: bool = True, deaf_until_listen: bool = False,
+                 messages: Sequence[tuple[str, Sequence[str]]] = ()):
         self.provenance = provenance
+        self.messages = [(text, list(groups)) for text, groups in messages]
         self.backdrop = backdrop
         self.deaf_until_listen = deaf_until_listen
         self.song_stops_at = song_stops_at
@@ -279,6 +284,10 @@ class Scene:
         step_script = SCRIPTS + "speech_step.gd"
         step_id = t.ext_id("Script", step_script) if self.speech else ""
         refs = [t.sub("Resource", [("pause_ticks", str(pause)), ("group", sn(group))], script=step_script, prefix="Step") for pause, group in self.speech]
+        message_script = SCRIPTS + "scene_message.gd"
+        message_id = t.ext_id("Script", message_script) if self.messages else ""
+        message_refs = [t.sub("Resource", [("text", sn(text)), ("speech", tres.array("StringName", (sn(g) for g in groups)))], script=message_script, prefix="Message")
+                        for text, groups in self.messages]
         t.set("stage", sn(self.stage))
         t.set("loops", tres.array("StringName", (sn(n) for n in self.loops)))
         t.set("timelines", tres.array("StringName", (sn(n) for n in self.timelines)))
@@ -294,6 +303,8 @@ class Scene:
             t.set("prompt_song", sn(self.prompt_song))
         if refs:
             t.set("speech", tres.array('ExtResource("%s")' % step_id, refs))
+        if message_refs:
+            t.set("messages", tres.array('ExtResource("%s")' % message_id, message_refs))
         t.set("provenance", tres.s(self.provenance))
         return t.render()
 
@@ -1029,10 +1040,14 @@ VOYAGER_FLY_PIXELS = 8
 VOYAGER_FLY_UNTIL_X = -136
 VOYAGER_BODY_PICTURE = 1998
 VOYAGER_ROTOR_PICTURES = (1999, 2000)
+VOYAGER_END_CUE = "messages"                         # the verb at the flight's last step: the surface ship's pages (`VoyagerClosingPages` 0x41c5f2)
+VOYAGER_PAGES = 3                                    # the three pages of the surface ship's message (bundle items 7-9), each read with the voice group `closing_page_<n>`; the first after the jingle
+VOYAGER_FIRST_PAGE_TEXT = 10715                      # the string id of the first page (`closing_page_0` of the registry)
+VOYAGER_JINGLE_GROUP = "jingle"                      # "incoming transmission" (`PlayVoyagerClosingSpeech` 0x41c508)
 
 
-def build_voyager_script() -> str:
-    t = tres.Tres("Resource", "VoyagerClosingScript", SCRIPTS + "voyager_closing_script.gd")
+def build_voyager_flight() -> str:
+    t = tres.Tres("Resource", "SubFlight", SCRIPTS + "sub_flight.gd")
     t.set("step_ticks", num(VOYAGER_STEP))
     t.set("rise_steps", str(VOYAGER_RISE_STEPS))
     t.set("rise_pixels", str(VOYAGER_RISE_PIXELS))
@@ -1048,11 +1063,12 @@ def build_voyager_script() -> str:
     t.set("fly_until_x", str(VOYAGER_FLY_UNTIL_X))
     t.set("body_picture", sn(picture(VOYAGER_BODY_PICTURE)))
     t.set("rotor_pictures", tres.array("StringName", (sn(picture(p)) for p in VOYAGER_ROTOR_PICTURES)))
+    t.set("end_cue", sn(VOYAGER_END_CUE))
     t.set("margin_ticks", num(VOYAGER_MARGIN_TICKS))
     t.set("provenance", tres.s(
         "Original: VoyagerClosingSequence (CLOSING.C), the loops: 18 steps of 4 px up, the turn table, three change pictures of "
         "12 ticks, 15 steps of 8 px up, then 8 px left a step until x <= -136; a step is 6 ticks. Constants are in "
-        "tools/import/step_story.py. Ours: the 14.6 tick margin after the last step."))
+        "tools/import/step_story.py. Ours: the 14.6 tick margin after the last step, and that the last step is a mark with the cue `messages` (the pages follow)."))
     return t.render()
 
 
@@ -1060,10 +1076,11 @@ def build_voyager_script() -> str:
 
 def build_voyager_closing_stage() -> Stage:
     """The Voyager closing's playfield (a clipped box over the running sector) with the sub and, hidden until the flight shows them, the helicopter's body and rotor; the flight's timeline puts them where the sub is."""
-    return voyager_closing_stage(PROVENANCE_VOYAGER_STAGE)
+    return flight_stage(PROVENANCE_VOYAGER_STAGE)
 
 
-def voyager_closing_stage(provenance: str) -> Stage:
+def flight_stage(provenance: str) -> Stage:
+    """A stage for a `SubFlight`: the playfield, the sub, the helicopter's body and rotor (the actors a flight's timeline names)."""
     stage = Stage(provenance)
     stage.actor("playfield", kind="group", at=PLAYFIELD_AT, size=PLAYFIELD_SIZE)
     stage.actor("sub", kind="frames", frames=SUB_FRAMES, at=PLAYFIELD_AT, parent="playfield")
@@ -1074,7 +1091,7 @@ def voyager_closing_stage(provenance: str) -> Stage:
 
 PROVENANCE_VOYAGER_STAGE = (
     "Original: VoyagerClosingSequence (CLOSING.C): the playfield (16, 32) 608 x 288 that clips the flight, the sub, the helicopter's body and rotor. Ours: where the three stand before the flight's first key "
-    "(the playfield's corner): the flight is made for the place the sub is in (voyager_closing_script).")
+    "(the playfield's corner): the flight is made for the place the sub is in (voyager_flight).")
 
 
 def build_closing_crew() -> str:
@@ -1147,8 +1164,18 @@ def build_expert_closing_scene() -> Scene:
         "expert_closing_stage", [], ["expert_hoist", "expert_deck", "expert_wait"], "closing", [], backdrop=False, deaf_until_listen=True)
 
 
+def build_voyager_closing_scene() -> Scene:
+    """The Voyager game's closing as a scene: its stage, the flight played over the running sector (no backdrop), then the surface ship's three pages in the message box, each read aloud (the first after the jingle). The sector's song is already stopped when
+    the closing begins (`StopSectorMusic`, `GameFlow.play_closing`); the flight file is run for the sub's place and cell when the scene is built, its last step is the mark that Enter goes to."""
+    pages = [(text_name(VOYAGER_FIRST_PAGE_TEXT + page), ([VOYAGER_JINGLE_GROUP] if page == 0 else []) + ["closing_page_%d" % page]) for page in range(VOYAGER_PAGES)]
+    return Scene(
+        "Original: VoyagerClosingSequence (CLOSING.C, called from DoAction in sector 30) and VoyagerClosingPages 0x41c5f2: the flight (voyager_flight, made for the place the sub is in), then three pages of the surface ship's message, each read aloud "
+        "(PlayVoyagerClosingSpeech 0x41c508: the jingle before the first), Enter closing a page and cutting its speech; laid over the sector in play (tools/import/step_story.py).",
+        "voyager_closing_stage", [], [VOYAGER_FLIGHT], "", [], backdrop=False, messages=pages)
+
+
 def scenes() -> dict[str, Scene]:
-    return {"news_cartoon": build_news_scene(), "title": build_title_scene(), EXPERT_CLOSING_SCENE: build_expert_closing_scene()}
+    return {"news_cartoon": build_news_scene(), "title": build_title_scene(), EXPERT_CLOSING_SCENE: build_expert_closing_scene(), VOYAGER_CLOSING_SCENE: build_voyager_closing_scene()}
 
 
 def run() -> None:
@@ -1162,6 +1189,6 @@ def run() -> None:
         out_text(STORY / (name + ".tres"), scene.render())
     out_text(STORY / "opening.tres", build_opening().render())
     out_text(STORY / "story_script.tres", build_story_script())
-    out_text(STORY / "voyager_closing_script.tres", build_voyager_script())
+    out_text(STORY / (VOYAGER_FLIGHT + ".tres"), build_voyager_flight())
     out_text(STORY / "closing_crew.tres", build_closing_crew())
-    print("  story: %s, %s, %s, opening, story_script, voyager_closing_script, closing_crew" % (", ".join(written), ", ".join(stages()), ", ".join(scenes())))
+    print("  story: %s, %s, %s, opening, story_script, voyager_flight, closing_crew" % (", ".join(written), ", ".join(stages()), ", ".join(scenes())))

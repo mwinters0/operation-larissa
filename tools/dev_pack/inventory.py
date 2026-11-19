@@ -27,8 +27,9 @@ import picture_table
 
 FORMAT = 2
 SKIP_SUFFIXES = (".import", ".uid")
-## The files of the Expert campaign's closing scene (a campaign names its closing scene, so a pack needs none of them): the scene, its stage and its three timelines.
-CLOSING_SCENE_FILES = tuple("data/story/%s.tres" % name for name in ("expert_closing", "expert_closing_stage", "expert_hoist", "expert_deck", "expert_wait"))
+## The files of the two campaigns' closing scenes (a campaign names its closing scene, so a pack needs none of them): the Expert closing's scene, stage and three timelines, the Voyager closing's scene, stage and flight file.
+CLOSING_SCENE_FILES = tuple("data/story/%s.tres" % name for name in ("expert_closing", "expert_closing_stage", "expert_hoist", "expert_deck", "expert_wait",
+                                                                      "voyager_closing", "voyager_closing_stage", "voyager_flight"))
 TEXT_TABLES = ("calc_notices", "closing", "help", "hints", "log_entries", "story", "supply_messages", "ui_strings")
 
 

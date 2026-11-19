@@ -83,8 +83,6 @@
   "data/story/title_reveal.tres",
   "data/story/title_ship.tres",
   "data/story/title_stage.tres",
-  "data/story/voyager_closing_script.tres",
-  "data/story/voyager_closing_stage.tres",
   "data/trigger_table.tres",
   "data/ui/calculator_layout.tres",
   "data/ui/hud_layout.tres",

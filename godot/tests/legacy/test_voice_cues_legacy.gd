@@ -56,7 +56,7 @@ func test_spot_checks_against_the_transcripts() -> void:
 	assert_str(_said(_cues.sign_in_first_visit())).contains("classified mission")
 	assert_str(_said(_cues.sign_in_start(false))).contains("Begin mission")
 	assert_str(_said(_cues.sign_in_start(true))).contains("Resume mission")
-	assert_str(_said(_cues.closing_page(0)).to_lower()).contains("congratulations")
+	assert_str(_said(_cues.clips("closing_page_0")).to_lower()).contains("congratulations")
 	assert_str(_said(_cues.story_page(0))).contains("astronauts")
 	assert_str(_said(_cues.story_page(8))).contains("hands")
 

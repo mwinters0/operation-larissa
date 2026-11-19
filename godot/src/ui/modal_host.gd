@@ -1,7 +1,7 @@
 class_name ModalHost
 extends RefCounted
 ## The modal dialogs of one screen: the message box and every dialog the screen opens over itself. Each screen that shows dialogs
-## (sign-in, Math Practice, the game, the Voyager closing) owns one, and opens every dialog through it.
+## (sign-in, Math Practice, the game, a scene with messages) owns one, and opens every dialog through it.
 ##
 ## Teaches: keyboard focus as something a modal BORROWS and gives back. While anything is open, the screen's `frozen` nodes sleep:
 ## `process_mode = DISABLED` keeps their input handlers (and a problem screen's polling) from hearing the keys, and

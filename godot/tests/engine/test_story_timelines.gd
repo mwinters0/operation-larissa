@@ -50,7 +50,7 @@ func test_every_timeline_and_script_is_the_dev_packs_when_nothing_is_laid_over_i
 	for timeline_name in TIMELINES:
 		assert_object(Catalog.story_timeline(timeline_name)).is_same(Packs.dev().resource(Catalog.STORY_REL % timeline_name))
 	assert_object(Catalog.story_script(&"story_script")).is_same(Packs.dev().resource(Catalog.STORY_REL % "story_script"))
-	assert_object(Catalog.voyager_closing_script()).is_same(Packs.dev().resource(Catalog.STORY_REL % "voyager_closing_script"))
+	assert_object(Catalog.story_flight(&"dev_flight")).is_same(Packs.dev().resource(Catalog.STORY_REL % "dev_flight"))
 	assert_object(Catalog.closing_crew()).is_same(Packs.dev().resource(Catalog.STORY_REL % "closing_crew"))
 
 
@@ -66,14 +66,17 @@ func test_the_story_pages_hold_and_name_pictures_that_exist() -> void:
 	assert_float(script.last_page_ticks).is_greater(script.minimum_page_ticks)
 
 
-## The flight of the Voyager closing is run for the place the sub is in when the finale starts: whatever cell it shows, the flight is a well formed timeline that
-## ends in the event that brings the surface ship's pages and has the helicopter leave the screen.
-func test_the_voyager_flight_is_a_timeline_for_every_cell_and_ends_with_the_pages() -> void:
-	var script := Catalog.voyager_closing_script()
+## A flight is run for the place the sub is in when the finale starts: whatever cell it shows, the flight is a well formed timeline that has the helicopter leave the screen and ends in its cue at its mark.
+func test_a_flight_is_a_timeline_for_every_cell_and_ends_with_its_cue_at_its_mark() -> void:
+	var script := Catalog.story_flight(&"dev_flight")
+	assert_array(Array(script.problems())).is_empty()
 	for cell in script.turn_table.size():
 		var flight := script.timeline(300, 250, cell)
 		assert_array(Array(flight.problems())).is_empty()
-		assert_bool(flight.cues.any(func(cue_entry: CutsceneCue) -> bool: return cue_entry.kind == CutsceneCue.EVENT and cue_entry.cue_name == &"pages")).is_true()
+		assert_bool(flight.cues.any(func(cue_entry: CutsceneCue) -> bool: return cue_entry.kind == CutsceneCue.EVENT and cue_entry.cue_name == script.end_cue)).is_true()
+		assert_array(flight.marks.keys()).is_equal([SubFlight.END_MARK])
+		var last_step: float = flight.marks[SubFlight.END_MARK]
+		assert_bool(flight.cues.any(func(cue_entry: CutsceneCue) -> bool: return cue_entry.cue_name == script.end_cue and is_equal_approx(cue_entry.tick, last_step))).is_true()
 		var body := flight.find_track(&"helicopter", CutsceneTrack.PROP_POSITION)
 		assert_float((body.values[body.values.size() - 1] as Vector2).x).is_less_equal(script.fly_until_x)
 

@@ -10,6 +10,8 @@ extends RefCounted
 ## Teaches: asking a data set what it names, as the engine would, and holding two packs of different content to the same rule.
 
 const TIMELINES: Array[StringName] = [&"news_report", &"news_ambient", &"title_ship", &"title_reveal", &"expert_hoist", &"expert_deck", &"expert_wait"]
+## The flight files of the two packs (the legacy pack's Voyager flight, the dev pack's): the one the chain in use holds is read.
+const FLIGHTS: Array[StringName] = [&"voyager_flight", &"dev_flight"]
 
 
 ## key -> where it is held (a file of the pack, "problem type 3" ...), for every picture the pack's data holds by key.
@@ -44,7 +46,10 @@ static func story_names() -> Dictionary:
 				for value in track.values:
 					if value is StringName or value is String:
 						found[String(value)] = true
-	for resource: Resource in [Catalog.story_script(&"story_script"), Catalog.voyager_closing_script()]:
+	var resources: Array[Resource] = [Catalog.story_script(&"story_script")]
+	for flight_name in FLIGHTS:
+		resources.append(Catalog.story_flight(flight_name))
+	for resource in resources:
 		if resource != null:
 			_names_in(resource, found)
 	return found

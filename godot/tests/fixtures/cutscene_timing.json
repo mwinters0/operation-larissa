@@ -23,7 +23,7 @@
    "sha256": "6e52b0e5d023d96f462c4103dd74003d8008966f1425da17862231f3342ac8d8"
   },
   "voyager_closing_a": {
-   "sha256": "5c031827952239f29005e431a57e219c57ac02fb9dba43bc37df01928d307e2d",
+   "sha256": "66b06da2400149462ae302357381ab115aa0e786241ebd19df43e169cf39f16e",
    "start": [
     184,
     212,
@@ -31,7 +31,7 @@
    ]
   },
   "voyager_closing_b": {
-   "sha256": "3363fe61bb7236ac8d77e98a61755240931b1a03c573ecfc0278d6a85c779c91",
+   "sha256": "2544cf3af4a09ceadbc509b5e863575dfc144e236e101e42b94d56329cb1ddb6",
    "start": [
     500,
     180,
@@ -39,7 +39,7 @@
    ]
   },
   "voyager_closing_c": {
-   "sha256": "e5472d3e0e18f64242e86db40f34f871ffb7ed3017157d7dee44e32c73a25a07",
+   "sha256": "5d5a6d575d1d8ec582228c094aa8ed50c2d130d4d0128378dfa38ad40b6e020b",
    "start": [
     40,
     300,
@@ -47,7 +47,7 @@
    ]
   },
   "voyager_closing_d": {
-   "sha256": "055dcc13b2f1796266133e7142b97e726905760315de92140e6aa7e09763dccc",
+   "sha256": "f2c3e40730ccab270efe3744df13dd43dd71c3628766175b65e166c0d47c9e3d",
    "start": [
     300,
     200,
@@ -55,7 +55,7 @@
    ]
   },
   "voyager_closing_e": {
-   "sha256": "1aa1020cbdb07d6b98286d3720281a0756f1ca52163337e32289314d35d763a1",
+   "sha256": "525f10f1ea089a385db0006c7ca5ab77c605fbb56c82e7fc2ae737b3ab675be0",
    "start": [
     250,
     100,

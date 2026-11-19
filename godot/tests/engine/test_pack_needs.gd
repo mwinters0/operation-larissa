@@ -136,7 +136,7 @@ func test_a_pack_that_lacks_files_is_reported_as_exactly_those() -> void:
 	held.sort()
 	assert_array(held).is_equal([
 		"data/problems/problem_type_00.tres", "data/problems/problem_type_01.tres", "data/problems/problem_type_02.tres", "ui_picture/title_sky"])
-	assert_array(missing).contains(["data/zones.tres", "data/problems/problem_type_03.tres", "data/problems/problem_type_33.tres", "data/story/opening.tres", "data/story/voyager_closing_script.tres", "data/story/closing_crew.tres"])
+	assert_array(missing).contains(["data/zones.tres", "data/problems/problem_type_03.tres", "data/problems/problem_type_33.tres", "data/story/opening.tres", "data/story/closing_crew.tres"])
 	assert_array(missing).not_contains(["data/problems/problem_type_02.tres", "ui_picture/title_sky"])
 	assert_array(missing).contains([Catalog.problem_type(0).art_keys[0]])                  # (the types of the pack name pictures the pack's table does not hold)
 	var groups := PackNeeds.by_group(PackNeeds.gaps(chain))

@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="VoyagerClosingScript" format=3]
+[gd_resource type="Resource" script_class="SubFlight" format=3]
 
-[ext_resource type="Script" path="res://src/resources/voyager_closing_script.gd" id="1_voyager_closing_script"]
+[ext_resource type="Script" path="res://src/resources/sub_flight.gd" id="1_sub_flight"]
 
 [resource]
-script = ExtResource("1_voyager_closing_script")
+script = ExtResource("1_sub_flight")
 step_ticks = 4
 rise_steps = 6
 rise_pixels = 6
@@ -19,5 +19,6 @@ fly_pixels = 20
 fly_until_x = -100
 body_picture = &"heli_body"
 rotor_pictures = Array[StringName]([&"heli_rotor_0", &"heli_rotor_1"])
+end_cue = &"messages"
 margin_ticks = 8
 provenance = "Dev pack: a short flight of our own, steps of 4 ticks (tools/dev_pack/dev_story.py)."
