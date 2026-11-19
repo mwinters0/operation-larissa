@@ -21,6 +21,39 @@ types) are independent of this road and can be done in any order.
 - **C5. New creatures in the editors.** The Foe Script editor and the Sector panel make a creature from a pack's own frames and script
   rather than copying an existing one.
 
+## Story animations in the editor
+
+The opening and the closings are pack data (scene files, stages, timelines, flight files) played by `TimelineSegment`; a pack author writes
+them as files today. These steps let the editor work with them, in order: the editor must be able to call the data's own methods before a
+tool can preview or judge a scene, and a tool that authors animations needs timelines that can follow the place a scene is played in.
+
+- **S1. The story data runs in the editor.** In the editor a resource whose script is not `@tool` is a placeholder: its properties can be
+  read, its methods not (`tests/engine/test_editor_runs_quietly.gd` says why the pack check runs there). The game's other data
+  resources are `@tool` (`SectorData`, `FoeData`, `ZoneData`, `ProblemType`, `VoiceCues`); the story's are not, so `PackNeeds` reads
+  their fields by hand: `_name_scene` rebuilds `loops + timelines` (which `StoryScene.all_timelines` answers) and `_timeline_pictures`
+  lists a flight's pictures from `SubFlight.body_picture`, `change_pictures` and `rotor_pictures` (a second place that knows what a
+  flight draws). Make the story resources `@tool`: `StoryScene`, `SceneMessage`, `SpeechStep`, `SubFlight`, `CutsceneTimeline`,
+  `CutsceneTrack`, `CutsceneCue`, `CutsceneStage`, `StageActor`, `OpeningList`, `OpeningPart`, `StoryScript`, `StoryPage`, and any
+  script whose instance methods those reach in the editor (`ScenePlace`: check whether a `RefCounted` made by `new()` there is a
+  placeholder). They are plain data with pure functions (no `_init` side effects, setters or processing); keep them so, and say so in
+  each header. Then `PackNeeds` asks the data: `_name_scene` uses `all_timelines()`, and `_timeline_pictures` reads the picture tracks
+  of `scene.made_at(ScenePlace.nowhere())` for every scene the opening and the campaigns name, so a flight's pictures come from the
+  timeline it makes, like every other timeline's, and the hand list goes. Tests: a scratch flight whose picture fields name a picture
+  no pack holds is a gap through its made timeline (`test_pack_needs`); `test_editor_runs_quietly` stays clean with dev's closing
+  (its flight `dev_flight` is made in the editor process); the legacy chain still asks for and holds the helicopter's and the
+  sailors' pictures (`L: test_pack_needs_legacy`). `docs/engine/ARCHITECTURE.md` and `PACKS.md` say which data runs in the editor.
+- **S2. Timelines that follow the place.** `SubFlight` is a generator shaped like the Voyager flight (rise, turn by a table until a
+  cell, change, surge, fly until off the playfield), because the original's flight depends on where the sub is. A track of a
+  `CutsceneTimeline` may say its positions are relative to the sub's starting place (`ScenePlace.sub_at`) and its first pose the
+  sub's cell, made at the start by `StoryScene.made_at` like a flight; a flight that cannot be written so (the turn steps depend on the
+  starting cell, the flight ends off the playfield) stays a parametric kind, one documented generator per kind with the fields a
+  form edits. Decide from the legacy flight whether `SubFlight` becomes a relative timeline plus such a kind, or stays the one kind;
+  the legacy samples (`L: test_closing_sequences`) and timing hashes hold.
+- **S3. A scene dock.** An editor dock for the files of `data/story/`: pick a scene of the chain, see its stage built (`StageBuilder`)
+  and play its timelines on it for a chosen `ScenePlace` (a zone, a sub place and cell), list what `StoryScene.unresolved` and the
+  pack check say of it as it is edited, and make a new scene, stage or flight from a template in the pack being edited (the screen
+  editor and the Sector panel, `docs/engine/EDITORS.md`, are the models). `docs/create/` gets its manual.
+
 ## Generated picture packs
 
 Tools for the technique of [`genai/IMAGES.md`](genai/IMAGES.md).
