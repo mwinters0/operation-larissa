@@ -116,24 +116,3 @@ func test_a_trigger_slot_whose_types_the_chain_lacks_is_told_once() -> void:
 	shelf.remove()
 	assert_object(ProblemFactory.for_trigger_slot(5, 0)).is_not_null()                # (the chain's own table: a problem opens, and nothing more is told)
 	assert_array(TroubleLog.session.told).has_size(1)
-
-
-func test_a_news_cartoon_speech_group_without_a_pause_is_told_once_and_follows_the_group_before() -> void:
-	var shelf := _shelf(&"short_pauses")
-	shelf.write_json(Durations.PACK_PATH, {"news": {"group_pauses": [0, 5]}})
-	shelf.mount()
-	for i in 2:
-		var groups := NewsCartoon.speech_groups()
-		assert_array(groups.map(func(group: Array) -> int: return group[0])).is_equal([0, 5, 0, 0, 0])
-	var told := TroubleLog.session.told.filter(func(line: String) -> bool: return line.contains("short_pauses"))
-	assert_array(told).has_size(3)
-	assert_str(told[0]).is_equal("[story] pack 'short_pauses': news.group_pauses of rules/durations.json has no pause for the speech group 'news_speech_2': it follows the group before at once")
-
-
-func test_a_pack_with_no_first_speech_group_leaves_the_news_cartoon_silent_and_says_so_once() -> void:
-	var shelf := _shelf(&"mute_news")
-	shelf.write_json("voice_cues.json", {"groups": {"news_speech_0": []}})
-	shelf.mount()
-	for i in 2:
-		assert_array(NewsCartoon.speech_groups()).is_empty()
-	assert_array(TroubleLog.session.told).is_equal(["[story] pack 'mute_news': voice_cues holds no group 'news_speech_0': the news cartoon is silent"])

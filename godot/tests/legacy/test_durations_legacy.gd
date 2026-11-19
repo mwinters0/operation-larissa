@@ -25,7 +25,6 @@ const ORIGINAL := {
 	"speech.silent_ticks": 146,
 	"calculator.key_flash_ticks": 12,
 	"surface_ship.wait_ticks": 1460,
-	"news.speech_start_delay_ticks": 219,
 	"title.prompt_timeout_ticks": 1825, "title.music_delay_ticks": 292,
 	"fade.ticks": 13,
 }
@@ -53,15 +52,14 @@ func after_test() -> void:
 func test_the_base_file_has_the_originals_numbers() -> void:
 	for path: String in ORIGINAL:
 		assert_int(Durations.at(path)).override_failure_message(path).is_equal(ORIGINAL[path])
-	assert_array(Durations.list_at("news.group_pauses")).is_equal([0, 248, 248, 248, 0])
 
 
 func test_the_base_file_holds_nothing_else() -> void:
 	var found: Array[String] = []
 	_leaves(JSON.parse_string(FileAccess.get_file_as_string(Durations.BASE_PATH)), "", found)
 	for path in found:
-		assert_bool(ORIGINAL.has(path) or path == "news.group_pauses").override_failure_message("'%s' is in the file but not in this test" % path).is_true()
-	assert_int(found.size()).is_equal(ORIGINAL.size() + 1)
+		assert_bool(ORIGINAL.has(path)).override_failure_message("'%s' is in the file but not in this test" % path).is_true()
+	assert_int(found.size()).is_equal(ORIGINAL.size())
 
 
 func _leaves(node: Variant, path: String, into: Array[String]) -> void:
@@ -83,11 +81,8 @@ func test_the_rules_give_the_originals_timing_with_the_default_data() -> void:
 	assert_int(SceneRouter.fade_ticks()).is_equal(13)
 	assert_int(SurfaceShipScreen.wait_ticks()).is_equal(1460)
 	assert_int(CalculatorModel.key_flash_ticks()).is_equal(12)
-	assert_int(NewsCartoon.speech_start_delay_ticks()).is_equal(219)
 	assert_int(TitleScene.prompt_timeout_ticks()).is_equal(1825)
 	assert_int(TitleScene.music_delay_ticks()).is_equal(292)
-	var groups: Array = NewsCartoon.speech_groups().map(func(group: Array) -> Array: return [group[0], group[1].size()])
-	assert_array(groups).is_equal([[0, 2], [248, 3], [248, 1], [248, 1], [0, 4]])
 	assert_array([SignIn.pre_scan_ticks(), SignIn.pressed_ticks()]).is_equal([18, 36])
 
 

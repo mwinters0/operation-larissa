@@ -162,7 +162,7 @@ measured once by the importer. For a pack's own clips the game measures each cli
 ### Story timelines
 
 The opening, the title and the two closings are timed tracks of data in a pack's `data/story/` (a `CutsceneTimeline`: when each picture, text or sound
-happens, in ticks): `news_cartoon`, `news_ambient`, `title_ship`, `title_reveal`, `expert_hoist`, `expert_deck`, `expert_wait`; with them `story_script` (the
+happens, in ticks): `news_report`, `news_ambient`, `title_ship`, `title_reveal`, `expert_hoist`, `expert_deck`, `expert_wait`; with them `story_script` (the
 pages of the opening story and how long each one holds), `voyager_closing_script` (the loop counts of the Voyager flight, run for the place the sub is in) and
 `closing_crew` (the Expert closing's six sailors' programs). The scenes only play them, and take each from the first pack of the chain that holds it. A
 complete pack holds all of them (`PackNeeds`; the dev pack's are short ones of its own, `tools/dev_pack/dev_story.py`). A campaign without a closing of its own gets the
@@ -186,17 +186,30 @@ The actors are listed in **draw order**: each is drawn above the ones listed bef
 may only name actors its scene's stage holds: the pack check reports a stage that is wrong (two actors of a name, a parent not listed before, a text box with no size) and an actor a timeline names
 that the stage lacks, and the game, meeting either, leaves that actor or track out and says so in the log once.
 
+**Scenes.** A scene file (`data/story/<scene>.tres`, a `StoryScene`; `.json` in the data form; the opening plays `news_cartoon`) says what one part of the opening plays, by name:
+
+| Field | Meaning |
+| --- | --- |
+| `stage` | the stage the scene is built on (`news_cartoon_stage`) |
+| `loops` | the timelines that play from the start and start over when they end (`news_ambient`: the alarm lights, the ring, the console lights); each must have `loop` set |
+| `timelines` | the timelines that play once, one after the other (`news_report`); none may loop. The scene ends when a cue says `end` |
+| `song` | the song that starts with the scene (a name of the game's music, or a file `audio/music/<name>.ogg` of a pack); empty: no song |
+| `speech` | what is said, in order: each step is `pause_ticks` (the wait before it, in ticks of the original's 73 Hz timer) and `group` (a voice group of `voice_cues`, whose clips are spoken one after the other) |
+
+A cue of a timeline whose kind is `event` calls a **verb** of the engine, written as its name and the words after it: `end` (the scene is over) and `speak <group>` (speak that voice group and wait for it). A pack arranges the verbs;
+what they do is the engine's. The speech is the `speech` steps, not cues, because how long a group takes is the recorded length of its clips: step by step, the scene waits the pause, then speaks the group. The pack check reports,
+and the game, meeting it, tells once in the log and leaves out, a timeline, song or voice group the scene names that no pack of the chain holds, a looping timeline that does not loop or a one-shot one that does, a cue whose verb the engine
+lacks or that has the wrong number of words, and a stage that no pack holds or an actor a timeline names that the stage lacks. The dev pack's scene is `tools/dev_pack/dev_story.py`'s, the legacy pack's the importer's (`step_story.py`).
+
 **What the opening says and flickers.** The console's lights of the news cartoon flicker as `news_ambient` says: its tracks for the stage's `status_NN` and `panel_NN` actors are the flicker, one key per redraw (the legacy pack's is
 baked by the importer and the dev pack's by its generator, both with `step_story.console_flicker`, a seeded generator: in the original the lights flicker at random), and a pack writes its own lights' keys as it writes any timeline.
-The cartoon's speech is the **voice groups** `news_speech_0`, `news_speech_1` ... of the pack's `voice_cues` (the clips of each, in order) and, before each, the pause `news.group_pauses[i]` of `rules/durations.json`
-(ticks; `news.speech_start_delay_ticks` before the first): the speech goes on for as long as the chain holds the next group, and a group without a pause follows the one before it at once (told once in the log). The title's
-waits are `title.prompt_timeout_ticks` (nobody chose Start or Intro: the story begins) and `title.music_delay_ticks` (the story's song starts this long after the buttons appear), also in `rules/durations.json`.
+The title's waits are `title.prompt_timeout_ticks` (nobody chose Start or Intro: the story begins) and `title.music_delay_ticks` (the story's song starts this long after the buttons appear), also in `rules/durations.json`.
 
 ### Durations
 
 Every length that holds up play is a number in `res://data/rules/durations.json`: how long the supply station's door and the
 sub's launch and dock take, where the balloon goes, the dissolve after a lost tank, the log scan, a fade, a message, the wait on
-the surface ship, the news cartoon's pauses and the title's prompt time-out. Units are in the file: mostly ticks of the original's 73 Hz timer; a station trip counts game ticks (12.17 Hz).
+the surface ship, the title's prompt time-out. Units are in the file: mostly ticks of the original's 73 Hz timer; a station trip counts game ticks (12.17 Hz).
 
 The file is committed (it is hand-made, not copied out of the game) and holds the original's numbers
 ([`HARD_CODED.md`](../engine/HARD_CODED.md)). A pack states only the keys it changes, in its own `rules/durations.json`; the files of the

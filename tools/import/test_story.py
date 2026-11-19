@@ -47,7 +47,7 @@ def test_the_timelines_have_the_recorded_lengths_and_moments(name):
 @NEEDS_GAME
 @pytest.mark.legacy
 def test_the_news_cartoon_has_the_recorded_length_and_moments():
-    check_against_fixture(step_story.build_news(step_story.bulletin_texts()), "news_cartoon")
+    check_against_fixture(step_story.build_news(step_story.bulletin_texts()), "news_report")
 
 
 def test_the_record_is_in_thousandths_sorted_and_counts_each_moment_once():
@@ -182,14 +182,27 @@ def test_the_stages_put_every_actor_at_its_point_of_the_position_table_in_draw_o
 @pytest.mark.legacy
 def test_every_actor_a_legacy_timeline_names_is_on_its_stage():
     actors = {"news_cartoon_stage": step_story.build_news_stage(), "title_stage": step_story.build_title_stage()}
-    played_on = {"news_cartoon_stage": ("news_cartoon", "news_ambient"), "title_stage": ("title_ship", "title_reveal")}
+    news = step_story.build_news_scene()
+    played_on = {news.stage: news.loops + news.timelines, "title_stage": ["title_ship", "title_reveal"]}          # (the title's pairing is code until it is a scene file)
     for stage_name, timeline_names in played_on.items():
         held = {a["name"] for a in actors[stage_name].actors}
         for name in timeline_names:
-            if name == "news_cartoon":
+            if name == "news_report":
                 continue                                        # (its builder reads the game's texts; the stage test above covers its actors)
             named = {actor for actor, *_ in step_story.timelines()[name].tracks}
             assert named <= held, (name, named - held)
+
+
+def test_the_news_cartoon_scene_names_its_stage_timelines_song_and_five_speech_steps_in_order():
+    scene = step_story.build_news_scene()
+    assert (scene.stage, scene.loops, scene.timelines, scene.song) == ("news_cartoon_stage", ["news_ambient"], ["news_report"], "opening")
+    assert [group for _pause, group in scene.speech] == ["news_speech_%d" % i for i in range(len(common.NEWS_SPEECH_GROUPS))]
+    assert [pause for pause, _group in scene.speech] == [219, 248, 248, 248, 0]
+    assert set(scene.loops + scene.timelines) <= step_story.TIMELINE_NAMES and scene.stage in step_story.stages()
+    text = scene.render()
+    assert 'script_class="StoryScene"' in text and text.count('script = ExtResource("2_speech_step")') == 5
+    assert 'group = &"news_speech_4"' in text and "pause_ticks = 219" in text
+    assert scene.render() == step_story.build_news_scene().render()
 
 
 # --- the console's flicker: ours, baked into news_ambient --------------------------------------------------------------------------

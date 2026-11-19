@@ -20,7 +20,7 @@ static func _legacy(file: String) -> Resource:
 	return load(path) if FileAccess.file_exists(path) else null
 
 
-var NEWS: CutsceneTimeline = _legacy("news_cartoon")
+var NEWS: CutsceneTimeline = _legacy("news_report")
 var AMBIENT: CutsceneTimeline = _legacy("news_ambient")
 var SHIP: CutsceneTimeline = _legacy("title_ship")
 var REVEAL: CutsceneTimeline = _legacy("title_reveal")
@@ -165,7 +165,7 @@ func test_the_bulletins_are_typed_at_three_ticks_a_character_and_read_for_25_red
 	for i in 6:
 		assert_str(text.values[i + 1]).is_equal(StringName("news_bulletin_%d" % i))
 		assert_float(text.times[i + 1]).is_equal(at)
-		var typing := NewsCartoon.bulletin(i).length() * 3.0      # the characters the teletype shows, 3 ticks each
+		var typing := TimelineSegment.tidy(Catalog.text(StringName("news_bulletin_%d" % i))).length() * 3.0      # the characters the teletype shows, 3 ticks each
 		assert_float(_at(NEWS, &"teletype", CutsceneTrack.PROP_REVEAL, at)).is_equal(0.0)
 		var typed := reveal.times.find(at + typing)
 		assert_int(typed).is_greater_equal(0)

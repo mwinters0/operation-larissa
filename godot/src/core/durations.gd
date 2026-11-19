@@ -57,18 +57,6 @@ static func at(path: String) -> int:
 	return 0
 
 
-## The whole numbers in the list at `path` ("news.group_pauses").
-static func list_at(path: String) -> Array[int]:
-	var found: Array[int] = []
-	var value: Variant = _find(path)
-	if value is Array:
-		for entry: Variant in value:
-			found.append(int(entry))
-	else:
-		push_error("Durations: no list at '%s'" % path)
-	return found
-
-
 # --- checking a pack's file ----------------------------------------------------------------------------------------------------
 
 ## The keys whose smallest sensible value is 1: the rules take `maxi(value, 1)` of them (a step cannot take no time at all).

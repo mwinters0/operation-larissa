@@ -32,15 +32,12 @@ Tools for the technique of [`genai/IMAGES.md`](genai/IMAGES.md).
 
 ## Animations a pack makes
 
-The opening's timing and stage are pack data (`CutsceneTimeline`s, `CutsceneStage`s, `voice_cues`, `durations.json`); what is code is the order of the
-parts and the behaviour around the timelines (`NewsCartoon`, `TitleScene`, `Opening`). These steps move the rest into the pack, so the legacy pack holds the original's opening and another pack can hold an
+The opening's timing, stage and the news cartoon's scene are pack data (`CutsceneTimeline`s, `CutsceneStage`s, `StoryScene`, `voice_cues`, `durations.json`); what is code is the order of the
+parts and the behaviour around the timelines (`TitleScene`, `Opening`). These steps move the rest into the pack, so the legacy pack holds the original's opening and another pack can hold an
 opening of its own. Each is one session; the engine verbs stay rules (input, waits, choices) and a pack only arranges them. In every
 step the fidelity pins hold unchanged: `L: test_cutscene_timing` (the timing hashes), `test_opening` / `test_opening_legacy`, the key
 handling by phase.
 
-- **A3. One segment plays a scene.** A `TimelineSegment` (a `StorySegment`) plays a scene file `data/story/<scene>.json`: its stage,
-  its looping and its one-shot timelines, its song, and the speech. The timeline's cues call a fixed set of engine verbs (`end`,
-  `speak <group>`), named in `create/CONTENT.md` "Story timelines". `NewsCartoon` becomes the legacy pack's `news_cartoon` scene file.
 - **A4. The title on the same segment.** The verbs the title needs: timelines played in a chain (`ship`, then `reveal`; Enter during
   one goes on to the next, whose first keys set the stage it needs, so `_leave_ship_scene` becomes keys), `hold` (Enter seeks to the
   next mark and fires its cues: `_end_hold`), and `prompt` (the Start / Intro choice, its keys and buttons, the time-out and the

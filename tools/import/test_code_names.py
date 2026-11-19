@@ -58,7 +58,7 @@ def test_the_scan_finds_the_names_of_every_resolver(scan):
     floors = {"sound": 16, "music": 4, "voice": 1, "text": 145, "ui_picture": 15, "problem_art": 1, "frame": 3}
     for kind, floor in floors.items():
         assert by_kind.get(kind, 0) >= floor, "%s: the scan found %d names, there were at least %d" % (kind, by_kind.get(kind, 0), floor)
-    assert len(scan.patterns) >= 10
+    assert len(scan.patterns) >= 9
 
 
 # Name literals of src/ that the scan does not tie to a resolver but that are a name of the registry anyway. The scan cannot tell

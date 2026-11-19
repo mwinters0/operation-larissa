@@ -108,7 +108,7 @@ R("M", "CLOSING.C", "ExpertClosingSequence", "StopSectorMusic,PlayExpertClosingM
 R("M", "CLOSING.C", "ExpertClosingSequence", "StopBackgroundMusic", "song stops when the sequence ends (before the Hall of Fame)", YES, "PORTED",
   "expert_closing.gd:finish (stop_music when the sequence ends, before the Hall of Fame); test_flow_fidelity_legacy.gd test_the_expert_closing_song_ends_with_the_sequence")
 R("M", "OPENING.C", "OpeningMusicCue", "PlayBackgroundMusic,StopBackgroundMusic", "cue 1: 9502 (opening cartoon) ; cue 3: 9503 (title) ; cue 4: stop after the 0x33 sound ; cue 5: stop, play 9502 ; cue 6: stop", YES, "PORTED",
-  "news_cartoon.gd:_ready (9502), title_scene.gd:_ready (9503), _leave_ship_scene (stop), _show_prompt (9502), opening.gd:_ready and _leave (stop)")
+  "timeline_segment.gd:_ready (9502), title_scene.gd:_ready (9503), _leave_ship_scene (stop), _show_prompt (9502), opening.gd:_ready and _leave (stop)")
 R("M", "SOUNDHI.C", "PlaySectorMusic", "*", "internal: if flag != 0 PlayBackgroundMusic(SectorMusicId)", YES, "PORTED", "audio.gd:play_music")
 R("M", "SOUNDHI.C", "StopSectorMusic", "*", "internal: StopBackgroundMusic", YES, "PORTED", "audio.gd:stop_music")
 R("M", "SOUNDHI.C", "PlayExpertClosingMusic", "*", "internal: PlayBackgroundMusic(DAT_0044b040)", YES, "PORTED", "audio.gd:play_music")
@@ -136,7 +136,7 @@ R("M", "SIGNIN.C", "ChooseGameLevelDialog", "PauseSoundForDialog,ResumeSoundAfte
 R("V", "CLOSING.C", "PlayVoyagerClosingSpeech", "*", "page 0 first plays 'incoming transmission' (logical 0x2df = clip 4243), then the page's 1-3 clips; Enter / Esc cuts the clip and the rest of the page", YES, "PORTED",
   "voyager_closing.gd:show_pages (jingle + closing_page, stop_voice)")
 R("V", "DATABANK.C", "PlayLogEntrySpeech", "*", "canister log entry n read aloud (5-8 clips); Enter / Esc / arrow keys cut it", YES, "PORTED", "log_screen.gd:_speak (the clips of the entry from voice_cues); Esc / Enter / arrows cut it: _input, press, _leave")
-R("V", "OPENING.C", "CartoonSpeech", "*", "news cartoon voices and beeps (logical 39 + n = clips 4000-4010), state 1-11, at 8000 Hz", YES, "PORTED", "news_cartoon.gd:_speak (Audio.speak)")
+R("V", "OPENING.C", "CartoonSpeech", "*", "news cartoon voices and beeps (logical 39 + n = clips 4000-4010), state 1-11, at 8000 Hz", YES, "PORTED", "timeline_segment.gd:_speak (Audio.speak)")
 R("V", "OPENING.C", "PlayStoryPageSpeech", "*", "opening story page n: 1-3 clips (4011-4029), Space / Enter / Esc cuts", YES, "PORTED", "story_pages.gd:_page_clock (Audio.speak), advance (stop_voice)")
 R("V", "OPENING.C", "OpeningSequence", "KillWave,set_sample_speed", "KillWave at the end of the cartoon; set_sample_speed(8000) before the cartoon and set_sample_speed(16000) after it (never undone)", YES, "PORTED",
   "rates are baked into the extracted WAV headers (DESIGN 7)")
@@ -198,10 +198,10 @@ R("T", "CALC.C", "WaitKeyOrTicks", "set_alarm,alarm_expired", "internal of WaitK
 R("T", "MONITOR.C", "AnimateBarnacles", "DelayTicks", "barnacle intro: two healthy pictures alternate with 30 and 40 ticks, three times", YES, "PORTED", "barnacle_diagram.gd:_schedule_intro (ticks from data)")
 R("T", "MONITOR.C", "do_ccmonitor_opening", "DelayTicks", "20 ticks after the barnacle animation, before the prompt", YES, "PORTED", "barnacle_diagram.gd:_schedule_intro (end_tick = 3 rounds + plan.tail = 20); test_diagram_animations_legacy.gd test_type_14_barnacles_a_burst_of_sounds_at_the_start_of_each_of_three_rounds")
 R("T", "OPENING.C", "OpeningStoryPages", "*", "story pages: DelayTicks(15) between pages, page min 365 ticks (5 s), last page 3285 ticks (45 s) or key", YES, "PORTED", "story_pages.gd:_script (Catalog.story_script: data/story/story_script.tres)")
-R("T", "OPENING.C", "OpeningSequence", "*", "cartoon redraw every 10 ticks, title scene 12-tick steps; WaitEnterSpaceEscOrTicks(292) holds", YES, "PORTED", "data/story/news_cartoon.tres + news_ambient.tres (10-tick redraws), data/story/title_ship.tres (12-tick steps), data/story/title_reveal.tres (292-tick holds)")
+R("T", "OPENING.C", "OpeningSequence", "*", "cartoon redraw every 10 ticks, title scene 12-tick steps; WaitEnterSpaceEscOrTicks(292) holds", YES, "PORTED", "data/story/news_cartoon.tres + news_report.tres + news_ambient.tres (10-tick redraws), data/story/title_ship.tres (12-tick steps), data/story/title_reveal.tres (292-tick holds)")
 R("T", "OPENING.C", "TitleScreenPromptLoop", "*", "title screen: 292-tick hold per picture, 1825-tick (25 s) prompt timeout", YES, "PORTED", "title_scene.gd:prompt_timeout_ticks (title.prompt_timeout_ticks of durations.json), data/story/title_reveal.tres (292-tick holds)")
 R("T", "OPENING.C", "WaitEnterSpaceEscOrTicks", "*", "wait n ticks (292) for Enter / Space / Esc", YES, "PORTED", "data/story/title_reveal.tres (marks, 292 ticks), title_scene.gd:advance / _end_hold")
-R("T", "OPENING.C", "CartoonTypeLine", "*", "cartoon teletype: 2 + 1 ticks per character (3 ticks)", YES, "PORTED", "news_cartoon.gd header comment (3 ticks per character), data/story/news_cartoon.tres")
+R("T", "OPENING.C", "CartoonTypeLine", "*", "cartoon teletype: 2 + 1 ticks per character (3 ticks)", YES, "PORTED", "timeline_segment.gd header comment, data/story/news_report.tres (3 ticks per character)")
 R("T", "CLOSING.C", "VoyagerClosingSequence", "*", "6-tick steps (rise, turn, fly), 12-tick pictures for the transformation", YES, "PORTED", "voyager_closing_script.gd:step_ticks (6), change_picture_steps")
 R("T", "CLOSING.C", "ExpertClosingSequence", "*", "18-tick steps for the whole choreography", YES, "PORTED", "data/story/expert_hoist.tres, expert_deck.tres, expert_wait.tres (18-tick steps)")
 R("T", "DATABANK.C", "AnimateLogScan", "DelayTicks", "scan picture 5 ticks x 8 pictures x 6 sweeps = 240 ticks", YES, "PORTED", "data/rules/durations.json log_scan (ticks_per_picture 5, sweeps 6; CanisterLog.scan_ticks), log_screen.gd:advance_scan / _show_scan_picture")

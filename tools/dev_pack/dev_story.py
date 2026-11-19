@@ -55,6 +55,15 @@ def stage(why: str) -> st.Stage:
     return st.Stage("Dev pack: %s (tools/dev_pack/dev_story.py)." % why)
 
 
+NEWS_SPEECH_PAUSES = (200, 200, 200, 200, 0)     # ticks before the five speech groups `news_speech_0`..4 (the first is the wait before the speech)
+
+
+def news_cartoon_scene() -> st.Scene:
+    """The news cartoon's scene: its stage, the lights' loop, the cartoon, the opening song and the five speech groups, each after its pause."""
+    return st.Scene("Dev pack: the news cartoon's scene of our own, pauses of 200 ticks between the speech groups (tools/dev_pack/dev_story.py).",
+                    "news_cartoon_stage", ["news_ambient"], ["news_report"], "opening", [(pause, "news_speech_%d" % i) for i, pause in enumerate(NEWS_SPEECH_PAUSES)])
+
+
 def news_cartoon_stage() -> st.Stage:
     """The news cartoon's stage by simple rules: the map, a diagonal trail of 21 dots, the ring, two consoles, three rows of lights, five crew in a row, the teletype."""
     s = stage("the news cartoon's actors, laid out by simple rules; the teletype is 280 x 120")
@@ -300,8 +309,9 @@ def write_all() -> int:
                         ("expert_hoist", expert_hoist), ("expert_deck", expert_deck), ("expert_wait", expert_wait)):
         write_text(story / (name + ".tres"), build().render())
     write_text(story / "news_cartoon_stage.tres", news_cartoon_stage().render())
+    write_text(story / "news_cartoon.tres", news_cartoon_scene().render())
     write_text(story / "title_stage.tres", title_stage().render())
     write_text(story / "closing_crew.tres", closing_crew())
     write_text(story / "story_script.tres", story_script())
     write_text(story / "voyager_closing_script.tres", voyager_closing_script())
-    return 11
+    return 12

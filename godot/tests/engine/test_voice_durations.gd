@@ -98,16 +98,3 @@ func test_a_clip_that_is_held_by_a_dialog_is_not_counted() -> void:
 func test_with_the_voice_off_speak_waits_a_fixed_number_of_ticks() -> void:
 	assert_int(Audio.silent_speech_ticks()).is_equal(146)          # 2 s, as the story pages always waited (data: speech.silent_ticks)
 	assert_float(TickMeter.seconds(Audio.silent_speech_ticks())).is_equal(2.0)
-
-
-func test_the_news_cartoon_pauses_are_the_ticks_of_the_packs_durations() -> void:
-	# The pack's `rules/durations.json` lies over the base file key by key; the cartoon counts what it says (ticks of 1/73 s, never a clip's own length).
-	var news: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(Packs.path("rules/durations.json")))["news"]
-	assert_int(NewsCartoon.speech_start_delay_ticks()).is_equal(int(news["speech_start_delay_ticks"]))
-	var pauses: Array[int] = []
-	for group in NewsCartoon.speech_groups():
-		pauses.append(int(group[0]))
-	var expected: Array[int] = []
-	for pause: Variant in news["group_pauses"]:
-		expected.append(int(pause))
-	assert_array(pauses).is_equal(expected)

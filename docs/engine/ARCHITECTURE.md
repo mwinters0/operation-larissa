@@ -16,7 +16,7 @@ main.tscn  (run scene, src/main.gd: chooses the pack chain, Packs.start)
    |  SceneRouter.go_to(...)  - every change of scene goes through the router (a fade, then change_scene_to_file)
    v
 story/opening.tscn  Opening (director)         the title and the story, skippable (Space / Esc, Enter = next part)
-   |    NewsCartoon -> TitleScene -> StoryPages    (three StorySegment scenes, each driven by AnimationPlayers)
+   |    TimelineSegment (the scene file news_cartoon) -> TitleScene -> StoryPages    (three StorySegment scenes, each driven by AnimationPlayers)
    v
 ui/sign_in.tscn  SignIn                         the players (SaveStore), Start / New / Practice / Exit, Hall of Fame, Help; P = the pack screen
    |-- Practice ---> problems/practice_mode.tscn  Math Practice (PracticeSet, PracticeScore, ProblemScreen with practice = true)
@@ -136,7 +136,7 @@ Every length that holds up play is a number in `data/rules/durations.json`, read
 JSON): the station trips (`station.launch|dock|balloon`: opening / closing ticks, drive from / to / pixels per tick, the balloon's x
 and path, in integer window coordinates), `dissolve.ticks`, `log_scan.*` (`CanisterLog.scan_ticks()`), `problem.message_ticks`
 (`ProblemFlow.message_ticks()`, also the combination lock's messages), `calculator.key_flash_ticks`, `surface_ship.wait_ticks`,
-`speech.silent_ticks` (how long `Audio.speak` waits with the Voice option off), `news.*` (the pause before each speech group of the news cartoon: `NewsCartoon.speech_groups`), `title.*` (`TitleScene.prompt_timeout_ticks()`, `music_delay_ticks()`), `sign_in.*`, `fade.ticks`
+`speech.silent_ticks` (how long `Audio.speak` waits with the Voice option off), `title.*` (`TitleScene.prompt_timeout_ticks()`, `music_delay_ticks()`), `sign_in.*`, `fade.ticks`
 (`SceneRouter.fade_ticks()`). The `rules/durations.json` of each pack of the chain is laid over it key by key (`Durations.files()`
 lists the files; [`PACKS.md`](PACKS.md)). A presenter fits its drawing to the N ticks it is told and never decides N;
 `tests/engine/test_durations.gd` lengthens the dock and checks that every skin plays the longer game as the plain objects do. Not in
@@ -448,36 +448,47 @@ tools/dev_pack/dev_story.py (the dev pack's own, short and made up)
   v
 a pack's data/story/*.tres   CutsceneTimeline: a length, tracks (actor name, property word, moments in ticks of the 73 Hz timer, values with
   |                 picture / sound / text NAMES of the registry) and cues (sounds, events). No node, no path, no Animation in it.
-  |   news_cartoon, news_ambient, title_ship, title_reveal, expert_hoist, expert_deck, expert_wait
-a pack's data/story/<scene>_stage.tres   CutsceneStage: the actors of a scene (StageActor: name, kind, picture name, position in window pixels, mirror, parent, visibility,
+  |   news_report, news_ambient, title_ship, title_reveal, expert_hoist, expert_deck, expert_wait
+a pack's data/story/<stage>.tres   CutsceneStage: the actors of a scene (StageActor: name, kind, picture name, position in window pixels, mirror, parent, visibility,
   |                 clip, size), listed in draw order. `news_cartoon_stage`, `title_stage`
+a pack's data/story/<scene>.tres   StoryScene: the stage, the looping and the one-shot timelines, the song and the speech (SpeechStep: a pause and a voice group) of a scene. `news_cartoon`
   |   (+ story_script: the story pages; voyager_closing_script: the Voyager flight's loop counts; closing_crew: the Expert closing's six sailors' programs)
   v
-Catalog.story_timeline / story_stage / story_script / voyager_closing_script / closing_crew     the first pack of the chain that holds the file (`Packs.resource`)
+Catalog.story_timeline / story_stage / story_scene / story_script / voyager_closing_script / closing_crew     the first pack of the chain that holds the file (`Packs.resource`)
   v
 src/story/stage_builder.gd   StageBuilder.build(stage name, container, cast): the ONE builder of a stage's nodes; makes them in the order of the list and binds the cast
+src/story/timeline_segment.gd   TimelineSegment.of(scene name): plays a scene file (the stage through StageBuilder, a player for each loop and one for the one-shot timelines, the song, the speech); cues are verbs (story_verbs.gd)
 src/story/cutscene.gd        Cutscene.animation(timeline, cast) builds an Animation; the scene's AnimationPlayer plays it
 src/story/cutscene_cast.gd   CutsceneCast: "the actor crew_4 is the Crew4 sprite", and how a name becomes a texture (a picture key the chain's tables answer)
 ```
 
-A **stage** is where things stand, a **timeline** is when they move, and the scene (`NewsCartoon`, `TitleScene`) only asks `StageBuilder` for the nodes and plays the timelines on them: no position, picture
+A **stage** is where things stand, a **timeline** is when they move, and the scene (a `TimelineSegment` playing a scene file, `TitleScene`) only asks `StageBuilder` for the nodes and plays the timelines on them: no position, picture
 or draw order of a scene is in its script or `.tscn`. `StageBuilder` makes a `Sprite2D` of each picture actor (top-left corner, its picture through the cast's `pictures` resolver, mirrored, clipped to `clip`
 when that has an area), a `Label` of each text box (the whole text wrapped, revealed a character at a time) and a `Node2D` of each group (the ship that carries its hull, radar and hook). An actor's `position` is in
 window pixels whatever its parent: the node's own place is that less the parent actor's (the container, a scene's `Stage` node, stands at the window's origin), so a timeline's `position` keys stay in window pixels too.
 The nodes are named by the actors (`StageActor.node_name`: `mini_sub` is `MiniSub`) and an actor's parent is listed before it (`CutsceneStage.problem_with` is the one judgement `problems` and the builder share). An actor
 that cannot be made (a parent not listed before it, an unknown kind) is left out and told once (`TroubleLog`, naming the pack); a stage no pack holds builds nothing and says so; a timeline track that names an actor
-no node plays is left out and told once (`Cutscene.unplayed_line`), and `PackCheck` reports both as errors of the pack's `story` area (`_stages`: each stage's `problems()`, and each actor a timeline of the scene names that the
-stage lacks). Each scene names its stage and the timelines it plays (`NewsCartoon.STAGE` / `TIMELINES`, `TitleScene.STAGE` / `TIMELINES`), which is what `PackCheck` reads. `tests/stage_nodes.gd` (`StageNodes.differences`) reads a built scene against its stage file.
+no node plays is left out and told once (`Cutscene.unplayed_line`), and `PackCheck` reports both as errors of the pack's `story` area (`_scenes`: each stage's `problems()`, and each actor a timeline of the scene names that the
+stage lacks). A scene file names its stage and the timelines it plays, which is what `PackCheck` reads (`TitleScene` still names its own in `STAGE` / `TIMELINES`). `tests/stage_nodes.gd` (`StageNodes.differences`) reads a built scene against its stage file.
+
+A **scene** is the file that pairs them (`StoryScene`, `data/story/<scene>.tres`): the stage, the looping timelines, the timelines that play once in order, the song and the speech. `TimelineSegment.of(name)` is the
+segment that plays it, and the one place its nodes are made (`_build`): a black backdrop, the stage, an `AnimationPlayer` for each looping timeline (a player plays one animation at a time) and one for the one-shot timelines, which
+play in the scene's order, the next when the one before has ended. What happens at a moment of a timeline is an event cue that is a **verb** and its words (`StoryVerbs.VERBS`: `end`, `speak <group>`; `StoryVerbs.problem` is the judgement
+of a cue the game and `PackCheck` share): `TimelineSegment.cue` parses it and calls the method `_verb_<verb>`, so a verb the engine gains is one entry of the table and one method. The speech is a sequence, not cues, because how long a group
+speaks is the recorded length of its clips: `_speak` walks the scene's `SpeechStep`s, waits each step's `pause_ticks` and `await`s the verb `speak` for its group (a step whose group holds no clips is left out whole). The pause and the group of a
+step are one record, and the clips of a group are the pack's `voice_cues` alone. A scene no pack holds ends at once (told once); the other things a scene names (a timeline, a song, a voice group, a verb) that the chain lacks are told
+once when the scene starts (`StoryScene.unresolved`, naming the pack and what the player gets instead) and left out. `Opening` plays the scene `Opening.SCENES[0]`.
 
 A timeline is the same on every skin: a skin redraws a cutscene by binding its own nodes and resolvers and takes exactly as long,
 because the time is in the data. The choreography is the pack's: the original's is in the legacy pack, never committed; the dev pack has its own,
 and `PackNeeds.FILES` requires every one of these files of a complete pack, so a chain always answers (the dev pack at its bottom) and a pack that
-lacks one is reported by the start-up check and `PackCheck`, as it is for the news cartoon. One small timeline is made in code because nothing in
-the original is behind it (the fade of a story page); the flicker of the console lights is baked into `news_ambient` by the importer and the dev pack's generator (`step_story.console_flicker`), so `NewsCartoon` plays what the pack holds
+lacks one is reported by the start-up check and `PackCheck`. The files a scene file names (its stage, timelines, song, voice groups) are not in `PackNeeds.FILES`: the scene names them, `StoryScene.unresolved` judges them against the chain, the game tells each line that does not resolve once when it plays the scene
+and `PackCheck` reports the same lines. One small timeline is made in code because nothing in
+the original is behind it (the fade of a story page); the flicker of the console lights is baked into `news_ambient` by the importer and the dev pack's generator (`step_story.console_flicker`), so `TimelineSegment` plays what the pack holds
 and generates nothing; `CutsceneTimeline.provenance` says which numbers are the original's. `SurfaceShipScreen` has no timeline: it counts `surface_ship.wait_ticks` from `Durations`. Tests: `tests/legacy/test_cutscene_timing.gd`
 (the hash of each cutscene's timing record, from the timeline and from the animation a scene builds, against `tests/fixtures/cutscene_timing.json`), `tests/legacy/test_story_timelines_legacy.gd` (re-derives the timelines
 from the analysis), `tests/engine/test_story_timelines.gd` (well formed, every name exists, the scripts run), `tests/engine/test_opening.gd` (the
-scenes play the dev pack's timelines on its stages: the nodes are what the stage files say and show what the tracks say), `tests/engine/test_cutscene_stage.gd` (the builder, the stage's problems, the warnings, the check), `tests/engine/test_cutscene_timeline.gd` (the machinery).
+scenes play the dev pack's timelines on its stages: the nodes are what the stage files say and show what the tracks say), `tests/engine/test_cutscene_stage.gd` (the builder, the stage's problems, the warnings, the check), `tests/engine/test_timeline_segment.gd` (a scene file played: stage, loops, the timelines in order, `end`, `speak`, the speech steps and pauses, each thing a scene names that the chain lacks, in the game and in `PackCheck`), `tests/engine/test_cutscene_timeline.gd` (the machinery).
 
 ## Autoloads
 
@@ -537,7 +548,7 @@ other pictures cannot move a button or change a random draw.
 | `src/rules/` | the rules as plain objects: `SimWorld` and its models, `SimView`, `StationSequence`, `GameFlow`. Nothing in here may be a node, a texture, a font, `Input` or a `TileMapLayer` |
 | `src/gameplay/` | `game.tscn` (the view of `GameFlow`) and the playfield: `sector_world`, `sector_presenter`, `original_presenter`, `debug_rect_presenter`, `presenter_choice`, the parts (`sub`, `foe`, `ink_pellet`, `collectible`, `math_trigger`, `supply_station`, decorations, `bubbles`) and `input_reader` |
 | `src/problems/` | the 34 math problem types: `ProblemFactory`, `ProblemFlow`, `ProblemScreen`, `Calculator`, the diagrams, the combination lock, `PracticeMode` |
-| `src/story/` | the opening (`Opening`, `NewsCartoon`, `TitleScene`, `StoryPages`), the closings (`VoyagerClosing`, `ExpertClosing`, `GenericFinale`), `SurfaceShipScreen`, `StorySegment`, `Cutscene`, `CutsceneCast` |
+| `src/story/` | the opening (`Opening`, `TimelineSegment`, `TitleScene`, `StoryPages`), the closings (`VoyagerClosing`, `ExpertClosing`, `GenericFinale`), `SurfaceShipScreen`, `StorySegment`, `Cutscene`, `CutsceneCast` |
 | `src/ui/` | sign-in, Hall of Fame, dialogs, the menu bar, `Hud`, the message queue, the pack screen and warning, `theme_builder.gd` |
 | `src/skins/` | `GameSkin`, `SkinChoice`, `RenderSettings`, `HudLabels`, `ScaledTexture`, `ScaledTileSet`, `ScaledStyleBox` (pictures of a scale above 1, [`PACKS.md`](PACKS.md) "Pictures"; [`SKINS.md`](SKINS.md)) |
 | `src/audio/` | `MidiMusic` ([`AUDIO.md`](AUDIO.md)) |

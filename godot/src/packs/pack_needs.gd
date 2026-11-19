@@ -4,7 +4,7 @@ extends RefCounted
 ## headers of the resources, no `SectorChecks`, no reachability search, no texture decoded), used by the start-up check and by `PackCheck`.
 ##
 ## THE CLOSURE has four layers, each derived from what the code asks for:
-##   * WHOLE FILES of a complete pack that `Catalog` (the cutscenes' choreography among it), `Assets`, `SpriteMeta`, `NewsCartoon` and the theme load through `Packs.path`: `FILES` (declared here, one list), the
+##   * WHOLE FILES of a complete pack that `Catalog` (the cutscenes' choreography among it), `Assets`, `SpriteMeta` and the theme load through `Packs.path`: `FILES` (declared here, one list), the
 ##     sets of each zone (`PER_ZONE`, `PER_TILE_ZONE`) and the problem types (`Catalog.PROBLEM_TYPE_COUNT`; a type is a trusted pack's `.tres` or its `.json` in the data form).
 ##     `tests/engine/test_pack_needs.gd` keeps the list equal to what the dev pack holds under `data/`.
 ##   * PICTURES that code asks for by name: every `ui_picture` and `problem_art` name of the registry, as the KEY `Assets` asks for (`ui_picture/title_sky`): a row of some pack's `pictures.json` answers it; and the pictures of the game a mod of the chain names
@@ -50,9 +50,7 @@ const FILES: Dictionary = {
 	"data/voice_index.tres": "VoiceIndex",
 	"data/voice_cues.tres": "VoiceCues",
 	"data/music_catalog.tres": "MusicCatalog",
-	"data/story/news_cartoon.tres": "CutsceneTimeline",
-	"data/story/news_ambient.tres": "CutsceneTimeline",
-	"data/story/news_cartoon_stage.tres": "CutsceneStage",
+	"data/story/news_cartoon.tres": "StoryScene",
 	"data/story/title_ship.tres": "CutsceneTimeline",
 	"data/story/title_reveal.tres": "CutsceneTimeline",
 	"data/story/title_stage.tres": "CutsceneStage",
@@ -160,7 +158,23 @@ static func class_of(rel: String) -> String:
 	for folder: String in CLASS_OF_FOLDER:
 		if rel.begins_with(folder):
 			return CLASS_OF_FOLDER[folder]
-	return ""
+	return named_by_scenes().get(rel, "")
+
+
+## The files the scene files of `FILES` name (a test reads it too), with the class each holds: the stage a `CutsceneStage`, each looping or one-shot timeline a `CutsceneTimeline`, as the chain in use gives the scenes (`Catalog.story_scene`). The scene names them,
+## so no second list here says which they are.
+static func named_by_scenes() -> Dictionary:
+	var named := {}
+	for rel: String in FILES:
+		if FILES[rel] != "StoryScene":
+			continue
+		var scene := Catalog.story_scene(StringName(rel.get_file().get_basename()))
+		if scene == null:
+			continue
+		named[Catalog.STORY_REL % scene.stage] = "CutsceneStage"
+		for timeline_name in scene.all_timelines():
+			named[Catalog.STORY_REL % timeline_name] = "CutsceneTimeline"
+	return named
 
 
 ## The chain `first` and its bases make, with nothing under it: no `dev` is appended when a link is broken (the chain then stops at the broken link; `Packs.resolve`

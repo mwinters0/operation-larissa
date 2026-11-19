@@ -4,7 +4,7 @@ extends GdUnitTestSuite
 ## registry. The timelines the chain answers (`Catalog.story_timeline`, here the dev pack's own) are checked, and the scripts that are not timelines: the story pages, the
 ## Voyager's flight, the sailors of the Expert closing. (The original's numbers against its tables: tests/legacy/test_story_timelines_legacy.gd.)
 
-const TIMELINES: Array[StringName] = [&"news_cartoon", &"news_ambient", &"title_ship", &"title_reveal", &"expert_hoist", &"expert_deck", &"expert_wait"]
+const TIMELINES: Array[StringName] = [&"news_report", &"news_ambient", &"title_ship", &"title_reveal", &"expert_hoist", &"expert_deck", &"expert_wait"]
 
 
 func _all() -> Array[CutsceneTimeline]:

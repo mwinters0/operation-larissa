@@ -264,7 +264,7 @@ def clean_dir(path: Path) -> None:
 # --- the news cartoon's speech ----------------------------------------------------------------------------------------------------
 
 # The opening cartoon's 11 clips are spoken in groups of these sizes (`CartoonSpeech` 0x42984d: a pause precedes the group, the clips of a group follow one another
-# at once). A voice group `news_speech_<i>` of `voice_cues` holds group i (`NewsCartoon.SPEECH_GROUP_PREFIX`); the pauses are `news.group_pauses` of durations.json.
+# at once). A voice group `news_speech_<i>` of `voice_cues` holds group i; the scene file `news_cartoon` names the groups in order, each with its pause (`step_story.build_news_scene`).
 NEWS_SPEECH_GROUPS = (2, 3, 1, 1, 4)
 
 

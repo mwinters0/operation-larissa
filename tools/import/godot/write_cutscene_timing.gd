@@ -11,7 +11,7 @@ const FIXTURE := "res://tests/fixtures/cutscene_timing.json"
 const STORY_DIR := "res://packs/legacy/data/story/"
 
 ## The timelines of data files, by the name the fixture uses.
-const TIMELINES := ["title_ship", "title_reveal", "expert_hoist", "expert_deck", "expert_wait", "news_cartoon", "news_ambient"]
+const TIMELINES := ["title_ship", "title_reveal", "expert_hoist", "expert_deck", "expert_wait", "news_report", "news_ambient"]
 
 ## The Voyager closing's flight depends on where the finale finds the sub: window x, y and the picture cell. Test inputs, ours.
 const VOYAGER_STARTS := {

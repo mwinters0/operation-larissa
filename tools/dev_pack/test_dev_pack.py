@@ -257,7 +257,12 @@ def test_nothing_of_the_original_was_copied_into_the_pack():
 
 def test_every_actor_a_dev_timeline_names_is_on_its_stage():
     """The pack check says it of any pack; this keeps the generator from writing a dev timeline for an actor its own stage lacks."""
-    played_on = {"news_cartoon_stage": ("news_cartoon", "news_ambient"), "title_stage": ("title_ship", "title_reveal")}
+    scene = (DEV / "data" / "story" / "news_cartoon.tres").read_text()
+    found = re.search(r'^stage = &"([^"]+)"', scene, re.MULTILINE)
+    assert found
+    stage = found.group(1)
+    news = [name for line in re.findall(r"^(?:loops|timelines) = (.*)$", scene, re.MULTILINE) for name in re.findall(r'&"([^"]+)"', line)]
+    played_on = {stage: news, "title_stage": ["title_ship", "title_reveal"]}          # (the title's pairing is code until it is a scene file)
     for stage_name, timeline_names in played_on.items():
         held = set(re.findall(r'^name = &"([^"]+)"', (DEV / "data" / "story" / (stage_name + ".tres")).read_text(), re.MULTILINE))
         for name in timeline_names:

@@ -19,7 +19,7 @@ const VIEWS: Array[String] = [
 	"res://src/autoload/scene_router.gd",
 	"res://src/story/surface_ship_screen.gd",
 	"res://src/problems/combination_lock.gd",
-	"res://src/story/news_cartoon.gd",
+	"res://src/story/timeline_segment.gd",
 ]
 const CLOCKS: Array[String] = ["create_tween", "create_timer", "tween_interval", "Timer\\.new", "wait_time"]
 

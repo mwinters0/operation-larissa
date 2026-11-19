@@ -13,14 +13,14 @@ const FIXTURE := "res://tests/fixtures/cutscene_timing.json"
 const TICKS := 73.0
 const TOLERANCE := 0.0015                      # ticks
 
-const NEWS := "res://src/story/news_cartoon.tscn"
+const NEWS := &"news_cartoon"          # the scene file the news cartoon is (data/story/news_cartoon.tres)
 const TITLE := "res://src/story/title_scene.tscn"
 const PAGES := "res://src/story/story_pages.tscn"
 const VOYAGER := "res://src/story/voyager_closing.tscn"
 const EXPERT := "res://src/story/expert_closing.tscn"
 
 ## The data files by the name the fixture uses.
-const TIMELINES := ["title_ship", "title_reveal", "expert_hoist", "expert_deck", "expert_wait", "news_cartoon"]
+const TIMELINES := ["title_ship", "title_reveal", "expert_hoist", "expert_deck", "expert_wait", "news_report"]
 
 ## (The choreography is the legacy pack's and loaded, not preloaded: this file compiles without the game.)
 const STORY_DIR := LegacyPack.ROOT + "data/story/"
@@ -85,10 +85,10 @@ func test_the_voyager_flight_has_the_recorded_length_and_moments_for_every_start
 # --- the animations the scenes build -------------------------------------------------------------------------------------
 
 func test_the_news_cartoon_animations_have_the_recorded_lengths_and_moments() -> void:
-	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	var news: TimelineSegment = auto_free(TimelineSegment.of(NEWS))
 	add_child(news)
-	_check_animation(news.script_player.get_animation(&"news"), "news_cartoon")
-	_check_animation(news.ambient.get_animation(&"ambient"), "news_ambient")
+	_check_animation(news.script_player.get_animation(&"news_report"), "news_report")
+	_check_animation(news.loop_players[0].get_animation(&"news_ambient"), "news_ambient")
 	news.finish()
 
 

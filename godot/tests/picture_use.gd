@@ -9,7 +9,7 @@ extends RefCounted
 ##
 ## Teaches: asking a data set what it names, as the engine would, and holding two packs of different content to the same rule.
 
-const TIMELINES: Array[StringName] = [&"news_cartoon", &"news_ambient", &"title_ship", &"title_reveal", &"expert_hoist", &"expert_deck", &"expert_wait"]
+const TIMELINES: Array[StringName] = [&"news_report", &"news_ambient", &"title_ship", &"title_reveal", &"expert_hoist", &"expert_deck", &"expert_wait"]
 
 
 ## key -> where it is held (a file of the pack, "problem type 3" ...), for every picture the pack's data holds by key.

@@ -84,12 +84,8 @@ func test_the_packs_file_lies_over_the_base_key_by_key() -> void:
 	_leaves(pack_data, "", pack)
 	assert_array(pack).is_not_empty()
 	for path in pack:
-		var value: Variant = _value_at(pack_data, path)
-		if value is Array:
-			assert_array(Durations.list_at(path)).override_failure_message(path).is_equal((value as Array).map(func(each: Variant) -> int: return int(each)))
-		else:
-			assert_int(Durations.at(path)).override_failure_message(path).is_equal(int(value))
-	var kept := base.filter(func(path: String) -> bool: return not pack.has(path) and not path.begins_with("news.group"))
+		assert_int(Durations.at(path)).override_failure_message(path).is_equal(int(_value_at(pack_data, path)))
+	var kept := base.filter(func(path: String) -> bool: return not pack.has(path))
 	assert_array(kept).is_not_empty()                                         # (the pack leaves some keys out: they keep the base file's number)
 	var base_data: Variant = JSON.parse_string(FileAccess.get_file_as_string(files[0]))
 	for path in kept:
@@ -209,7 +205,6 @@ func test_the_log_scan_and_the_fade_follow_the_data() -> void:
 
 func test_a_missing_key_is_reported_and_reads_as_zero() -> void:
 	assert_int(Durations.at("station.dock.no_such_key")).is_equal(0)         # (and `push_error`, which gdUnit would only list)
-	assert_array(Durations.list_at("news.no_such_list")).is_empty()
 
 
 # --- skins and presenters ---------------------------------------------------------------------------------

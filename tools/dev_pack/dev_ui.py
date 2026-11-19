@@ -120,7 +120,7 @@ def calculator_layout_tres() -> str:
 
 # --- the news cartoon ---------------------------------------------------------------------------------------------
 
-def news_cartoon_tres() -> str:
+def news_report_tres() -> str:
     """A 600 tick cartoon of our own: three bulletins typed out, the capsule's trail of dots, the ring, the crew, an alarm."""
     t = tres.Tres("Resource", "CutsceneTimeline", SCRIPTS + "cutscene_timeline.gd")
     track_script = SCRIPTS + "cutscene_track.gd"
@@ -157,5 +157,5 @@ def news_cartoon_tres() -> str:
 def write_all() -> int:
     write_text(DEV / "data" / "ui" / "hud_layout.tres", hud_layout_tres())
     write_text(DEV / "data" / "ui" / "calculator_layout.tres", calculator_layout_tres())
-    write_text(DEV / "data" / "story" / "news_cartoon.tres", news_cartoon_tres())
+    write_text(DEV / "data" / "story" / "news_report.tres", news_report_tres())
     return 3

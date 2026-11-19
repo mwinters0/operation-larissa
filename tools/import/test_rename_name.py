@@ -254,7 +254,7 @@ def test_a_flag_is_not_confused_with_a_label_or_a_picture_of_the_same_spelling(t
     (("frame", "eel_swim_0", "eel_swim_1", "2"), "no frame named 'eel_swim_0' in scope 2"),
     (("foe", "clam", "x"), "scopes"),
     (("sound", "begin", "x", "3"), "global"),
-    (("text", "news_bulletin_3", "diary_3"), "run"),
+    (("text", "correct_phrase_3", "diary_3"), "run"),
     (("text", "hint_6", "x"), "run"),
     (("ui_picture", "scanner_strip_1", "x"), "run"),
 ])
@@ -273,8 +273,8 @@ def test_it_refuses_and_changes_nothing(frozen, request_, message):
 def test_the_refusal_of_a_run_member_says_what_to_do(frozen):
     tree = frozen
     with pytest.raises(Refused) as why:
-        plan_rename(tree, "text", "news_bulletin_3", "x")
-    assert "--run" in str(why.value) and "news_bulletin_" in str(why.value)
+        plan_rename(tree, "text", "correct_phrase_3", "x")
+    assert "--run" in str(why.value) and "correct_phrase_" in str(why.value)
 
 
 def test_the_command_line_refuses_with_an_exit_code_and_a_message(frozen, capsys):
@@ -288,13 +288,13 @@ def test_the_command_line_refuses_with_an_exit_code_and_a_message(frozen, capsys
 # --- runs --------------------------------------------------------------------------------------------------------------
 
 def test_a_whole_run_is_renamed_with_its_pattern_and_the_checks_still_pass(tree):
-    plan = run(tree, "text", "news_bulletin_", "headline_", run_=True)
+    plan = run(tree, "text", "correct_phrase_", "reply_", run_=True)
     data = registry(tree)
-    assert not [n for n in data["names"]["text"] if re.fullmatch(r"news_bulletin_[0-9]+", n)]
-    assert [data["names"]["text"]["headline_%d" % i] for i in range(6)] == list(range(10003, 10009))
-    assert 'StringName("headline_%d" % index)' in (tree / "godot/src/story/news_cartoon.gd").read_text(encoding="utf-8")
+    assert not [n for n in data["names"]["text"] if re.fullmatch(r"correct_phrase_[0-9]+", n)]
+    assert [data["names"]["text"]["reply_%d" % i] for i in range(4)] == list(range(11110, 11114))
+    assert 'StringName("reply_%d" % (rng.randi() % COUNT))' in (tree / "godot/src/problems/correct_phrase.gd").read_text(encoding="utf-8")
     runs = json.loads((tree / "tools/import/name_runs.json").read_text(encoding="utf-8"))["runs"]
-    assert "headline_" in runs["text"] and "news_bulletin_" not in runs["text"]
+    assert "reply_" in runs["text"] and "correct_phrase_" not in runs["text"]
     scan = code_names.scan_tree(tree / "godot", tests=False)
     assert code_names.unresolved(scan, data) == [] and code_names.run_problems(scan, data, runs) == []
     assert plan.applied
@@ -305,7 +305,7 @@ def test_a_run_needs_a_run(frozen):
     with pytest.raises(Refused, match="not a run"):
         plan_rename(tree, "text", "exit_", "leave_", run=True)
     with pytest.raises(Refused, match="not a valid|already"):
-        plan_rename(tree, "text", "news_bulletin_", "Captain_", run=True)
+        plan_rename(tree, "text", "correct_phrase_", "Captain_", run=True)
 
 
 # --- the check catches a rename that missed a use ----------------------------------------------------------------------

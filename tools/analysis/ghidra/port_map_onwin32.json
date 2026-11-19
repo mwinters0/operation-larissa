@@ -1996,12 +1996,12 @@
  "0x00428ffd": {
   "name": "CartoonDrawCapsuleRing",
   "status": "ported",
-  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (capsule ring)"
+  "where": "data/story/news_report.tres [tools/import/step_story.py:build_news] (capsule ring)"
  },
  "0x0042907e": {
   "name": "CartoonCapsuleTrail",
   "status": "ported",
-  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (21 dots from call 11, one per 11 calls, ring 6 calls after, ring pictures 1003-1006 in news_ambient.tres) with the stage data/story/news_cartoon_stage.tres [step_story.py:build_news_stage] actors dot_00-dot_20 (points 27-47) / ring (point 21)"
+  "where": "data/story/news_report.tres [tools/import/step_story.py:build_news] (21 dots from call 11, one per 11 calls, ring 6 calls after, ring pictures 1003-1006 in news_ambient.tres) with the stage data/story/news_cartoon_stage.tres [step_story.py:build_news_stage] actors dot_00-dot_20 (points 27-47) / ring (point 21)"
  },
  "0x004291cd": {
   "name": "CartoonDrawMap",
@@ -2021,7 +2021,7 @@
  "0x00429318": {
   "name": "CartoonAlarmLights",
   "status": "ported",
-  "where": "data/story/news_ambient.tres [step_story.py:build_news_ambient] + data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (centre light from call 37, all three from call 234, counters 0/1/2 mod 4)"
+  "where": "data/story/news_ambient.tres [step_story.py:build_news_ambient] + data/story/news_report.tres [tools/import/step_story.py:build_news] (centre light from call 37, all three from call 234, counters 0/1/2 mod 4)"
  },
  "0x004293ef": {
   "name": "CartoonDrawStatusLight",
@@ -2046,37 +2046,37 @@
  "0x004296b6": {
   "name": "CartoonDrawCrewPicture",
   "status": "ported",
-  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news]"
+  "where": "data/story/news_report.tres [tools/import/step_story.py:build_news]"
  },
  "0x004296de": {
   "name": "CartoonCrew",
   "status": "ported",
-  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (crew_frame, 5 scripts, man on the left from call 220 walking 12 px per call)"
+  "where": "data/story/news_report.tres [tools/import/step_story.py:build_news] (crew_frame, 5 scripts, man on the left from call 220 walking 12 px per call)"
  },
  "0x0042984d": {
   "name": "CartoonSpeech",
   "status": "ported",
-  "where": "godot/src/story/news_cartoon.gd:_speak / speech_groups (11 clips 4000-4010 in the 5 voice groups news_speech_0..4 of voice_cues [tools/import/common.py:news_speech_groups], pauses before clips 1, 3, 6, 7 = news.group_pauses) via Audio.speak"
+  "where": "godot/src/story/timeline_segment.gd:_speak / _verb_speak (11 clips 4000-4010 in the 5 voice groups news_speech_0..4 of voice_cues [tools/import/common.py:news_speech_groups], each the group of a speech step of data/story/news_cartoon.tres [tools/import/step_story.py:build_news_scene] with its pause: 219 ticks before the first, 248 before clips 3, 6, 7) via Audio.speak"
  },
  "0x0042995c": {
   "name": "NewsCartoonRedraw",
   "status": "ported",
-  "where": "godot/src/story/news_cartoon.gd (whole scene: 10 ticks per redraw; map, console, lights, crew, trail, speech, teletype); the cartoon does not loop (deliberate)"
+  "where": "godot/src/story/timeline_segment.gd (plays the scene file data/story/news_cartoon.tres [tools/import/step_story.py:build_news_scene]: its stage, news_report and the loop news_ambient, 10 ticks per redraw; map, console, lights, crew, trail, speech, teletype); the cartoon does not loop (deliberate)"
  },
  "0x00429a73": {
   "name": "CartoonTypeLine",
   "status": "ported",
-  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (teletype visible_ratio, typing ticks_per_character 3 of extracted/tables/opening.json = set_alarm 2 + 1), bulletin() = texts 10003-10008"
+  "where": "data/story/news_report.tres [tools/import/step_story.py:build_news] (teletype visible_ratio, typing ticks_per_character 3 of extracted/tables/opening.json = set_alarm 2 + 1), bulletin() = texts 10003-10008"
  },
  "0x00429b65": {
   "name": "CartoonWrapTypeText",
   "status": "ported",
-  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (teletype; the port wraps the whole text first and reveals it by characters, [I] DESIGN 2.1)"
+  "where": "data/story/news_report.tres [tools/import/step_story.py:build_news] (teletype; the port wraps the whole text first and reveals it by characters, [I] DESIGN 2.1)"
  },
  "0x00429c18": {
   "name": "CartoonTeletypeNextBulletin",
   "status": "ported",
-  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (teletype box)"
+  "where": "data/story/news_report.tres [tools/import/step_story.py:build_news] (teletype box)"
  },
  "0x00429cc2": {
   "name": "TitleShipWobble",
@@ -2181,11 +2181,11 @@
  "0x0042b0f9": {
   "name": "OpeningMusicCue",
   "status": "ported",
-  "where": "godot/src/story/news_cartoon.gd:_ready (Audio.play_music SONG_OPENING 9502), title_scene.gd:_ready (SONG_TITLE 9503), :_leave_ship_scene (stop music) + the sound cue 0x33 at each reveal step (title_reveal.tres), :_show_prompt (SONG_OPENING again after 4 s); opening.gd:_leave stops music (cue 6)"
+  "where": "godot/src/story/timeline_segment.gd:_ready (Audio.play_music of the scene's song, SONG_OPENING 9502), title_scene.gd:_ready (SONG_TITLE 9503), :_leave_ship_scene (stop music) + the sound cue 0x33 at each reveal step (title_reveal.tres), :_show_prompt (SONG_OPENING again after 4 s); opening.gd:_leave stops music (cue 6)"
  },
  "0x0042b16b": {
   "status": "ported",
-  "where": "godot/src/story/opening.gd (director: NewsCartoon -> TitleScene -> StoryPages, looping like the original: _run / _play_parts / _start_over start over from the cartoon when StoryPages.timed_out, i.e. the last page ran out its 3285 ticks with no key; Enter = next part, Space / Esc = leave; _input forwards a left-button release anywhere as Enter through StorySegment.click, as the original's whole-screen hotspot 0xd does, except over the title prompt's Start and Intro buttons, which act on the press; a release whose press began in an earlier part is swallowed, a Deliberate deviation) (test_opening.gd)"
+  "where": "godot/src/story/opening.gd (director: TimelineSegment (the scene news_cartoon) -> TitleScene -> StoryPages, looping like the original: _run / _play_parts / _start_over start over from the cartoon when StoryPages.timed_out, i.e. the last page ran out its 3285 ticks with no key; Enter = next part, Space / Esc = leave; _input forwards a left-button release anywhere as Enter through StorySegment.click, as the original's whole-screen hotspot 0xd does, except over the title prompt's Start and Intro buttons, which act on the press; a release whose press began in an earlier part is swallowed, a Deliberate deviation) (test_opening.gd)"
  },
  "0x0042b74c": {
   "name": "MenuAboutBox",
@@ -3679,11 +3679,11 @@
  },
  "0x00438894": {
   "status": "not-ported",
-  "where": "godot: no srand; RandomNumberGenerator.randomize() / fixed seeds (godot/src/gameplay/bubbles.gd, problems/problem_screen.gd, practice_mode.gd, story/news_cartoon.gd rng.seed = 73); sequences differ from the Borland LCG, only the moduli are reproduced"
+  "where": "godot: no srand; RandomNumberGenerator.randomize() / fixed seeds (godot/src/gameplay/bubbles.gd, problems/problem_screen.gd, practice_mode.gd; the console lights' flicker is baked into news_ambient by tools/import/step_story.py:console_flicker, seed 73); sequences differ from the Borland LCG, only the moduli are reproduced"
  },
  "0x004388c4": {
   "status": "not-ported",
-  "where": "godot has no Borland LCG: RandomNumberGenerator (PCG32) via randi()/randi_range()/randomize() with the same moduli: bubbles.gd (%50 spawn, x), foe_vm.gd IF_RAND_GT (0-255, the dice of SimWorld.foe_rng, one generator per sim that no load reseeds), correct_phrase.gd (%4), problem_factory.gd (record %N, rotation %2, trigger pick), practice_set.gd (%33+1), news_cartoon.gd (%299, fixed seed 73, per-light sequences instead of the original's interleaved 6+16 draws per redraw starting from seed 1). Distributions match, sequences do not (not reproducible from the same seed)"
+  "where": "godot has no Borland LCG: RandomNumberGenerator (PCG32) via randi()/randi_range()/randomize() with the same moduli: bubbles.gd (%50 spawn, x), foe_vm.gd IF_RAND_GT (0-255, the dice of SimWorld.foe_rng, one generator per sim that no load reseeds), correct_phrase.gd (%4), problem_factory.gd (record %N, rotation %2, trigger pick), practice_set.gd (%33+1), tools/import/step_story.py:console_flicker (%299, fixed seed 73, per-light sequences instead of the original's interleaved 6+16 draws per redraw starting from seed 1). Distributions match, sequences do not (not reproducible from the same seed)"
  },
  "0x00438910": {
   "name": "rtl_strip_trailing_zeros",

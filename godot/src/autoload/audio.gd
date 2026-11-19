@@ -402,7 +402,7 @@ func play_voice_sequence(clips: Array[StringName]) -> void:
 ## waits `silent_ticks` instead (`silent_speech_ticks()`: 146 = 2 s, data), so a story page that is paced by its speech does not flash by. That also holds when
 ## every clip of the list is missing (nothing starts, so there is nothing to hear). `stop_voice()` ends a speech that sounds, NOT this
 ## silent wait (a plain timer, which stands still with the tree): a caller that can be skipped checks its own `done` / generation
-## after the `await`, as `StoryPages` and `NewsCartoon` do.
+## after the `await`, as `StoryPages` and `TimelineSegment` do.
 func speak(clips: Array[StringName], silent_ticks: int = -1) -> int:
 	if silent_ticks < 0:
 		silent_ticks = silent_speech_ticks()

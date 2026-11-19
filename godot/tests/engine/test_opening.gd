@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 ## every track of every built animation resolves, that the segments obey the director's interface (`advance`,
 ## `skip`, `finished`), and that the director leads to the sign-in screen.
 
-const NEWS := "res://src/story/news_cartoon.tscn"
+const NEWS := &"news_cartoon"          # the scene file the news cartoon is (data/story/news_cartoon.tres)
 const TITLE := "res://src/story/title_scene.tscn"
 const PAGES := "res://src/story/story_pages.tscn"
 const OPENING := "res://src/story/opening.tscn"
@@ -46,43 +46,43 @@ func _unresolved_tracks(player: AnimationPlayer) -> PackedStringArray:
 
 
 func test_news_cartoon_builds_and_every_track_finds_its_node() -> void:
-	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	var news: TimelineSegment = auto_free(TimelineSegment.of(NEWS))
 	add_child(news)
 	assert_array(_unresolved_tracks(news.script_player)).is_empty()
-	assert_array(_unresolved_tracks(news.ambient)).is_empty()
+	assert_array(_unresolved_tracks(news.loop_players[0])).is_empty()
 	# the capsule's trail has a dot on the stage for each dot the timeline shows; the animation lasts as long as the pack's timeline says
-	var timeline := Catalog.story_timeline(&"news_cartoon")
+	var timeline := Catalog.story_timeline(&"news_report")
 	assert_int(_dots_of(news).size()).is_equal(timeline.tracks.filter(func(track: CutsceneTrack) -> bool: return String(track.actor).begins_with("dot_")).size())
-	assert_float(news.script_player.get_animation(&"news").length).is_equal_approx(timeline.length_seconds(), 0.001)
+	assert_float(news.script_player.get_animation(&"news_report").length).is_equal_approx(timeline.length_seconds(), 0.001)
 
 
 func test_the_nodes_of_both_scenes_are_what_their_stage_files_say() -> void:
-	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	var news: TimelineSegment = auto_free(TimelineSegment.of(NEWS))
 	add_child(news)
 	var title: TitleScene = auto_free(load(TITLE).instantiate())
 	add_child(title)
-	for scene: Array in [[NewsCartoon.STAGE, news.stage], [TitleScene.STAGE, title.stage]]:
+	for scene: Array in [[Catalog.story_scene(NEWS).stage, news.stage], [TitleScene.STAGE, title.stage]]:
 		var stage := Catalog.story_stage(scene[0])
 		assert_object(stage).override_failure_message("%s: no stage" % scene[0]).is_not_null()
 		assert_array(stage.problems()).override_failure_message("%s: %s" % [scene[0], stage.problems()]).is_empty()
 		assert_array(StageNodes.differences(stage, scene[1])).override_failure_message("%s: %s" % [scene[0], StageNodes.differences(stage, scene[1])]).is_empty()
 	# the cast knows every actor of the stage: the same names the timelines use
-	assert_int(news.stage.find_children("*", "", true, false).size()).is_equal(Catalog.story_stage(NewsCartoon.STAGE).actors.size())
+	assert_int(news.stage.find_children("*", "", true, false).size()).is_equal(Catalog.story_stage(Catalog.story_scene(NEWS).stage).actors.size())
 	assert_array(_unresolved_tracks(title.animations)).is_empty()
 
 
-func test_a_bulletin_is_a_text_of_the_pack_printed_clean_and_the_speech_has_a_clip_for_each_group_slot() -> void:
-	assert_str(NewsCartoon.bulletin(0)).is_equal(NewsCartoon.tidy(Catalog.text(&"news_bulletin_0")))
-	assert_str(NewsCartoon.tidy("  A line\r\nbreak \r")).is_equal("A line\n\nbreak")
-	var groups := NewsCartoon.speech_groups()
-	assert_int(groups.size()).is_equal(Durations.list_at("news.group_pauses").size())          # a pause before each group of the pack's voice_cues
-	for i in groups.size():
-		assert_array(groups[i][1]).is_equal(Array(Catalog.voice_cues().clips("%s%d" % [NewsCartoon.SPEECH_GROUP_PREFIX, i])))
-		assert_array(groups[i][1]).is_not_empty()
+func test_a_bulletin_is_a_text_of_the_pack_printed_clean_and_every_speech_step_names_a_group_with_clips() -> void:
+	assert_str(_bulletin(0)).is_equal(TimelineSegment.tidy(Catalog.text(&"news_bulletin_0")))
+	assert_str(TimelineSegment.tidy("  A line\r\nbreak \r")).is_equal("A line\n\nbreak")
+	var scene := Catalog.story_scene(NEWS)
+	assert_array(scene.speech).is_not_empty()
+	for step in scene.speech:
+		assert_array(Catalog.voice_cues().clips(String(step.group))).override_failure_message(String(step.group)).is_not_empty()
+	assert_array(scene.unresolved()).is_empty()
 
 
 func test_news_cartoon_skip_ends_it_once() -> void:
-	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	var news: TimelineSegment = auto_free(TimelineSegment.of(NEWS))
 	add_child(news)
 	var count := [0]
 	news.finished.connect(func() -> void: count[0] += 1)
@@ -291,7 +291,7 @@ func test_a_click_is_enter_in_the_cartoon_and_the_ship_scene_and_the_reveal() ->
 	opening.go_to_sign_in = false
 	add_child(opening)
 	await await_idle_frame()
-	var cartoon := opening.current as NewsCartoon
+	var cartoon := opening.current as TimelineSegment
 	_mouse(opening, Vector2(100, 100), true)
 	assert_bool(cartoon.done).is_false()
 	_mouse(opening, Vector2(100, 100), false)
@@ -367,10 +367,10 @@ func test_the_release_after_the_intro_press_does_not_skip_story_page_1() -> void
 
 
 func test_the_teletype_wraps_the_whole_bulletin_before_it_is_typed() -> void:
-	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	var news: TimelineSegment = auto_free(TimelineSegment.of(NEWS))
 	add_child(news)
 	await await_idle_frame()
-	var label := news.teletype
+	var label := (news.cast.node_of(&"teletype") as Label)
 	assert_int(label.visible_characters_behavior).is_equal(TextServer.VC_CHARS_AFTER_SHAPING)
 	label.text = " ".join(PackedStringArray(["bulletin", "words"]).duplicate()) + " " + "a long bulletin runs over several lines ".repeat(12)      # (long enough to wrap whatever the pack's bulletins say)
 	label.visible_ratio = 1.0
@@ -394,7 +394,7 @@ func test_the_opening_stands_still_while_the_window_is_inactive() -> void:
 	assert_bool(get_tree().paused).is_true()
 	assert_bool(opening.can_process()).is_true()           # the director hears the focus come back
 	assert_bool(cartoon.can_process()).is_false()          # animations, tweens and the timers of the part stop
-	assert_bool((cartoon as NewsCartoon).script_player.can_process()).is_false()
+	assert_bool((cartoon as TimelineSegment).script_player.can_process()).is_false()
 	opening.set_window_active(true)
 	assert_bool(get_tree().paused).is_false()
 	assert_bool(cartoon.can_process()).is_true()
@@ -435,7 +435,7 @@ func test_opening_skip_leads_to_sign_in() -> void:
 	var opening: Opening = auto_free(load(OPENING).instantiate())
 	add_child(opening)
 	await await_idle_frame()
-	assert_object(opening.current).is_instanceof(NewsCartoon)
+	assert_object(opening.current).is_instanceof(TimelineSegment)
 	var key := InputEventKey.new()
 	key.keycode = KEY_SPACE
 	key.pressed = true
@@ -511,7 +511,7 @@ func test_the_last_story_page_timing_out_starts_the_opening_over_from_the_cartoo
 		await await_idle_frame()
 		await await_idle_frame()
 		assert_bool(timed_out[0]).is_true()
-		assert_object(opening.current).is_instanceof(NewsCartoon)
+		assert_object(opening.current).is_instanceof(TimelineSegment)
 		assert_str(SceneRouter.last_path).is_not_equal(SceneRouter.SIGN_IN)
 		assert_array(songs).is_equal([AudioService.SONG_OPENING])     # (the story has no song: only the cartoon starts its own again)
 		assert_str(Audio.song).is_equal(AudioService.SONG_OPENING)
@@ -674,18 +674,18 @@ func test_the_title_pictures_appear_at_once_without_a_wipe() -> void:
 # --- the news cartoon's crew and lights ----------------------------------------------------------------
 
 ## The dots of the capsule's trail on the cartoon's stage.
-func _dots_of(news: NewsCartoon) -> Array:
+func _dots_of(news: TimelineSegment) -> Array:
 	return news.stage.get_children().filter(func(node: Node) -> bool: return node.name.begins_with("Dot"))
 
 
-func _news_at(news: NewsCartoon, seconds: float) -> void:
+func _news_at(news: TimelineSegment, seconds: float) -> void:
 	news.script_player.seek(seconds, true)
 
 
 func test_each_dot_of_the_capsule_trail_appears_at_the_moment_its_track_says() -> void:
-	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	var news: TimelineSegment = auto_free(TimelineSegment.of(NEWS))
 	add_child(news)
-	var timeline := Catalog.story_timeline(&"news_cartoon")
+	var timeline := Catalog.story_timeline(&"news_report")
 	var checked := 0
 	for track in timeline.tracks:
 		if not String(track.actor).begins_with("dot_") or track.property != &"visible":
@@ -698,3 +698,8 @@ func test_each_dot_of_the_capsule_trail_appears_at_the_moment_its_track_says() -
 		assert_bool(dot.visible).override_failure_message("%s late" % track.actor).is_true()
 		checked += 1
 	assert_int(checked).is_equal(_dots_of(news).size())
+
+
+## The news cartoon's text as the teletype prints it.
+func _bulletin(index: int) -> String:
+	return TimelineSegment.tidy(Catalog.text(StringName("news_bulletin_%d" % index)))

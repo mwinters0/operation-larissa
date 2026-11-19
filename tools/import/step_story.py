@@ -6,9 +6,10 @@ moments in ticks of the original's 73 Hz timer, values with picture and sound NA
 events). A view plays it by building an `AnimationPlayer` animation at run time (`src/story/cutscene.gd`), so the numbers
 belong to the original and the nodes belong to the view.
 
+    news_cartoon        the scene: its stage, its two timelines, its song and its speech (what is said, in which order, after which pause)   (OPENING.C, constants below)
     news_cartoon_stage  the news cartoon's actors and where they stand                                (the position table, extracted/tables/opening.json)
     title_stage         the title scene's actors and where they stand                                 (the same)
-    news_cartoon        the capsule's trail, the bulletins typed, the crew, the alarm lights, the end   (extracted/tables/opening.json)
+    news_report         the capsule's trail, the bulletins typed, the crew, the alarm lights, the end   (extracted/tables/opening.json)
     news_ambient        the alarm lights' four states, the pulsing ring and the console's flicker, a loop of 64 redraws   (the same; the flicker is ours)
     title_ship          the ship scene, 163 frames of 12 ticks                                           (title_scene.frames)
     title_reveal        "Presents" / "OPERATION" / "NEPTUNE" with their sounds and the prompt            (reveal_and_prompt)
@@ -44,7 +45,7 @@ from common import PACK_DATA, TABLES, EXTRACTED, load_json, out_text, sha256_hex
 
 SCRIPTS = "res://src/resources/"
 STORY = PACK_DATA / "story"                     # the cutscenes' choreography is the original's presentation: the legacy pack's, never committed
-TIMELINE_NAMES = {"news_cartoon", "news_ambient", "title_ship", "title_reveal", "expert_hoist", "expert_deck", "expert_wait"}      # `timelines()`
+TIMELINE_NAMES = {"news_report", "news_ambient", "title_ship", "title_reveal", "expert_hoist", "expert_deck", "expert_wait"}      # `timelines()`
 TICKS_PER_SECOND = 73
 
 # --- our own numbers -----------------------------------------------------------------------------------------------
@@ -57,6 +58,12 @@ REVEAL_TAIL_TICKS = 7.3
 ## The Voyager flight animation runs this long (0.2 s) past its last step.
 VOYAGER_MARGIN_TICKS = 14.6
 
+
+# The pauses before the news cartoon's speech groups (five groups of the 11 clips, `common.NEWS_SPEECH_GROUPS`), in ticks of the 73 Hz timer. The first is the wait before the first clip (219 ticks, 3 s), the later ones the
+# pause that precedes clips 1, 3, 6 and 7 of `CartoonSpeech` (0x42984d) while the others follow their predecessor at once: 248 ticks, 3.4 s as the port timed it (the bulletin is read for 25 redraws of 10 ticks, 250, which may be where
+# the pause comes from: not checked in the decompilation).
+NEWS_SPEECH_PAUSES = (219, 248, 248, 248, 0)
+NEWS_SPEECH_PAUSE_NOTE = "Pauses before the speech groups (ticks): 219 before the first (the original's wait of 3 s), 248 before the second to fourth (the port's 3.4 s; 250 may be the original's), none before the fifth."
 
 # --- names -------------------------------------------------------------------------------------------------------------
 
@@ -229,10 +236,37 @@ class Stage:
         return t.render()
 
 
+class Scene:
+    """A StoryScene being collected: the stage, the looping and the one-shot timelines it plays (by name), its song and its speech steps (pause ticks, voice group)."""
+
+    def __init__(self, provenance: str, stage: str, loops: Sequence[str], timelines: Sequence[str], song: str, speech: Sequence[tuple[int, str]]):
+        self.provenance = provenance
+        self.stage = stage
+        self.loops = list(loops)
+        self.timelines = list(timelines)
+        self.song = song
+        self.speech = list(speech)
+
+    def render(self) -> str:
+        t = tres.Tres("Resource", "StoryScene", SCRIPTS + "story_scene.gd")
+        step_script = SCRIPTS + "speech_step.gd"
+        step_id = t.ext_id("Script", step_script)
+        refs = [t.sub("Resource", [("pause_ticks", str(pause)), ("group", sn(group))], script=step_script, prefix="Step") for pause, group in self.speech]
+        t.set("stage", sn(self.stage))
+        t.set("loops", tres.array("StringName", (sn(n) for n in self.loops)))
+        t.set("timelines", tres.array("StringName", (sn(n) for n in self.timelines)))
+        if self.song:
+            t.set("song", sn(self.song))
+        if refs:
+            t.set("speech", tres.array('ExtResource("%s")' % step_id, refs))
+        t.set("provenance", tres.s(self.provenance))
+        return t.render()
+
+
 # --- the news cartoon -------------------------------------------------------------------------------------------------------
 
 def godot_text_length(text: str) -> int:
-    """How many characters the teletype types: the text as `NewsCartoon.bulletin()` shows it (`strip_edges`, `\\r` -> `\\n`)."""
+    """How many characters the teletype types: the text as `TimelineSegment.tidy` shows it (`strip_edges`, `\\r` -> `\\n`)."""
     return len(text.strip().replace("\r", "\n"))
 
 
@@ -893,7 +927,7 @@ def build_closing_crew() -> str:
 
 def timelines() -> dict[str, Timeline]:
     return {
-        "news_cartoon": build_news(bulletin_texts()),
+        "news_report": build_news(bulletin_texts()),
         "news_ambient": build_news_ambient(),
         "title_ship": build_title_ship(),
         "title_reveal": build_title_reveal(),
@@ -907,6 +941,19 @@ def stages() -> dict[str, Stage]:
     return {"news_cartoon_stage": build_news_stage(), "title_stage": build_title_stage()}
 
 
+def build_news_scene() -> Scene:
+    """The news cartoon as a scene: the stage, the loop (alarm lights, ring, console lights) and the cartoon, the opening song and the speech: the voice groups `news_speech_0`..4 in the original's order
+    (`CartoonSpeech` 0x42984d; `common.news_speech_groups` cuts the clips), each after its pause (`NEWS_SPEECH_PAUSES`)."""
+    return Scene(
+        "Original: OpeningSequence 0x42b16b, the first loop: music 9502 (opening), the cartoon (news_report, played once) over the alarm lights, ring and console lights (news_ambient, a loop), the speech CartoonSpeech 0x42984d "
+        "(tools/import/step_story.py). %s" % NEWS_SPEECH_PAUSE_NOTE,
+        "news_cartoon_stage", ["news_ambient"], ["news_report"], "opening", [(pause, "news_speech_%d" % i) for i, pause in enumerate(NEWS_SPEECH_PAUSES)])
+
+
+def scenes() -> dict[str, Scene]:
+    return {"news_cartoon": build_news_scene()}
+
+
 def run() -> None:
     written = []
     for name, timeline in timelines().items():
@@ -914,7 +961,9 @@ def run() -> None:
         written.append(name)
     for name, stage in stages().items():
         out_text(STORY / (name + ".tres"), stage.render())
+    for name, scene in scenes().items():
+        out_text(STORY / (name + ".tres"), scene.render())
     out_text(STORY / "story_script.tres", build_story_script())
     out_text(STORY / "voyager_closing_script.tres", build_voyager_script())
     out_text(STORY / "closing_crew.tres", build_closing_crew())
-    print("  story: %s, %s, story_script, voyager_closing_script, closing_crew" % (", ".join(written), ", ".join(stages())))
+    print("  story: %s, %s, %s, story_script, voyager_closing_script, closing_crew" % (", ".join(written), ", ".join(stages()), ", ".join(scenes())))

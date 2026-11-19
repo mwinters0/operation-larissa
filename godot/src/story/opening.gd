@@ -2,7 +2,7 @@ class_name Opening
 extends Control
 ## The game's first scene: the opening sequence (news cartoon, title, story) and then the sign-in screen.
 ##
-## Teaches: a DIRECTOR. Each part of the opening is its own scene (`NewsCartoon`, `TitleScene`, `StoryPages`)
+## Teaches: a DIRECTOR. Each part of the opening is its own scene (a `TimelineSegment` playing the scene file `news_cartoon`, `TitleScene`, `StoryPages`)
 ## built on the same small interface (`StorySegment`: `finished`, `advance()`, `skip()`). This script
 ## instantiates them one after the other and reads the keys in one place:
 ##
@@ -15,7 +15,8 @@ extends Control
 ## Start button, and Enter or a click on the last page lead to sign-in. Started alone it ends by changing to the sign-in scene
 ## too, so the whole path title -> opening -> sign-in can be tried from this scene.
 
-const NEWS_CARTOON := preload("res://src/story/news_cartoon.tscn")
+## The scene files (`StoryScene`, `data/story/<scene>.tres` of the pack chain) the opening plays as `TimelineSegment`s, in order; `PackCheck` reads them.
+const SCENES: Array[StringName] = [&"news_cartoon"]
 const TITLE_SCENE := preload("res://src/story/title_scene.tscn")
 const STORY_PAGES := preload("res://src/story/story_pages.tscn")
 
@@ -49,13 +50,13 @@ func _run() -> void:
 ## One pass: the cartoon, the title, the story. True when the pass ends the way that makes the original start over: the last
 ## story page timed out (`OpeningStoryPages` 0x42a9f1 returned 0 with `OpeningEnded` 0x449e98 still 0).
 func _play_parts() -> bool:
-	await _play(NEWS_CARTOON)
+	await _play(TimelineSegment.of(SCENES[0]))
 	if _skipped:
 		return false
-	var title := (await _play(TITLE_SCENE)) as TitleScene
+	var title := (await _play(TITLE_SCENE.instantiate())) as TitleScene
 	if _skipped or not title.wants_intro:
 		return false
-	var story := (await _play(STORY_PAGES)) as StoryPages
+	var story := (await _play(STORY_PAGES.instantiate())) as StoryPages
 	return story.timed_out and not _skipped
 
 
@@ -96,13 +97,12 @@ func _exit_tree() -> void:
 		get_tree().paused = false
 
 
-## Instantiates `scene`, waits until it is over and returns it (the caller may want to ask it something).
-func _play(scene: PackedScene) -> StorySegment:
-	current = scene.instantiate()
+## Adds `segment`, waits until it is over and returns it (the caller may want to ask it something).
+func _play(segment: StorySegment) -> StorySegment:
+	current = segment
 	current.process_mode = Node.PROCESS_MODE_PAUSABLE     # (this node is "always": only the part stands still)
 	add_child(current)
-	await current.finished
-	var segment := current
+	await segment.finished
 	current = null
 	segment.queue_free()
 	return segment

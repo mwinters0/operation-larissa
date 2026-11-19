@@ -6,7 +6,7 @@ extends GdUnitTestSuite
 ## every track of every built animation resolves, that the segments obey the director's interface (`advance`,
 ## `skip`, `finished`), and that the director leads to the sign-in screen.
 
-const NEWS := "res://src/story/news_cartoon.tscn"
+const NEWS := &"news_cartoon"          # the scene file the news cartoon is (data/story/news_cartoon.tres)
 const TITLE := "res://src/story/title_scene.tscn"
 const PAGES := "res://src/story/story_pages.tscn"
 const OPENING := "res://src/story/opening.tscn"
@@ -56,42 +56,39 @@ func _unresolved_tracks(player: AnimationPlayer) -> PackedStringArray:
 
 
 func test_news_cartoon_builds_and_every_track_finds_its_node() -> void:
-	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	var news: TimelineSegment = auto_free(TimelineSegment.of(NEWS))
 	add_child(news)
 	assert_array(_unresolved_tracks(news.script_player)).is_empty()
-	assert_array(_unresolved_tracks(news.ambient)).is_empty()
+	assert_array(_unresolved_tracks(news.loop_players[0])).is_empty()
 	# 21 dots of the capsule's trail, 6 bulletins typed after the empty first 3.4 s, 11 speech clips
 	assert_int(news.stage.get_children().filter(func(node: Node) -> bool: return node.name.begins_with("Dot")).size()).is_equal(21)
-	assert_float(news.script_player.get_animation(&"news").length).is_greater(40.0)
-	assert_int(NewsCartoon.speech_groups().reduce(func(total: int, group: Array) -> int: return total + group[1].size(), 0)).is_equal(11)
+	assert_float(news.script_player.get_animation(&"news_report").length).is_greater(40.0)
+	assert_int(_speech_sizes().reduce(func(total: int, size: int) -> int: return total + size, 0)).is_equal(11)
 
 
 func test_the_nodes_of_both_scenes_are_what_their_stage_files_say() -> void:
-	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	var news: TimelineSegment = auto_free(TimelineSegment.of(NEWS))
 	add_child(news)
 	var title: TitleScene = auto_free(load(TITLE).instantiate())
 	add_child(title)
-	for scene: Array in [[NewsCartoon.STAGE, news.stage], [TitleScene.STAGE, title.stage]]:
+	for scene: Array in [[Catalog.story_scene(NEWS).stage, news.stage], [TitleScene.STAGE, title.stage]]:
 		var stage := Catalog.story_stage(scene[0])
 		assert_object(stage).override_failure_message("%s: no stage" % scene[0]).is_not_null()
 		assert_array(stage.problems()).override_failure_message("%s: %s" % [scene[0], stage.problems()]).is_empty()
 		assert_array(StageNodes.differences(stage, scene[1])).override_failure_message("%s: %s" % [scene[0], StageNodes.differences(stage, scene[1])]).is_empty()
 	# the cast knows every actor of the stage: the same names the timelines use
-	assert_int(news.stage.find_children("*", "", true, false).size()).is_equal(Catalog.story_stage(NewsCartoon.STAGE).actors.size())
+	assert_int(news.stage.find_children("*", "", true, false).size()).is_equal(Catalog.story_stage(Catalog.story_scene(NEWS).stage).actors.size())
 	assert_array(_unresolved_tracks(title.animations)).is_empty()
 
 
 func test_the_six_bulletins_are_the_original_wording() -> void:
-	assert_str(NewsCartoon.bulletin(0)).starts_with("RED ALERT")
-	assert_str(NewsCartoon.bulletin(5)).contains("OPERATION NEPTUNE")
-	var sizes: Array[int] = []
-	for group in NewsCartoon.speech_groups():
-		sizes.append(group[1].size())
-	assert_array(sizes).is_equal([2, 3, 1, 1, 4])
+	assert_str(_bulletin(0)).starts_with("RED ALERT")
+	assert_str(_bulletin(5)).contains("OPERATION NEPTUNE")
+	assert_array(_speech_sizes()).is_equal([2, 3, 1, 1, 4])
 
 
 func test_news_cartoon_skip_ends_it_once() -> void:
-	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	var news: TimelineSegment = auto_free(TimelineSegment.of(NEWS))
 	add_child(news)
 	var count := [0]
 	news.finished.connect(func() -> void: count[0] += 1)
@@ -266,7 +263,7 @@ func test_a_click_is_enter_in_the_cartoon_and_the_ship_scene_and_the_reveal() ->
 	opening.go_to_sign_in = false
 	add_child(opening)
 	await await_idle_frame()
-	var cartoon := opening.current as NewsCartoon
+	var cartoon := opening.current as TimelineSegment
 	_mouse(opening, Vector2(100, 100), true)
 	assert_bool(cartoon.done).is_false()
 	_mouse(opening, Vector2(100, 100), false)
@@ -342,12 +339,12 @@ func test_the_release_after_the_intro_press_does_not_skip_story_page_1() -> void
 
 
 func test_the_teletype_wraps_the_whole_bulletin_before_it_is_typed() -> void:
-	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	var news: TimelineSegment = auto_free(TimelineSegment.of(NEWS))
 	add_child(news)
 	await await_idle_frame()
-	var label := news.teletype
+	var label := (news.cast.node_of(&"teletype") as Label)
 	assert_int(label.visible_characters_behavior).is_equal(TextServer.VC_CHARS_AFTER_SHAPING)
-	label.text = NewsCartoon.bulletin(0)
+	label.text = _bulletin(0)
 	label.visible_ratio = 1.0
 	await await_idle_frame()
 	var full_lines := label.get_line_count()
@@ -369,7 +366,7 @@ func test_the_opening_stands_still_while_the_window_is_inactive() -> void:
 	assert_bool(get_tree().paused).is_true()
 	assert_bool(opening.can_process()).is_true()           # the director hears the focus come back
 	assert_bool(cartoon.can_process()).is_false()          # animations, tweens and the timers of the part stop
-	assert_bool((cartoon as NewsCartoon).script_player.can_process()).is_false()
+	assert_bool((cartoon as TimelineSegment).script_player.can_process()).is_false()
 	opening.set_window_active(true)
 	assert_bool(get_tree().paused).is_false()
 	assert_bool(cartoon.can_process()).is_true()
@@ -410,7 +407,7 @@ func test_opening_skip_leads_to_sign_in() -> void:
 	var opening: Opening = auto_free(load(OPENING).instantiate())
 	add_child(opening)
 	await await_idle_frame()
-	assert_object(opening.current).is_instanceof(NewsCartoon)
+	assert_object(opening.current).is_instanceof(TimelineSegment)
 	var key := InputEventKey.new()
 	key.keycode = KEY_SPACE
 	key.pressed = true
@@ -540,12 +537,12 @@ func test_the_title_pictures_appear_at_once_without_a_wipe() -> void:
 
 # --- the news cartoon's crew and lights ----------------------------------------------------------------
 
-func _news_at(news: NewsCartoon, seconds: float) -> void:
+func _news_at(news: TimelineSegment, seconds: float) -> void:
 	news.script_player.seek(seconds, true)
 
 
 func test_the_man_on_the_left_appears_after_30_seconds_and_walks_in() -> void:
-	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	var news: TimelineSegment = auto_free(TimelineSegment.of(NEWS))
 	add_child(news)
 	var walker: Sprite2D = news.stage.get_node("Crew4")
 	_news_at(news, 0.0)
@@ -574,7 +571,7 @@ func _picture_id(sprite: Sprite2D) -> int:
 
 
 func test_the_alarm_lights_come_on_one_after_the_other() -> void:
-	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	var news: TimelineSegment = auto_free(TimelineSegment.of(NEWS))
 	add_child(news)
 	var left: Sprite2D = news.stage.get_node("Alarm0")
 	var centre: Sprite2D = news.stage.get_node("Alarm1")
@@ -588,7 +585,7 @@ func test_the_alarm_lights_come_on_one_after_the_other() -> void:
 
 
 func test_the_capsule_trail_and_ring_follow_the_originals_calls() -> void:
-	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	var news: TimelineSegment = auto_free(TimelineSegment.of(NEWS))
 	add_child(news)
 	_news_at(news, 9.0 * NEWS_STEP)
 	assert_bool((news.stage.get_node("Dot00") as Sprite2D).visible).is_false()
@@ -601,3 +598,16 @@ func test_the_capsule_trail_and_ring_follow_the_originals_calls() -> void:
 	assert_bool((news.stage.get_node("Ring") as Sprite2D).visible).is_false()
 	_news_at(news, last_dot + 6.0 * NEWS_STEP + 0.01)
 	assert_bool((news.stage.get_node("Ring") as Sprite2D).visible).is_true()
+
+
+## The news cartoon's text as the teletype prints it.
+func _bulletin(index: int) -> String:
+	return TimelineSegment.tidy(Catalog.text(StringName("news_bulletin_%d" % index)))
+
+
+## How many clips each step of the scene's speech speaks.
+func _speech_sizes() -> Array[int]:
+	var sizes: Array[int] = []
+	for step in Catalog.story_scene(NEWS).speech:
+		sizes.append(Catalog.voice_cues().clips(String(step.group)).size())
+	return sizes

@@ -42,6 +42,11 @@ static func song_of_stem(stem: String) -> StringName:
 	return song
 
 
+## Is `song_name` a song the game can play: one of the original's (`id_of`) or a file of a pack (`audio/music/<name>.ogg`)? A campaign's fallback song and a scene's song are asked this.
+static func has_song(song_name: StringName) -> bool:
+	return id_of(song_name) >= 0 or Packs.clip(&"music", song_name) != null
+
+
 ## The `music` name of a song (`names/original.json`) as the original's number, or -1.
 static func id_of(song_name: StringName) -> int:
 	return NameRegistry.original().index_of(&"music", String(song_name))

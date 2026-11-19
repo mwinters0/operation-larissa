@@ -164,7 +164,6 @@ func test_the_check_of_a_pack_tells_an_actor_a_timeline_names_that_no_stage_hold
 	assert_bool(report.findings.any(func(finding: PackReport.Finding) -> bool: return finding.area == "story" and finding.message.contains("stage 'title_stage': two actors are called 'dup'"))).is_true()
 
 
-func test_the_chain_needs_both_stages_of_the_opening() -> void:
-	for stage_name in [NewsCartoon.STAGE, TitleScene.STAGE]:
-		assert_bool(PackNeeds.FILES.has("data/story/%s.tres" % stage_name)).override_failure_message(String(stage_name)).is_true()
-		assert_str(PackNeeds.FILES["data/story/%s.tres" % stage_name]).is_equal("CutsceneStage")
+func test_the_chain_needs_the_news_scene_and_the_titles_stage() -> void:
+	assert_str(PackNeeds.FILES["data/story/%s.tres" % Opening.SCENES[0]]).is_equal("StoryScene")
+	assert_str(PackNeeds.FILES["data/story/%s.tres" % TitleScene.STAGE]).is_equal("CutsceneStage")
