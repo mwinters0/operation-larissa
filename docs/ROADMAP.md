@@ -30,6 +30,42 @@ Tools for the technique of [`genai/IMAGES.md`](genai/IMAGES.md).
 - **G2. Slicer.** Cut a finished image of a layout back into the template files (`<kind>/<name>.png`) by the layout's rectangles, at the
   pack's picture scale.
 
+## Animations a pack makes
+
+The opening's timing is pack data (`CutsceneTimeline`s, `StoryLayout`, `voice_cues`, `durations.json`); what is code is the stage (which
+pictures exist, where, in what order), the order of the parts, and the behaviour around the timelines (`NewsCartoon`, `TitleScene`,
+`Opening`). These steps move the rest into the pack, so the legacy pack holds the original's opening and another pack can hold an
+opening of its own. Each is one session; the engine verbs stay rules (input, waits, choices) and a pack only arranges them. In every
+step the fidelity pins hold unchanged: `L: test_cutscene_timing` (the timing hashes), `test_opening` / `test_opening_legacy`, the key
+handling by phase.
+
+- **A1. The stage is data.** A `CutsceneStage` resource (data form `data/story/<scene>_stage.json`): its actors, each with a name, a kind
+  (picture, text box), a starting picture key, a position in window pixels, mirror, parent actor (the ship's radar and hook ride the
+  ship), draw order and starting visibility. One builder makes the nodes and binds the `CutsceneCast`; `NewsCartoon._build_stage` and
+  `TitleScene._build_stage` call it. The importer writes the legacy stages from NEP.DLL resource 10012 (`step_console.py` /
+  `step_story.py`), `dev_story.py` the dev pack's; `StoryLayout` and its users (`Catalog.story_layout`, `PackNeeds`, `GameSkin`,
+  `dev_ui.py`, `test_skin`, `test_data_form`) go. `PackNeeds` requires the stages; `PackCheck` tells an actor a timeline names that
+  no stage holds. `test_opening` checks the built nodes against the stage file.
+- **A2. What is ours becomes data too.** The importer bakes the console lights' flicker (the generator seeded with 73,
+  `NewsCartoon._flicker_timeline`) into the legacy `news_ambient` with its provenance "ours", and the dev pack's into its own; the
+  speech groups (`NewsCartoon.SPEECH_GROUP_CLIPS`) join their pauses in the pack's data; the title's `PROMPT_TIMEOUT` and
+  `MUSIC_DELAY_AFTER_PROMPT` go to `durations.json`.
+- **A3. One segment plays a scene.** A `TimelineSegment` (a `StorySegment`) plays a scene file `data/story/<scene>.json`: its stage,
+  its looping and its one-shot timelines, its song, and the speech. The timeline's cues call a fixed set of engine verbs (`end`,
+  `speak <group>`), named in `create/CONTENT.md` "Story timelines". `NewsCartoon` becomes the legacy pack's `news_cartoon` scene file.
+- **A4. The title on the same segment.** The verbs the title needs: timelines played in a chain (`ship`, then `reveal`; Enter during
+  one goes on to the next, whose first keys set the stage it needs, so `_leave_ship_scene` becomes keys), `hold` (Enter seeks to the
+  next mark and fires its cues: `_end_hold`), and `prompt` (the Start / Intro choice, its keys and buttons, the time-out and the
+  song after it). `TitleScene` becomes the legacy pack's `title` scene file; the segment's `wants_intro` answers the director.
+- **A5. The opening is a list.** `data/story/opening.json` names the parts in order (scene files and the story pages), which part's
+  choice leads on, and whether a timed-out last part starts it over (attract mode, `OpeningSequence`). `Opening` plays what the chain
+  holds; a pack may hold an opening of its own or an empty one (straight to sign-in). A part that does not resolve is told once
+  (`TroubleLog`, naming the pack and what the player sees instead) and skipped. The dev pack's opening differs in shape from the
+  legacy one (another number of parts, actors and verbs), and `create/MAKING_CONTENT.md` walks through making one. The port map's
+  `OpeningSequence` rows follow the code.
+- **A6. The closings on stages.** `ExpertClosing` and `VoyagerClosing` build from stage files; an actor kind for a picture set the
+  view holds (the sub's frames, the artifact's zone), and the Voyager timeline is still made from its script for the place the sub is in.
+
 ## Open items
 
 Known gaps of the existing systems, by area. The engine's remaining assumptions about the original content are listed in
@@ -48,7 +84,6 @@ hand in a window.
 - A rule hook that keeps state in variables of its own (rather than the memory the game hands back) is outside the promise that the same inputs are the same play; `RuleHooks.verify_pure` catches it in tests and tools, not while playing.
   The hooks are three (the judging of an answer, a creature instruction, the sub's velocity and invulnerability); another point (a piece, a trigger, a contact, a creature that a mod adds) is a new named hook in `RuleHooks`.
 - A type a pack adds is worded from its texts and fields only and never uses the combination lock or the ballast panel; the lock and the ballast panels of the original cannot be drawn by a mod. A type a pack adds can build up from its data (`intro`) but has no success replay: `ProblemFlow.SUCCESS_REPLAY_TYPES` names the original's eight.
-- Story timelines other than the news cartoon are preloaded by their scenes, so no pack can replace them.
 - No player-facing menu to choose a skin (`--skin=`, F3 then S); the soundfont is per `Audio`, not per skin.
 - There is no supported "this skin draws creature N" hook (`creatures` hides `Foe.sprite`); `SimView` events reach a skin before
   `OriginalPresenter`'s handlers.
