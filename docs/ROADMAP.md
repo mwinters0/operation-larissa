@@ -30,6 +30,35 @@ Tools for the technique of [`genai/IMAGES.md`](genai/IMAGES.md).
 - **G2. Slicer.** Cut a finished image of a layout back into the template files (`<kind>/<name>.png`) by the layout's rectangles, at the
   pack's picture scale.
 
+## Closings a pack makes
+
+The opening is pack data played by one segment (`TimelineSegment`, scene files, verbs); the closings' stages and timelines are pack data
+too, but what plays them is code that knows the original's two games: `ExpertClosing`, `VoyagerClosing`, the map from `voyager` /
+`expert` in `Game.show_closing`, `PackCheck.OWN_CLOSINGS`, the zone of the Alien Artifact (`ExpertClosing.ARTIFACT_ZONE`). These steps
+make a closing a scene file that a campaign names, played by the same segment as the opening, so the legacy pack holds the original's
+closings and another pack can hold its own. In every step the fidelity pins hold unchanged (`L: test_closing_sequences`,
+`test_cutscene_timing`, `test_game_flow_legacy`, `test_flow_fidelity_legacy`); `GenericFinale` stays the engine's closing for a
+campaign that names none.
+
+- **B1. The Expert closing is a scene.** A campaign's `closing_scene` names a scene file of the chain (legacy: `expert_closing`,
+  `voyager_closing`); `Game.show_closing` plays it with `TimelineSegment` laid over the sector, a name the chain does not hold is told
+  once (`TroubleLog`, naming the campaign and saying the generic finale plays) and the generic finale plays, and the music stops when
+  a closing ends. What the Expert closing needs becomes scene data and verbs: a scene with no black backdrop (laid over the sector);
+  a scene whose keys and clicks are read and dropped until a verb (`listen`: from here any key or click ends the scene); the cut to the
+  deck as keys at the first moment of `expert_deck` (the groups' visibility). The picture sets a stage's `frames` actors may show are
+  the engine's, by fixed names (the sub's drawings; the creature pictures of the zone of the sector in play, which the director hands
+  in), one table that the cast, `StageBuilder` and `PackCheck` read; no zone number is in code. `PackCheck` judges the closing scene of
+  every campaign of the chain like a scene of the opening (`StoryScene.unresolved`, its stage with the sets offered), and
+  `PackNeeds` derives a campaign's closing files from its `closing_scene` rather than listing them; `OWN_CLOSINGS`, `ExpertClosing`
+  and its `.tscn` go. The dev pack's `dev_tour` names a closing scene of dev's own (another shape than the legacy one); `test_c`
+  keeps the generic finale. Until B2 the scene `voyager_closing` is still played by `VoyagerClosing`.
+- **B2. The Voyager closing is a scene.** A one-shot timeline a scene names may be a flight file (`VoyagerClosingScript`, renamed for
+  what it is): the segment makes its timeline at the start for the place and cell of the sub the director hands in, through one
+  resolver of a scene's timelines (`PackCheck` judges it at the window's origin, as now). The flight's last step is a mark, so Enter
+  during the flight goes on to it. The surface ship's pages become scene data (each a text and the voice groups read with it, the
+  jingle included) shown in order by a verb in the message box, Enter closing a page and cutting its speech, the scene ending after
+  the last. `VoyagerClosing` and its `.tscn` go; `Game` holds no closing class but the generic finale.
+
 ## Open items
 
 Known gaps of the existing systems, by area. The engine's remaining assumptions about the original content are listed in
