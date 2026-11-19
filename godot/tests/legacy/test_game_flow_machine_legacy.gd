@@ -87,7 +87,7 @@ func test_the_closing_of_the_voyager_game_gets_the_sub_and_ends_in_the_hall_of_f
 	var cell: int = _stage.sim.sub.cell
 	_view.hold(&"closing")
 	_stage.finale_reached.emit()
-	assert_array(_log).is_equal(["stop music", "closing voyager at %s cell %d" % [sub_at, cell]])
+	assert_array(_log).is_equal(["stop music", "closing voyager_closing at %s cell %d" % [sub_at, cell]])
 	assert_bool(_stage.sim.sub.active).is_false()                  # the closing draws its own sub
 	assert_bool(_flow.busy).is_true()
 	_view.release(&"closing")
@@ -102,5 +102,5 @@ func test_the_closing_of_the_expert_game_is_told_so() -> void:
 	await _flow.begin_mission()
 	_log.clear()
 	_stage.finale_reached.emit()
-	assert_str(_log[1]).starts_with("closing expert")
+	assert_str(_log[1]).starts_with("closing expert_closing")
 	assert_array(_store.hall).is_equal([_player])

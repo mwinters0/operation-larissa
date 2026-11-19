@@ -1,9 +1,9 @@
 """The dev pack's cutscenes: choreography of its own, short and plain, played by the same scenes as the original's.
 
-The opening (`data/story/opening.tres`) lists the parts the game plays, the scenes (`src/story/`) ask the pack chain for `data/story/<name>.tres` (`Catalog.story_timeline`, `story_script`, `voyager_closing_script`,
-`closing_crew`) and tell a `CutsceneCast` which node plays which actor. These timelines use the same actor names and the same property
+The opening (`data/story/opening.tres`) lists the parts the game plays and the campaign `dev_tour` names its closing scene; the segments that play them (`src/story/`) ask the pack chain for `data/story/<name>.tres` (`Catalog.story_scene`,
+`story_timeline`, `story_script`, `voyager_closing_script`, `closing_crew`) and tell a `CutsceneCast` which node plays which actor. These timelines use the same actor names and the same property
 words as the original's, so every scene finds its nodes, but a few keys each: a ship that sails in and stops, a sub that sinks, a title
-that appears in three holds, a hook that comes down and hoists, six sailors that step to and fro, four story pages. Every number is
+that appears in three holds, a closing of its own shape (a sub and a creature of the zone that rise, a cut to a deck, a lamp that blinks), four story pages. Every number is
 dev's own (a step of 12 ticks, a hold of 100), none is read from the legacy pack; the pictures and sounds are named by the registry,
 as the importer names them (godot/names/original.json), which the dev pack has a picture or sound for.
 
@@ -17,7 +17,7 @@ from devlib import DEV, SCRIPTS, write_text, tres
 import step_story as st
 from asset_names import ui_key
 
-STEP = 12                                   # ticks of the expert closing's and the ship scene's step: ours
+STEP = 12                                   # ticks of the closing's and the ship scene's step: ours
 SHIP_FRAMES = 36
 SHIP_STOPS_AT_FRAME = 15
 SHIP_STOPS_AT_X = 40
@@ -25,7 +25,6 @@ REVEAL_HOLD = 100                           # ticks of one hold of the title
 CREW_FIRST_PICTURE = 2012                   # the sailors' items count from this picture of the registry
 STATUS_LIGHTS = 6                           # the console's lights on the news cartoon's stage
 PANEL_LIGHTS = 8
-CRANE_PIECE_HEIGHT = 48                     # the rows of the dev pictures of the hook, a link and the ball
 CREW_ITEMS = 4                              # the items 0-3 the sailors' programs draw
 
 
@@ -216,64 +215,65 @@ def title_reveal() -> st.Timeline:
     return t
 
 
-# --- the Expert closing ------------------------------------------------------------------------------------------
+# --- the closing -------------------------------------------------------------------------------------------------
+# The dev pack's own closing (`dev_closing`, named by the campaign `dev_tour`): not the legacy pack's shape. Two timelines, not three (a film with the cut to the deck in the middle of it, then the wait), a stage with no crane and no sailors, a lamp that
+# blinks, and the creature that is hoisted is a picture of the zone the game ends in (the picture set `zone_creatures`: dev's finale sector is in zone 4, so the hammerhead's).
 
-ARTIFACT = ("alien_artifact_0", "alien_artifact_1")
-POD = ("deck_pod_0", "deck_pod_1", "deck_pod_2", "deck_pod_1")
+FILM_LIFT_STEPS = 8                         # the sub and the creature rise 12 pixels a step
+FILM_DECK_STEPS = 5                         # then the deck's shot: the sub rises again, the lamp blinks
+CREATURE = ("hammerhead_swim_0", "hammerhead_swim_1")        # slots 35 and 36 of zone 4's creatures
+LAMP = ("deck_pod_0", "deck_pod_1", "deck_pod_2", "deck_pod_1")
 
 
-def expert_hoist() -> st.Timeline:
-    """The hook comes down, takes the sub and the artifact and hoists them: 4 steps idle, 6 down, 8 up, of 12 ticks."""
-    idle, down, up = 4, 6, 8
-    steps = idle + down + up
-    t = timeline(steps * STEP + STEP, "the hook comes down for the sub and hoists it: %d steps of %d ticks" % (steps, STEP))
-    t.track("cable", "visible", [(0, "false"), (idle * STEP, "true")])
-    extent = [36 + 12 * min(i, down) - 12 * max(0, i - down) for i in range(down + up + 1)]
-    t.track("cable", "extent", [(0, "36")] + [((idle + i) * STEP, str(e)) for i, e in enumerate(extent)])
-    t.track("cable", "frame", [((idle + 2) * STEP, "0"), ((idle + down) * STEP, "1"), ((idle + down + 1) * STEP, "2")])
-    t.track("sub", "position", [(0, st.v2(184, 212))] + [((idle + down + i) * STEP, st.v2(184, 212 - 12 * i)) for i in range(up)])
-    t.track("sub", "pose", seq(STEP, [st.v2i(6, s % 2) for s in range(steps)]))
-    t.track("artifact", "position", [(0, st.v2(200, 232))] + [((idle + down + i) * STEP, st.v2(200, 232 - 12 * i)) for i in range(up)])
-    t.track("artifact", "frame", seq(STEP, [st.sn(ARTIFACT[s % 2]) for s in range(steps)]))
+def dev_closing_film() -> st.Timeline:
+    """The sub and the creature rise for 8 steps of 12 ticks over the sector's shot; at the 9th step the shot cuts to the deck (the groups' visibility), where the sub rises again for 5 steps and the lamp blinks."""
+    steps = FILM_LIFT_STEPS + FILM_DECK_STEPS
+    cut = FILM_LIFT_STEPS * STEP
+    t = timeline(steps * STEP, "the closing's film: the lift (%d steps of %d ticks), the cut to the deck, the deck's shot (%d steps)" % (FILM_LIFT_STEPS, STEP, FILM_DECK_STEPS))
+    t.track("playfield", "visible", [(0, "true"), (cut, "false")])
+    t.track("deck", "visible", [(0, "false"), (cut, "true")])
+    t.track("sub", "position", seq(STEP, [st.v2(184, 212 - 12 * i) for i in range(FILM_LIFT_STEPS)]))
+    t.track("sub", "pose", seq(STEP, [st.v2i(6, i % 2) for i in range(FILM_LIFT_STEPS)]))
+    t.track("creature", "position", seq(STEP, [st.v2(200, 232 - 12 * i) for i in range(FILM_LIFT_STEPS)]))
+    t.track("creature", "frame", seq(STEP, [st.sn(CREATURE[i % 2]) for i in range(FILM_LIFT_STEPS)]))
+    t.track("deck_sub", "position", [(cut + i * STEP, st.v2(184, 160 - 12 * i)) for i in range(FILM_DECK_STEPS)])
+    t.track("deck_sub", "pose", [(cut + i * STEP, st.v2i(6, i % 2)) for i in range(FILM_DECK_STEPS)])
+    t.track("deck_creature", "position", [(cut + i * STEP, st.v2(200, 180 - 12 * i)) for i in range(FILM_DECK_STEPS)])
+    t.track("deck_creature", "frame", [(cut + i * STEP, st.sn(CREATURE[i % 2])) for i in range(FILM_DECK_STEPS)])
+    t.track("lamp", "picture", [(cut + i * STEP, st.sn(LAMP[i % 4])) for i in range(FILM_DECK_STEPS)])
+    t.track("lamp", "mirror", [(cut + i * STEP, st.boolean(i % 4 == 3)) for i in range(FILM_DECK_STEPS)])
     return t
 
 
-def expert_deck() -> st.Timeline:
-    """The sub rises into the ship (5 steps), six sailors step to and fro, the box blinks: 20 more steps of 12 ticks."""
-    rise, show = 5, 20
-    steps = rise + show
-    t = timeline(steps * STEP, "the deck shot: %d steps of %d ticks" % (steps, STEP))
-    t.track("deck_cable", "frame", [(0, "2")])
-    t.track("deck_sub", "position", seq(STEP, [st.v2(184, 279 - 12 * i) for i in range(rise)]))
-    t.track("deck_sub", "pose", seq(STEP, [st.v2i(6, i % 2) for i in range(rise)]))
-    t.track("deck_artifact", "position", seq(STEP, [st.v2(200, 299 - 12 * i) for i in range(rise)]))
-    t.track("deck_artifact", "frame", seq(STEP, [st.sn(ARTIFACT[1 - i % 2]) for i in range(rise)]))
-    t.track("deck_cable", "extent", seq(STEP, [str(295 - 12 * i) for i in range(rise)]))
-    for member in range(6):
-        begin = (rise + member) * STEP
-        walking = list(range(steps - rise - member))
-        t.track("crew_%d" % member, "visible", [(0, "false"), (begin, "true")])
-        t.track("crew_%d" % member, "position",
-                [(begin + i * STEP, st.v2(332 + 20 * member + 4 * (i % 6), 214)) for i in walking])
-        t.track("crew_%d" % member, "picture", [(begin + i * STEP, st.sn(st.picture(CREW_FIRST_PICTURE + (i % 3)))) for i in walking])
-        t.track("crew_%d" % member, "mirror", [(begin, "false"), (begin + 6 * STEP, "true")])
-    t.track("pod", "picture", pictures(STEP, [POD[i % 4] for i in range(steps)]))
-    t.track("pod", "mirror", flags(STEP, [i % 4 == 3 for i in range(steps)]))
+def dev_closing_wait() -> st.Timeline:
+    """The lamp blinks until a key or a click: a loop of four steps. The cue `listen` at its first moment makes the scene hear the keys and clicks it dropped."""
+    t = timeline(4 * STEP, "the lamp blinks until a key, a loop of 4 steps of %d ticks; from its first moment keys and clicks end the closing" % STEP, loop=True)
+    t.track("lamp", "picture", pictures(STEP, [LAMP[(FILM_DECK_STEPS + i) % 4] for i in range(4)]))
+    t.track("lamp", "mirror", flags(STEP, [(FILM_DECK_STEPS + i) % 4 == 3 for i in range(4)]))
+    t.cue(0, "event", "listen")
     return t
 
 
-def expert_wait() -> st.Timeline:
-    """The box blinks until a key: a loop of four steps."""
-    t = timeline(4 * STEP, "the box blinks until a key, a loop of 4 steps of %d ticks" % STEP, loop=True)
-    t.track("pod", "picture", pictures(STEP, [POD[(i + 2) % 4] for i in range(4)]))
-    t.track("pod", "mirror", flags(STEP, [i == 1 for i in range(4)]))
-    return t
+def dev_closing_stage() -> st.Stage:
+    """The dev closing's stage of its own: the playfield (the sub and the creature of the zone) and the hidden deck (water, the ship, the sub and the creature again, the lamp, the sea), without a crane or a crew."""
+    s = stage("the closing's actors: two shots, the sub and a creature of the zone, a lamp")
+    s.actor("playfield", kind="group", at=st.PLAYFIELD_AT, size=st.PLAYFIELD_SIZE)
+    s.actor("creature", kind="frames", frames=st.CREATURE_FRAMES, picture=CREATURE[0], at=(200, 232), parent="playfield")
+    s.actor("sub", kind="frames", frames=st.SUB_FRAMES, at=(184, 212), parent="playfield")
+    s.actor("deck", kind="group", at=st.PLAYFIELD_AT, size=st.PLAYFIELD_SIZE, visible=False)
+    s.actor("water", kind="fill", at=st.PLAYFIELD_AT, size=st.PLAYFIELD_SIZE, color=st.WATER_COLOR, parent="deck")
+    s.actor("ship", picture=st.picture(st.SHIP_PICTURE), at=st.SHIP_AT, parent="deck")
+    s.actor("deck_creature", kind="frames", frames=st.CREATURE_FRAMES, picture=CREATURE[0], at=(200, 180), parent="deck")
+    s.actor("deck_sub", kind="frames", frames=st.SUB_FRAMES, at=(184, 160), parent="deck")
+    s.actor("lamp", picture=LAMP[0], at=st.POD_AT, parent="deck")
+    s.actor("sea", picture=st.picture(st.SEA_PICTURE), at=st.SEA_AT, parent="deck")
+    return s
 
 
-def expert_closing_stage() -> st.Stage:
-    """The Expert closing's stage: the legacy pack's places for the pictures (`step_story.expert_closing_stage`), the dev pictures' own heights for the cable's pieces and the sailors standing where their programs start."""
-    return st.expert_closing_stage("Dev pack: the places of the original's pictures, the cable stacked of the dev pictures' 48 rows, the sailors at the starts of their programs (tools/dev_pack/dev_story.py).",
-                                   [(300 + 40 * m, 214) for m in range(6)], (CRANE_PIECE_HEIGHT, CRANE_PIECE_HEIGHT, CRANE_PIECE_HEIGHT))
+def dev_closing_scene() -> st.Scene:
+    """The dev closing's scene: its stage, the film and the wait played in turn over the sector (no backdrop), the closing song, deaf to every key until the wait's cue `listen`."""
+    return st.Scene("Dev pack: a closing of our own for dev_tour: the film (the lift, the cut to the deck, the deck's shot) and the wait for a key, over the sector in play (tools/dev_pack/dev_story.py).",
+                    "dev_closing_stage", [], ["dev_closing_film", "dev_closing_wait"], "closing", [], backdrop=False, deaf_until_listen=True)
 
 
 def voyager_closing_stage() -> st.Stage:
@@ -362,7 +362,7 @@ def voyager_closing_script() -> str:
 def write_all() -> int:
     story = DEV / "data" / "story"
     for name, build in (("news_ambient", news_ambient), ("logo_show", logo_show), ("title_ship", title_ship), ("title_reveal", title_reveal),
-                        ("expert_hoist", expert_hoist), ("expert_deck", expert_deck), ("expert_wait", expert_wait)):
+                        ("dev_closing_film", dev_closing_film), ("dev_closing_wait", dev_closing_wait)):
         write_text(story / (name + ".tres"), build().render())
     write_text(story / "opening.tres", opening().render())
     write_text(story / "logo.tres", logo_scene().render())
@@ -371,7 +371,8 @@ def write_all() -> int:
     write_text(story / "news_cartoon.tres", news_cartoon_scene().render())
     write_text(story / "title_stage.tres", title_stage().render())
     write_text(story / "title.tres", title_scene().render())
-    write_text(story / "expert_closing_stage.tres", expert_closing_stage().render())
+    write_text(story / "dev_closing_stage.tres", dev_closing_stage().render())
+    write_text(story / "dev_closing.tres", dev_closing_scene().render())
     write_text(story / "voyager_closing_stage.tres", voyager_closing_stage().render())
     write_text(story / "closing_crew.tres", closing_crew())
     write_text(story / "story_script.tres", story_script())

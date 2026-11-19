@@ -33,8 +33,7 @@ running). Paths are under `godot/`. A pack on the chain inherits whatever is pro
 - `src/core/catalog.gd:46` `ORIGINAL_CAMPAIGNS = [voyager, expert]`: campaign list order, the saved `game` number to a campaign;
   `src/resources/player_profile.gd` (`Game` enum; hints off for `expert`, new and loaded players); `addons/pack_tools/pack_tool_dialog.gd:141`
   (the campaigns offered for export leave out the original's two).
-- `src/packs/pack_check.gd:23` `OWN_CLOSINGS = [voyager, expert]` (the closing scenes a campaign may name without the generic finale) and
-  `src/gameplay/game.gd:210` (maps `voyager`/`expert` to their closing scenes).
+- `src/gameplay/game.gd` `_closing_of`, `Campaign.VOYAGER_CLOSING` and the Voyager closing's lines of `PackNeeds` / `PackCheck`: the one closing the game plays with code (`VoyagerClosing`), named `voyager_closing` by the legacy Voyager campaign; every other `closing_scene` is a scene file.
 - `src/checks/sector_changes.gd` compares a sector with the original's tables (`fixtures/original`): only the line diff, `sprite_sets_of` and
   "has no original" are engine; it reads the `DELIBERATE_*` constants out of eight legacy test files by path (`sector_changes.gd:52-59`: seven
   `res://tests/legacy/test_*_fidelity.gd` and `test_foe_asm_legacy.gd`).

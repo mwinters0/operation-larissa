@@ -51,11 +51,7 @@ const FILES: Dictionary = {
 	"data/voice_cues.tres": "VoiceCues",
 	"data/music_catalog.tres": "MusicCatalog",
 	"data/story/opening.tres": "OpeningList",
-	"data/story/expert_closing_stage.tres": "CutsceneStage",
 	"data/story/voyager_closing_stage.tres": "CutsceneStage",
-	"data/story/expert_hoist.tres": "CutsceneTimeline",
-	"data/story/expert_deck.tres": "CutsceneTimeline",
-	"data/story/expert_wait.tres": "CutsceneTimeline",
 	"data/story/voyager_closing_script.tres": "VoyagerClosingScript",
 	"data/story/closing_crew.tres": "ClosingCrewScripts",
 	"data/ui/hud_layout.tres": "HudLayout",
@@ -156,7 +152,7 @@ static func class_of(rel: String) -> String:
 	for folder: String in CLASS_OF_FOLDER:
 		if rel.begins_with(folder):
 			return CLASS_OF_FOLDER[folder]
-	return named_by_opening().get(rel, "")
+	return named_by_opening().get(rel, named_by_closings().get(rel, ""))
 
 
 ## The files the opening names (a test reads it too), with the class each holds: each scene a `StoryScene` and each story a `StoryScript`, and what a scene names: its stage a `CutsceneStage`, each looping or one-shot timeline a `CutsceneTimeline`, as the chain in use
@@ -170,14 +166,28 @@ static func named_by_opening() -> Dictionary:
 		if part.kind == OpeningPart.STORY:
 			named[Catalog.STORY_REL % part.name] = "StoryScript"
 		elif part.kind == OpeningPart.SCENE:
-			named[Catalog.STORY_REL % part.name] = "StoryScene"
-			var scene := Catalog.story_scene(part.name)
-			if scene == null:
-				continue
-			named[Catalog.STORY_REL % scene.stage] = "CutsceneStage"
-			for timeline_name in scene.all_timelines():
-				named[Catalog.STORY_REL % timeline_name] = "CutsceneTimeline"
+			_name_scene(part.name, named)
 	return named
+
+
+## The files the closings name, as `named_by_opening` does the opening's: the scene each campaign of the chain gives as its `closing_scene` (a `StoryScene`), its stage and its timelines. The Voyager closing is no scene file yet (`Campaign.VOYAGER_CLOSING`); `FILES` holds its files.
+static func named_by_closings() -> Dictionary:
+	var named := {}
+	for campaign in Catalog.campaigns():
+		if campaign.closing_scene != &"" and campaign.closing_scene != Campaign.VOYAGER_CLOSING:
+			_name_scene(campaign.closing_scene, named)
+	return named
+
+
+## The scene `scene_name`, its stage and its timelines as files of `named`, each with its class (the ones the chain does not hold are named all the same: that they are missing is the scene's and `PackCheck`'s to say).
+static func _name_scene(scene_name: StringName, named: Dictionary) -> void:
+	named[Catalog.STORY_REL % scene_name] = "StoryScene"
+	var scene := Catalog.story_scene(scene_name)
+	if scene == null:
+		return
+	named[Catalog.STORY_REL % scene.stage] = "CutsceneStage"
+	for timeline_name in scene.all_timelines():
+		named[Catalog.STORY_REL % timeline_name] = "CutsceneTimeline"
 
 
 ## The chain `first` and its bases make, with nothing under it: no `dev` is appended when a link is broken (the chain then stops at the broken link; `Packs.resolve`

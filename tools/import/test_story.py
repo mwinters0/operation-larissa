@@ -185,7 +185,7 @@ def test_the_stages_put_every_actor_at_its_point_of_the_position_table_in_draw_o
 
 @pytest.mark.legacy
 def test_every_actor_a_legacy_timeline_names_is_on_its_stage():
-    actors = {"news_cartoon_stage": step_story.build_news_stage(), "title_stage": step_story.build_title_stage()}
+    actors = {"news_cartoon_stage": step_story.build_news_stage(), "title_stage": step_story.build_title_stage(), "expert_closing_stage": step_story.build_expert_closing_stage()}
     played_on = {scene.stage: scene.loops + scene.timelines for scene in step_story.scenes().values()}
     for stage_name, timeline_names in played_on.items():
         held = {a["name"] for a in actors[stage_name].actors}
@@ -208,7 +208,7 @@ def test_the_expert_closing_stage_lists_the_playfield_then_the_hidden_deck_in_th
     assert [n for n in order[deck:] if "_piece_" not in n] == ["deck", "water", "cloud", "ship"] + ["crew_%d" % i for i in range(6)] + ["deck_artifact", "deck_sub", "deck_cable", "pod", "sea"]
     assert actors["deck"]["visible"] is False and actors["playfield"]["visible"] is True
     assert (actors["playfield"]["at"], actors["playfield"]["size"]) == ((16, 32), (608, 288)) and (actors["deck"]["at"], actors["deck"]["size"]) == ((16, 32), (608, 288))
-    assert [(actors[n]["kind"], actors[n]["frames"]) for n in ("artifact", "sub", "deck_artifact", "deck_sub")] == [("frames", "artifact"), ("frames", "sub")] * 2
+    assert [(actors[n]["kind"], actors[n]["frames"]) for n in ("artifact", "sub", "deck_artifact", "deck_sub")] == [("frames", "zone_creatures"), ("frames", "sub")] * 2
     assert (actors["artifact"]["at"], actors["sub"]["at"]) == ((200, 232), (184, 212)) and actors["pod"]["at"] == (568, 104)
     assert all(actors["crew_%d" % i]["parent"] == "deck" and not actors["crew_%d" % i]["visible"] and not actors["crew_%d" % i]["picture"] for i in range(6))
     assert actors["crew_2"]["at"] == (368, 224)
@@ -224,9 +224,6 @@ def test_the_cable_is_a_hook_three_links_a_ball_and_links_stacked_by_their_heigh
         assert [p["at"] for p in pieces[:6]] == [(220, -25), (236, -37), (236, -49), (236, -61), (228, -83), (236, -95)]        # a piece's top row rests on the one below: the heights 26, 12, 12, 12, 22
         assert all(p["parent"] == name for p in pieces)
         assert -pieces[-1]["at"][1] >= step_story.CABLE_REACH - step_story.LINK_HEIGHT       # built as far up as the reach
-    taller = {a["name"]: a for a in step_story.expert_closing_stage("test", [(0, 0)] * 6, (48, 48, 48)).actors}
-    assert [taller["cable_piece_%02d" % i]["at"][1] for i in range(3)] == [-47, -95, -143]
-    assert len([n for n in taller if n.startswith("cable_piece_")]) == 7
 
 
 @pytest.mark.legacy
@@ -238,6 +235,23 @@ def test_every_actor_a_legacy_closing_timeline_names_is_on_its_stage():
     voyager = {a["name"]: a for a in step_story.build_voyager_closing_stage().actors}
     assert list(voyager) == ["playfield", "sub", "helicopter", "rotor"] and voyager["sub"]["frames"] == "sub" and not voyager["helicopter"]["visible"] and not voyager["rotor"]["visible"]
     assert set(step_story.stages()) >= {"expert_closing_stage", "voyager_closing_stage"}
+
+
+def test_the_expert_closing_scene_is_laid_over_the_sector_deaf_until_its_last_timeline_says_listen():
+    scene = step_story.build_expert_closing_scene()
+    assert (scene.stage, scene.loops, scene.timelines, scene.song) == ("expert_closing_stage", [], ["expert_hoist", "expert_deck", "expert_wait"], "closing")
+    assert scene.backdrop is False and scene.deaf_until_listen is True and scene.stage in step_story.stages()
+    text = scene.render()
+    assert 'script_class="StoryScene"' in text and "backdrop = false" in text and "deaf_until_listen = true" in text and 'song = &"closing"' in text
+    assert "backdrop" not in step_story.build_news_scene().render() and "deaf_until_listen" not in step_story.build_title_scene().render()
+    assert step_story.scenes()[step_story.EXPERT_CLOSING_SCENE].render() == text
+
+
+def test_the_deck_cuts_to_the_deck_at_its_first_moment_and_the_wait_listens_from_its_first():
+    deck = {(actor, prop): keys for actor, prop, keys, _smooth in step_story.build_expert_deck().tracks}
+    assert deck["playfield", "visible"] == [(0, "false")] and deck["deck", "visible"] == [(0, "true")]
+    wait = step_story.build_expert_wait()
+    assert wait.loop and wait.cues == [(0, "event", "listen")]
 
 
 def test_the_news_cartoon_scene_names_its_stage_timelines_song_and_five_speech_steps_in_order():
@@ -258,7 +272,7 @@ def test_the_title_scene_plays_the_ship_then_the_reveal_stops_its_song_there_and
     assert (scene.song_stops_at, scene.prompt_song) == ("title_reveal", "opening") and scene.stage in step_story.stages()
     text = scene.render()
     assert 'script_class="StoryScene"' in text and 'song_stops_at = &"title_reveal"' in text and 'prompt_song = &"opening"' in text
-    assert set(step_story.scenes()) == {"news_cartoon", "title"}
+    assert set(step_story.scenes()) == {"news_cartoon", "title", "expert_closing"}
 
 
 def test_the_opening_lists_the_cartoon_the_title_that_leads_on_with_intro_and_the_story_and_starts_over():

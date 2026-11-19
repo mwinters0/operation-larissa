@@ -55,7 +55,7 @@ func test_a_sector_that_is_in_no_campaign_plays_the_default_song() -> void:
 
 func test_the_songs_the_game_names_itself_are_in_the_catalog() -> void:
 	var catalog := Catalog.music_catalog()
-	for song in [&"title", &"opening", AudioService.SONG_CLOSING, &"finale"]:
+	for song in [&"title", &"opening", &"closing", &"finale"]:
 		assert_object(catalog.stream_named(song)).override_failure_message(String(song)).is_not_null()
 		assert_int(MusicCatalog.id_of(song)).override_failure_message(String(song)).is_greater_equal(0)
 

@@ -5,7 +5,6 @@ extends GdUnitTestSuite
 
 const GAME_SCENE := "res://src/gameplay/game.tscn"
 const SIGN_IN_SCENE := "res://src/ui/sign_in.tscn"
-const EXPERT_SCENE := "res://src/story/expert_closing.tscn"
 var _roster := Scratch.path("test_fidelity_legacy_roster.json")
 var _hall := Scratch.path("test_fidelity_legacy_hall.json")
 
@@ -81,11 +80,20 @@ func test_the_songs_around_the_dock_are_the_originals() -> void:
 
 
 func test_the_expert_closing_song_ends_with_the_sequence() -> void:
-	var closing: ExpertClosing = auto_free(load(EXPERT_SCENE).instantiate())
-	add_child(closing)
-	assert_str(Audio.song).is_equal(AudioService.SONG_CLOSING)
-	closing.finish()
-	assert_str(Audio.song).is_equal(AudioService.NO_MUSIC)         # not carried into the Hall of Fame
+	_player = SaveStore.add_player("Expert", 1)
+	_player.hints_enabled = false
+	_player.progress = Progression.EXPERT_FINALE
+	GameState.profile = _player
+	var game := await _start()
+	assert_int(game.world.sector_index).is_equal(31)
+	game.world.foe_context.semaphore |= 1 << SimWorld.FINALE_SEMAPHORE_BIT
+	game.world.load_screen(Catalog.sector(31).finale_screen)
+	game.world.tick()
+	assert_object(game.closing).is_instanceof(TimelineSegment)
+	assert_str(Audio.song).is_equal(&"closing")
+	game.closing.cue(&"listen")                                    # (the real thing ends with a key after about 50 s of film)
+	game.closing.advance()
+	assert_str(Audio.song).is_equal(AudioService.NO_MUSIC)         # ... and ends with it: not carried into the Hall of Fame
 
 
 func test_the_return_to_sign_in_question_has_the_originals_words() -> void:

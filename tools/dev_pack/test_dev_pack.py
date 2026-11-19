@@ -231,7 +231,7 @@ def test_a_new_sector_is_made_by_the_generator_in_a_few_lines(tmp_path, monkeypa
 def test_the_inventory_is_the_legacy_packs_file_list():
     legacy = devlib.LEGACY
     everything = ["pack.json"] + inventory._tree(legacy, "assets") + inventory._tree(legacy, "data") + inventory._tree(legacy, "midi")
-    files = sorted(f for f in everything if not inventory.is_audio(f) and not f.startswith(("assets/", "data/sectors/", "data/campaigns/"))
+    files = sorted(f for f in everything if not inventory.is_audio(f) and not inventory.is_a_closing_scene(f) and not f.startswith(("assets/", "data/sectors/", "data/campaigns/"))
                    and f != "data/problems/problem_art_index.json")
     assert files == INV["files"]
     assert sorted(f for f in everything if inventory.is_audio(f)) == INV["audio"]
@@ -258,12 +258,12 @@ def test_nothing_of_the_original_was_copied_into_the_pack():
 def test_every_actor_a_dev_timeline_names_is_on_its_stage():
     """The pack check says it of any pack; this keeps the generator from writing a dev timeline for an actor its own stage lacks."""
     played_on: dict[str, list[str]] = {}
-    for scene_name in ("logo", "news_cartoon", "title"):
+    for scene_name in ("logo", "news_cartoon", "title", "dev_closing"):
         scene = (DEV / "data" / "story" / (scene_name + ".tres")).read_text()
         found = re.search(r'^stage = &"([^"]+)"', scene, re.MULTILINE)
         assert found
         played_on[found.group(1)] = [name for line in re.findall(r"^(?:loops|timelines) = (.*)$", scene, re.MULTILINE) for name in re.findall(r'&"([^"]+)"', line)]
-    played_on["expert_closing_stage"] = ["expert_hoist", "expert_deck", "expert_wait"]          # (ExpertClosing.TIMELINES; the Voyager flight is made from its script)
+    # (the Voyager flight is made from its script)
     for stage_name, timeline_names in played_on.items():
         held = set(re.findall(r'^name = &"([^"]+)"', (DEV / "data" / "story" / (stage_name + ".tres")).read_text(), re.MULTILINE))
         for name in timeline_names:

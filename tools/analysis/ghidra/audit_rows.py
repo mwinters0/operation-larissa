@@ -104,9 +104,9 @@ R("M", "ACTION.C", "DoAction", "StopSectorMusic", "song stops: when the blinking
   "game_flow.gd:run_problem (problem opens), on_dock_reached (dock), complete_sector (silence for the supply message)")
 R("M", "CLOSING.C", "VoyagerClosingSequence", "StopSectorMusic,PlayBackgroundMusic,StopBackgroundMusic", "StopSectorMusic at the start; 'if (DAT_00446600 != 0) PlayBackgroundMusic(0)' is dead (DAT_00446600 is never written, always 0); StopBackgroundMusic after the pages", "partly (the PlayBackgroundMusic branch is dead)", "PORTED",
   "game_flow.gd:play_closing (stop_music before the closing starts); voyager_closing.gd:show_pages (stop_music)")
-R("M", "CLOSING.C", "ExpertClosingSequence", "StopSectorMusic,PlayExpertClosingMusic", "closing song (id 9501) starts with the sequence", YES, "PORTED", "expert_closing.gd:_ready (SONG_CLOSING)")
+R("M", "CLOSING.C", "ExpertClosingSequence", "StopSectorMusic,PlayExpertClosingMusic", "closing song (id 9501) starts with the sequence", YES, "PORTED", "timeline_segment.gd:_ready (the song closing of the scene expert_closing)")
 R("M", "CLOSING.C", "ExpertClosingSequence", "StopBackgroundMusic", "song stops when the sequence ends (before the Hall of Fame)", YES, "PORTED",
-  "expert_closing.gd:finish (stop_music when the sequence ends, before the Hall of Fame); test_flow_fidelity_legacy.gd test_the_expert_closing_song_ends_with_the_sequence")
+  "game.gd:show_closing (stop_music when the closing ends, before the Hall of Fame); test_flow_fidelity_legacy.gd test_the_expert_closing_song_ends_with_the_sequence")
 R("M", "OPENING.C", "OpeningMusicCue", "PlayBackgroundMusic,StopBackgroundMusic", "cue 1: 9502 (opening cartoon) ; cue 3: 9503 (title) ; cue 4: stop after the 0x33 sound ; cue 5: stop, play 9502 ; cue 6: stop", YES, "PORTED",
   "timeline_segment.gd:_ready (9502), data/story/title.tres (song 9503, song_stops_at), timeline_segment.gd:_verb_prompt (9502), opening.gd:_ready and _leave (stop)")
 R("M", "SOUNDHI.C", "PlaySectorMusic", "*", "internal: if flag != 0 PlayBackgroundMusic(SectorMusicId)", YES, "PORTED", "audio.gd:play_music")
@@ -203,7 +203,7 @@ R("T", "OPENING.C", "TitleScreenPromptLoop", "*", "title screen: 292-tick hold p
 R("T", "OPENING.C", "WaitEnterSpaceEscOrTicks", "*", "wait n ticks (292) for Enter / Space / Esc", YES, "PORTED", "data/story/title_reveal.tres (marks, 292 ticks), timeline_segment.gd:advance / _end_hold")
 R("T", "OPENING.C", "CartoonTypeLine", "*", "cartoon teletype: 2 + 1 ticks per character (3 ticks)", YES, "PORTED", "timeline_segment.gd header comment, data/story/news_report.tres (3 ticks per character)")
 R("T", "CLOSING.C", "VoyagerClosingSequence", "*", "6-tick steps (rise, turn, fly), 12-tick pictures for the transformation", YES, "PORTED", "voyager_closing_script.gd:step_ticks (6), change_picture_steps")
-R("T", "CLOSING.C", "ExpertClosingSequence", "*", "18-tick steps for the whole choreography", YES, "PORTED", "data/story/expert_hoist.tres, expert_deck.tres, expert_wait.tres (18-tick steps)")
+R("T", "CLOSING.C", "ExpertClosingSequence", "*", "18-tick steps for the whole choreography", YES, "PORTED", "data/story/expert_hoist.tres, expert_deck.tres, expert_wait.tres (18-tick steps), played by the scene expert_closing")
 R("T", "DATABANK.C", "AnimateLogScan", "DelayTicks", "scan picture 5 ticks x 8 pictures x 6 sweeps = 240 ticks", YES, "PORTED", "data/rules/durations.json log_scan (ticks_per_picture 5, sweeps 6; CanisterLog.scan_ticks), log_screen.gd:advance_scan / _show_scan_picture")
 R("T", "SIGNIN.C", "AnimateSecurityScan", "DelayTicks", "scan picture 5 ticks", YES, "PORTED", "sign_in.gd:scan_picture_ticks")
 R("T", "SIGNIN.C", "SignInSpeech", "DelayTicks", "stage 2/3: 18 ticks before the scan", YES, "PORTED", "sign_in.gd:pre_scan_ticks (_enter_game)")
@@ -326,7 +326,7 @@ R("M", "OPTIONS.C", "MenuMusic", "SetMusicOn", "Options > Music answered Yes: th
 R("M", "OPTIONS.C", "MenuSoundEffects", "SetSoundOn", "Options > Sound Effects answered No: all 0x34 effects are stopped", YES, "PORTED", "audio.gd:set_bus_enabled (stop_sfx)")
 R("M", "SOUNDHI.C", "ToggleAllSound", "SetMusicOn,SetSoundOn", "all-sound toggle: no caller and no pointer to it anywhere in the EXE", "dead", "N/A", "audio.gd:set_bus_enabled per-bus switches")
 R("M", "WORLD.C", "FreeSectorResources", "FreeSectorStopMusic", "leaving a sector (death, new sector, quit to sign-in) stops the song", YES, "PORTED", "game.gd:_leave / game_flow.gd:begin_sector replaces the song")
-R("M", "CLOSING.C", "FreeClosingResources", "FreeClosingStopMusic", "leaving the closing sequence stops the song", YES, "PORTED", "expert_closing.gd:finish and voyager_closing.gd:show_pages (stop_music)")
+R("M", "CLOSING.C", "FreeClosingResources", "FreeClosingStopMusic", "leaving the closing sequence stops the song", YES, "PORTED", "game.gd:show_closing and voyager_closing.gd:show_pages (stop_music)")
 R("T", "SUPPLY.C", "DisplaySupplyStationMessage", "WaitEnterOrTicks", "supply message after a sector: up to 1460 ticks (20 s) for Enter", YES, "PORTED", "surface_ship_screen.gd:wait_ticks (Enter only; the timer starts after the speech)")
 R("T", "OPENING.C", "TitleRevealText", "WaitEnterSpaceEscOrTicks", "title scene: 292 ticks hold after the 'Presents' strip", YES, "PORTED", "data/story/title_reveal.tres (marks, 292 ticks)")
 R("X", "LOCK.C", "DoCombinationLock", "WriteMessageText", "lock intro / outcome texts written in the monitor (ids from the lock bundle)", YES, "PORTED", "combination_lock.gd (lock texts from data/problems/problem_type_00.tres)")

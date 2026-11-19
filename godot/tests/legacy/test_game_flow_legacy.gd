@@ -130,7 +130,9 @@ func test_the_expert_finale_plays_the_closing_then_the_hall_of_fame() -> void:
 	game.world.foe_context.semaphore |= 1 << SimWorld.FINALE_SEMAPHORE_BIT
 	game.world.load_screen(Catalog.sector(31).finale_screen)
 	game.world.tick()
-	assert_object(game.closing).is_instanceof(ExpertClosing)
+	assert_object(game.closing).is_instanceof(TimelineSegment)
+	assert_str((game.closing as TimelineSegment).scene_name).is_equal(&"expert_closing")
+	assert_int((game.closing as TimelineSegment).zone).is_equal(Catalog.sector(31).zone)   # the creature pictures are the zone of the sector in play
 	game.closing.advance()                                             # Enter is thrown away: the original reads every key until the last stage
 	assert_object(game.closing).is_not_null()
 	game.closing.finish()                                              # (the real thing ends with a key after about 50 s of film)

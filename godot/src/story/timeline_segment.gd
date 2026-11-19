@@ -1,6 +1,6 @@
 class_name TimelineSegment
 extends StorySegment
-## A part of the opening that PLAYS A SCENE FILE (`StoryScene`, `data/story/<scene>.tres` of the pack chain): the news cartoon is the scene `news_cartoon`. The segment builds the scene's stage
+## A part of the opening or the end of a game that PLAYS A SCENE FILE (`StoryScene`, `data/story/<scene>.tres` of the pack chain): the news cartoon is the scene `news_cartoon`, the Expert game's closing the scene `expert_closing`. The segment builds the scene's stage
 ## (`StageBuilder`), plays its timelines, starts its song and says its speech; nothing of what is drawn, when or by whom is in this script. Original: the first loop of `OpeningSequence` (OPENING.C)
 ## and its small speech state machine `CartoonSpeech` (0x42984d) for the news cartoon; the second half of `OpeningSequence` and `TitleScreenPromptLoop` (0x42a49a) for the title.
 ##
@@ -11,12 +11,19 @@ extends StorySegment
 ## LOOPING timeline has a player of its own (the alarm lights, the pulsing ring and the flickering console lights of the news cartoon are one such loop) and the ONE-SHOT timelines share one that plays them in order.
 ## What happens at a moment of a timeline is an event cue that is a VERB with its words (`StoryVerbs.VERBS`): `cue` parses it and calls `_verb_<name>`, so a verb is one more entry of `VERBS` and one more method, and a cue
 ## that names a verb the engine lacks is told once and does nothing (`StoryVerbs.problem`, the same judgement `PackCheck` uses). The speech is NOT in an animation, because how long a clip lasts is not known
-## when the animation is built: a coroutine (`_speak`) walks the scene's `speech` steps, waits each pause and `await`s the verb `speak` (the voice group of that name, `Audio.speak`). Space / Escape end the segment (`skip`); the director (`Opening`) reads the keys and forwards them.
+## when the animation is built: a coroutine (`_speak`) walks the scene's `speech` steps, waits each pause and `await`s the verb `speak` (the voice group of that name, `Audio.speak`). Space / Escape end the segment (`skip`); the director (`Opening`, `Game`) reads the keys and forwards them.
+##
+## A scene laid over the running sector (a closing: `StoryScene.backdrop` off) is handed the zone of that sector (`of`): the picture sets its stage may show are the engine's by fixed names (`FrameSets`). One that drops every key and click until the verb `listen` (`StoryScene.deaf_until_listen`,
+## the Expert closing: `ExpertClosingSequence` 0x41c650 reads and throws away every key until its last stage and has its click area only there) hears Enter, Space / Escape, any other key and a click only from then on, and any of them ends it.
 
 ## The scene's name (`Catalog.story_scene`).
 var scene_name: StringName = &""
 ## The scene, null when no pack of the chain holds it (the segment then ends at once).
 var scene: StoryScene
+## The zone of the sector the scene is laid over (`FrameSets.NO_ZONE`: none, as in the opening): what the creature pictures of its stage are.
+var zone: int = FrameSets.NO_ZONE
+## True from the verb `listen` on (a scene that is `deaf_until_listen` drops the keys and clicks before).
+var listening: bool = false
 ## Which node plays which actor of the scene's stage; the timelines' tracks are bound through it.
 var cast: CutsceneCast
 ## The node the stage's actors are made under.
@@ -37,12 +44,15 @@ var _chain_index: int = 0
 var _keys: Dictionary = {}                 # keycode -> the choice of the button it presses
 
 
-## A segment that plays the scene `name_of_scene`: the scene is built when the segment enters the tree.
-static func of(name_of_scene: StringName) -> TimelineSegment:
+## A segment that plays the scene `name_of_scene` over the sector of `in_zone` (`FrameSets.NO_ZONE`: none): the scene is built when the segment enters the tree. It takes no mouse event of its own (the director forwards the clicks of the opening, and a scene laid over the sector
+## hears the mouse through `_unhandled_input`; a stage's buttons are Controls of their own).
+static func of(name_of_scene: StringName, in_zone: int = FrameSets.NO_ZONE) -> TimelineSegment:
 	var segment := TimelineSegment.new()
 	segment.scene_name = name_of_scene
+	segment.zone = in_zone
 	segment.name = String(name_of_scene).to_pascal_case()
 	segment.size = Vector2(640, 400)
+	segment.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return segment
 
 
@@ -64,19 +74,21 @@ func _ready() -> void:
 	_speak()
 
 
-## The nodes of the scene, all of them: the black backdrop, the stage with the actors, a player for each loop and one for the one-shot timelines, with every animation installed. The one place they are made.
+## The nodes of the scene, all of them: the black backdrop (unless the scene has none), the stage with the actors, a player for each loop and one for the one-shot timelines, with every animation installed. The one place they are made.
 func _build() -> void:
 	for line in scene.unresolved():
 		TroubleLog.session.tell("[story] pack '%s': the scene '%s' %s" % [Catalog.story_pack_id(scene_name), scene_name, line])
-	var backdrop := ColorRect.new()
-	backdrop.name = "Backdrop"
-	backdrop.color = Color.BLACK
-	backdrop.size = size
-	add_child(backdrop)
+	if scene.backdrop:
+		var backdrop := ColorRect.new()
+		backdrop.name = "Backdrop"
+		backdrop.color = Color.BLACK
+		backdrop.size = size
+		backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(backdrop)
 	stage = Node2D.new()
 	stage.name = "Stage"
 	add_child(stage)
-	cast = CutsceneCast.new(self)
+	cast = CutsceneCast.of(self, zone)
 	cast.texts = _text
 	_wire_buttons(StageBuilder.build(scene.stage, stage, cast))
 	for timeline_name in scene.loops:
@@ -160,10 +172,13 @@ func finish() -> void:
 ##                     it never skips a picture)
 ##   another timeline follows    it begins in place of this one (the ship scene ends, the reveal starts from its first moment)
 ##   the last timeline (or none)    the scene ends
+## A scene that is `deaf_until_listen` hears Enter only once `listen` has run, and then Enter ends it.
 func advance() -> void:
 	if done:
 		return
-	if prompting:
+	if _is_deaf():
+		_heard()
+	elif prompting:
 		_choose(StageActor.INTRO)
 	elif not _end_hold():
 		if _chain_index + 1 < _chain.size():
@@ -200,11 +215,43 @@ func _end_hold() -> bool:
 	return true
 
 
+## Space / Escape end the scene at once, except in a scene that is `deaf_until_listen` (they are dropped until `listen`, and end it after).
+func skip() -> void:
+	if _is_deaf():
+		_heard()
+	else:
+		super.skip()
+
+
+## Does the scene drop every key and click until its verb `listen`?
+func _is_deaf() -> bool:
+	return scene != null and scene.deaf_until_listen
+
+
+## A key or a click that a deaf scene hears: it ends the scene once the verb `listen` has run; before, it is read and thrown away.
+func _heard() -> void:
+	if listening:
+		finish()
+
+
 ## A left-button release: Enter (the whole-screen hotspot 0xd), except over a button of the prompt: that is the button's own hotspot (0x975 / 0x977), whose release nobody answers (the buttons act on the PRESS, code 0x8975 / 0x8977).
 func click(at: Vector2) -> void:
+	if _is_deaf():
+		_heard()
+		return
 	if prompting and buttons.values().any(func(button: TextureButton) -> bool: return button.get_global_rect().has_point(at)):
 		return
 	advance()
+
+
+## A scene that is `deaf_until_listen` hears every other key and the mouse itself: the director forwards only Enter, Space / Escape and the opening's clicks.
+func _unhandled_input(event: InputEvent) -> void:
+	if not _is_deaf():
+		return
+	var key := event as InputEventKey
+	var button := event as InputEventMouseButton
+	if (key != null and key.pressed and not key.echo) or (button != null and button.pressed):
+		_heard()
 
 
 ## The prompt's keys: each button's own (`StageActor.hotkey`).
@@ -245,6 +292,11 @@ func cue(event: StringName) -> void:
 ## `end`: the scene is over.
 func _verb_end(_words: PackedStringArray) -> void:
 	finish()
+
+
+## `listen`: from here on the scene hears the keys and clicks it dropped (`StoryScene.deaf_until_listen`), and any of them ends it.
+func _verb_listen(_words: PackedStringArray) -> void:
+	listening = true
 
 
 ## `speak <group>`: the clips of the voice group, one after the other, until the last has been heard (`Audio.speak`: as long as the recording, or a silent wait when Voice is off). A coroutine: `cue` does not wait for it, `_speak` does.

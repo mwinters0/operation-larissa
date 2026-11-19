@@ -1,7 +1,7 @@
 class_name GenericFinale
 extends StorySegment
 ## The end of a game that has no closing scene of its own: a picture and a few lines of text, the way a student's campaign says
-## "well done". `Game.show_closing` puts it up when `Campaign.closing_scene` is none of the original's two ("voyager", "expert"); what it
+## "well done". `Game.show_closing` puts it up when `Campaign.closing_scene` is empty or names no scene any pack of the chain holds; what it
 ## shows is the campaign's own data (`Campaign.finale_text`, `finale_picture`), and when it is over the flow goes on to the Hall of Fame
 ## exactly as it does after the original's scenes.
 ##

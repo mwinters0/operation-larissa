@@ -20,6 +20,6 @@ log_voices = Array[StringName]([&"log_0", &"log_1", &"log_2", &"log_3"])
 supply_texts = Array[StringName]([&"Dev mission control: sector 0 is done.", &"Dev mission control: sector 1 is done.", &"Dev mission control: sector 2 is done.", &"Dev mission control: sector 3 is done."])
 supply_voices = Array[StringName]([&"supply_0", &"supply_1", &"supply_2", &"supply_3"])
 fallback_song = &"sector_song_1"
-closing_scene = &""
+closing_scene = &"dev_closing"
 finale_text = "The dev tour is done. Nothing of the original is in this game."
 finale_picture = "ui_picture/title_sky"

@@ -242,8 +242,8 @@ def finale_sector(index: int, zone: int) -> SectorSpec:
 # --- campaigns ----------------------------------------------------------------------------------------------------------------
 
 def campaign_tres(id: str, title: str, sectors: list[int], finales: list[int], edu: list[int], finale_text: str,
-                  provenance: str = "Dev pack: a campaign of our own (tools/dev_pack/dev_sectors.py).", voiced: bool = False) -> str:
-    """`voiced`: the log entries and supply messages are spoken, by the pack's voice groups `log_<k>` and `supply_<k>` (k from 0, in the campaign's order)."""
+                  provenance: str = "Dev pack: a campaign of our own (tools/dev_pack/dev_sectors.py).", voiced: bool = False, closing_scene: str = "") -> str:
+    """`voiced`: the log entries and supply messages are spoken, by the pack's voice groups `log_<k>` and `supply_<k>` (k from 0, in the campaign's order). `closing_scene`: the scene file that ends the game (empty: the generic finale)."""
     entries = len(sectors)
     t = tres.Tres("Resource", "Campaign", SCRIPTS + "campaign.gd")
     names = lambda items: tres.array("StringName", ['&%s' % tres.s(x) for x in items])
@@ -263,7 +263,7 @@ def campaign_tres(id: str, title: str, sectors: list[int], finales: list[int], e
     t.set("supply_texts", names("Dev mission control: sector %d is done." % s for s in sectors))
     t.set("supply_voices", names(("supply_%d" % i if voiced else "") for i in range(len(sectors))))
     t.set("fallback_song", '&"sector_song_1"')
-    t.set("closing_scene", '&""')
+    t.set("closing_scene", '&"%s"' % closing_scene)
     t.set("finale_text", tres.s(finale_text))
     t.set("finale_picture", tres.s("ui_picture/title_sky"))
     return t.render()
@@ -274,7 +274,7 @@ def dev_tour() -> tuple[list[SectorSpec], str]:
                standard_sector(2, 2, creatures=2, comment="Zone 2, two creatures."), standard_sector(3, 3, creatures=3, comment="Zone 3, three creatures."),
                finale_sector(4, 4)]
     text = campaign_tres("dev_tour", "Dev tour", [0, 1, 2, 3], [4], [0, 1, 1, 2, 2], "The dev tour is done. Nothing of the original is in this game.",
-                         voiced=True)
+                         voiced=True, closing_scene="dev_closing")
     return sectors, text
 
 

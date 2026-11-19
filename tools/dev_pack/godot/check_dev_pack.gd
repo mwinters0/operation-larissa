@@ -153,17 +153,17 @@ func _layouts() -> void:
 		for i in calc.key_names.size():
 			if not picture.encloses(calc.key_rects[i]):
 				_fail("calculator key %s is outside the calculator picture" % calc.key_names[i])
-	var closing_sets: Array[StringName] = ExpertClosing.FRAME_SETS
-	for stage_file in ["logo_stage", "news_cartoon_stage", "title_stage", "expert_closing_stage", "voyager_closing_stage"]:
+	for stage_file in ["logo_stage", "news_cartoon_stage", "title_stage", "dev_closing_stage", "voyager_closing_stage"]:
 		var stage := load(ROOT + "data/story/%s.tres" % stage_file) as CutsceneStage
 		if stage != null:
-			for message in stage.problems(closing_sets if stage_file.ends_with("closing_stage") else []):
+			var offered: Array[StringName] = FrameSets.over_a_sector() if stage_file == "dev_closing_stage" else FrameSets.offered(FrameSets.NO_ZONE)
+			for message in stage.problems(offered):
 				_fail("%s: %s" % [stage_file, message])
 	var cartoon := load(ROOT + "data/story/news_report.tres") as CutsceneTimeline
 	if cartoon != null:
 		for message in cartoon.problems():
 			_fail("news report: " + message)
-	for scene_file in ["logo", "news_cartoon", "title"]:
+	for scene_file in ["logo", "news_cartoon", "title", "dev_closing"]:
 		if not load(ROOT + "data/story/%s.tres" % scene_file) is StoryScene:
 			_fail("data/story/%s.tres is not a StoryScene" % scene_file)
 	if not load(ROOT + "data/story/opening.tres") is OpeningList:

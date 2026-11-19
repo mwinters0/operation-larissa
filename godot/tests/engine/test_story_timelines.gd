@@ -2,9 +2,9 @@ class_name TestStoryTimelines
 extends GdUnitTestSuite
 ## Teaches: a cutscene's choreography is data of a pack and can be checked as data: well formed, and every picture, text, frame and sound it names exists in the
 ## registry. The timelines the chain answers (`Catalog.story_timeline`, here the dev pack's own) are checked, and the scripts that are not timelines: the story pages, the
-## Voyager's flight, the sailors of the Expert closing. (The original's numbers against its tables: tests/legacy/test_story_timelines_legacy.gd.)
+## Voyager's flight, the sailors of the Expert closing (the importer's twin). (The original's numbers against its tables: tests/legacy/test_story_timelines_legacy.gd.)
 
-const TIMELINES: Array[StringName] = [&"news_report", &"news_ambient", &"title_ship", &"title_reveal", &"expert_hoist", &"expert_deck", &"expert_wait"]
+const TIMELINES: Array[StringName] = [&"news_report", &"news_ambient", &"title_ship", &"title_reveal", &"dev_closing_film", &"dev_closing_wait"]
 
 
 func _all() -> Array[CutsceneTimeline]:
@@ -38,7 +38,7 @@ func test_every_name_in_the_timelines_exists() -> void:
 				CutsceneTrack.PROP_FRAME:
 					for value in track.values:
 						if value is StringName:
-							assert_int(registry.index_of(&"frame", String(value), 6)).is_greater_equal(0)
+							assert_bool(range(Catalog.ZONE_COUNT).any(func(zone: int) -> bool: return registry.index_of(&"frame", String(value), zone) >= 0)).override_failure_message(String(value)).is_true()
 		for cue_entry in timeline.cues:
 			if cue_entry.kind == CutsceneCue.SOUND:
 				assert_int(registry.index_of(&"sound", String(cue_entry.cue_name))).is_greater_equal(0)

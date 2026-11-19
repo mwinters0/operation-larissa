@@ -67,4 +67,6 @@ func test_the_declared_files_are_what_legacy_holds_under_data() -> void:
 	held.sort()
 	for named in PackNeeds.named_by_opening():                      # (the stage and the timelines the opening and its scenes name are theirs to name: not in `FILES`)
 		held.erase(named)
+	for named in PackNeeds.named_by_closings():                     # (so are those of a campaign's closing scene)
+		held.erase(named)
 	assert_array(declared).is_equal(held)

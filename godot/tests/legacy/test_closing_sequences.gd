@@ -1,11 +1,12 @@
 class_name TestClosingSequences
 extends GdUnitTestSuite
 ## Teaches: checking a choreography by sampling it. The Voyager closing is one animation built from loop counts;
-## we seek to moments in it and look where the pieces are. The Expert closing is checked the same way, and
-## both are checked for tracks that name no node.
+## we seek to moments in it and look where the pieces are. The Expert closing (the scene `expert_closing` played by a `TimelineSegment`, over the zone of the Expert finale) is checked the same way,
+## and both are checked for tracks that name no node.
 
 const VOYAGER := "res://src/story/voyager_closing.tscn"
-const EXPERT := "res://src/story/expert_closing.tscn"
+const EXPERT := &"expert_closing"                      # the scene file the Expert campaign names
+const EXPERT_FINALE := 31                              # the sector the closing is played over: its zone is what the creature pictures are
 
 ## The original's loops as this test reads them (CLOSING.C; the importer has its own copy of the numbers in
 ## tools/import/step_story.py, the data files are written from that). Keeping them here as well means that a wrong number in the
@@ -137,31 +138,68 @@ func test_voyager_closing_skip_ends_it_once() -> void:
 
 
 ## Seeks `closing` to the start of step `step` of the animation `name` and applies the keys there.
-func _at_step(closing: ExpertClosing, name: StringName, step: int) -> void:
-	closing.animations.play(name)
-	closing.animations.seek(step * EXPERT_STEP + 0.001, true)
+func _at_step(closing: TimelineSegment, name: StringName, step: int) -> void:
+	closing.script_player.play(StringName("expert_" + name))
+	closing.script_player.seek(step * EXPERT_STEP + 0.001, true)
 
 
-## Plays the hoist out (the way the director's clock would) so that the closing is on its deck stage.
-func _to_stage(closing: ExpertClosing, stage: ExpertClosing.Stage) -> void:
-	var hoist := closing.animations.get_animation(&"hoist")
-	closing.animations.advance(hoist.length + 0.01)
-	if stage == ExpertClosing.Stage.WAIT:
-		var deck := closing.animations.get_animation(&"deck")
-		closing.animations.advance(deck.length + 0.01)
+## The animation `name` (`hoist`, `deck`, `wait`) of the closing: the timeline `expert_<name>` on the player that plays the scene's one-shot timelines in turn.
+func _animation(closing: TimelineSegment, name: StringName) -> Animation:
+	return closing.script_player.get_animation(StringName("expert_" + name))
 
 
-func _expert() -> ExpertClosing:
-	var closing: ExpertClosing = auto_free(load(EXPERT).instantiate())
+## Which shot the closing is on, by the timeline that plays.
+enum Shot { HOIST, DECK, WAIT }
+
+
+func _shot(closing: TimelineSegment) -> Shot:
+	return [&"expert_hoist", &"expert_deck", &"expert_wait"].find(closing.script_player.current_animation) as Shot
+
+
+## Plays the hoist out (the way the director's clock would) so that the closing is on its deck shot, and the deck out for its last one.
+func _to_shot(closing: TimelineSegment, shot: Shot) -> void:
+	closing.script_player.advance(_animation(closing, &"hoist").length + 0.01)
+	await await_idle_frame()                                                           # (the next timeline begins on the next idle frame)
+	if shot == Shot.WAIT:
+		closing.script_player.advance(_animation(closing, &"deck").length + 0.01)
+		await await_idle_frame()
+
+
+func _expert() -> TimelineSegment:
+	var closing: TimelineSegment = auto_free(TimelineSegment.of(EXPERT, Catalog.sector(EXPERT_FINALE).zone))
 	add_child(closing)
 	return closing
 
 
+func test_the_expert_closing_is_the_scene_the_expert_campaign_names() -> void:
+	assert_str(Catalog.campaign(&"expert").closing_scene).is_equal(EXPERT)
+	var scene := Catalog.story_scene(EXPERT)
+	assert_array(Array(scene.unresolved())).is_empty()
+	assert_array(scene.timelines).is_equal([&"expert_hoist", &"expert_deck", &"expert_wait"])
+	assert_bool(scene.backdrop).is_false()
+	assert_bool(scene.deaf_until_listen).is_true()
+	assert_str(scene.song).is_equal(&"closing")
+	assert_bool(Catalog.story_timeline(&"expert_wait").loop).is_true()
+	var named := PackNeeds.named_by_closings()
+	assert_str(named["data/story/expert_closing.tres"]).is_equal("StoryScene")
+	assert_str(named["data/story/expert_closing_stage.tres"]).is_equal("CutsceneStage")
+	for timeline_name in ["expert_hoist", "expert_deck", "expert_wait"]:
+		assert_str(named["data/story/%s.tres" % timeline_name]).is_equal("CutsceneTimeline")
+		assert_bool(PackNeeds.FILES.has("data/story/%s.tres" % timeline_name)).is_false()
+	assert_str(Catalog.campaign(&"voyager").closing_scene).is_equal(Campaign.VOYAGER_CLOSING)        # (no scene file until the Voyager closing is one: the game plays it)
+	assert_object(Catalog.story_scene(Campaign.VOYAGER_CLOSING)).is_null()
+	var closing := _expert()
+	assert_array(closing.cast.frame_sets.keys()).is_equal(FrameSets.offered(Catalog.sector(EXPERT_FINALE).zone))
+	assert_int(closing.cast.frame_zone).is_equal(Catalog.sector(EXPERT_FINALE).zone)
+	assert_object(closing.scene).is_same(scene)
+
+
 func test_expert_closing_tracks_name_real_nodes() -> void:
 	var closing := _expert()
-	assert_array(_unresolved(closing.animations)).is_empty()
+	assert_array(_unresolved(closing.script_player)).is_empty()
 	assert_bool(_canvas(closing, &"deck").visible).is_false()
-	assert_int(closing.stage).is_equal(ExpertClosing.Stage.HOIST)
+	assert_int(_shot(closing)).is_equal(Shot.HOIST)
+	assert_object(closing.get_node_or_null("Backdrop")).is_null()                       # (laid over the sector)
 
 
 ## Steps of the sub's turn from the starting cell, and of the whole hoist (each step ends with an 18-tick wait).
@@ -183,7 +221,7 @@ func test_expert_hoist_has_the_original_number_of_steps() -> void:
 	assert_int(_expert_turn_steps()).is_equal(2)
 	assert_int(_expert_hoist_steps()).is_equal(2 + 20 + 16 + 17)
 	var closing := _expert()
-	var hoist := closing.animations.get_animation(&"hoist")
+	var hoist := _animation(closing, &"hoist")
 	assert_float(hoist.length).is_equal_approx(55 * 18.0 / 73.0, 0.0001)
 	# the ascent ends when the cable's bottom has reached the top edge: 228 - 17 * 12 = 24 <= 32 < 228 - 16 * 12
 	var bottom := HOOK_START_BOTTOM + HOOK_STEP * DESCENT_STEPS
@@ -267,7 +305,7 @@ func test_expert_sub_turns_to_face_right_during_the_first_steps() -> void:
 
 func test_expert_deck_shot_timing_and_rise() -> void:
 	var closing := _expert()
-	var deck := closing.animations.get_animation(&"deck")
+	var deck := _animation(closing, &"deck")
 	assert_float(deck.length).is_equal_approx(146 * 18.0 / 73.0, 0.0001)             # 6 + 140 steps
 	# the sub, the artifact and the cable rise 12 px per step for 6 steps, from 0x123 / 0x137 / 0x133
 	_at_step(closing, &"deck", 0)
@@ -371,7 +409,7 @@ func test_expert_pod_blinks_through_its_three_pictures() -> void:
 	assert_array(mirrored).is_equal([false, false, false, true])
 	assert_vector(_sprite(closing, &"pod").position).is_equal(Vector2(568 - 16, 104 - 32))
 	# the wait goes on from phase 146 % 4 = 2 and repeats for as long as nobody presses a key
-	var wait := closing.animations.get_animation(&"wait")
+	var wait := _animation(closing, &"wait")
 	assert_int(wait.loop_mode).is_equal(Animation.LOOP_LINEAR)
 	assert_float(wait.length).is_equal_approx(4 * 18.0 / 73.0, 0.0001)
 	_at_step(closing, &"wait", 0)
@@ -387,8 +425,8 @@ func test_expert_keys_are_ignored_until_the_last_stage() -> void:
 	closing.advance()                                                                  # Enter
 	closing.skip()                                                                     # Space / Escape
 	assert_int(count[0]).is_equal(0)
-	_to_stage(closing, ExpertClosing.Stage.DECK)
-	assert_int(closing.stage).is_equal(ExpertClosing.Stage.DECK)
+	await _to_shot(closing, Shot.DECK)
+	assert_int(_shot(closing)).is_equal(Shot.DECK)
 	assert_bool(_canvas(closing, &"deck").visible).is_true()
 	assert_bool(_canvas(closing, &"playfield").visible).is_false()
 	for event in _key_events():
@@ -396,19 +434,19 @@ func test_expert_keys_are_ignored_until_the_last_stage() -> void:
 	closing.advance()
 	closing.skip()
 	assert_int(count[0]).is_equal(0)
-	assert_int(closing.stage).is_equal(ExpertClosing.Stage.DECK)                      # the deck does not end by itself
+	assert_int(_shot(closing)).is_equal(Shot.DECK)                                    # the deck does not end by itself
 
 
 func test_expert_waits_for_a_key_after_the_deck_and_a_key_ends_it_once() -> void:
 	var closing := _expert()
 	var count := [0]
 	closing.finished.connect(func() -> void: count[0] += 1)
-	_to_stage(closing, ExpertClosing.Stage.WAIT)
-	assert_int(closing.stage).is_equal(ExpertClosing.Stage.WAIT)
-	assert_str(String(closing.animations.current_animation)).is_equal("wait")
-	closing.animations.advance(60.0)                                                  # a minute later it is still waiting
+	await _to_shot(closing, Shot.WAIT)
+	assert_int(_shot(closing)).is_equal(Shot.WAIT)
+	assert_str(String(closing.script_player.current_animation)).is_equal("expert_wait")
+	closing.script_player.advance(60.0)                                               # a minute later it is still waiting
 	assert_int(count[0]).is_equal(0)
-	assert_bool(closing.animations.is_playing()).is_true()
+	assert_bool(closing.script_player.is_playing()).is_true()
 	var key := InputEventKey.new()
 	key.keycode = KEY_A
 	key.pressed = true
@@ -426,7 +464,7 @@ func test_expert_click_ends_the_wait() -> void:
 	click.pressed = true
 	closing._unhandled_input(click)
 	assert_int(count[0]).is_equal(0)                                                  # the click area exists only in the last stage
-	_to_stage(closing, ExpertClosing.Stage.WAIT)
+	await _to_shot(closing, Shot.WAIT)
 	closing._unhandled_input(click)
 	assert_int(count[0]).is_equal(1)
 

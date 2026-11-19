@@ -8,8 +8,8 @@ func before(do_skip := not LegacyPack.present(), skip_reason := "run the importe
 	pass
 
 func test_the_originals_still_get_their_own_scenes() -> void:
-	assert_str(Catalog.campaign(&"voyager").closing_scene).is_equal(&"voyager")
-	assert_str(Catalog.campaign(&"expert").closing_scene).is_equal(&"expert")
+	assert_str(Catalog.campaign(&"voyager").closing_scene).is_equal(&"voyager_closing")
+	assert_str(Catalog.campaign(&"expert").closing_scene).is_equal(&"expert_closing")
 	assert_str(Catalog.campaign(&"voyager").finale_text).is_equal("")
 
 

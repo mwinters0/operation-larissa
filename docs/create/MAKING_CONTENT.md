@@ -288,7 +288,7 @@ A campaign is one `Campaign` resource (`godot/src/resources/campaign.gd`), a `.t
    | `log_texts`, `log_voices` | entry n is `log_texts[n-1]`, spoken as the voice group `log_voices[n-1]` (empty = not spoken); the three lists are equally long | two sentences; `&""`, `&""` |
    | Supply station: `supply_texts`, `supply_voices` | what mission control says after each sector (one entry per sector); voice groups may be empty | two sentences; `&""`, `&""` |
    | Music and closing: `fallback_song` | the song for a sector whose own `music_name` is empty or not a song | leave `sector_song_1` |
-   | `closing_scene` | leave **empty** for the generic finale (`voyager` and `expert` are the two original closings) | empty |
+   | `closing_scene` | leave **empty** for the generic finale; or the name of a scene file of a pack (`data/story/<name>.tres`, see [`CONTENT.md`](CONTENT.md) "The closings") that ends the game laid over the sector | empty |
    | `finale_text` | the words on the generic finale screen | "Reef School is charted. Thank you, explorer." |
    | `finale_picture` | the picture on it, as a key (`ui_picture/title_sky`): a row of the `pictures.json` of a pack of the chain | `ui_picture/title_sky` for now |
 

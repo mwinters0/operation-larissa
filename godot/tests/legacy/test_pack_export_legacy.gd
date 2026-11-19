@@ -74,7 +74,7 @@ func test_every_resource_of_the_data_folder_round_trips() -> void:
 		assert_array(differences).override_failure_message("%s\n%s" % [rel, "\n".join(differences.slice(0, 8))]).is_empty()
 		seen[EngineJson.class_of(original) if EngineJson.class_of(original) != "" else original.get_script().get_global_name()] = true
 		count += 1
-	assert_int(count).is_equal(95)
+	assert_int(count).is_equal(96)
 	for kind in KINDS:
 		assert_bool(seen.has(kind)).override_failure_message("legacy holds no %s to round trip" % kind).is_true()
 

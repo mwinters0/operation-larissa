@@ -24,7 +24,7 @@ ui/sign_in.tscn  SignIn                         the players (SaveStore), Start /
 gameplay/game.tscn  Game                        one player's mission; the VIEW of a GameFlow (rules/game_flow.gd), no rules, no flow
    |    the campaign's sectors  ->  supply message (surface ship screen)  ->  next sector
    |    finale sector  ->  touch the treasure, swim to the closing screen
-   |    story/voyager_closing.tscn / expert_closing.tscn, or story/generic_finale.tscn  (laid over the sector)
+   |    the campaign's closing_scene: a scene file played by TimelineSegment, story/voyager_closing.tscn, or story/generic_finale.tscn  (laid over the sector)
    v
 ui/hall_of_fame.tscn  ->  back to sign-in
 ```
@@ -411,7 +411,7 @@ diagram's timeline, whatever the mod draws or asks for (`tests/engine/test_mod_p
 
 A campaign is a `Campaign` resource (`src/resources/campaign.gd`): the ordered `sectors`, the `finales`, `default_edu_levels` per zone,
 the canister log (`log_unlock_order`, `log_texts`, `log_voices`, `log_series`), the supply messages (`supply_texts`, `supply_voices`),
-`fallback_song`, `closing_scene` (`voyager`, `expert`, or empty for the generic finale with `finale_text` and `finale_picture`), the
+`fallback_song`, `closing_scene` (a scene file of the pack chain, or empty for the generic finale with `finale_text` and `finale_picture`), the
 name (`title_text` / `title`), and the HUD banner (`banner_index` or its own `banner`).
 Its methods answer what the original computes with `>= 30`, `/ 15` and `% 15`: `is_finale`, `position_of`, `next_progress`,
 `default_edu_level`, `log_count / log_newest / log_entries`, `supply_text_name`, `song_for`, `display_title`; `problems()` lists what
@@ -429,7 +429,9 @@ is wrong with one. The field reference for authors is [`../create/CONTENT.md`](.
 - **Words of its own.** `Campaign.text(value)` looks a registry text name up and returns anything else as written
   (`display_title()`, `log_entry_text(n)`, `supply_message_text(sector)`, `finale_message()`). A voice group that is empty or names no
   group is not spoken.
-- **Generic finale.** A `closing_scene` that is neither `voyager` nor `expert` makes `Game.show_closing` put up `GenericFinale`
+- **Closing scene.** `Game.show_closing` asks `_closing_of` for the segment that ends the game: the scene file `closing_scene` names, played by `TimelineSegment.of(name, zone)` over the sector (the zone is `world.sector.zone`, which the segment hands to the cast, `FrameSets`), or `VoyagerClosing` for `Campaign.VOYAGER_CLOSING`
+  (the one closing with no scene file yet). The song stops when any closing ends. A name no pack of the chain holds is told once (`TroubleLog`: the campaign and the scene) and the generic finale plays.
+- **Generic finale.** A `closing_scene` that is empty (or that no pack holds) makes `Game.show_closing` put up `GenericFinale`
   (`src/story/generic_finale.tscn`, a `StorySegment`): the title, `finale_texture()` (a picture key, `ui_picture/title_sky`: a row of some pack's table) and
   `finale_message()`; Enter / a click go on, Space / Escape skip; then the Hall of Fame.
 - **Saves.** A player and a Hall of Fame row store `campaign` (the id), and `game` (0 / 1) for the originals; a file without an id is
@@ -452,15 +454,16 @@ a pack's data/story/*.tres   CutsceneTimeline: a length, tracks (actor name, pro
 a pack's data/story/<stage>.tres   CutsceneStage: the actors of a scene or a closing (StageActor: name, kind, picture name, position in window pixels, mirror, parent, visibility,
   |                 clip, size, for a button its pressed picture, answer and hotkey, for a frames actor its picture set, for a chain the pictures of its hook, for a fill its colour), listed in draw order.
   |                 `news_cartoon_stage`, `title_stage`, `expert_closing_stage`, `voyager_closing_stage`
-a pack's data/story/<scene>.tres   StoryScene: the stage, the looping and the one-shot timelines, the song and the speech (SpeechStep: a pause and a voice group) of a scene. `news_cartoon`, `title`
+a pack's data/story/<scene>.tres   StoryScene: the stage, the looping and the one-shot timelines, the song and the speech (SpeechStep: a pause and a voice group) of a scene, whether it has a backdrop and whether it drops keys until `listen`. `news_cartoon`, `title`, `expert_closing`
 a pack's data/story/opening.tres   OpeningList: the parts of the opening in order (OpeningPart: kind scene | story, the name of the file it plays, the answer that leads on), and whether it starts over
+a campaign's closing_scene          the name of the StoryScene that ends the game (Game.show_closing plays it over the sector; empty: the generic finale)
   |   (+ story_script: the story pages; voyager_closing_script: the Voyager flight's loop counts; closing_crew: the Expert closing's six sailors' programs)
   v
 Catalog.opening / story_timeline / story_stage / story_scene / story_script(name) / voyager_closing_script / closing_crew     the first pack of the chain that holds the file (`Packs.resource`)
   v
 src/story/stage_builder.gd   StageBuilder.build(stage name, container, cast): the ONE builder of a stage's nodes; makes them in the order of the list and binds the cast (the closings and the scenes alike)
 src/story/stage_chain.gd     StageChain: the node of a chain actor (the crane's cable), moved by the `extent` and `frame` of a timeline
-src/story/timeline_segment.gd   TimelineSegment.of(scene name): plays a scene file (the stage through StageBuilder, a player for each loop and one for the one-shot timelines, the song, the speech); cues are verbs (story_verbs.gd)
+src/story/timeline_segment.gd   TimelineSegment.of(scene name, zone): plays a scene file (the stage through StageBuilder, a player for each loop and one for the one-shot timelines, the song, the speech); cues are verbs (story_verbs.gd)
 src/story/cutscene.gd        Cutscene.animation(timeline, cast) builds an Animation; the scene's AnimationPlayer plays it
 src/story/cutscene_cast.gd   CutsceneCast: "the actor crew_4 is the Crew4 sprite", and how a name becomes a texture (a picture key the chain's tables answer)
 ```
@@ -477,14 +480,16 @@ that cannot be made (a parent not listed before it, an unknown kind) is left out
 no node plays is left out and told once (`Cutscene.unplayed_line`), and `PackCheck` reports both as errors of the pack's `story` area (`_scenes`: each stage's `problems()`, and each actor a timeline of the scene names that the
 stage lacks). A scene file names its stage and the timelines it plays, which is what `PackCheck` reads. `tests/stage_nodes.gd` (`StageNodes.differences`) reads a built scene against its stage file.
 
-The **closings** are built the same way and are not parts of the opening (`Game` plays them from the finale): `ExpertClosing` makes the nodes of `expert_closing_stage` under its `Stage` node with the sets `sub` and `artifact` (the zone 6 creature pictures; `make_cast`), plays the timelines
-`expert_hoist`, `expert_deck`, `expert_wait` as the animations `hoist`, `deck`, `wait` one after the other, shows the deck group and hides the playfield group when the hoist ends, and ends on a key or click once the last one waits; `VoyagerClosing.start` builds `voyager_closing_stage` with the set `sub` and plays the timeline
-that `VoyagerClosingScript.timeline` makes for the place and cell the sub is in (the one timeline made at run time: the place is not known before). Neither script holds a position, a picture or a draw order. `PackCheck._closings` judges each closing's stage with the sets it hands in (`FRAME_SETS`) and the actors its timelines name (the Voyager's: a timeline made for the sub at the window's origin);
-`PackNeeds.FILES` requires both stages. Tests: `tests/engine/test_closing_stages.gd` (the new kinds on a scratch stage, both closings built from the dev pack's stages, the warnings and the check), `tests/legacy/test_closing_sequences.gd` (the original's closings sampled: positions, draw order, the crew, the cable).
+The **closings** are built the same way and are not parts of the opening (`Game` plays them from the finale). The Expert closing is a scene file, `expert_closing`, that the legacy Expert campaign's `closing_scene` names, and `Game._closing_of` plays it with a `TimelineSegment` laid over the sector (`StoryScene.backdrop` off), handing in the zone of the sector in play: the scene's stage, its three timelines
+(`expert_hoist`, `expert_deck`, `expert_wait`, the last looping), its song, and what ends it are all data. The cut to the deck is keys at the first moment of `expert_deck` (the playfield group hidden, the deck group shown); the click area that the original has only in its last stage is the verb `listen`, a cue at the first moment of `expert_wait`: until it has run the scene (`StoryScene.deaf_until_listen`) drops Enter, Space / Escape, every other key and the mouse
+(`TimelineSegment.advance`, `skip`, `click`, `_unhandled_input`), and from then on any of them ends it. The picture sets a stage may show are the engine's, by fixed names, in one table (`FrameSets`: `sub`, and `zone_creatures`, the creatures of the zone of the sector in play, which only a scene handed a zone is offered): `CutsceneCast.of(root, zone)` fills the cast from it, `StageBuilder` offers what the cast holds
+and `PackCheck` asks the table, so no zone number is in code. `VoyagerClosing.start` builds `voyager_closing_stage` with the set `sub` and plays the timeline that `VoyagerClosingScript.timeline` makes for the place and cell the sub is in (the one timeline made at run time: the place is not known before). No closing script holds a position, a picture or a draw order. `PackCheck._closings` judges the closing scene of every campaign of the chain like a scene of the opening (`_scene`:
+`StoryScene.unresolved`, the stage with the sets a scene over a sector is offered, the actors the timelines name) and, until the Voyager closing is a scene, its stage and the timeline made from its script. `PackNeeds` derives the files a campaign's `closing_scene` names (`named_by_closings`: the scene, its stage, its timelines) and `FILES` lists the Voyager closing's. Tests: `tests/engine/test_closing_stages.gd` (the new kinds on a scratch stage, the dev pack's closing and the Voyager closing built from the dev pack's stages, the warnings and the check),
+`tests/engine/test_closing_scene.gd` (`listen`, no backdrop, `FrameSets`, the dev closing through `Game.show_closing`, the unknown scene), `tests/legacy/test_closing_sequences.gd` (the original's closings sampled: positions, draw order, the crew, the cable).
 
 A **scene** is the file that pairs them (`StoryScene`, `data/story/<scene>.tres`): the stage, the looping timelines, the timelines that play once in order, the song (and the timeline at whose start it stops, and the song the prompt starts) and the speech. `TimelineSegment.of(name)` is the
-segment that plays it, and the one place its nodes are made (`_build`): a black backdrop, the stage, an `AnimationPlayer` for each looping timeline (a player plays one animation at a time) and one for the one-shot timelines, which
-play in the scene's order, the next when the one before has ended. What happens at a moment of a timeline is an event cue that is a **verb** and its words (`StoryVerbs.VERBS`: `end`, `speak <group>`, `prompt`; `StoryVerbs.problem` is the judgement
+segment that plays it, and the one place its nodes are made (`_build`): a black backdrop (a scene laid over the sector has none), the stage, an `AnimationPlayer` for each looping timeline (a player plays one animation at a time) and one for the one-shot timelines, which
+play in the scene's order, the next when the one before has ended. What happens at a moment of a timeline is an event cue that is a **verb** and its words (`StoryVerbs.VERBS`: `end`, `listen`, `speak <group>`, `prompt`; `StoryVerbs.problem` is the judgement
 of a cue the game and `PackCheck` share): `TimelineSegment.cue` parses it and calls the method `_verb_<verb>`, so a verb the engine gains is one entry of the table and one method. The speech is a sequence, not cues, because how long a group
 speaks is the recorded length of its clips: `_speak` walks the scene's `SpeechStep`s, waits each step's `pause_ticks` and `await`s the verb `speak` for its group (a step whose group holds no clips is left out whole). The pause and the group of a
 step are one record, and the clips of a group are the pack's `voice_cues` alone. A scene no pack holds ends at once (told once); the other things a scene names (a timeline, a song, a voice group, a verb) that the chain lacks are told
@@ -571,7 +576,7 @@ other pictures cannot move a button or change a random draw.
 | `src/rules/` | the rules as plain objects: `SimWorld` and its models, `SimView`, `StationSequence`, `GameFlow`. Nothing in here may be a node, a texture, a font, `Input` or a `TileMapLayer` |
 | `src/gameplay/` | `game.tscn` (the view of `GameFlow`) and the playfield: `sector_world`, `sector_presenter`, `original_presenter`, `debug_rect_presenter`, `presenter_choice`, the parts (`sub`, `foe`, `ink_pellet`, `collectible`, `math_trigger`, `supply_station`, decorations, `bubbles`) and `input_reader` |
 | `src/problems/` | the 34 math problem types: `ProblemFactory`, `ProblemFlow`, `ProblemScreen`, `Calculator`, the diagrams, the combination lock, `PracticeMode` |
-| `src/story/` | the opening (`Opening`, `TimelineSegment`, `StoryPages`), the closings (`VoyagerClosing`, `ExpertClosing`, `GenericFinale`), `SurfaceShipScreen`, `StorySegment`, `Cutscene`, `CutsceneCast` |
+| `src/story/` | the opening (`Opening`, `TimelineSegment`, `StoryPages`), the closings (`TimelineSegment` for a scene a campaign names, `VoyagerClosing`, `GenericFinale`), `SurfaceShipScreen`, `StorySegment`, `Cutscene`, `CutsceneCast`, `FrameSets` |
 | `src/ui/` | sign-in, Hall of Fame, dialogs, the menu bar, `Hud`, the message queue, the pack screen and warning, `theme_builder.gd` |
 | `src/skins/` | `GameSkin`, `SkinChoice`, `RenderSettings`, `HudLabels`, `ScaledTexture`, `ScaledTileSet`, `ScaledStyleBox` (pictures of a scale above 1, [`PACKS.md`](PACKS.md) "Pictures"; [`SKINS.md`](SKINS.md)) |
 | `src/audio/` | `MidiMusic` ([`AUDIO.md`](AUDIO.md)) |

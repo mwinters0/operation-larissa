@@ -167,8 +167,8 @@ func test_the_hud_picture_and_the_names_follow_the_campaign() -> void:
 		assert_int(Catalog.campaign_of_sector(sector).banner_index).is_equal(Catalog.sector(sector).game)
 	assert_str(Catalog.campaign(&"voyager").display_title()).is_equal(Catalog.text(&"game_voyager"))
 	assert_str(Catalog.campaign(&"expert").new_game_label()).is_equal(Catalog.text(&"expert_game_button"))
-	assert_str(Catalog.campaign(&"voyager").closing_scene).is_equal(&"voyager")
-	assert_str(Catalog.campaign(&"expert").closing_scene).is_equal(&"expert")
+	assert_str(Catalog.campaign(&"voyager").closing_scene).is_equal(&"voyager_closing")
+	assert_str(Catalog.campaign(&"expert").closing_scene).is_equal(&"expert_closing")
 
 
 func test_the_finale_screens_are_a_field_of_the_sector() -> void:

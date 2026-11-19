@@ -15,11 +15,13 @@ belong to the original and the nodes belong to the view.
     news_ambient        the alarm lights' four states, the pulsing ring and the console's flicker, a loop of 64 redraws   (the same; the flicker is ours)
     title_ship          the ship scene, 163 frames of 12 ticks                                           (title_scene.frames)
     title_reveal        the ship's parts go, "Presents" / "OPERATION" / "NEPTUNE" with their sounds and the prompt   (reveal_and_prompt)
+    expert_closing      the scene: the Expert game's closing, over the running sector, deaf to every key until its last shot   (CLOSING.C, constants below)
+    expert_closing_stage  the closing's actors: the playfield and the deck with the pictures of the sub and of the zone's creatures   (the original's drawing routines)
     expert_hoist        the Expert closing: the sub turns, the hook comes down, the cable hoists         (CLOSING.C, constants below)
-    expert_deck         the deck shot: the sub rises into the ship, six sailors act, the box blinks      (+ expert_closing.json)
-    expert_wait         the box blinks until a key
+    expert_deck         the deck shot: the cut to the deck, the sub rises into the ship, six sailors act, the box blinks   (+ expert_closing.json)
+    expert_wait         the box blinks until a key: from its first moment keys and clicks end the closing (the verb `listen`)
     story_script        the nine pages of the opening story and how long each one holds                  (OPENING.C, constants below)
-    voyager_closing_script  the Voyager closing's loop counts; the timeline is run for the sub's place at the finale
+    voyager_closing_stage, voyager_closing_script  the Voyager closing's stage and loop counts; the timeline is run for the sub's place at the finale
     closing_crew        the six sailors' programs of the deck shot                                       (expert_closing.json)
 
 Provenance (ground rule "Provenance is never lost"): every number is the original's, from extracted/tables/*.json or from the
@@ -49,6 +51,8 @@ SCRIPTS = "res://src/resources/"
 STORY = PACK_DATA / "story"                     # the cutscenes' choreography is the original's presentation: the legacy pack's, never committed
 TIMELINE_NAMES = {"news_report", "news_ambient", "title_ship", "title_reveal", "expert_hoist", "expert_deck", "expert_wait"}      # `timelines()`
 TICKS_PER_SECOND = 73
+EXPERT_CLOSING_SCENE = "expert_closing"          # what the Expert campaign's `closing_scene` names (`step_campaigns`)
+VOYAGER_CLOSING_SCENE = "voyager_closing"        # what the Voyager campaign's `closing_scene` names: no scene file yet, the game plays that closing itself
 
 # --- our own numbers -----------------------------------------------------------------------------------------------
 # (nothing in the original: they exist only to make the animation player behave)
@@ -254,11 +258,14 @@ class Stage:
 
 
 class Scene:
-    """A StoryScene being collected: the stage, the looping and the one-shot timelines it plays (by name), its song, the timeline at whose start the song stops, the song of its prompt and its speech steps (pause ticks, voice group)."""
+    """A StoryScene being collected: the stage, the looping and the one-shot timelines it plays (by name), its song, the timeline at whose start the song stops, the song of its prompt, its speech steps (pause ticks, voice group), whether it has a black
+    backdrop (a closing is laid over the sector: none) and whether it drops every key and click until its cue `listen`."""
 
     def __init__(self, provenance: str, stage: str, loops: Sequence[str], timelines: Sequence[str], song: str, speech: Sequence[tuple[int, str]],
-                 song_stops_at: str = "", prompt_song: str = ""):
+                 song_stops_at: str = "", prompt_song: str = "", backdrop: bool = True, deaf_until_listen: bool = False):
         self.provenance = provenance
+        self.backdrop = backdrop
+        self.deaf_until_listen = deaf_until_listen
         self.song_stops_at = song_stops_at
         self.prompt_song = prompt_song
         self.stage = stage
@@ -275,6 +282,10 @@ class Scene:
         t.set("stage", sn(self.stage))
         t.set("loops", tres.array("StringName", (sn(n) for n in self.loops)))
         t.set("timelines", tres.array("StringName", (sn(n) for n in self.timelines)))
+        if not self.backdrop:
+            t.set("backdrop", "false")
+        if self.deaf_until_listen:
+            t.set("deaf_until_listen", "true")
         if self.song:
             t.set("song", sn(self.song))
         if self.song_stops_at:
@@ -805,13 +816,15 @@ def pod(steps: Steps, t: float, step: int) -> None:
 
 
 def build_expert_deck() -> Timeline:
-    """The ship, the sea and the sub on the cable rising into the picture while the sailors act (6 + 140 steps). The sub's and
+    """The cut to the ship, then the ship, the sea and the sub on the cable rising into the picture while the sailors act (6 + 140 steps). The sub's and
     the artifact's pictures go on toggling where the hoist left them (it drew `hoist_steps()` times)."""
     crew_data = load_json(TABLES / "expert_closing.json")
     actors = [CrewActor(crew_data, i) for i in range(CREW_COUNT)]
     steps = Steps()
     sub_y, artifact_y, bottom = DECK_SUB_Y, DECK_ARTIFACT_Y, DECK_CABLE_BOTTOM
     total = DECK_RISE_STEPS + DECK_CREW_STEPS
+    steps.put("playfield", "visible", 0, "false")        # the cut to the ship: the sector's shot goes, the deck's shot shows
+    steps.put("deck", "visible", 0, "true")
     steps.put("deck_cable", "frame", 0, "2")
     for i in range(total):
         t = i * EXPERT_STEP
@@ -838,11 +851,13 @@ def build_expert_deck() -> Timeline:
 
 
 def build_expert_wait() -> Timeline:
-    """The last stage: only the box blinks, over and over, until a key is pressed. The phases go on after the deck's last step."""
+    """The last stage: only the box blinks, over and over, until a key is pressed or the mouse is clicked (the cue `listen` at its first moment). The phases go on after the deck's last step."""
     steps = Steps()
     for i in range(len(POD_PICTURES)):
         pod(steps, i * EXPERT_STEP, DECK_RISE_STEPS + DECK_CREW_STEPS + i)
-    return steps.timeline(len(POD_PICTURES) * EXPERT_STEP, PROVENANCE_WAIT, loop=True)
+    timeline = steps.timeline(len(POD_PICTURES) * EXPERT_STEP, PROVENANCE_WAIT, loop=True)
+    timeline.cue(0, "event", "listen")                   # the click area exists only in the last stage: from here a key or a click ends the closing
+    return timeline
 
 
 # The stage of the Expert closing: where ExpertClosingSequence's drawing routines put each picture (CLOSING.C). Window pixels.
@@ -862,23 +877,22 @@ BALL_PIECE = 4                               # piece 0 is the hook, pieces 1-3 l
 CABLE_REACH = 300                            # the chain is built this long, whatever sticks out above the box is clipped
 CABLE_TOP = 32                               # the cable is cut at the top of the playfield in the hoist ...
 DECK_CABLE_TOP = 154                         # ... and at the crane's arm in the deck shot (ExpertClosingCableTop)
-SUB_FRAMES = "sub"                           # the picture sets the closing hands to its stage (ExpertClosing.FRAME_SETS)
-ARTIFACT_FRAMES = "artifact"
+SUB_FRAMES = "sub"                           # the picture sets the engine offers a stage (`FrameSets` in the game): the sub's drawings ...
+CREATURE_FRAMES = "zone_creatures"           # ... and the creature pictures of the zone of the sector in play (the Expert finale's zone 6: `ARTIFACT_ZONE`)
 
 
-def crane_cable(stage: Stage, name: str, parent: str, box_at: tuple[float, float], hooks: Sequence[str], link: str, ball: str,
-                hook_height: int = HOOK_HEIGHT, link_height: int = LINK_HEIGHT, ball_height: int = BALL_HEIGHT) -> None:
+def crane_cable(stage: Stage, name: str, parent: str, box_at: tuple[float, float], hooks: Sequence[str], link: str, ball: str) -> None:
     """The crane's cable as a `chain` actor and its pieces from the hook up (ExpertClosingDrawCable's loop: draw a piece, move up by its height, until the reach is covered), each placed as it stands when the chain's extent is 0:
     the hook's last pixel row at y 0. The box is the playfield from `box_at` down."""
     stage.actor(name, kind="chain", at=box_at, size=(PLAYFIELD_SIZE[0], PLAYFIELD_AT[1] + PLAYFIELD_SIZE[1] - box_at[1]), pictures=hooks, parent=parent)
     covered, index = 0, 0
     while covered < CABLE_REACH:
         if index == 0:
-            x, picture_name, height = HOOK_X, "", hook_height
+            x, picture_name, height = HOOK_X, "", HOOK_HEIGHT
         elif index == BALL_PIECE:
-            x, picture_name, height = BALL_X, ball, ball_height
+            x, picture_name, height = BALL_X, ball, BALL_HEIGHT
         else:
-            x, picture_name, height = LINK_X, link, link_height
+            x, picture_name, height = LINK_X, link, LINK_HEIGHT
         stage.actor("%s_piece_%02d" % (name, index), picture=picture_name, at=(x, -(covered + height - 1)), parent=name)
         covered += height
         index += 1
@@ -889,25 +903,25 @@ def build_expert_closing_stage() -> Stage:
     return expert_closing_stage(PROVENANCE_EXPERT_STAGE, [tuple(p) for p in load_json(TABLES / "expert_closing.json")["start_positions"]])
 
 
-def expert_closing_stage(provenance: str, crew_starts: Sequence[tuple[int, int]], heights: tuple[int, int, int] = (HOOK_HEIGHT, LINK_HEIGHT, BALL_HEIGHT)) -> Stage:
+def expert_closing_stage(provenance: str, crew_starts: Sequence[tuple[int, int]]) -> Stage:
     """The Expert closing's two shots in draw order: the playfield (the artifact, the sub, the cable) and the deck (water, cloud, ship, the sailors at `crew_starts`, the artifact, the sub, the cable cut at the crane's arm, the control box, the sea),
-    the deck hidden until the hoist is over. The artifact and the sub are picture sets the closing hands in. `heights` are the rows of the hook, a link and the ball (the pieces of the cable are stacked by them); the dev pack's pictures have their own."""
+    the deck hidden until the hoist is over (the timeline `expert_deck` shows it). The artifact is a picture of the zone's creatures and the sub a picture of the sub's drawings, both sets of the engine. The pieces of the cable are stacked by the rows of the hook, a link and the ball."""
     hooks = [picture(n) for n in HOOK_PICTURES]
     link, ball = picture(LINK_PICTURE), picture(BALL_PICTURE)
     stage = Stage(provenance)
     stage.actor("playfield", kind="group", at=PLAYFIELD_AT, size=PLAYFIELD_SIZE)
-    stage.actor("artifact", kind="frames", frames=ARTIFACT_FRAMES, picture=frame_name(ARTIFACT_SLOTS[0], ARTIFACT_ZONE), at=(ARTIFACT_X, ARTIFACT_START_Y), parent="playfield")
+    stage.actor("artifact", kind="frames", frames=CREATURE_FRAMES, picture=frame_name(ARTIFACT_SLOTS[0], ARTIFACT_ZONE), at=(ARTIFACT_X, ARTIFACT_START_Y), parent="playfield")
     stage.actor("sub", kind="frames", frames=SUB_FRAMES, at=SUB_AT, parent="playfield")
-    crane_cable(stage, "cable", "playfield", (PLAYFIELD_AT[0], CABLE_TOP), hooks, link, ball, *heights)
+    crane_cable(stage, "cable", "playfield", (PLAYFIELD_AT[0], CABLE_TOP), hooks, link, ball)
     stage.actor("deck", kind="group", at=PLAYFIELD_AT, size=PLAYFIELD_SIZE, visible=False)
     stage.actor("water", kind="fill", at=PLAYFIELD_AT, size=PLAYFIELD_SIZE, color=WATER_COLOR, parent="deck")
     stage.actor("cloud", picture=picture(CLOUD_PICTURE), at=CLOUD_AT, parent="deck")
     stage.actor("ship", picture=picture(SHIP_PICTURE), at=SHIP_AT, parent="deck")
     for i, start in enumerate(crew_starts):
         stage.actor("crew_%d" % i, at=start, visible=False, parent="deck")          # (a program draws its sailor: the timeline gives each its picture)
-    stage.actor("deck_artifact", kind="frames", frames=ARTIFACT_FRAMES, picture=frame_name(ARTIFACT_SLOTS[0], ARTIFACT_ZONE), at=(ARTIFACT_X, DECK_ARTIFACT_Y - HOOK_STEP), parent="deck")
+    stage.actor("deck_artifact", kind="frames", frames=CREATURE_FRAMES, picture=frame_name(ARTIFACT_SLOTS[0], ARTIFACT_ZONE), at=(ARTIFACT_X, DECK_ARTIFACT_Y - HOOK_STEP), parent="deck")
     stage.actor("deck_sub", kind="frames", frames=SUB_FRAMES, at=(SUB_AT[0], DECK_SUB_Y - HOOK_STEP), parent="deck")
-    crane_cable(stage, "deck_cable", "deck", (PLAYFIELD_AT[0], DECK_CABLE_TOP), hooks, link, ball, *heights)
+    crane_cable(stage, "deck_cable", "deck", (PLAYFIELD_AT[0], DECK_CABLE_TOP), hooks, link, ball)
     stage.actor("pod", picture=picture(POD_PICTURES[0]), at=POD_AT, parent="deck")
     stage.actor("sea", picture=picture(SEA_PICTURE), at=SEA_AT, parent="deck")
     return stage
@@ -916,7 +930,7 @@ def expert_closing_stage(provenance: str, crew_starts: Sequence[tuple[int, int]]
 PROVENANCE_EXPERT_STAGE = (
     "Original: ExpertClosingSequence 0x41c650 (CLOSING.C): the places its drawing routines put the pictures (ExpertClosingDrawArtifact 0x41cd84, ExpertClosingDrawCable 0x41cc8d, ExpertClosingDrawPod 0x41cdba), the playfield "
     "(16, 32) 608 x 288 that clips both shots, the sailors' start positions (extracted/tables/expert_closing.json), the draw order of the deck shot. The cable's pieces stand as for an extent of 0 and are listed from the hook up. "
-    "Ours: the deck shot's sea colour.")
+    "Ours: the deck shot's sea colour, the names of the picture sets.")
 
 
 PROVENANCE_HOIST = (
@@ -1124,8 +1138,17 @@ def build_opening() -> OpeningList:
         [("scene", "news_cartoon", ""), ("scene", "title", "intro"), ("story", "story_script", "")], True)
 
 
+def build_expert_closing_scene() -> Scene:
+    """The Expert game's closing as a scene: its stage, the hoist, the deck shot and the wait for a key played in turn over the running sector (no backdrop), the closing song 9501 from the start (`ExpertClosingSequence` 0x41c650 stops the sector's
+    music and starts it, `PlayExpertClosingMusic`; the game stops it when the closing ends, `StopBackgroundMusic` 0x41cba2). Every key is read and thrown away until the last stage: the scene is deaf until the cue `listen` of `expert_wait`."""
+    return Scene(
+        "Original: ExpertClosingSequence 0x41c650 (CLOSING.C): the closing song 9501 (closing), the hoist, the deck shot and the last stage (expert_hoist, expert_deck, expert_wait: the last waits for a key or a click), laid over the sector in play; every key "
+        "before the last stage is read and thrown away (PeekInput / WaitForInput in each step), the click area (AddHotspot 0xd) exists only in the last stage (tools/import/step_story.py).",
+        "expert_closing_stage", [], ["expert_hoist", "expert_deck", "expert_wait"], "closing", [], backdrop=False, deaf_until_listen=True)
+
+
 def scenes() -> dict[str, Scene]:
-    return {"news_cartoon": build_news_scene(), "title": build_title_scene()}
+    return {"news_cartoon": build_news_scene(), "title": build_title_scene(), EXPERT_CLOSING_SCENE: build_expert_closing_scene()}
 
 
 def run() -> None:

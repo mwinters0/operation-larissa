@@ -6,21 +6,28 @@
 
 [sub_resource type="Resource" id="Track_1"]
 script = ExtResource("2_cutscene_track")
-actor = &"pod"
+actor = &"lamp"
 property = &"picture"
 times = PackedFloat64Array(0, 12, 24, 36)
-values = [&"deck_pod_2", &"deck_pod_1", &"deck_pod_0", &"deck_pod_1"]
+values = [&"deck_pod_1", &"deck_pod_2", &"deck_pod_1", &"deck_pod_0"]
 
 [sub_resource type="Resource" id="Track_2"]
 script = ExtResource("2_cutscene_track")
-actor = &"pod"
+actor = &"lamp"
 property = &"mirror"
 times = PackedFloat64Array(0, 12, 24, 36)
-values = [false, true, false, false]
+values = [false, false, true, false]
+
+[sub_resource type="Resource" id="Cue_3"]
+script = ExtResource("3_cutscene_cue")
+tick = 0
+kind = &"event"
+cue_name = &"listen"
 
 [resource]
 script = ExtResource("1_cutscene_timeline")
 length = 48
 loop = true
 tracks = Array[ExtResource("2_cutscene_track")]([SubResource("Track_1"), SubResource("Track_2")])
-provenance = "Dev pack: the box blinks until a key, a loop of 4 steps of 12 ticks (tools/dev_pack/dev_story.py)."
+cues = Array[ExtResource("3_cutscene_cue")]([SubResource("Cue_3")])
+provenance = "Dev pack: the lamp blinks until a key, a loop of 4 steps of 12 ticks; from its first moment keys and clicks end the closing (tools/dev_pack/dev_story.py)."

@@ -18,8 +18,6 @@ extends RefCounted
 ##
 ## Teaches: validation as the same code path as use (check by loading, not by a parallel description), and a result that is data.
 
-## The songs a campaign names when it names none (`Campaign.DEFAULT_SONG`) and the closing scenes the game has of its own.
-const OWN_CLOSINGS: Array[StringName] = [&"voyager", &"expert"]
 ## How many names of what is missing one finding shows.
 const NEEDS_SHOWN := 5
 
@@ -318,8 +316,8 @@ static func _is_a_mods_own(live: Pack, rel: String) -> bool:
 	return live.mod != null and (rel.begins_with(ModSpec.SKIN_FOLDER) or rel.begins_with(ModSpec.PROBLEM_FOLDER))
 
 
-## The opening as the chain gives it. The list is judged by `OpeningList.unresolved` (a part no pack holds, an answer that leads nowhere), each scene it plays by `StoryScene.unresolved` (a timeline, song or voice group that no pack holds, a loop that does not
-## loop, a cue with a verb the engine lacks) and its stage by `_stage`. An opening the chain lacks is `PackNeeds`' to say.
+## The opening as the chain gives it. The list is judged by `OpeningList.unresolved` (a part no pack holds, an answer that leads nowhere), each scene it plays by `_scene` and an opening the chain lacks is `PackNeeds`' to say. The opening is laid over no sector, so its
+## stages are offered the sets of a scene with no zone (`FrameSets.offered`).
 static func _scenes(_live: Pack, report: PackReport) -> void:
 	var opening := Catalog.opening()
 	if opening == null:
@@ -327,39 +325,43 @@ static func _scenes(_live: Pack, report: PackReport) -> void:
 	for line in opening.unresolved():
 		report.error("story", "opening: %s" % line)
 	for part in opening.parts:
-		var scene := Catalog.story_scene(part.name) if part.kind == OpeningPart.SCENE else null
-		if scene == null:
-			continue
-		for line in scene.unresolved():
-			report.error("story", "scene '%s' %s" % [part.name, line])
-		if Catalog.story_stage(scene.stage) == null:
-			report.error("story", "scene '%s' names the stage '%s', which no pack of the chain holds: nothing is drawn" % [part.name, scene.stage])
-		else:
-			var timelines: Dictionary = {}
-			for timeline_name in scene.all_timelines():
-				timelines[timeline_name] = Catalog.story_timeline(timeline_name)
-			_stage(scene.stage, timelines, [], report)
+		if part.kind == OpeningPart.SCENE:
+			_scene(part.name, FrameSets.offered(FrameSets.NO_ZONE), report)
 
 
-## The closings (they play from the game, not from the opening): each plays on a stage and names its actors in timelines. The Expert one plays the three timelines of `ExpertClosing.TIMELINES`, the Voyager one a timeline made from
-## its script (`VoyagerClosingScript.timeline`, here for the sub at the window's origin: the actors it names do not depend on the place). Each stage is judged by `_stage` with the picture sets the closing hands in.
+## A scene of the chain as the game plays it: `StoryScene.unresolved` (a timeline, song or voice group that no pack holds, a loop that does not loop, a cue with a verb the engine lacks, a button with no prompt), its stage by `_stage` given the picture sets
+## the scene is offered (`offered`: what the director hands in, `FrameSets`). Nothing when the chain holds no scene of that name (the list or the campaign that names it says so).
+static func _scene(scene_name: StringName, offered: Array[StringName], report: PackReport) -> void:
+	var scene := Catalog.story_scene(scene_name)
+	if scene == null:
+		return
+	for line in scene.unresolved():
+		report.error("story", "scene '%s' %s" % [scene_name, line])
+	if Catalog.story_stage(scene.stage) == null:
+		report.error("story", "scene '%s' names the stage '%s', which no pack of the chain holds: nothing is drawn" % [scene_name, scene.stage])
+	else:
+		var timelines: Dictionary = {}
+		for timeline_name in scene.all_timelines():
+			timelines[timeline_name] = Catalog.story_timeline(timeline_name)
+		_stage(scene.stage, timelines, offered, report)
+
+
+## The closings (they play from the game, not from the opening). The closing scene of each campaign of the chain is judged like a scene of the opening (`_scene`), given the picture sets a scene laid over a sector is offered (`FrameSets.over_a_sector`); a scene two campaigns
+## share is judged once. The Voyager closing is no scene file yet: its stage is judged with the timeline made from its script (`VoyagerClosingScript.timeline`, here for the sub at the window's origin: the actors it names do not depend on the place).
 static func _closings(report: PackReport) -> void:
-	var expert: Dictionary = {}
-	for animation_name in ExpertClosing.TIMELINES:
-		expert[ExpertClosing.TIMELINES[animation_name]] = Catalog.story_timeline(ExpertClosing.TIMELINES[animation_name])
-	_closing_stage("the Expert closing", ExpertClosing.STAGE, expert, ExpertClosing.FRAME_SETS, report)
+	var judged: Dictionary = {}
+	for campaign in Catalog.campaigns():
+		if campaign.closing_scene != &"" and campaign.closing_scene != Campaign.VOYAGER_CLOSING and not judged.has(campaign.closing_scene):
+			judged[campaign.closing_scene] = true
+			_scene(campaign.closing_scene, FrameSets.over_a_sector(), report)
 	var voyager: Dictionary = {}
 	var script := Catalog.voyager_closing_script()
 	if script != null:
 		voyager[&"voyager_closing_script"] = script.timeline(0, 0, 0)
-	_closing_stage("the Voyager closing", VoyagerClosing.STAGE, voyager, VoyagerClosing.FRAME_SETS, report)
-
-
-static func _closing_stage(closing: String, stage_name: StringName, timelines: Dictionary, offered: Array[StringName], report: PackReport) -> void:
-	if Catalog.story_stage(stage_name) == null:
-		report.error("story", "%s plays on the stage '%s', which no pack of the chain holds: nothing is drawn" % [closing, stage_name])
+	if Catalog.story_stage(VoyagerClosing.STAGE) == null:
+		report.error("story", "the Voyager closing plays on the stage '%s', which no pack of the chain holds: nothing is drawn" % VoyagerClosing.STAGE)
 	else:
-		_stage(stage_name, timelines, offered, report)
+		_stage(VoyagerClosing.STAGE, voyager, FrameSets.offered(FrameSets.NO_ZONE), report)
 
 
 ## A stage of the chain: each mistake of the stage itself (`CutsceneStage.problems`, given the picture sets the scene hands in), and an actor a timeline played on it names that it does not hold (the scene would leave that track out and nothing
@@ -462,8 +464,8 @@ static func _campaign_content(campaign: Campaign, live: Pack, report: PackReport
 			report.warn(area, "voice group '%s' has no clips: that line is not spoken" % group)
 	if campaign.fallback_song != Campaign.DEFAULT_SONG and not MusicCatalog.has_song(campaign.fallback_song):
 		report.warn(area, "fallback_song '%s' is neither one of the game's songs nor audio/music/%s.ogg of the pack: sectors without a song are silent" % [campaign.fallback_song, campaign.fallback_song])
-	if campaign.closing_scene != &"" and not OWN_CLOSINGS.has(campaign.closing_scene):
-		report.warn(area, "closing_scene '%s' is none of %s: the generic finale plays" % [campaign.closing_scene, ", ".join(PackedStringArray(OWN_CLOSINGS.map(func(s: StringName) -> String: return String(s))))])
+	if campaign.closing_scene != &"" and campaign.closing_scene != Campaign.VOYAGER_CLOSING and Catalog.story_scene(campaign.closing_scene) == null:
+		report.warn(area, "closing_scene '%s' is no scene any pack of the chain holds (data/story/%s.tres): the generic finale plays" % [campaign.closing_scene, campaign.closing_scene])
 	if campaign.finales.is_empty():
 		report.warn(area, "no finale: the game never ends")
 

@@ -268,7 +268,7 @@ All plain objects in `src/packs/`, so the editor, a terminal, the game and the t
   it also holds is not an error: the nearest wins.
 - **Warnings** do not stop a pack: a PNG no row of the table names, a picture of another size than the one it redraws, a `pictures/` folder (not read); a `.sgd` file that is never run (not the entry, or a pack with no `mod`); sector-check warnings; `Pack.clip_warnings`; odd durations (no movement, longer than ten minutes, off
   screen); a sector in no campaign; a voice group with no clips; a `fallback_song` or `music_name` that is no song; a `closing_scene`
-  that is neither `voyager` nor `expert`; a campaign with no finale; names nothing can refer to; files the game
+  that no pack of the chain holds (the generic finale plays); a campaign with no finale; names nothing can refer to; files the game
   never reads; an odd rule value (`Tuning.check`'s warnings: a very fast sub, more air than the console draws); a pack that holds nothing
   the game reads. `PackReport.text()` / `bbcode()` print them, errors first.
 

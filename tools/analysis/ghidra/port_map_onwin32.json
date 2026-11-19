@@ -139,7 +139,7 @@
  "0x00410d50": {
   "name": "PeekInput",
   "status": "n/a",
-  "where": "n/a: non-blocking 'was a key pressed?' poll; Godot delivers input events (game.gd:_unhandled_input per frame for DoAction's PeekInput; opening.gd / story_pages.gd / expert_closing.gd / sign_in.gd for their skip polls)"
+  "where": "n/a: non-blocking 'was a key pressed?' poll; Godot delivers input events (game.gd:_unhandled_input per frame for DoAction's PeekInput; opening.gd / story_pages.gd / timeline_segment.gd / sign_in.gd for their skip polls)"
  },
  "0x00410d74": {
   "status": "n/a",
@@ -838,7 +838,7 @@
  "0x00415b6c": {
   "name": "WaitForInput",
   "status": "n/a",
-  "where": "n/a: blocking wait for a key / click; Godot is event driven (every wait loop of the original is a node waiting for input events, e.g. log_screen.gd:_input, ballast_panel_diagram.gd:_unhandled_key_input, expert_closing.gd, voyager_closing.gd)"
+  "where": "n/a: blocking wait for a key / click; Godot is event driven (every wait loop of the original is a node waiting for input events, e.g. log_screen.gd:_input, ballast_panel_diagram.gd:_unhandled_key_input, timeline_segment.gd, voyager_closing.gd)"
  },
  "0x00415ce0": {
   "name": "PauseSoundForDialog",
@@ -862,7 +862,7 @@
  "0x00415d15": {
   "name": "AddHotspot",
   "status": "n/a",
-  "where": "n/a: mouse hot-spot registry replaced by Controls with mouse input: calculator Buttons at the same rects (resources/calculator_layout.gd), ballast_panel_diagram.gd:button_at, combination_lock.gd, problem_screen.gd (click anywhere = Enter), story_pages.gd, expert_closing.gd (click = key)"
+  "where": "n/a: mouse hot-spot registry replaced by Controls with mouse input: calculator Buttons at the same rects (resources/calculator_layout.gd), ballast_panel_diagram.gd:button_at, combination_lock.gd, problem_screen.gd (click anywhere = Enter), story_pages.gd, timeline_segment.gd (click = key)"
  },
  "0x00415d78": {
   "name": "RemoveHotspot",
@@ -1306,7 +1306,7 @@
  },
  "0x0041c650": {
   "status": "ported",
-  "where": "godot/src/story/expert_closing.gd + stage_chain.gd + closing_crew_actor.gd (extracted/tables/expert_closing.json, data/story/closing_crew.tres; the stage data/story/expert_closing_stage.tres and the timelines data/story/expert_hoist / deck / wait.tres by tools/import/step_story.py): 18-tick steps, turn, 20 idle steps, hook down 16 / up 17 steps, deck shot with crew / pod / cable, key / click to end, music 9501 stopped at the end; tests test_closing_sequences.gd, test_flow_fidelity.gd"
+  "where": "godot/src/story/timeline_segment.gd plays the scene data/story/expert_closing.tres (which the Expert campaign names, game.gd:show_closing) over the sector, with stage_chain.gd and closing_crew_actor.gd (extracted/tables/expert_closing.json, data/story/closing_crew.tres; the stage data/story/expert_closing_stage.tres and the timelines data/story/expert_hoist / deck / wait.tres by tools/import/step_story.py): 18-tick steps, turn, 20 idle steps, hook down 16 / up 17 steps, deck shot with crew / pod / cable, every key dropped until the verb listen of expert_wait and then a key / click ends it, music 9501 stopped at the end; tests test_closing_sequences.gd, test_closing_scene.gd, test_flow_fidelity_legacy.gd"
  },
  "0x0041cbac": {
   "name": "ExpertClosingEraseCable",
@@ -1326,12 +1326,12 @@
  "0x0041cd84": {
   "name": "ExpertClosingDrawArtifact",
   "status": "ported",
-  "where": "godot/src/story/expert_closing.gd: Artifact / DeckArtifact"
+  "where": "data/story/expert_closing_stage.tres: the actors artifact / deck_artifact (the picture set zone_creatures of frame_sets.gd, items 0 / 1 of the zone's creatures), toggled by the timelines expert_hoist / expert_deck (tools/import/step_story.py)"
  },
  "0x0041cdba": {
   "name": "ExpertClosingDrawPod",
   "status": "ported",
-  "where": "godot/src/story/expert_closing.gd: Pod"
+  "where": "data/story/expert_closing_stage.tres: the actor pod, its pictures set by the timelines expert_deck / expert_wait (tools/import/step_story.py)"
  },
  "0x0041ce27": {
   "name": "ExpertClosingErasePod",
@@ -2877,16 +2877,16 @@
  },
  "0x004320b7": {
   "status": "ported",
-  "where": "godot/src/story/expert_closing.gd:_ready (Audio.play_music SONG_CLOSING)"
+  "where": "godot/src/story/timeline_segment.gd:_ready (Audio.play_music of the song of the scene expert_closing: closing)"
  },
  "0x004320c2": {
   "name": "FreeClosingStopMusic",
   "status": "n/a",
-  "where": "n/a: StopBackgroundMusic alias called by FreeClosingResources, after the Expert closing has already stopped its song (ExpertClosingSequence, expert_closing.gd:finish)"
+  "where": "n/a: StopBackgroundMusic alias called by FreeClosingResources, after the Expert closing has already stopped its song (ExpertClosingSequence, game.gd:show_closing)"
  },
  "0x004320cc": {
   "status": "ported",
-  "where": "godot/src/story/expert_closing.gd (Audio.play_music(AudioService.SONG_CLOSING = 9501))"
+  "where": "godot/src/story/timeline_segment.gd:_ready (Audio.play_music of the song closing = 9501, named by the scene data/story/expert_closing.tres)"
  },
  "0x004320e0": {
   "name": "Prob02_SolutionSubst",

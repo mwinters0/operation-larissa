@@ -15,9 +15,9 @@ extends RefCounted
 var root: Node
 ## The sub's cells and drawings, for `CutsceneTrack.PROP_POSE`: the `sub` section of the tuning of the run that plays the cutscene (`GameState.tuning`).
 var sub_tuning: SubTuning = null
-## The creature set (a zone) whose picture names `CutsceneTrack.PROP_FRAME` uses; -1 when only numbers are used.
-var frame_zone: int = -1
-## The picture sets the view holds that a stage's `frames` actors show: set name (what `StageActor.frames` says) -> `SpriteFrames`. The view that builds the stage fills it before `StageBuilder.build`.
+## The creature set (a zone) whose picture names `CutsceneTrack.PROP_FRAME` uses: the zone of the sector the scene is laid over (`FrameSets.NO_ZONE`, -1, when it is laid over none and only numbers are used).
+var frame_zone: int = FrameSets.NO_ZONE
+## The picture sets the view holds that a stage's `frames` actors show: set name (what `StageActor.frames` says, `FrameSets`) -> `SpriteFrames`. The view that builds the stage fills it before `StageBuilder.build` (`of`).
 var frame_sets: Dictionary[StringName, SpriteFrames] = {}
 ## picture name -> Texture2D
 var pictures: Callable = Assets.ui_picture
@@ -29,6 +29,15 @@ var _nodes: Dictionary = {}               # actor -> Node
 
 func _init(scene_root: Node) -> void:
 	root = scene_root
+
+
+## The cast of a scene played under `scene_root` and laid over a sector of `zone` (`FrameSets.NO_ZONE`: none): the sets the engine offers it (`FrameSets.make`), the zone its picture names are read in and the sub's tuning of the run. The one place a view's cast gets its sets.
+static func of(scene_root: Node, zone: int = FrameSets.NO_ZONE) -> CutsceneCast:
+	var cast := CutsceneCast.new(scene_root)
+	cast.sub_tuning = GameState.tuning.sub
+	cast.frame_zone = zone
+	cast.frame_sets = FrameSets.make(zone)
+	return cast
 
 
 ## `node` plays `actor`.

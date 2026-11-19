@@ -5,7 +5,8 @@ legacy pack's folder when that is there: it lists file names and, for the text t
 like the registry's numbers). It never reads a picture, a size, a coordinate or a string of the original.
 
     files        every file below data/ except audio, the sector and campaign folders (dev has its own sectors and
-                 campaign: dev_tour) and the sound catalogs (audio.py makes those), plus pack.json. No picture: those are `pictures`.
+                 campaign: dev_tour), the scene the legacy campaigns end with and what it names (`is_a_closing_scene`: dev_tour ends with
+                 a scene of its own, `dev_closing`) and the sound catalogs (audio.py makes those), plus pack.json. No picture: those are `pictures`.
     pictures     key -> the number the legacy pack's file of that key ends with (a picture id, a creature or deco slot) or null: a row of dev's
                  `pictures.json` with a file of its own (the importer's asset manifest says which keys there are and the number of their files, never what is in them)
     picture_aliases  key -> the key it is an alias of (a problem art id whose picture another role keeps once)
@@ -26,6 +27,8 @@ import picture_table
 
 FORMAT = 2
 SKIP_SUFFIXES = (".import", ".uid")
+## The files of the Expert campaign's closing scene (a campaign names its closing scene, so a pack needs none of them): the scene, its stage and its three timelines.
+CLOSING_SCENE_FILES = tuple("data/story/%s.tres" % name for name in ("expert_closing", "expert_closing_stage", "expert_hoist", "expert_deck", "expert_wait"))
 TEXT_TABLES = ("calc_notices", "closing", "help", "hints", "log_entries", "story", "supply_messages", "ui_strings")
 
 
@@ -33,6 +36,11 @@ def _tree(root: Path, folder: str, only: str = "") -> list[str]:
     base = root / folder
     return sorted(p.relative_to(root).as_posix() for p in base.rglob("*")
                   if p.is_file() and p.suffix not in SKIP_SUFFIXES and (not only or p.suffix == only))
+
+
+def is_a_closing_scene(rel: str) -> bool:
+    """Is `rel` a file of a legacy campaign's closing scene, which dev does not hold (its campaign has a closing scene of its own)?"""
+    return rel in CLOSING_SCENE_FILES
 
 
 def is_audio(rel: str) -> bool:
@@ -84,7 +92,7 @@ def refresh(legacy: Path = LEGACY) -> dict:
     """Rebuild inventory.json from the legacy pack's file list (and the ids of its text tables). The pack's pictures are the file rows of the table the importer's asset manifest makes
     (picture_table.rows); its problem-art ids are the ones the inventory has (the bundles do not change)."""
     everything = ["pack.json"] + _tree(legacy, "assets") + _tree(legacy, "data") + _tree(legacy, "midi")
-    files = [f for f in everything if not is_audio(f) and not f.startswith(("assets/", "data/sectors/", "data/campaigns/")) and f != "data/problems/problem_art_index.json"]
+    files = [f for f in everything if not is_audio(f) and not is_a_closing_scene(f) and not f.startswith(("assets/", "data/sectors/", "data/campaigns/")) and f != "data/problems/problem_art_index.json"]
     audio = [f for f in everything if is_audio(f)]
     tables = {name: table_ids((legacy / "data" / "problems" / (name + ".tres")).read_text()) for name in TEXT_TABLES}
     index = load()["problem_art_index"] if INVENTORY.exists() else json.loads((legacy / "data" / "problems" / "problem_art_index.json").read_text())

@@ -16,7 +16,8 @@ const TOLERANCE := 0.0015                      # ticks
 const NEWS := &"news_cartoon"          # the scene file the news cartoon is (data/story/news_cartoon.tres)
 const TITLE := &"title"                # the scene file the title is (data/story/title.tres)
 const VOYAGER := "res://src/story/voyager_closing.tscn"
-const EXPERT := "res://src/story/expert_closing.tscn"
+const EXPERT := &"expert_closing"        # the scene file the Expert campaign names (data/story/expert_closing.tres)
+const EXPERT_FINALE := 31                # the sector it is played over
 
 ## The data files by the name the fixture uses.
 const TIMELINES := ["title_ship", "title_reveal", "expert_hoist", "expert_deck", "expert_wait", "news_report"]
@@ -122,11 +123,10 @@ func test_the_story_page_fade_is_made_of_the_fade_and_the_captions_delay() -> vo
 
 
 func test_the_expert_closing_animations_have_the_recorded_lengths_and_moments() -> void:
-	var closing: ExpertClosing = auto_free(load(EXPERT).instantiate())
+	var closing: TimelineSegment = auto_free(TimelineSegment.of(EXPERT, Catalog.sector(EXPERT_FINALE).zone))
 	add_child(closing)
 	for stage_name in ["hoist", "deck", "wait"]:
-		_check_animation(closing.animations.get_animation(StringName(stage_name)), "expert_" + stage_name)
-	closing.stage = ExpertClosing.Stage.WAIT
+		_check_animation(closing.script_player.get_animation(StringName("expert_" + stage_name)), "expert_" + stage_name)
 	closing.finish()
 
 

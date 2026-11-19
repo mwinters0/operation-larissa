@@ -104,6 +104,8 @@ func test_the_declared_files_are_what_dev_holds_under_data() -> void:
 	held.sort()
 	for named in PackNeeds.named_by_opening():                      # (the stage and the timelines the opening and its scenes name are theirs to name: not in `FILES`)
 		held.erase(named)
+	for named in PackNeeds.named_by_closings():                     # (so are those of a campaign's closing scene)
+		held.erase(named)
 	assert_array(declared).is_equal(held)
 	assert_array(declared).has_size(PackNeeds.FILES.size() + Catalog.TEXT_TABLES.size() + Catalog.ZONE_COUNT * PackNeeds.PER_ZONE.size() + ZoneTable.ORIGINAL_ZONES)
 

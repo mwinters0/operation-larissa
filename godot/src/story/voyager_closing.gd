@@ -21,9 +21,6 @@ extends StorySegment
 
 ## The stage the closing is played on (`Catalog.story_stage`); its actors `sub`, `helicopter` and `rotor` are the ones the flight's timeline moves (`PackCheck` tells a stage that lacks one).
 const STAGE := &"voyager_closing_stage"
-## The picture set the stage may show (`StageActor.frames`): the sub's drawings.
-const SET_SUB := &"sub"
-const FRAME_SETS: Array[StringName] = [SET_SUB]
 
 const PAGES := 3
 
@@ -44,9 +41,7 @@ var cast: CutsceneCast
 func start(sub_x: int, sub_y: int, cell: int) -> void:
 	modals = ModalHost.new(self, [])                                      # (nothing under the box to put to sleep or to focus)
 	modals.attach(messages, message_view)
-	cast = CutsceneCast.new(self)
-	cast.sub_tuning = GameState.tuning.sub
-	cast.frame_sets = {SET_SUB: Catalog.sub_frames()}
+	cast = CutsceneCast.of(self)                                          # (the sub's drawings: no zone is handed in)
 	StageBuilder.build(STAGE, stage_root, cast)
 	Cutscene.install_timeline(animations, &"closing", Catalog.voyager_closing_script().timeline(sub_x, sub_y, cell), cast)
 	animations.play(&"closing")

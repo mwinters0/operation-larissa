@@ -29,8 +29,8 @@ SUPPLY_MESSAGE_FIRST_TEXT = 10678    # the 30 mission control messages, one per 
 CAMPAIGNS = (
     # id, the game's name (string 11199 / 11200), its "new game" button (11258 / 11259), first sector, finale sector, how many entries the
     # finale's log lists (the EXE computes `sector % 15 + 1` for every sector, so sector 30 lists 1 and sector 31 lists 2), the closing scene
-    {"id": "voyager", "title": 11199, "button": 11258, "first": 0, "finale": 30, "finale_log": 1, "closing": "voyager"},
-    {"id": "expert", "title": 11200, "button": 11259, "first": 15, "finale": 31, "finale_log": 2, "closing": "expert"},
+    {"id": "voyager", "title": 11199, "button": 11258, "first": 0, "finale": 30, "finale_log": 1, "closing": step_story.VOYAGER_CLOSING_SCENE},
+    {"id": "expert", "title": 11200, "button": 11259, "first": 15, "finale": 31, "finale_log": 2, "closing": step_story.EXPERT_CLOSING_SCENE},
 )
 
 
@@ -51,7 +51,7 @@ def build_campaign(game: int) -> str:
         "ORIGINAL: the %s game of ONWIN32.EXE. Sectors %d-%d and finale %d (GetGameLevel 0x42e12c, IncrementSector 0x42e0b2); "
         "default_edu_levels = bytes %d-%d of the table at DS 0x25A8 (= zones.tres); log_unlock_order = LogUnlockOrder%s 0x%s "
         "(PrepareCanisterLog 0x41e787, extracted/tables/databank.json); texts: the log entries and supply messages of NEP.DLL by registry name; "
-        "song: SelectSectorMusic 0x43200f; closing: Game.show_closing. Written by tools/import/step_campaigns.py."
+        "song: SelectSectorMusic 0x43200f; closing: Game.show_closing (the scene file it names). Written by tools/import/step_campaigns.py."
         % (name, sectors[0], sectors[-1], c["finale"], 5 * game, 5 * game + 4, name, ("4419d5", "4419e4")[game])))
     t.set("id", '&"%s"' % c["id"])
     t.set("title_text", '&"%s"' % step_story.text_name(c["title"]))

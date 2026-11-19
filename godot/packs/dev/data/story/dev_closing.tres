@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="StoryScene" format=3]
+
+[ext_resource type="Script" path="res://src/resources/story_scene.gd" id="1_story_scene"]
+
+[resource]
+script = ExtResource("1_story_scene")
+stage = &"dev_closing_stage"
+loops = Array[StringName]([])
+timelines = Array[StringName]([&"dev_closing_film", &"dev_closing_wait"])
+backdrop = false
+deaf_until_listen = true
+song = &"closing"
+provenance = "Dev pack: a closing of our own for dev_tour: the film (the lift, the cut to the deck, the deck's shot) and the wait for a key, over the sector in play (tools/dev_pack/dev_story.py)."

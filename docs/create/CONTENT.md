@@ -191,7 +191,7 @@ Enter, a click and Space / Escape are the engine's in every part (Space and Esca
 | `parent` | the actor it rides with: it moves and hides with it. The parent is listed BEFORE its children |
 | `clip` | a picture: the part drawn, in the picture's pixels (the mini-sub starts whole and its timeline shrinks it); no area draws the whole picture |
 | `size` | a text box or a `fill`: its size in window pixels. A `group` or a `chain` with a size shows only that rectangle of what it carries (a closing's playfield, the crane's arm); with none it clips nothing |
-| `frames` | a `frames` actor: the name of the picture set it shows (`sub`: the sub's drawings, `artifact`: the Alien Artifact's; the closing that plays the stage hands the sets in, and the pack check tells a name it does not). `picture` is the picture of the set it starts on (empty: the first); a timeline's `frame` and `pose` tracks change it |
+| `frames` | a `frames` actor: the name of the picture set it shows. The engine has two: `sub` (the sub's drawings, offered to every scene) and `zone_creatures` (the creature pictures of the zone of the sector in play, offered to a scene that is laid over a sector, which the game hands the zone of; the opening has no sector, so a stage that asks for it there is told). A pack names the creatures of the zone its closing ends in, and the pack check tells a set the scene is not offered. `picture` is the picture of the set it starts on (empty: the first); a timeline's `frame` and `pose` tracks change it |
 | `pictures` | a `chain`: the pictures its first piece, the hook, takes by the `frame` a timeline sets (open, closing, closed). The pieces are the actors that have the chain as their `parent`, listed from the hook up, each placed where it stands when the timeline's `extent` is 0; the `extent` track then moves them all down by that many pixels |
 | `color` | a `fill`: the colour of the rectangle |
 | `pressed_picture`, `choice`, `hotkey` | a button (`kind` `button`, a picture of the size of `picture`, hidden until the scene's `prompt`): the picture while it is pressed, what pressing it answers (`start`: leave the opening, `intro`: go on to the story) and the key that presses it (`S`, `I`) |
@@ -200,9 +200,10 @@ The actors are listed in **draw order**: each is drawn above the ones listed bef
 may only name actors its scene's stage holds: the pack check reports a stage that is wrong (two actors of a name, a parent not listed before, a text box with no size, a `frames` actor naming a set the scene does not hand in) and an actor a timeline names
 that the stage lacks, and the game, meeting either, leaves that actor or track out and says so in the log once.
 
-**The closings.** The Expert and the Voyager closing are played from the game (not from the opening), each on a stage of its own that `PackNeeds` requires: `expert_closing_stage` holds the playfield (a clipped group) with the Alien Artifact and the sub (`frames` actors), the crane's cable (a `chain` and a piece for each link, from the hook up),
-and the deck (a group, hidden until the hoist is over) with its water (`fill`), cloud, ship, the six sailors (`crew_0` .. `crew_5`, hidden until their programs draw them), the artifact, the sub, a second cable cut at the crane's arm, the control box (`pod`) and the sea, in draw order; `expert_closing_stage` is played by the timelines `expert_hoist`, `expert_deck` and `expert_wait`.
-`voyager_closing_stage` holds the playfield with the sub, the helicopter's body (`helicopter`) and rotor (`rotor`); its timeline is made at run time from `voyager_closing_script` for the place the sub is in, and names those three actors. The pack check reports an actor a closing's timeline names that its stage lacks, as it does for a scene.
+**The closings.** The end of a game is a scene too, laid over the running sector and played by the game, not by the opening: a campaign's `closing_scene` (section 3) names the scene file, and the segment that plays it is told the zone of the sector in play. The legacy Expert campaign's is `expert_closing`: its stage `expert_closing_stage` holds the playfield (a clipped group) with the Alien Artifact (a picture of `zone_creatures`) and the sub (`sub`), the crane's cable (a `chain` and a piece for each link, from the hook up),
+and the deck (a group, hidden until the cut) with its water (`fill`), cloud, ship, the six sailors (`crew_0` .. `crew_5`, hidden until their programs draw them), the artifact, the sub, a second cable cut at the crane's arm, the control box (`pod`) and the sea, in draw order; the scene plays the timelines `expert_hoist`, `expert_deck` (the cut to the deck is its keys at its first moment: the playfield group hidden, the deck group shown) and `expert_wait` (it loops, so it is the last).
+The dev pack's `dev_closing` has another shape: two timelines (a film with the cut in the middle of it, then a wait), a stage with no crane and no sailors, and a creature of its own zone. A pack's closing is a scene file, its stage and its timelines, and its campaign names the scene; `PackNeeds` derives the files from the campaigns (`named_by_closings`) and the pack check judges the scene like a scene of the opening, with the sets a scene over a sector is offered.
+The legacy Voyager campaign names `voyager_closing`, which has no scene file: the game plays it with code, on `voyager_closing_stage` (the playfield with the sub, the helicopter's body (`helicopter`) and rotor (`rotor`)), whose timeline is made at run time from `voyager_closing_script` for the place the sub is in; `PackNeeds` requires those two files, and the pack check reports an actor that timeline names that the stage lacks.
 
 **Scenes.** A scene file (`data/story/<scene>.tres`, a `StoryScene`; `.json` in the data form; the opening names it as a part: `news_cartoon`, `title`) says what one part of the opening plays, by name:
 
@@ -210,16 +211,18 @@ and the deck (a group, hidden until the hoist is over) with its water (`fill`), 
 | --- | --- |
 | `stage` | the stage the scene is built on (`news_cartoon_stage`) |
 | `loops` | the timelines that play from the start and start over when they end (`news_ambient`: the alarm lights, the ring, the console lights); each must have `loop` set |
-| `timelines` | the timelines that play once, one after the other (`news_report`; the title's `title_ship`, then `title_reveal`); none may loop. The scene ends when a cue says `end`, or after the prompt's answer |
+| `timelines` | the timelines that play once, one after the other (`news_report`; the title's `title_ship`, then `title_reveal`); only the last may loop (the closing's wait for a key). The scene ends when a cue says `end`, or after the prompt's answer, or on a key once `listen` has run |
+| `backdrop` | does the scene have a black backdrop under its stage? Default true; a closing, which is laid over the sector, has none |
+| `deaf_until_listen` | does the scene drop every key and click (Enter, Space, Escape, any other key, the mouse) until its verb `listen`, after which any of them ends it? Default false: the opening's scenes are ended by their cues and by Enter. The Expert closing is: the original reads and throws away every key until its last stage |
 | `song` | the song that starts with the scene (a name of the game's music, or a file `audio/music/<name>.ogg` of a pack); empty: no song |
 | `song_stops_at` | the timeline of `timelines` at whose start the song stops (the title's song ends when the title is revealed); empty: it plays on |
 | `prompt_song` | the song the `prompt` verb starts `prompt.music_delay_ticks` after the buttons appear; empty: none |
 | `speech` | what is said, in order: each step is `pause_ticks` (the wait before it, in ticks of the original's 73 Hz timer) and `group` (a voice group of `voice_cues`, whose clips are spoken one after the other) |
 
-A cue of a timeline whose kind is `event` calls a **verb** of the engine, written as its name and the words after it: `end` (the scene is over), `speak <group>` (speak that voice group and wait for it) and `prompt` (the stage's buttons appear: the player chooses Start or Intro, and nobody choosing for `prompt.timeout_ticks` means Intro; the part's `leads_on` says which answer goes on). A pack arranges the verbs;
+A cue of a timeline whose kind is `event` calls a **verb** of the engine, written as its name and the words after it: `end` (the scene is over), `listen` (from here a scene that is `deaf_until_listen` hears the keys and clicks it dropped, and any of them ends it), `speak <group>` (speak that voice group and wait for it) and `prompt` (the stage's buttons appear: the player chooses Start or Intro, and nobody choosing for `prompt.timeout_ticks` means Intro; the part's `leads_on` says which answer goes on). A pack arranges the verbs;
 what they do is the engine's.
 Enter is the engine's too: in a timeline that has **marks** (named moments: `presents`, `operation`, `neptune` of `title_reveal`) it ends the hold that runs and goes to the next mark, firing its cues; in a timeline without, it begins the next timeline of the scene (whose first keys set what the stage needs: `title_reveal` hides the ship scene's parts at its first moment); once the prompt is up it answers Intro. Space and Escape leave the opening. The speech is the `speech` steps, not cues, because how long a group takes is the recorded length of its clips: step by step, the scene waits the pause, then speaks the group. The pack check reports,
-and the game, meeting it, tells once in the log and leaves out, a timeline, song or voice group the scene names that no pack of the chain holds, a looping timeline that does not loop or a one-shot one that does, a cue whose verb the engine
+and the game, meeting it, tells once in the log and leaves out, a timeline, song or voice group the scene names that no pack of the chain holds, a looping timeline that does not loop or a one-shot one that loops and is not the last, a scene that is `deaf_until_listen` with no `listen` cue (or a `listen` cue in a scene that is not), a cue whose verb the engine
 lacks or that has the wrong number of words, a `song_stops_at` that is not one of its timelines, a `prompt_song` that does not resolve, a `prompt` with no button on the stage, a button of the stage that cannot be made, and a stage that no pack holds or an actor a timeline names that the stage lacks. The dev pack's scene is `tools/dev_pack/dev_story.py`'s, the legacy pack's the importer's (`step_story.py`).
 
 **What the opening says and flickers.** The console's lights of the news cartoon flicker as `news_ambient` says: its tracks for the stage's `status_NN` and `panel_NN` actors are the flicker, one key per redraw (the legacy pack's is
@@ -290,12 +293,12 @@ Campaign
 
 | Campaign | In pack | Sectors | Finale | Closing | Made by |
 | --- | --- | --- | --- | --- | --- |
-| `voyager` | legacy | 0-14 | 30 | the Voyager closing | the importer, from your copy |
-| `expert` | legacy | 15-29 | 31 | the Expert closing | the importer, from your copy |
-| `dev_tour` | dev | 0-3 | 4 | the generic finale | the dev pack's generator |
+| `voyager` | legacy | 0-14 | 30 | `voyager_closing`, played by the game | the importer, from your copy |
+| `expert` | legacy | 15-29 | 31 | the scene `expert_closing` | the importer, from your copy |
+| `dev_tour` | dev | 0-3 | 4 | the scene `dev_closing` | the dev pack's generator |
 | yours | any pack, or the project | your numbers | one of them | the generic finale | you |
 
-`dev` also holds test sectors (100 and up) that belong to no campaign and one campaign, `test_c`, for the engine tests; they are not meant for play.
+`dev` also holds test sectors (100 and up) that belong to no campaign and one campaign, `test_c`, for the engine tests, which has no closing scene (the generic finale); they are not meant for play.
 The game's campaign list is every campaign of the chain, the project's own (`res://data/campaigns/`) among them, with `voyager` and `expert` first when
 there are any and the others by id. A new player starts in the first of the list (`Catalog.default_campaign`): `voyager` when legacy is in the chain, else
 the first by id.
@@ -319,9 +322,10 @@ A sector with a `finale_screen` (the screen where the closing starts) is a final
 closing. A campaign lists its finale sectors in `finales`; docking in one ends the game. To make one, copy a finale sector
 (legacy's 30 or 31, or dev's 4).
 
-The closing is `voyager` or `expert` for the originals. A campaign with neither (`dev_tour` among them) gets the **generic finale**
-(`GenericFinale`): the campaign's title, its `finale_picture` and its `finale_text`, then the Hall of Fame. Enter or a click goes
-on; Space or Escape skips.
+The closing is the scene file the campaign's `closing_scene` names (`data/story/<name>.tres` of a pack of the chain, "The closings" above): `expert_closing` for the legacy
+Expert campaign, `dev_closing` for `dev_tour`. A campaign with none (`test_c`, a student's) gets the **generic finale** (`GenericFinale`): the campaign's title, its `finale_picture` and its `finale_text`, then the Hall of Fame.
+Enter or a click goes on; Space or Escape skips. A `closing_scene` no pack of the chain holds is a warning of the pack check, and the game, meeting it, tells it once in the log (the campaign and the scene) and plays the generic finale. The song a closing
+starts stops when it ends.
 
 ### Words of its own
 

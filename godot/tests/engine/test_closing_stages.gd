@@ -1,10 +1,12 @@
 class_name TestClosingStages
 extends GdUnitTestSuite
 ## Teaches: the closings are scenes whose nodes a stage file owns. The new kinds of actor (a picture set the view holds, a chain that one number lowers, a fill, a group that clips) are tried on a small stage of a scratch
-## pack; the Expert and Voyager closings are then built from the dev pack's stages and held to them (`StageNodes`), and what is told when a pack's stage lacks an actor a closing's timeline names, or names a picture set the
+## pack; the dev pack's closing scene and the Voyager closing are then built from the dev pack's stages and held to them (`StageNodes`), and what is told when a pack's stage lacks an actor a closing's timeline names, or names a picture set the
 ## closing does not hand in, is pinned (`PackCheck`, `StageBuilder`, `StageChain`), each once and with the pack.
 
 const PROBE := &"probe_stage"
+const DEV_CLOSING := &"dev_closing"
+const DEV_ZONE := 4                                    # the zone of the dev tour's finale sector
 
 var _shelf: PackShelf
 
@@ -154,23 +156,27 @@ func test_a_picture_set_the_scene_does_not_hand_in_leaves_its_actor_out_and_is_t
 
 # --- the closings on the dev pack's stages -------------------------------------------------------------------------
 
-func test_the_expert_closing_is_built_from_the_stage_and_plays_its_three_animations_in_turn() -> void:
+## The closing the dev pack's campaign names, played over a sector of zone 4 (its finale's): the stage built from the stage file, the two timelines on the one player that plays them in turn, no backdrop.
+func test_the_dev_closing_is_built_from_the_stage_and_plays_its_timelines_in_turn() -> void:
 	TroubleLog.new_run()
-	var closing: ExpertClosing = auto_free(load("res://src/story/expert_closing.tscn").instantiate())
+	var closing: TimelineSegment = auto_free(TimelineSegment.of(DEV_CLOSING, DEV_ZONE))
 	add_child(closing)
-	assert_array(StageNodes.differences(Catalog.story_stage(ExpertClosing.STAGE), closing.stage_root)).is_empty()
+	assert_array(StageNodes.differences(Catalog.story_stage(&"dev_closing_stage"), closing.stage)).is_empty()
 	assert_array(TroubleLog.session.told).is_empty()
-	assert_array(closing.cast.frame_sets.keys()).is_equal(Array(ExpertClosing.FRAME_SETS))
+	assert_array(closing.cast.frame_sets.keys()).is_equal(Array(FrameSets.offered(DEV_ZONE)))
+	assert_int(closing.cast.frame_zone).is_equal(DEV_ZONE)
+	assert_object(closing.get_node_or_null("Backdrop")).is_null()
 	assert_bool((closing.cast.node_of(&"deck") as CanvasItem).visible).is_false()
 	assert_bool((closing.cast.node_of(&"playfield") as CanvasItem).visible).is_true()
-	for animation_name in ExpertClosing.TIMELINES:
-		assert_bool(closing.animations.has_animation(animation_name)).is_true()
-	closing.animations.advance(closing.animations.get_animation(&"hoist").length + 0.01)
-	assert_int(closing.stage).is_equal(ExpertClosing.Stage.DECK)
-	assert_bool((closing.cast.node_of(&"deck") as CanvasItem).visible).is_true()
+	for timeline_name: StringName in [&"dev_closing_film", &"dev_closing_wait"]:
+		assert_bool(closing.script_player.has_animation(timeline_name)).is_true()
+	assert_bool(closing.listening).is_false()
+	closing.script_player.advance(closing.script_player.get_animation(&"dev_closing_film").length + 0.01)
+	await await_idle_frame()
+	assert_str(String(closing.script_player.current_animation)).is_equal("dev_closing_wait")
+	assert_bool((closing.cast.node_of(&"deck") as CanvasItem).visible).is_true()                 # the cut: keys of the film's own timeline
 	assert_bool((closing.cast.node_of(&"playfield") as CanvasItem).visible).is_false()
-	closing.animations.advance(closing.animations.get_animation(&"deck").length + 0.01)
-	assert_int(closing.stage).is_equal(ExpertClosing.Stage.WAIT)
+	assert_bool(closing.listening).is_true()                                                     # the cue `listen` at the first moment of the wait
 	var count := [0]
 	closing.finished.connect(func() -> void: count[0] += 1)
 	closing.advance()
@@ -185,7 +191,7 @@ func test_the_voyager_closing_is_built_from_the_stage_and_its_flight_is_made_for
 	closing.start(184, 212, 6)
 	assert_array(StageNodes.differences(Catalog.story_stage(VoyagerClosing.STAGE), closing.stage_root)).is_empty()
 	assert_array(TroubleLog.session.told).is_empty()
-	assert_array(closing.cast.frame_sets.keys()).is_equal(Array(VoyagerClosing.FRAME_SETS))
+	assert_array(closing.cast.frame_sets.keys()).is_equal(Array(FrameSets.offered(FrameSets.NO_ZONE)))
 	var animation := closing.animations.get_animation(&"closing")
 	closing.animations.seek(animation.length - 0.05, true)
 	assert_bool((closing.cast.node_of(&"helicopter") as CanvasItem).visible).is_true()
@@ -194,8 +200,8 @@ func test_the_voyager_closing_is_built_from_the_stage_and_its_flight_is_made_for
 
 
 func test_the_closings_need_their_stages_and_the_dev_pack_checks_clean() -> void:
-	assert_str(PackNeeds.FILES["data/story/expert_closing_stage.tres"]).is_equal("CutsceneStage")
 	assert_str(PackNeeds.FILES["data/story/voyager_closing_stage.tres"]).is_equal("CutsceneStage")
+	assert_str(PackNeeds.named_by_closings()["data/story/dev_closing_stage.tres"]).is_equal("CutsceneStage")
 	var options := PackCheck.Options.new()
 	options.reach = false
 	var report := PackCheck.run(Packs.dev(), options)
@@ -223,10 +229,10 @@ func _without(stage_name: StringName, actor_name: StringName) -> CutsceneStage:
 	return stage
 
 
-func test_the_check_tells_an_actor_a_timeline_of_the_expert_closing_names_that_its_stage_lacks() -> void:
-	var lines := _story_lines_of_a_pack_with(ExpertClosing.STAGE, _without(ExpertClosing.STAGE, &"pod"))
-	assert_array(lines).is_equal(["timeline 'expert_deck' names the actor 'pod', which stage 'expert_closing_stage' does not hold: nothing moves or changes for it",
-			"timeline 'expert_wait' names the actor 'pod', which stage 'expert_closing_stage' does not hold: nothing moves or changes for it"])
+func test_the_check_tells_an_actor_a_timeline_of_the_dev_closing_names_that_its_stage_lacks() -> void:
+	var lines := _story_lines_of_a_pack_with(&"dev_closing_stage", _without(&"dev_closing_stage", &"lamp"))
+	assert_array(lines).is_equal(["timeline 'dev_closing_film' names the actor 'lamp', which stage 'dev_closing_stage' does not hold: nothing moves or changes for it",
+			"timeline 'dev_closing_wait' names the actor 'lamp', which stage 'dev_closing_stage' does not hold: nothing moves or changes for it"])
 
 
 func test_the_check_tells_an_actor_the_flight_of_the_voyager_closing_names_that_its_stage_lacks() -> void:
@@ -235,7 +241,7 @@ func test_the_check_tells_an_actor_the_flight_of_the_voyager_closing_names_that_
 
 
 func test_the_check_tells_a_picture_set_the_closing_does_not_hand_in() -> void:
-	var stage := Catalog.story_stage(ExpertClosing.STAGE).duplicate(true) as CutsceneStage
-	(stage.find(&"artifact") as StageActor).frames = &"zone"
-	var lines := _story_lines_of_a_pack_with(ExpertClosing.STAGE, stage)
-	assert_array(lines).is_equal(["stage 'expert_closing_stage': actor 'artifact': the picture set 'zone' is not one this scene hands in (sub, artifact)"])
+	var stage := Catalog.story_stage(&"dev_closing_stage").duplicate(true) as CutsceneStage
+	(stage.find(&"creature") as StageActor).frames = &"zone"
+	var lines := _story_lines_of_a_pack_with(&"dev_closing_stage", stage)
+	assert_array(lines).is_equal(["stage 'dev_closing_stage': actor 'creature': the picture set 'zone' is not one this scene hands in (sub, zone_creatures)"])

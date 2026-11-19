@@ -235,8 +235,30 @@ func test_warnings_do_not_stop_a_pack() -> void:
 	assert_bool(report.passes()).override_failure_message(_errors(report)).is_true()
 	assert_bool(_has(report, PackReport.Severity.WARNING, "no campaign of this pack lists it")).is_true()
 	assert_bool(_has(report, PackReport.Severity.WARNING, "voice group 'no_such_group' has no clips")).is_true()
-	assert_bool(_has(report, PackReport.Severity.WARNING, "closing_scene 'pirate'")).is_true()
+	assert_bool(_has(report, PackReport.Severity.WARNING, "closing_scene 'pirate' is no scene any pack of the chain holds")).is_true()
 	assert_bool(_has(report, PackReport.Severity.WARNING, "fallback_song 'no_such_song'")).is_true()
+
+
+## The closing scene a campaign names is judged like a scene of the opening: its own lines (`StoryScene.unresolved`) and its stage, given the picture sets a scene laid over a sector is offered. A scene of the chain below the pack
+## (dev's `dev_closing`) is fine, and no `OWN_CLOSINGS` list says which names are the game's own.
+func test_the_closing_scene_a_campaign_names_is_judged_like_a_scene_of_the_opening() -> void:
+	var shelf := _orchard()
+	var cued: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("%s/campaigns/%s.json" % [shelf.root, ID]))
+	cued["closing_scene"] = "orchard_closing"
+	shelf.write_json("campaigns/%s.json" % ID, cued)
+	var scene := StoryScene.new()
+	scene.stage = &"no_such_stage"
+	scene.timelines = [&"no_such_timeline"]
+	scene.backdrop = false
+	shelf.write_json("data/story/orchard_closing.json", ResourceJson.new().data_of(scene))
+	var report := _check(shelf)
+	assert_bool(_has(report, PackReport.Severity.ERROR, "scene 'orchard_closing' names the timeline 'no_such_timeline', which no pack of the chain holds")).is_true()
+	assert_bool(_has(report, PackReport.Severity.ERROR, "scene 'orchard_closing' names the stage 'no_such_stage', which no pack of the chain holds")).is_true()
+	assert_bool(_has(report, PackReport.Severity.WARNING, "closing_scene 'orchard_closing' is no scene")).is_false()           # (the chain holds the scene: only what it names is missing)
+	cued["closing_scene"] = "dev_closing"
+	shelf.write_json("campaigns/%s.json" % ID, cued)
+	report = _check(shelf)
+	assert_array(report.findings.filter(func(finding: PackReport.Finding) -> bool: return finding.area == "story")).is_empty()
 
 
 # --- names, pictures, clips ---------------------------------------------------------------------------------------------------------

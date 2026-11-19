@@ -49,7 +49,7 @@ const CHOICES: Array[StringName] = [START, INTRO]
 @export var choice: StringName = &""
 ## A button: the key that presses it from the keyboard, as the engine names keys (`I`, `S`); empty: none. Its size is its picture's.
 @export var hotkey: String = ""
-## A `frames` actor: the name of the picture set it shows. The scene's view hands the sets in when it builds the stage (`CutsceneCast.frame_sets`), so the stage names which one.
+## A `frames` actor: the name of the picture set it shows. The engine's sets have fixed names (`FrameSets`: `sub`, and `zone_creatures` for a scene laid over a sector); the director hands them in when it builds the stage (`CutsceneCast.frame_sets`), so the stage names which one.
 @export var frames: StringName = &""
 ## A `chain`: the pictures its first piece (the hook) takes, by the `frame` a timeline sets (open, closing, closed). The pieces are the actors that have the chain as their parent, listed from the hook up and placed where
 ## they stand when the chain's `extent` is 0; a timeline's `extent` track moves them all down by that many pixels.

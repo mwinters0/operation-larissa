@@ -60,9 +60,8 @@ const VOICE := &"Voice"
 const BUSES: Array[StringName] = [MASTER, MUSIC, SFX, VOICE]
 
 const NO_MUSIC := &""
-## The song the game asks for by name in code (the `music` names of names/original.json; the six songs of the sectors are
-## `sector_song_1` .. `sector_song_6`, the opening's are named by its scene files).
-const SONG_CLOSING := &"closing"
+## The songs of the opening and the closings are named by their scene files (`StoryScene.song`: the `music` names of names/original.json), the six songs of the sectors are
+## `sector_song_1` .. `sector_song_6`.
 
 const FADE_SECONDS := 0.6
 const SILENT_DB := -60.0
