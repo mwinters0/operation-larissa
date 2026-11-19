@@ -9,8 +9,8 @@ extends StorySegment
 ## nodes, which tells a `CutsceneCast` which node plays which actor ("crew_4" is the `Crew4` sprite), and has `Cutscene.animation()` turn the timeline into `Animation`s. There are
 ## TWO `AnimationPlayer`s, because one player plays one animation at a time:
 ##
-##   * `Ambient` loops forever: the alarm lights and the pulsing radar ring (`news_ambient.tres`) and the flickering console
-##     lights, which are random in the original and so are made here with a seeded generator (`_flicker_timeline`);
+##   * `Ambient` loops forever: the alarm lights, the pulsing radar ring and the flickering console lights (`news_ambient.tres`; the lights' flicker is random in the original and is ours:
+##     the importer and the dev pack's generator bake it into the file, so a pack's own cartoon flickers as its timeline says);
 ##   * `Script` plays once: the capsule's dots appear along its path, the bulletins are typed (a `reveal` track), the crew
 ##     act out their scripts (the man on the left only walks in after 30 s), the alarm lights come on one after the other,
 ##     and at the end an event cue tells the segment to finish.
@@ -26,23 +26,16 @@ extends StorySegment
 ## last one. The crew's pictures and timings are the original's five little scripts; the importer plays them out, redraw by
 ## redraw, into the timeline.
 
-## The ambient animation's step: the original's redraw every 10 ticks (the flicker of the console lights changes at that rate).
-const REDRAW_TICKS := 10.0
 ## The stage the cartoon plays on (`Catalog.story_stage`), and the timelines played on it: the alarm lights and the ring, which loop, and the cartoon itself.
 const STAGE := &"news_cartoon_stage"
 const AMBIENT := &"news_ambient"
 const TIMELINE := &"news_cartoon"
 const TIMELINES: Array[StringName] = [AMBIENT, TIMELINE]
-## The names of the console's lights on the stage (`status_00`, `panel_00`).
-const STATUS_LIGHT_PREFIX := "status_"
-const PANEL_LIGHT_PREFIX := "panel_"
-
-## The speech: groups of the 11 clips (how many clips in each) with the pause before each group, in ticks of the original's 1/73 s (the
-## original's `CartoonSpeech` (0x42984d): a pause precedes clips 1, 3, 6 and 7, the others follow their predecessor at once). The pauses
-## are data (`news.group_pauses` of `data/rules/durations.json`, `Durations`): the port always waited 3.4 s, which is 248.2 ticks, so 248
-## (the bulletin is read for 25 redraws of 10 ticks, 250, which may be where the pause comes from: not checked in the decompilation).
-## How long a group SPEAKS is not here: it is the clips' recorded lengths (`VoiceIndex.durations`, `Audio.speak`).
-const SPEECH_GROUP_CLIPS: Array[int] = [2, 3, 1, 1, 4]
+## The speech is the voice groups `news_speech_0`, `news_speech_1` ... of the pack (`VoiceCues`: which clips, in the original's `CartoonSpeech` (0x42984d) 2, 3, 1, 1 and 4 of the 11 clips) and,
+## before each, the pause `news.group_pauses[i]` of `data/rules/durations.json` (`Durations`), in ticks of the original's 1/73 s (the original's pause precedes clips 1, 3, 6 and 7, the others follow their
+## predecessor at once; the port waited 3.4 s, 248.2 ticks, so 248; the bulletin is read for 25 redraws of 10 ticks, 250, which may be where the pause comes from: not checked in the decompilation).
+## The speech goes on as long as the pack holds the next group. How long a group SPEAKS is not here: it is the clips' recorded lengths (`VoiceIndex.durations`, `Audio.speak`).
+const SPEECH_GROUP_PREFIX := "news_speech_"
 
 
 ## The wait before the first clip: 3 s (`news.speech_start_delay_ticks`).
@@ -50,13 +43,27 @@ static func speech_start_delay_ticks() -> int:
 	return maxi(Durations.at("news.speech_start_delay_ticks"), 0)
 
 
-## The groups of the speech as `[pause ticks, clip count]`, the pauses from the data.
+## The groups of the speech as `[pause ticks, clips]`: the voice groups of the chain in turn, each with its pause from the data. A chain with no first group says so (the cartoon is silent), and a group
+## without a pause follows the one before it at once, both told once.
 static func speech_groups() -> Array[Array]:
 	var pauses := Durations.list_at("news.group_pauses")
+	var cues := Catalog.voice_cues()
 	var groups: Array[Array] = []
-	for i in SPEECH_GROUP_CLIPS.size():
-		groups.append([maxi(pauses[i], 0) if i < pauses.size() else 0, SPEECH_GROUP_CLIPS[i]])
+	while true:
+		var index := groups.size()
+		var clips := cues.clips(SPEECH_GROUP_PREFIX + str(index))
+		if clips.is_empty():
+			break
+		if index >= pauses.size():
+			TroubleLog.session.tell("[story] pack '%s': news.group_pauses of rules/durations.json has no pause for the speech group '%s%d': it follows the group before at once" % [_pack_id(), SPEECH_GROUP_PREFIX, index])
+		groups.append([maxi(pauses[index], 0) if index < pauses.size() else 0, clips])
+	if groups.is_empty():
+		TroubleLog.session.tell("[story] pack '%s': voice_cues holds no group '%s0': the news cartoon is silent" % [_pack_id(), SPEECH_GROUP_PREFIX])
 	return groups
+
+
+static func _pack_id() -> String:
+	return String(Packs.chosen().id) if Packs.chosen() != null else ""
 
 
 @onready var stage: Node2D = %Stage
@@ -71,10 +78,9 @@ var _cast: CutsceneCast
 func _ready() -> void:
 	_cast = CutsceneCast.new(self)
 	_cast.texts = _bulletin_text
-	var stage_data := StageBuilder.build(STAGE, stage, _cast)
+	StageBuilder.build(STAGE, stage, _cast)
 	teletype = _cast.node_of(&"teletype") as Label
-	var alarms := Catalog.story_timeline(AMBIENT)
-	Cutscene.install_timeline(ambient, &"ambient", alarms.merged_with(_flicker_timeline(alarms, stage_data)), _cast)
+	Cutscene.install_timeline(ambient, &"ambient", Catalog.story_timeline(AMBIENT), _cast)
 	Cutscene.install_timeline(script_player, &"news", Catalog.story_timeline(TIMELINE), _cast)
 	ambient.play(&"ambient")
 	script_player.play(&"news")
@@ -97,44 +103,6 @@ func cue(event: StringName) -> void:
 		finish()
 
 
-# --- what the timeline does not have -----------------------------------------------------------
-
-## The little lights flicker at random, like the console of the original (a seeded generator keeps it the same every
-## time), so there is no original timeline for them: this one is ours, baked into a loop as long as the alarm lights'
-## (`news_ambient.tres`) and merged with it. Status lights: each redraw a light is on with probability 100 / 299 and shows
-## one of three pictures; panel lights are always on and show one of three pictures.
-func _flicker_timeline(alarms: CutsceneTimeline, stage_data: CutsceneStage) -> CutsceneTimeline:
-	var flicker := CutsceneTimeline.made_in_code(alarms.length,
-			"Ours: the console's lights flicker at random in the original (CartoonStatusLights, CartoonPanelLights); a generator seeded with 73 bakes it into a loop.", true)
-	var steps := roundi(alarms.length / REDRAW_TICKS)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 73
-	var lights := _lights(stage_data, STATUS_LIGHT_PREFIX)
-	for i in lights:
-		var visible_keys: Array = []
-		var picture_keys: Array = []
-		for step in steps:
-			var r := rng.randi() % 299
-			visible_keys.append([step * REDRAW_TICKS, r < 100])
-			picture_keys.append([step * REDRAW_TICKS, StringName("status_light_%d" % (r % 3))])
-		flicker.track(StringName("status_%02d" % i), CutsceneTrack.PROP_VISIBLE, visible_keys)
-		flicker.track(StringName("status_%02d" % i), CutsceneTrack.PROP_PICTURE, picture_keys)
-	for i in _lights(stage_data, PANEL_LIGHT_PREFIX):
-		var picture_keys: Array = []
-		for step in steps:
-			picture_keys.append([step * REDRAW_TICKS, StringName("panel_light_%d" % (rng.randi() % 299 % 3))])
-		flicker.track(StringName("panel_%02d" % i), CutsceneTrack.PROP_PICTURE, picture_keys)
-	return flicker
-
-
-## How many actors of the stage are called `<prefix>NN` (the console's lights of one kind): the flicker is baked for each.
-static func _lights(stage_data: CutsceneStage, prefix: String) -> int:
-	var count := 0
-	while stage_data != null and stage_data.has_actor(StringName("%s%02d" % [prefix, count])):
-		count += 1
-	return count
-
-
 ## Bulletin `index` (0-5) as the teletype prints it: the original's text with its odd characters cleaned.
 static func bulletin(index: int) -> String:
 	return tidy(Catalog.text(StringName("news_bulletin_%d" % index)))
@@ -151,17 +119,14 @@ func _bulletin_text(text_name: StringName) -> String:
 
 # --- the speech ---------------------------------------------------------------------------------
 
-## The 11 clips of the bulletins in their groups, with the original's pauses.
+## The clips of the bulletins in their groups, with the original's pauses.
 func _speak() -> void:
-	var clips := Catalog.voice_cues().clips("opening_cartoon")
+	var groups := speech_groups()
 	if not await pause_ticks(speech_start_delay_ticks()):
 		return
-	var first := 0
-	for group in speech_groups():
+	for group in groups:
 		if not await pause_ticks(group[0]):
 			return
-		var count: int = group[1]
-		await Audio.speak(clips.slice(first, first + count))
-		first += count
+		await Audio.speak(group[1])
 		if done:
 			return

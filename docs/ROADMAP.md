@@ -38,10 +38,6 @@ opening of its own. Each is one session; the engine verbs stay rules (input, wai
 step the fidelity pins hold unchanged: `L: test_cutscene_timing` (the timing hashes), `test_opening` / `test_opening_legacy`, the key
 handling by phase.
 
-- **A2. What is ours becomes data too.** The importer bakes the console lights' flicker (the generator seeded with 73,
-  `NewsCartoon._flicker_timeline`) into the legacy `news_ambient` with its provenance "ours", and the dev pack's into its own; the
-  speech groups (`NewsCartoon.SPEECH_GROUP_CLIPS`) join their pauses in the pack's data; the title's `PROMPT_TIMEOUT` and
-  `MUSIC_DELAY_AFTER_PROMPT` go to `durations.json`.
 - **A3. One segment plays a scene.** A `TimelineSegment` (a `StorySegment`) plays a scene file `data/story/<scene>.json`: its stage,
   its looping and its one-shot timelines, its song, and the speech. The timeline's cues call a fixed set of engine verbs (`end`,
   `speak <group>`), named in `create/CONTENT.md` "Story timelines". `NewsCartoon` becomes the legacy pack's `news_cartoon` scene file.

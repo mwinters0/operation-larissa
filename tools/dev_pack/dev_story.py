@@ -23,6 +23,8 @@ SHIP_STOPS_AT_FRAME = 15
 SHIP_STOPS_AT_X = 40
 REVEAL_HOLD = 100                           # ticks of one hold of the title
 CREW_FIRST_PICTURE = 2012                   # the sailors' items count from this picture of the registry
+STATUS_LIGHTS = 6                           # the console's lights on the news cartoon's stage
+PANEL_LIGHTS = 8
 CREW_ITEMS = 4                              # the items 0-3 the sailors' programs draw
 
 
@@ -64,9 +66,9 @@ def news_cartoon_stage() -> st.Stage:
     s.actor("console_right", picture="control_console", at=(520, 320), mirror=True)
     for i in range(3):
         s.actor("alarm_%d" % i, picture="alarm_light_0", at=(100 + 20 * i, 300))
-    for i in range(6):
+    for i in range(STATUS_LIGHTS):
         s.actor("status_%02d" % i, picture="status_light_0", at=(160 + 20 * i, 300), mirror=i >= 3)
-    for i in range(8):
+    for i in range(PANEL_LIGHTS):
         s.actor("panel_%02d" % i, picture="panel_light_0", at=(300 + 20 * i, 320), mirror=i >= 4)
     for i in range(5):
         s.actor("crew_%d" % i, picture="crew_walk_0", at=(100 + 60 * i, 260), visible=i != 4)      # the fifth is the one who walks in, so he starts hidden
@@ -97,13 +99,15 @@ def title_stage() -> st.Stage:
 
 
 def news_ambient() -> st.Timeline:
-    """The alarm lights and the ring: a loop of 16 redraws of 10 ticks."""
+    """The alarm lights, the ring and the console's flicker (the same generator as the legacy pack's, `step_story.console_flicker`): a loop of 16 redraws of 10 ticks."""
     steps = 16
-    t = timeline(steps * 10, "the alarm lights and the pulsing ring, a loop of 16 redraws of 10 ticks", loop=True)
+    t = timeline(steps * 10, "the alarm lights and the pulsing ring, a loop of 16 redraws of 10 ticks; the console's lights flicker as the original's do "
+                 "(a generator seeded with 73, step_story.console_flicker: ours)", loop=True)
     for light in range(3):
         t.track("alarm_%d" % light, "picture", pictures(10, ["alarm_light_%d" % ((s + light) % 3) for s in range(steps)]))
         t.track("alarm_%d" % light, "mirror", flags(10, [(s // 4) % 2 == 1 for s in range(steps)]))
     t.track("ring", "picture", pictures(10, ["crash_ring_%d" % (s % 4) for s in range(steps)]))
+    st.console_flicker(t, 10, STATUS_LIGHTS, PANEL_LIGHTS, "status_light", "panel_light")
     return t
 
 

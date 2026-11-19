@@ -54,7 +54,6 @@ func test_news_cartoon_builds_and_every_track_finds_its_node() -> void:
 	var timeline := Catalog.story_timeline(&"news_cartoon")
 	assert_int(_dots_of(news).size()).is_equal(timeline.tracks.filter(func(track: CutsceneTrack) -> bool: return String(track.actor).begins_with("dot_")).size())
 	assert_float(news.script_player.get_animation(&"news").length).is_equal_approx(timeline.length_seconds(), 0.001)
-	assert_int(Catalog.voice_cues().clips("opening_cartoon").size()).is_equal(NewsCartoon.SPEECH_GROUP_CLIPS.reduce(func(sum: int, each: int) -> int: return sum + each, 0))
 
 
 func test_the_nodes_of_both_scenes_are_what_their_stage_files_say() -> void:
@@ -75,10 +74,11 @@ func test_the_nodes_of_both_scenes_are_what_their_stage_files_say() -> void:
 func test_a_bulletin_is_a_text_of_the_pack_printed_clean_and_the_speech_has_a_clip_for_each_group_slot() -> void:
 	assert_str(NewsCartoon.bulletin(0)).is_equal(NewsCartoon.tidy(Catalog.text(&"news_bulletin_0")))
 	assert_str(NewsCartoon.tidy("  A line\r\nbreak \r")).is_equal("A line\n\nbreak")
-	var group_total := 0
-	for group in NewsCartoon.speech_groups():
-		group_total += int(group[1])
-	assert_int(group_total).is_equal(Catalog.voice_cues().clips("opening_cartoon").size())
+	var groups := NewsCartoon.speech_groups()
+	assert_int(groups.size()).is_equal(Durations.list_at("news.group_pauses").size())          # a pause before each group of the pack's voice_cues
+	for i in groups.size():
+		assert_array(groups[i][1]).is_equal(Array(Catalog.voice_cues().clips("%s%d" % [NewsCartoon.SPEECH_GROUP_PREFIX, i])))
+		assert_array(groups[i][1]).is_not_empty()
 
 
 func test_news_cartoon_skip_ends_it_once() -> void:
@@ -183,7 +183,7 @@ func test_space_and_escape_leave_the_opening_from_every_part_of_the_title() -> v
 		assert_bool(title.wants_intro).is_false()
 
 
-## `TitleScreenPromptLoop` (0x42a49a) arms alarm 1 for 1825 ticks when the buttons are drawn; when it runs out the return value
+## `TitleScreenPromptLoop` (0x42a49a) arms alarm 1 for the prompt's time-out (`title.prompt_timeout_ticks`, the original's 1825) when the buttons are drawn; when it runs out the return value
 ## is still 1, Intro, and `OpeningSequence` (0x42b16b) plays the story pages, with no pressed Intro picture.
 func test_the_prompt_timing_out_means_intro() -> void:
 	var title: TitleScene = auto_free(load(TITLE).instantiate())
@@ -192,7 +192,8 @@ func test_the_prompt_timing_out_means_intro() -> void:
 	title.advance()
 	title.advance()
 	assert_int(title.phase).is_equal(TitleScene.Phase.PROMPT)
-	assert_float(title.prompt_timer.wait_time).is_equal_approx(1825.0 / 73.0, 0.001)
+	assert_int(TitleScene.prompt_timeout_ticks()).is_equal(Durations.at("title.prompt_timeout_ticks"))
+	assert_float(title.prompt_timer.wait_time).is_equal_approx(TitleScene.prompt_timeout_ticks() / 73.0, 0.001)
 	assert_bool(title.prompt_timer.is_stopped()).is_false()
 	title.prompt_timer.timeout.emit()
 	assert_bool(title.done).is_true()

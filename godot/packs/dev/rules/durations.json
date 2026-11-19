@@ -32,6 +32,10 @@
       0
     ]
   },
+  "title": {
+    "prompt_timeout_ticks": 730,
+    "music_delay_ticks": 146
+  },
   "fade": {
     "ticks": 10
   }

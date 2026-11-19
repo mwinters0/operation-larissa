@@ -14,8 +14,8 @@ extends StorySegment
 ##   SHIP     26.8 s: the ship sails across the sky, stops, drops the mini-sub into the sea with a splash
 ##   REVEAL   "presents", "OPERATION", "NEPTUNE" and the copyright appear, one after the other (no fading)
 ##   PROMPT   [Start] [Intro]; Intro (Enter, I, a click on its button or anywhere outside the buttons) goes on to the story
-##            pages, Start (S, Space, Escape, a click on its button) ends the opening. If nobody presses anything for 25 s the
-##            story begins by itself.
+##            pages, Start (S, Space, Escape, a click on its button) ends the opening. If nobody presses anything for
+##            the prompt's time-out (the original's 25 s) the story begins by itself.
 ##
 ## All the numbers of the ship scene come from the original's own per-redraw routines, decoded into one table
 ## (extracted/tables/opening.json, written into the timeline by the importer): where the hull, the radar, the hook, the sub and the
@@ -33,10 +33,17 @@ const TIMELINES: Array[StringName] = [SHIP_TIMELINE, REVEAL_TIMELINE]
 ## The actors of the stage that belong to the ship scene and are gone when the title is revealed (the strip of waves and the sub, spray and splashes are not parts of the ship's node).
 const SHIP_SCENE_ACTORS: Array[StringName] = [&"ship", &"waves_front", &"mini_sub", &"spray", &"splash_left", &"splash_right"]
 
-const PROMPT_TIMEOUT := 25.0          # 1825 ticks
-const MUSIC_DELAY_AFTER_PROMPT := 4.0
+## How long nobody may choose before the story begins by itself (`title.prompt_timeout_ticks`: the original's 1825 ticks, 25 s).
+static func prompt_timeout_ticks() -> int:
+	return maxi(Durations.at("title.prompt_timeout_ticks"), 1)
 
-## True when the player asked for the story (Intro, Enter, a click outside the buttons, or nobody chose for 25 s).
+
+## How long after the prompt appears the story's own song starts (`title.music_delay_ticks`: the original's 292 ticks, 4 s).
+static func music_delay_ticks() -> int:
+	return maxi(Durations.at("title.music_delay_ticks"), 0)
+
+
+## True when the player asked for the story (Intro, Enter, a click outside the buttons, or nobody chose in time).
 var wants_intro: bool = false
 var phase: Phase = Phase.SHIP
 
@@ -62,7 +69,7 @@ func _ready() -> void:
 	Cutscene.install_timeline(animations, &"ship", Catalog.story_timeline(SHIP_TIMELINE), _cast)
 	Cutscene.install_timeline(animations, &"reveal", _reveal, _cast)
 	animations.animation_finished.connect(_on_animation_finished)
-	prompt_timer.wait_time = PROMPT_TIMEOUT
+	prompt_timer.wait_time = TickMeter.seconds(prompt_timeout_ticks())
 	prompt_timer.one_shot = true
 	prompt_timer.timeout.connect(_choose.bind(true))
 	Audio.play_music(AudioService.SONG_TITLE)
@@ -115,14 +122,14 @@ func _leave_ship_scene() -> void:
 	Audio.stop_music()                                    # the original stops the song when the title appears
 
 
-## The prompt: the buttons, the 25 s countdown, and (after 4 s) the story's own music.
+## The prompt: the buttons, the countdown (`title.prompt_timeout_ticks`) and, after `title.music_delay_ticks`, the story's own music.
 func _show_prompt() -> void:
 	if phase == Phase.PROMPT or done:
 		return
 	phase = Phase.PROMPT
 	prompt.visible = true
 	prompt_timer.start()
-	if await pause(MUSIC_DELAY_AFTER_PROMPT):
+	if await pause_ticks(music_delay_ticks()):
 		Audio.play_music(AudioService.SONG_OPENING)
 
 

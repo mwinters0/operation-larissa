@@ -190,3 +190,54 @@ def test_every_actor_a_legacy_timeline_names_is_on_its_stage():
                 continue                                        # (its builder reads the game's texts; the stage test above covers its actors)
             named = {actor for actor, *_ in step_story.timelines()[name].tracks}
             assert named <= held, (name, named - held)
+
+
+# --- the console's flicker: ours, baked into news_ambient --------------------------------------------------------------------------
+
+def flicker_digest(length: float, status_lights: int, panel_lights: int) -> str:
+    """The digest of the tracks `console_flicker` adds: actor, property, then `tick:value` of every key."""
+    timeline = step_story.Timeline(length, "test", loop=True)
+    step_story.console_flicker(timeline, 10, status_lights, panel_lights, "status_light", "panel_light")
+    text = "\n".join("%s %s %s" % (actor, prop, ",".join("%g:%s" % key for key in keys)) for actor, prop, keys, _smooth in timeline.tracks)
+    return step_story.sha256_hex(text.encode("utf-8"))
+
+
+def test_the_generator_is_godots_with_the_seed_of_the_flicker():
+    """`rng.seed = 73` then `rng.randi() % 299` in GDScript gave these numbers (the engine drew them while it played; the baked files were compared with
+    what it drew, key by key, for the legacy pack's 64 redraws and the dev pack's 16)."""
+    rng = step_story.Pcg32(step_story.FLICKER_SEED)
+    assert [rng.randi() % step_story.FLICKER_MODULUS for _ in range(12)] == [4, 40, 72, 169, 88, 263, 4, 87, 236, 76, 66, 140]
+
+
+def test_the_flicker_is_the_one_the_engine_drew_for_the_legacy_and_the_dev_pack():
+    assert flicker_digest(640, 6, 8) == "820c62b16b378125775b0da5b47df57506975f1d648f8fb6b1b8e7f0f1bd8d3a"
+    assert flicker_digest(160, 6, 8) == "146faff6c7245e82c39a8c46908bf4d0d5abda0aa861dd1458df4eac426b93bd"
+
+
+def test_the_flicker_has_a_key_per_redraw_for_each_light_and_lights_a_status_light_below_100():
+    timeline = step_story.Timeline(640, "test", loop=True)
+    step_story.console_flicker(timeline, 10, 2, 1, "status_light", "panel_light")
+    tracks = {(actor, prop): keys for actor, prop, keys, _smooth in timeline.tracks}
+    assert sorted(tracks) == [("panel_00", "picture"), ("status_00", "picture"), ("status_00", "visible"), ("status_01", "picture"), ("status_01", "visible")]
+    assert all(len(keys) == 64 and keys[1][0] == 10 for keys in tracks.values())
+    rng = step_story.Pcg32(step_story.FLICKER_SEED)
+    first = rng.randi() % 299
+    assert tracks[("status_00", "visible")][0][1] == ("true" if first < 100 else "false")
+    assert tracks[("status_00", "picture")][0][1] == '&"status_light_%d"' % (first % 3)
+
+
+@pytest.mark.legacy
+def test_the_legacy_news_ambient_holds_the_flicker_of_every_light_of_its_stage():
+    timeline = step_story.build_news_ambient()
+    named = {(actor, prop) for actor, prop, _keys, _smooth in timeline.tracks}
+    stage = {a["name"] for a in step_story.build_news_stage().actors}
+    assert {f"status_{i:02d}" for i in range(6)} | {f"panel_{i:02d}" for i in range(8)} <= stage
+    assert all((f"status_{i:02d}", prop) in named for i in range(6) for prop in ("visible", "picture"))
+    assert all((f"panel_{i:02d}", "picture") in named for i in range(8))
+    assert "console's lights flicker" in timeline.provenance
+
+
+def test_the_news_cartoons_eleven_clips_are_five_voice_groups_in_order():
+    groups = common.news_speech_groups(list(range(4000, 4011)))
+    assert groups == {"news_speech_0": [4000, 4001], "news_speech_1": [4002, 4003, 4004], "news_speech_2": [4005], "news_speech_3": [4006],
+                      "news_speech_4": [4007, 4008, 4009, 4010]}

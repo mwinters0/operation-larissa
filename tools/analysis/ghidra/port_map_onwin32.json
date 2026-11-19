@@ -2026,22 +2026,22 @@
  "0x004293ef": {
   "name": "CartoonDrawStatusLight",
   "status": "ported",
-  "where": "godot/src/story/news_cartoon.gd:_flicker_timeline (status lights; made in code, random in the original)"
+  "where": "data/story/news_ambient.tres [tools/import/step_story.py:console_flicker] (status lights; baked into the loop, random in the original)"
  },
  "0x00429440": {
   "name": "CartoonStatusLights",
   "status": "ported",
-  "where": "godot/src/story/news_cartoon.gd:_flicker_timeline (probability 100/299 per light and call, pictures 1010-1012, right three mirrored). Random sequence is a baked seed-73 sequence of 64 steps, not the Borland rand interleaving (G15 deferred)"
+  "where": "data/story/news_ambient.tres [tools/import/step_story.py:console_flicker] (probability 100/299 per light and call, pictures 1010-1012, right three mirrored by the stage). Random sequence is a baked seed-73 sequence of 64 steps, not the Borland rand interleaving (G15 deferred)"
  },
  "0x00429544": {
   "name": "CartoonDrawPanelLight",
   "status": "ported",
-  "where": "godot/src/story/news_cartoon.gd:_flicker_timeline (panel lights)"
+  "where": "data/story/news_ambient.tres [tools/import/step_story.py:console_flicker] (panel lights)"
  },
  "0x00429595": {
   "name": "CartoonPanelLights",
   "status": "ported",
-  "where": "godot/src/story/news_cartoon.gd:_flicker_timeline (8 lights, pictures 1013-1015, right four mirrored). Random sequence differs (G15 deferred)"
+  "where": "data/story/news_ambient.tres [tools/import/step_story.py:console_flicker] (8 lights, pictures 1013-1015, right four mirrored by the stage). Random sequence differs (G15 deferred)"
  },
  "0x004296b6": {
   "name": "CartoonDrawCrewPicture",
@@ -2056,7 +2056,7 @@
  "0x0042984d": {
   "name": "CartoonSpeech",
   "status": "ported",
-  "where": "godot/src/story/news_cartoon.gd:_speak / SPEECH_GROUP_CLIPS / speech_groups (11 clips 4000-4010 in 5 groups, pauses before clips 1, 3, 6, 7) via Audio.speak and voice_cues \"opening_cartoon\""
+  "where": "godot/src/story/news_cartoon.gd:_speak / speech_groups (11 clips 4000-4010 in the 5 voice groups news_speech_0..4 of voice_cues [tools/import/common.py:news_speech_groups], pauses before clips 1, 3, 6, 7 = news.group_pauses) via Audio.speak"
  },
  "0x0042995c": {
   "name": "NewsCartoonRedraw",

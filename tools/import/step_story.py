@@ -9,7 +9,7 @@ belong to the original and the nodes belong to the view.
     news_cartoon_stage  the news cartoon's actors and where they stand                                (the position table, extracted/tables/opening.json)
     title_stage         the title scene's actors and where they stand                                 (the same)
     news_cartoon        the capsule's trail, the bulletins typed, the crew, the alarm lights, the end   (extracted/tables/opening.json)
-    news_ambient        the alarm lights' four states and the pulsing ring, a loop of 64 redraws          (the same)
+    news_ambient        the alarm lights' four states, the pulsing ring and the console's flicker, a loop of 64 redraws   (the same; the flicker is ours)
     title_ship          the ship scene, 163 frames of 12 ticks                                           (title_scene.frames)
     title_reveal        "Presents" / "OPERATION" / "NEPTUNE" with their sounds and the prompt            (reveal_and_prompt)
     expert_hoist        the Expert closing: the sub turns, the hook comes down, the cable hoists         (CLOSING.C, constants below)
@@ -22,8 +22,8 @@ belong to the original and the nodes belong to the view.
 Provenance (ground rule "Provenance is never lost"): every number is the original's, from extracted/tables/*.json or from the
 constants below, which were read from the decompiled loops and carry their function and address. The few numbers that are
 OURS (a margin after the last step, one millisecond that keeps a ramp from sliding back) are named `*_TICKS` constants
-with a comment saying so, and each file's `provenance` text lists them. Hand-made timelines (the fade of a story page, the
-flicker of the console lights) are not here: they are made in code by the views, because they have no original behind them.
+with a comment saying so, and each file's `provenance` text lists them. The flicker of the console lights has no original behind it (the
+original draws them at random): it is ours and is baked into `news_ambient` (`console_flicker`). The fade of a story page is made in code.
 
 Names: pictures and sounds are written as the registry's names (godot/names/original.json), found from the original's
 numbers here, so `rename_name.py --import` rewrites them when a name changes.
@@ -317,9 +317,53 @@ def build_news(texts: dict[int, str]) -> Timeline:
     return tl
 
 
+class Pcg32:
+    """Godot's `RandomNumberGenerator` (PCG32, the default stream): `Pcg32(seed).randi()` is the same number as `rng.seed = seed; rng.randi()`
+    in GDScript, so a flicker baked here is the one the engine once generated while it played (`test_story.py` pins the first numbers)."""
+    MULT = 6364136223846793005
+    DEFAULT_INC = 1442695040888963407
+    MASK = (1 << 64) - 1
+
+    def __init__(self, seed: int):
+        self.inc = ((self.DEFAULT_INC << 1) | 1) & self.MASK
+        self.state = 0
+        self.randi()
+        self.state = (self.state + seed) & self.MASK
+        self.randi()
+
+    def randi(self) -> int:
+        old = self.state
+        self.state = (old * self.MULT + self.inc) & self.MASK
+        xorshifted = (((old >> 18) ^ old) >> 27) & 0xFFFFFFFF
+        rot = old >> 59
+        return ((xorshifted >> rot) | (xorshifted << ((-rot) & 31))) & 0xFFFFFFFF
+
+
+FLICKER_SEED = 73                       # ours: the generator's seed (the original's rand() is not read: its flicker would start from seed 1, and the port keeps its own)
+FLICKER_MODULUS = 299                   # the original's `rand() % 299` (CartoonStatusLights 0x429440, CartoonPanelLights 0x429595)
+STATUS_LIT_BELOW = 100                  # a status light is lit when the number is below this (probability 100 / 299 per light and redraw)
+FLICKER_PICTURES = 3                    # a light shows picture `number % 3` of its three
+
+
+def console_flicker(timeline: Timeline, step: float, status_lights: int, panel_lights: int, status_picture: str, panel_picture: str) -> None:
+    """Adds to `timeline` the flicker of the console's lights, one key per redraw (`step` ticks) for the whole length: each status light `status_NN` is on
+    with probability 100 / 299 and shows one of three pictures (`<status_picture>_0`..), each panel light `panel_NN` is always on and shows one of three
+    (`<panel_picture>_0`..). The numbers come from a generator seeded with `FLICKER_SEED`, drawn light by light (every status light, then every panel
+    light, a step at a time): the same sequence the engine drew at run time, so the lights flicker as they always did."""
+    steps = round(timeline.length / step)
+    rng = Pcg32(FLICKER_SEED)
+    for i in range(status_lights):
+        numbers = [rng.randi() % FLICKER_MODULUS for _ in range(steps)]
+        timeline.track("status_%02d" % i, "visible", [(s * step, boolean(r < STATUS_LIT_BELOW)) for s, r in enumerate(numbers)])
+        timeline.track("status_%02d" % i, "picture", [(s * step, sn("%s_%d" % (status_picture, r % FLICKER_PICTURES))) for s, r in enumerate(numbers)])
+    for i in range(panel_lights):
+        numbers = [rng.randi() % FLICKER_MODULUS for _ in range(steps)]
+        timeline.track("panel_%02d" % i, "picture", [(s * step, sn("%s_%d" % (panel_picture, r % FLICKER_PICTURES))) for s, r in enumerate(numbers)])
+
+
 def build_news_ambient() -> Timeline:
-    """What repeats: the alarm lights run through four states, each light one redraw ahead of the last, and the ring at the
-    crash site shows one picture per redraw. (The flicker of the other lights is random in the original; it is made in code.)"""
+    """What repeats: the alarm lights run through four states, each light one redraw ahead of the last, the ring at the
+    crash site shows one picture per redraw, and the console's lights flicker (ours: `console_flicker`)."""
     data = load_json(TABLES / "opening.json")
     news = data["news_cartoon"]
     step = news["redraw_ticks"]
@@ -335,6 +379,9 @@ def build_news_ambient() -> Timeline:
     ring = news["trail_and_ring"]["ring_pictures"]
     assert news["trail_and_ring"]["ring_ticks_per_picture"] == step
     tl.track("ring", "picture", [(s * step, sn(picture(ring[s % len(ring)]))) for s in range(steps)])
+    names = data["point_names"]
+    status_first, panel_first = STAGE_PICTURES["status"], STAGE_PICTURES["panel"]
+    console_flicker(tl, step, len(names["status_lights"]), len(names["panel_lights"]), picture(status_first).rsplit("_", 1)[0], picture(panel_first).rsplit("_", 1)[0])
     return tl
 
 
@@ -383,7 +430,9 @@ PROVENANCE_NEWS = (
     "text stripped at its edges). Ours: the 0.073 tick hold that keeps the typing ramp at 1 while the bulletin is read.")
 PROVENANCE_AMBIENT = (
     "Original: the alarm lights' four states and the pulsing ring, one step per 10 tick redraw (extracted/tables/opening.json). "
-    "Ours: the loop length of 64 redraws.")
+    "Ours: the loop length of 64 redraws; the console's lights flicker at random in the original (CartoonStatusLights, CartoonPanelLights), "
+    "so a generator seeded with 73 bakes it into the loop: a status light is lit with probability 100 / 299 and shows one of three pictures, "
+    "a panel light is always on and shows one of three.")
 
 
 # --- the title scene ---------------------------------------------------------------------------------------------------------

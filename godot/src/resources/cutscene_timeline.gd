@@ -10,7 +10,7 @@ extends Resource
 ## other art and still takes exactly as long, because the time lives here and not in the art.
 ##
 ## The timelines that come from the original are written by the importer (`tools/import/step_story.py`, into the legacy pack's
-## `data/story/`; the dev pack's own, `tools/dev_pack/dev_story.py`, are made up); a few small ones that are our own (the fade of a story page, the flicker of the console lights)
+## `data/story/`; the dev pack's own, `tools/dev_pack/dev_story.py`, are made up); a few small ones that are our own (the fade of a story page)
 ## are made in code with `track()` and `cue()` below. `provenance` says which is which.
 
 ## The original's timer: 73 ticks a second. Every moment of a timeline is in ticks.
@@ -100,17 +100,3 @@ static func made_in_code(ticks: float, why: String, loops: bool = false) -> Cuts
 	timeline.loop = loops
 	timeline.provenance = why
 	return timeline
-
-
-## This timeline's tracks and cues together with `other`'s, as a new timeline (they must agree on length and looping).
-## For a cutscene whose original part comes from a file and whose own part is made in code.
-func merged_with(other: CutsceneTimeline) -> CutsceneTimeline:
-	assert(is_equal_approx(length, other.length) and loop == other.loop, "timelines to merge must have the same length")
-	var merged := CutsceneTimeline.new()
-	merged.length = length
-	merged.loop = loop
-	merged.tracks = tracks + other.tracks
-	merged.cues = cues + other.cues
-	merged.marks = marks.merged(other.marks)
-	merged.provenance = provenance + "\n" + other.provenance
-	return merged

@@ -63,7 +63,7 @@ func test_news_cartoon_builds_and_every_track_finds_its_node() -> void:
 	# 21 dots of the capsule's trail, 6 bulletins typed after the empty first 3.4 s, 11 speech clips
 	assert_int(news.stage.get_children().filter(func(node: Node) -> bool: return node.name.begins_with("Dot")).size()).is_equal(21)
 	assert_float(news.script_player.get_animation(&"news").length).is_greater(40.0)
-	assert_int(Catalog.voice_cues().clips("opening_cartoon").size()).is_equal(11)
+	assert_int(NewsCartoon.speech_groups().reduce(func(total: int, group: Array) -> int: return total + group[1].size(), 0)).is_equal(11)
 
 
 func test_the_nodes_of_both_scenes_are_what_their_stage_files_say() -> void:
@@ -84,10 +84,10 @@ func test_the_nodes_of_both_scenes_are_what_their_stage_files_say() -> void:
 func test_the_six_bulletins_are_the_original_wording() -> void:
 	assert_str(NewsCartoon.bulletin(0)).starts_with("RED ALERT")
 	assert_str(NewsCartoon.bulletin(5)).contains("OPERATION NEPTUNE")
-	var group_total := 0
+	var sizes: Array[int] = []
 	for group in NewsCartoon.speech_groups():
-		group_total += int(group[1])
-	assert_int(group_total).is_equal(11)
+		sizes.append(group[1].size())
+	assert_array(sizes).is_equal([2, 3, 1, 1, 4])
 
 
 func test_news_cartoon_skip_ends_it_once() -> void:

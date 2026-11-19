@@ -13,7 +13,7 @@ from pathlib import Path
 
 from asset_manifest import copy_sound, put_port, put_song
 from asset_names import music_file, sfx_file, voice_file
-from common import ASSETS, MIDI, PACK_DATA, TABLES, EXTRACTED, ROOT, load_json, out_text, res_path, sha256_hex
+from common import ASSETS, MIDI, PACK_DATA, TABLES, EXTRACTED, ROOT, load_json, news_speech_groups, out_text, res_path, sha256_hex
 import tres
 
 SCRIPTS = "res://src/resources/"
@@ -291,7 +291,7 @@ def run(soundfont: str = DEFAULT_SOUNDFONT, adlib_soundfont: str = ADLIB_SOUNDFO
     voice = amap["voice"]
     groups: dict[str, list[int]] = {"jingle": [voice["jingle"]], "sign_in_first_visit": voice["sign_in_first_visit"],
                                     "sign_in_begin": voice["sign_in_begin"], "sign_in_resume": voice["sign_in_resume"],
-                                    "opening_cartoon": voice["opening_cartoon"]}
+                                    **news_speech_groups(voice["opening_cartoon"])}
     for kind, key in (("story_page", "story_pages"), ("supply", "supply"), ("log", "logs"), ("closing_page", "closing_pages")):
         for i, clip_list in enumerate(voice[key]):
             groups["%s_%d" % (kind, i)] = clip_list

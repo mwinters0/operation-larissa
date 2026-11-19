@@ -261,6 +261,23 @@ def clean_dir(path: Path) -> None:
         shutil.rmtree(path)
 
 
+# --- the news cartoon's speech ----------------------------------------------------------------------------------------------------
+
+# The opening cartoon's 11 clips are spoken in groups of these sizes (`CartoonSpeech` 0x42984d: a pause precedes the group, the clips of a group follow one another
+# at once). A voice group `news_speech_<i>` of `voice_cues` holds group i (`NewsCartoon.SPEECH_GROUP_PREFIX`); the pauses are `news.group_pauses` of durations.json.
+NEWS_SPEECH_GROUPS = (2, 3, 1, 1, 4)
+
+
+def news_speech_groups(clips: list) -> dict[str, list]:
+    """The voice groups `news_speech_0`.. of the 11 clips of the opening cartoon, in the sizes of `NEWS_SPEECH_GROUPS`."""
+    assert len(clips) == sum(NEWS_SPEECH_GROUPS), len(clips)
+    groups, first = {}, 0
+    for i, size in enumerate(NEWS_SPEECH_GROUPS):
+        groups["news_speech_%d" % i] = clips[first:first + size]
+        first += size
+    return groups
+
+
 # --- the legacy pack on disk: its folder and pack.json --------------------------------------------------------------------------
 
 def prepare_legacy(root: Path | None = None) -> list[str]:

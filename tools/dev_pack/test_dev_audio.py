@@ -67,9 +67,10 @@ def test_inventory_matches_legacy_audio_paths():
 
 def test_voice_groups_have_the_names_of_the_importers_groups():
     groups = audio.voice_groups()
-    assert len(groups) == 5 + 9 + 30 + 30 + 3
+    assert len(groups) == 4 + 5 + 9 + 30 + 30 + 3                      # (the opening cartoon is five groups: `news_speech_<i>`)
     for name in ("jingle", "sign_in_resume", "story_page_3", "supply_29", "log_0", "closing_page_2"):
         assert groups[name], name
+    assert [len(groups["news_speech_%d" % i]) for i in range(5)] == list(common.NEWS_SPEECH_GROUPS) and "opening_cartoon" not in groups
     assert all(groups.values()), [g for g, c in groups.items() if not c]
     ids = [i for clips in groups.values() for i in clips]
     assert len(ids) == len(set(ids)), "a clip in two groups"

@@ -136,7 +136,7 @@ Every length that holds up play is a number in `data/rules/durations.json`, read
 JSON): the station trips (`station.launch|dock|balloon`: opening / closing ticks, drive from / to / pixels per tick, the balloon's x
 and path, in integer window coordinates), `dissolve.ticks`, `log_scan.*` (`CanisterLog.scan_ticks()`), `problem.message_ticks`
 (`ProblemFlow.message_ticks()`, also the combination lock's messages), `calculator.key_flash_ticks`, `surface_ship.wait_ticks`,
-`speech.silent_ticks` (how long `Audio.speak` waits with the Voice option off), `news.*`, `sign_in.*`, `fade.ticks`
+`speech.silent_ticks` (how long `Audio.speak` waits with the Voice option off), `news.*` (the pause before each speech group of the news cartoon: `NewsCartoon.speech_groups`), `title.*` (`TitleScene.prompt_timeout_ticks()`, `music_delay_ticks()`), `sign_in.*`, `fade.ticks`
 (`SceneRouter.fade_ticks()`). The `rules/durations.json` of each pack of the chain is laid over it key by key (`Durations.files()`
 lists the files; [`PACKS.md`](PACKS.md)). A presenter fits its drawing to the N ticks it is told and never decides N;
 `tests/engine/test_durations.gd` lengthens the dock and checks that every skin plays the longer game as the plain objects do. Not in
@@ -472,9 +472,9 @@ stage lacks). Each scene names its stage and the timelines it plays (`NewsCartoo
 A timeline is the same on every skin: a skin redraws a cutscene by binding its own nodes and resolvers and takes exactly as long,
 because the time is in the data. The choreography is the pack's: the original's is in the legacy pack, never committed; the dev pack has its own,
 and `PackNeeds.FILES` requires every one of these files of a complete pack, so a chain always answers (the dev pack at its bottom) and a pack that
-lacks one is reported by the start-up check and `PackCheck`, as it is for the news cartoon. Two small timelines are made in code because nothing in
-the original is behind them (the fade of a story page, the flicker of the console lights); `CutsceneTimeline.provenance` says which numbers are the
-original's. `SurfaceShipScreen` has no timeline: it counts `surface_ship.wait_ticks` from `Durations`. Tests: `tests/legacy/test_cutscene_timing.gd`
+lacks one is reported by the start-up check and `PackCheck`, as it is for the news cartoon. One small timeline is made in code because nothing in
+the original is behind it (the fade of a story page); the flicker of the console lights is baked into `news_ambient` by the importer and the dev pack's generator (`step_story.console_flicker`), so `NewsCartoon` plays what the pack holds
+and generates nothing; `CutsceneTimeline.provenance` says which numbers are the original's. `SurfaceShipScreen` has no timeline: it counts `surface_ship.wait_ticks` from `Durations`. Tests: `tests/legacy/test_cutscene_timing.gd`
 (the hash of each cutscene's timing record, from the timeline and from the animation a scene builds, against `tests/fixtures/cutscene_timing.json`), `tests/legacy/test_story_timelines_legacy.gd` (re-derives the timelines
 from the analysis), `tests/engine/test_story_timelines.gd` (well formed, every name exists, the scripts run), `tests/engine/test_opening.gd` (the
 scenes play the dev pack's timelines on its stages: the nodes are what the stage files say and show what the tracks say), `tests/engine/test_cutscene_stage.gd` (the builder, the stage's problems, the warnings, the check), `tests/engine/test_cutscene_timeline.gd` (the machinery).

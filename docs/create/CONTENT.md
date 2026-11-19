@@ -186,11 +186,17 @@ The actors are listed in **draw order**: each is drawn above the ones listed bef
 may only name actors its scene's stage holds: the pack check reports a stage that is wrong (two actors of a name, a parent not listed before, a text box with no size) and an actor a timeline names
 that the stage lacks, and the game, meeting either, leaves that actor or track out and says so in the log once.
 
+**What the opening says and flickers.** The console's lights of the news cartoon flicker as `news_ambient` says: its tracks for the stage's `status_NN` and `panel_NN` actors are the flicker, one key per redraw (the legacy pack's is
+baked by the importer and the dev pack's by its generator, both with `step_story.console_flicker`, a seeded generator: in the original the lights flicker at random), and a pack writes its own lights' keys as it writes any timeline.
+The cartoon's speech is the **voice groups** `news_speech_0`, `news_speech_1` ... of the pack's `voice_cues` (the clips of each, in order) and, before each, the pause `news.group_pauses[i]` of `rules/durations.json`
+(ticks; `news.speech_start_delay_ticks` before the first): the speech goes on for as long as the chain holds the next group, and a group without a pause follows the one before it at once (told once in the log). The title's
+waits are `title.prompt_timeout_ticks` (nobody chose Start or Intro: the story begins) and `title.music_delay_ticks` (the story's song starts this long after the buttons appear), also in `rules/durations.json`.
+
 ### Durations
 
 Every length that holds up play is a number in `res://data/rules/durations.json`: how long the supply station's door and the
 sub's launch and dock take, where the balloon goes, the dissolve after a lost tank, the log scan, a fade, a message, the wait on
-the surface ship. Units are in the file: mostly ticks of the original's 73 Hz timer; a station trip counts game ticks (12.17 Hz).
+the surface ship, the news cartoon's pauses and the title's prompt time-out. Units are in the file: mostly ticks of the original's 73 Hz timer; a station trip counts game ticks (12.17 Hz).
 
 The file is committed (it is hand-made, not copied out of the game) and holds the original's numbers
 ([`HARD_CODED.md`](../engine/HARD_CODED.md)). A pack states only the keys it changes, in its own `rules/durations.json`; the files of the

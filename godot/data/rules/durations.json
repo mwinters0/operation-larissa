@@ -13,5 +13,6 @@
   "calculator": {"key_flash_ticks": 12},
   "surface_ship": {"wait_ticks": 1460},
   "news": {"speech_start_delay_ticks": 219, "group_pauses": [0, 248, 248, 248, 0]},
+  "title": {"prompt_timeout_ticks": 1825, "music_delay_ticks": 292},
   "fade": {"ticks": 13}
 }

@@ -256,7 +256,7 @@ def test_a_flag_is_not_confused_with_a_label_or_a_picture_of_the_same_spelling(t
     (("sound", "begin", "x", "3"), "global"),
     (("text", "news_bulletin_3", "diary_3"), "run"),
     (("text", "hint_6", "x"), "run"),
-    (("ui_picture", "status_light_1", "x"), "run"),
+    (("ui_picture", "scanner_strip_1", "x"), "run"),
 ])
 def test_it_refuses_and_changes_nothing(frozen, request_, message):
     tree = frozen

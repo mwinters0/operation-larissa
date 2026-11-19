@@ -303,9 +303,10 @@ func test_a_durations_file_is_checked_for_known_keys_and_sensible_values() -> vo
 	for fragment in ["dissolv: no such duration", "fade.tiks: no such duration", "problem is a section", "sign_in.pre_scan_ticks must be a whole number", "pixels_per_tick is 0: it must be 1 or more",
 			"opening_ticks is -1: it must be 0 or more", "from_x (500) is right of to_x (400)", "balloon: from_y (-50) is above to_y (100)", "group_pauses must be a whole number"]:
 		assert_bool(_has(report, PackReport.Severity.ERROR, fragment)).override_failure_message("no error about '%s':\n%s" % [fragment, _errors(report)]).is_true()
-	shelf.write_json(Durations.PACK_PATH, {"fade": {"ticks": 0}, "dissolve": {"ticks": 99999}, "station": {"launch": {"from_x": 10, "to_x": 10}, "balloon": {"x": 9000}}, "news": {"group_pauses": [0, 1]}})
+	shelf.write_json(Durations.PACK_PATH, {"fade": {"ticks": 0}, "title": {"prompt_timeout_ticks": 0}, "dissolve": {"ticks": 99999}, "station": {"launch": {"from_x": 10, "to_x": 10}, "balloon": {"x": 9000}}, "news": {"group_pauses": [0, 1]}})
 	report = _check(shelf)
 	assert_bool(_has(report, PackReport.Severity.ERROR, "fade.ticks is 0: it must be 1 or more")).is_true()
+	assert_bool(_has(report, PackReport.Severity.ERROR, "title.prompt_timeout_ticks is 0: it must be 1 or more")).is_true()
 	assert_bool(_has(report, PackReport.Severity.WARNING, "longer than ten minutes")).is_true()
 	assert_bool(_has(report, PackReport.Severity.WARNING, "the sub does not drive")).is_true()
 	assert_bool(_has(report, PackReport.Severity.WARNING, "more than a window away")).is_true()

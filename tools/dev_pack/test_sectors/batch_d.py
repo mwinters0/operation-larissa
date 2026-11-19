@@ -62,6 +62,7 @@ DURATIONS = {
     },
     "sign_in": {"pre_scan_ticks": 20, "pressed_ticks": 30, "scan_ticks_per_picture": 4, "scan_sweeps": 5},
     "news": {"speech_start_delay_ticks": 200, "group_pauses": [0, 200, 200, 200, 0]},
+    "title": {"prompt_timeout_ticks": 730, "music_delay_ticks": 146},
     "fade": {"ticks": 10},
 }
 

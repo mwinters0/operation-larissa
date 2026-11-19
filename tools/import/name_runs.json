@@ -36,17 +36,9 @@
    }
   },
   "ui_picture": {
-   "panel_light_": {
-    "first": 0,
-    "last": 2
-   },
    "scanner_strip_": {
     "first": 0,
     "last": 4
-   },
-   "status_light_": {
-    "first": 0,
-    "last": 2
    }
   },
   "problem_art": {

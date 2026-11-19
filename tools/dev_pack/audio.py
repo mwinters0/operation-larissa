@@ -69,7 +69,8 @@ DIAGRAM_TYPES = (2, 4, 5, 7, 12, 13, 14, 17, 20, 21, 25, 30, 32, 33)
 DIAGRAM_SOUNDS = ("diagram_bar", "diagram_dot", "diagram_pop")
 
 # The groups of `voice_cues`: name -> how many there are. Their clips are the voice clips called `<group>` or `<group>_<k>`.
-SINGLE_GROUPS = ("jingle", "sign_in_first_visit", "sign_in_begin", "sign_in_resume", "opening_cartoon")
+SINGLE_GROUPS = ("jingle", "sign_in_first_visit", "sign_in_begin", "sign_in_resume")
+# (the opening cartoon's 11 clips, `opening_cartoon_<k>`, are cut into the groups `news_speech_<i>` of `common.NEWS_SPEECH_GROUPS`.)
 NUMBERED_GROUPS = (("story_page", 9), ("supply", 30), ("log", 30), ("closing_page", 3))
 
 
@@ -163,6 +164,7 @@ def voice_groups() -> dict[str, list[int]]:
         return [number for _k, number in sorted(found)]
 
     groups = {g: members(g) for g in SINGLE_GROUPS}
+    groups.update(common.news_speech_groups(members("opening_cartoon")))
     for kind, count in NUMBERED_GROUPS:
         for i in range(count):
             groups["%s_%d" % (kind, i)] = members("%s_%d" % (kind, i))

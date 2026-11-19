@@ -66,7 +66,7 @@ func test_no_moved_duration_is_a_constant_in_code_any_more() -> void:
 	var names := ["DISSOLVE_TICKS", "SCAN_TICKS", "SCAN_PICTURE_TICKS", "SCAN_SWEEPS", "FADE_TICKS", "OPENING_TICKS", "CLOSING_TICKS", "PIXELS_PER_TICK",
 			"LAUNCH_FROM_X", "LAUNCH_TO_X", "DOCK_FROM_X", "DOCK_TO_X", "BALLOON_X", "BALLOON_FROM_Y", "BALLOON_TO_Y", "BALLOON_WINDOW_X",
 			"BALLOON_TOP_Y", "LAUNCHED_X", "MESSAGE_TICKS", "WAIT_TICKS", "KEY_FLASH_TICKS", "FLASH_TICKS", "SPEECH_START_DELAY_TICKS",
-			"SPEECH_GROUPS", "PRE_SCAN_TICKS", "PRESSED_TICKS", "SILENT_SPEECH_TICKS"]
+			"SPEECH_GROUPS", "PRE_SCAN_TICKS", "PRESSED_TICKS", "SILENT_SPEECH_TICKS", "PROMPT_TIMEOUT", "MUSIC_DELAY_AFTER_PROMPT", "SPEECH_GROUP_CLIPS"]
 	var found := SourceScan.find_in(SourceScan.scripts_under("res://src"), names)
 	assert_array(found).override_failure_message("a duration is a constant again:\n" + "\n".join(found)).is_empty()
 

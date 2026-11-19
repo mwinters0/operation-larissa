@@ -179,17 +179,3 @@ func test_key_times_are_every_moment_once() -> void:
 	timeline.track(&"sub", CutsceneTrack.PROP_POSE, [[30.0, Vector2i(0, 0)], [60.0, Vector2i(0, 1)]])
 	timeline.cue(100.0, CutsceneCue.EVENT, &"end")
 	assert_array(Array(timeline.key_times())).is_equal([0.0, 30.0, 60.0, 100.0])
-
-
-func test_merging_keeps_both_halves() -> void:
-	var first := CutsceneTimeline.made_in_code(64.0, "from the file", true)
-	first.track(&"thing", CutsceneTrack.PROP_VISIBLE, [[0.0, true]])
-	var second := CutsceneTimeline.made_in_code(64.0, "made here", true)
-	second.track(&"sub", CutsceneTrack.PROP_VISIBLE, [[0.0, true]])
-	second.cue(10.0, CutsceneCue.SOUND, &"begin")
-	var merged := first.merged_with(second)
-	assert_int(merged.tracks.size()).is_equal(2)
-	assert_int(merged.cues.size()).is_equal(1)
-	assert_bool(merged.loop).is_true()
-	assert_str(merged.provenance).contains("from the file")
-	assert_str(merged.provenance).contains("made here")
