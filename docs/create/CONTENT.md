@@ -164,7 +164,7 @@ measured once by the importer. For a pack's own clips the game measures each cli
 The opening, the title and the two closings are timed tracks of data in a pack's `data/story/` (a `CutsceneTimeline`: when each picture, text or sound
 happens, in ticks): `news_report`, `news_ambient`, `title_ship`, `title_reveal`, `expert_hoist`, `expert_deck`, `expert_wait`; with them `story_script` (the
 pages of the opening story and how long each one holds), `voyager_closing_script` (the loop counts of the Voyager flight, run for the place the sub is in) and
-`closing_crew` (the Expert closing's six sailors' programs). The scenes only play them, and take each from the first pack of the chain that holds it. A
+`closing_crew` (the Expert closing's six sailors' programs), and the stages the timelines play on (`CutsceneStage`s, below). The scenes only play them, and take each from the first pack of the chain that holds it. A
 complete pack holds the opening and the closings' files (`PackNeeds`; the dev pack's are short ones of its own, `tools/dev_pack/dev_story.py`). A campaign without a closing of its own gets the
 **generic finale** (section 3).
 
@@ -178,24 +178,31 @@ complete pack holds the opening and the closings' files (`PackNeeds`; the dev pa
 
 Enter, a click and Space / Escape are the engine's in every part (Space and Escape leave the opening, wherever it is). An opening with no parts goes straight to the sign-in screen. A part that no pack of the chain holds (a scene or story that is not there, a `kind` that is none of the two) is skipped. A `leads_on` that is none of `start`, `intro`, or that is on a part that asks nothing (a story, or a scene with no `prompt` cue), can never match, so the opening ends after that part. The game tells each such line once in the log, naming the pack and what the player gets instead, and the pack check reports the same lines (area `story`). `PackNeeds` requires `opening` and derives from it the scenes and stories it names, and from the scenes their stages and timelines. [`MAKING_CONTENT.md`](MAKING_CONTENT.md), B6, makes one.
 
-**Stages.** Where the opening's pictures stand is data as well: `news_cartoon_stage` and `title_stage` (`data/story/<scene>_stage.tres`, a `CutsceneStage`; `.json` in the data form) list the
-scene's **actors**, and the timelines played on the scene move and change those actors by name. An actor is a `StageActor`:
+**Stages.** Where a scene's pictures stand is data as well: the stage of each scene (`news_cartoon_stage`, `title_stage`, a scene file names its own) and of each closing (`expert_closing_stage`, `voyager_closing_stage`; `data/story/<name>.tres`, a `CutsceneStage`; `.json` in the data form) list the
+**actors**, and the timelines played on the stage move and change those actors by name. An actor is a `StageActor`:
 
 | Field | Meaning |
 | --- | --- |
 | `name` | what a timeline's tracks call it (`radar`, `crew_3`); also its node, in capitals (`Radar`, `Crew3`) |
-| `kind` | `picture` (the default), `text` (a text box that a timeline's `text` and `reveal` tracks fill) or `group` (carries other actors and moves them as one) |
+| `kind` | `picture` (the default), `text` (a text box that a timeline's `text` and `reveal` tracks fill), `group` (carries other actors and moves them as one), `button`, `frames` (a picture of a set the game holds), `chain` (a stack of pictures that one number lowers) or `fill` (a coloured rectangle) |
 | `picture` | a picture NAME (`ship_radar_0`, a `ui_picture` of the registry, as a timeline's `picture` track writes it) the actor starts with; a group and a text box have none |
 | `position` | the top-left corner in window pixels (the screen is 640 x 400), whatever the parent |
 | `mirror`, `visible` | drawn mirrored; there when the scene starts (default true) |
 | `parent` | the actor it rides with: it moves and hides with it. The parent is listed BEFORE its children |
 | `clip` | a picture: the part drawn, in the picture's pixels (the mini-sub starts whole and its timeline shrinks it); no area draws the whole picture |
-| `size` | a text box: its size in window pixels |
+| `size` | a text box or a `fill`: its size in window pixels. A `group` or a `chain` with a size shows only that rectangle of what it carries (a closing's playfield, the crane's arm); with none it clips nothing |
+| `frames` | a `frames` actor: the name of the picture set it shows (`sub`: the sub's drawings, `artifact`: the Alien Artifact's; the closing that plays the stage hands the sets in, and the pack check tells a name it does not). `picture` is the picture of the set it starts on (empty: the first); a timeline's `frame` and `pose` tracks change it |
+| `pictures` | a `chain`: the pictures its first piece, the hook, takes by the `frame` a timeline sets (open, closing, closed). The pieces are the actors that have the chain as their `parent`, listed from the hook up, each placed where it stands when the timeline's `extent` is 0; the `extent` track then moves them all down by that many pixels |
+| `color` | a `fill`: the colour of the rectangle |
 | `pressed_picture`, `choice`, `hotkey` | a button (`kind` `button`, a picture of the size of `picture`, hidden until the scene's `prompt`): the picture while it is pressed, what pressing it answers (`start`: leave the opening, `intro`: go on to the story) and the key that presses it (`S`, `I`) |
 
 The actors are listed in **draw order**: each is drawn above the ones listed before it that share its parent. A pack states a stage whole (it replaces the stage of the pack under it), and a timeline
-may only name actors its scene's stage holds: the pack check reports a stage that is wrong (two actors of a name, a parent not listed before, a text box with no size) and an actor a timeline names
+may only name actors its scene's stage holds: the pack check reports a stage that is wrong (two actors of a name, a parent not listed before, a text box with no size, a `frames` actor naming a set the scene does not hand in) and an actor a timeline names
 that the stage lacks, and the game, meeting either, leaves that actor or track out and says so in the log once.
+
+**The closings.** The Expert and the Voyager closing are played from the game (not from the opening), each on a stage of its own that `PackNeeds` requires: `expert_closing_stage` holds the playfield (a clipped group) with the Alien Artifact and the sub (`frames` actors), the crane's cable (a `chain` and a piece for each link, from the hook up),
+and the deck (a group, hidden until the hoist is over) with its water (`fill`), cloud, ship, the six sailors (`crew_0` .. `crew_5`, hidden until their programs draw them), the artifact, the sub, a second cable cut at the crane's arm, the control box (`pod`) and the sea, in draw order; `expert_closing_stage` is played by the timelines `expert_hoist`, `expert_deck` and `expert_wait`.
+`voyager_closing_stage` holds the playfield with the sub, the helicopter's body (`helicopter`) and rotor (`rotor`); its timeline is made at run time from `voyager_closing_script` for the place the sub is in, and names those three actors. The pack check reports an actor a closing's timeline names that its stage lacks, as it does for a scene.
 
 **Scenes.** A scene file (`data/story/<scene>.tres`, a `StoryScene`; `.json` in the data form; the opening names it as a part: `news_cartoon`, `title`) says what one part of the opening plays, by name:
 

@@ -39,6 +39,29 @@ func after_test() -> void:
 	Audio.stop_voice()
 
 
+## The node that plays the actor `actor` of the closing's stage.
+func _node(closing: StorySegment, actor: StringName) -> Node:
+	var node: Node = closing.cast.node_of(actor)
+	assert_object(node).override_failure_message("the stage has no actor '%s'" % actor).is_not_null()
+	return node
+
+
+func _chain(closing: StorySegment, actor: StringName) -> StageChain:
+	return _node(closing, actor) as StageChain
+
+
+func _frames(closing: StorySegment, actor: StringName) -> AnimatedSprite2D:
+	return _node(closing, actor) as AnimatedSprite2D
+
+
+func _sprite(closing: StorySegment, actor: StringName) -> Sprite2D:
+	return _node(closing, actor) as Sprite2D
+
+
+func _canvas(closing: StorySegment, actor: StringName) -> CanvasItem:
+	return _node(closing, actor) as CanvasItem
+
+
 func _unresolved(player: AnimationPlayer) -> PackedStringArray:
 	var missing := PackedStringArray()
 	var root := player.get_node(player.root_node)
@@ -62,16 +85,19 @@ func test_voyager_closing_flight() -> void:
 	assert_array(_unresolved(closing.animations)).is_empty()
 	var animation := closing.animations.get_animation(&"closing")
 	# 18 steps of 4 px up: after them the sub is 72 px higher
+	var sub := _node(closing, &"sub") as AnimatedSprite2D
+	var body := _node(closing, &"helicopter") as Sprite2D
+	var rotor := _node(closing, &"rotor") as Sprite2D
 	closing.animations.seek(18 * VOYAGER_STEP - 0.001, true)
-	assert_float(closing.sub.position.y).is_equal_approx(212.0 - 72.0 - 32.0, 0.5)
-	assert_bool(closing.sub.visible).is_true()
-	assert_bool(closing.heli_body.visible).is_false()
+	assert_float(sub.position.y).is_equal_approx(212.0 - 72.0 - 32.0, 0.5)
+	assert_bool(sub.visible).is_true()
+	assert_bool(body.visible).is_false()
 	# the whole flight: the helicopter ends outside the playfield, to the left
 	closing.animations.seek(animation.length - 0.3, true)
-	assert_bool(closing.sub.visible).is_false()
-	assert_bool(closing.heli_body.visible).is_true()
-	assert_bool(closing.heli_rotor.visible).is_true()
-	assert_float(closing.heli_body.position.x + 16.0).is_less_equal(VOYAGER_FLY_UNTIL_X + 8.0)
+	assert_bool(sub.visible).is_false()
+	assert_bool(body.visible).is_true()
+	assert_bool(rotor.visible).is_true()
+	assert_float(body.position.x + 16.0).is_less_equal(VOYAGER_FLY_UNTIL_X + 8.0)
 	closing.skip()
 
 
@@ -134,7 +160,7 @@ func _expert() -> ExpertClosing:
 func test_expert_closing_tracks_name_real_nodes() -> void:
 	var closing := _expert()
 	assert_array(_unresolved(closing.animations)).is_empty()
-	assert_bool(closing.deck.visible).is_false()
+	assert_bool(_canvas(closing, &"deck").visible).is_false()
 	assert_int(closing.stage).is_equal(ExpertClosing.Stage.HOIST)
 
 
@@ -169,71 +195,74 @@ func test_expert_hook_is_open_for_10_steps_closing_for_5_and_closed_from_the_16t
 	var closing := _expert()
 	var first_descent := _expert_turn_steps() + IDLE_STEPS      # step index of descent step 1
 	_at_step(closing, &"hoist", first_descent - 1)
-	assert_bool(closing.cable.visible).is_false()                                    # nothing hangs during the turn and the idle
+	assert_bool(_chain(closing, &"cable").visible).is_false()                                    # nothing hangs during the turn and the idle
 	for d in range(1, 17):
 		_at_step(closing, &"hoist", first_descent + d - 1)
-		assert_bool(closing.cable.visible).is_true()
-		assert_int(closing.cable.bottom).is_equal(0x24 + 12 * d)
-		assert_int(closing.cable.hook_frame).is_equal(0 if d <= 10 else (1 if d <= 15 else 2))
+		assert_bool(_chain(closing, &"cable").visible).is_true()
+		assert_int(_chain(closing, &"cable").extent).is_equal(0x24 + 12 * d)
+		assert_int(_chain(closing, &"cable").frame).is_equal(0 if d <= 10 else (1 if d <= 15 else 2))
 	for a in range(1, 18):                                                            # the ascent keeps the hook closed
 		_at_step(closing, &"hoist", first_descent + 15 + a)
-		assert_int(closing.cable.hook_frame).is_equal(2)
-		assert_int(closing.cable.bottom).is_equal(228 - 12 * a)
+		assert_int(_chain(closing, &"cable").frame).is_equal(2)
+		assert_int(_chain(closing, &"cable").extent).is_equal(228 - 12 * a)
 
 
 func test_expert_cable_is_hook_three_links_ball_then_links() -> void:
 	var closing := _expert()
-	var cable := closing.cable
-	assert_str(cable.piece_pictures[0]).is_equal("crane_hook_0")                                # the hook (open at first)
+	var cable := _chain(closing, &"cable")
+	var pieces: Array[Sprite2D] = []
+	for child in cable.get_children():
+		pieces.append(child as Sprite2D)
+	assert_str((pieces[0].texture as PictureRef).key).is_equal("ui_picture/crane_hook_0")                      # the hook (open at first)
 	for i in range(1, 4):
-		assert_str(cable.piece_pictures[i]).is_equal("crane_link")                    # links, 8 x 12
-	assert_str(cable.piece_pictures[4]).is_equal("crane_ball")                                # the ball, 28 x 22
-	for i in range(5, cable.piece_pictures.size()):
-		assert_str(cable.piece_pictures[i]).is_equal("crane_link")
-	assert_vector(Vector2(cable.pieces[4].texture.get_size())).is_equal(Vector2(28, 22))
-	# every piece sits right above the one below it (the ExpertClosingDrawCable loop: y -= height)
-	assert_int(cable.piece_tops[0]).is_equal(-25)
-	assert_int(cable.piece_tops[1]).is_equal(-(26 + 11))
-	assert_int(cable.piece_tops[4]).is_equal(-(26 + 3 * 12 + 21))
-	assert_int(cable.piece_tops[5]).is_equal(-(26 + 3 * 12 + 22 + 11))
+		assert_str((pieces[i].texture as PictureRef).key).is_equal("ui_picture/crane_link")      # links, 8 x 12
+	assert_str((pieces[4].texture as PictureRef).key).is_equal("ui_picture/crane_ball")                      # the ball, 28 x 22
+	for i in range(5, pieces.size()):
+		assert_str((pieces[i].texture as PictureRef).key).is_equal("ui_picture/crane_link")
+	assert_vector(Vector2(pieces[4].texture.get_size())).is_equal(Vector2(28, 22))
+	# every piece sits right above the one below it (the ExpertClosingDrawCable loop: y -= height); the chain is at extent 0 and the window y of a piece is its top
+	assert_float(pieces[0].global_position.y).is_equal(-25.0)
+	assert_float(pieces[1].global_position.y).is_equal(-(26.0 + 11.0))
+	assert_float(pieces[4].global_position.y).is_equal(-(26.0 + 3 * 12 + 21))
+	assert_float(pieces[5].global_position.y).is_equal(-(26.0 + 3 * 12 + 22 + 11))
 	# x: hook 220, ball 228, links 236 (window pixels)
 	_at_step(closing, &"hoist", _expert_turn_steps() + IDLE_STEPS + 15)
-	assert_float(cable.pieces[0].position.x + 16.0).is_equal(220.0)
-	assert_float(cable.pieces[4].position.x + 16.0).is_equal(228.0)
-	assert_float(cable.pieces[1].position.x + 16.0).is_equal(236.0)
-	assert_float(cable.pieces[0].position.y + 32.0).is_equal(228.0 - 25.0)          # the hook's top row: bottom - 25
+	assert_float(pieces[0].global_position.x).is_equal(220.0)
+	assert_float(pieces[4].global_position.x).is_equal(228.0)
+	assert_float(pieces[1].global_position.x).is_equal(236.0)
+	assert_float(pieces[0].global_position.y).is_equal(228.0 - 25.0)          # the hook's top row: bottom - 25
 
 
 func test_expert_hoisted_object_is_the_zone_foe_bundle_pair_at_x_200() -> void:
 	var closing := _expert()
 	# sector 31 is zone 6 (GetZone), whose foe bundle is logical resource 461 = bundle 112: items 0 / 1 are the two
 	# 84 x 72 pictures 2002 / 2003, slots 35 / 36 of the zone's foe frames
-	var frames := closing.artifact.sprite_frames
+	var frames := _frames(closing, &"artifact").sprite_frames
 	assert_vector(Vector2(frames.get_frame_texture(&"all", 35).get_size())).is_equal(Vector2(84, 72))
 	assert_vector(Vector2(frames.get_frame_texture(&"all", 36).get_size())).is_equal(Vector2(84, 72))
 	assert_str((frames.get_frame_texture(&"all", 35) as PictureRef).key).is_equal("frame/foe_z6_alien_artifact_0")
 	_at_step(closing, &"hoist", 0)
-	assert_int(closing.artifact.frame).is_equal(35)
-	assert_vector(closing.artifact.position).is_equal(Vector2(200 - 16, 0xe8 - 32))
+	assert_int(_frames(closing, &"artifact").frame).is_equal(35)
+	assert_vector(_frames(closing, &"artifact").position).is_equal(Vector2(200 - 16, 0xe8 - 32))
 	_at_step(closing, &"hoist", 1)
-	assert_int(closing.artifact.frame).is_equal(36)                                   # toggled on every call
+	assert_int(_frames(closing, &"artifact").frame).is_equal(36)                                   # toggled on every call
 	_at_step(closing, &"hoist", 2)
-	assert_int(closing.artifact.frame).is_equal(35)
+	assert_int(_frames(closing, &"artifact").frame).is_equal(35)
 	# it rises with the sub, 12 px per step of the ascent, after the 36 steps of turn, idle and descent
 	_at_step(closing, &"hoist", _expert_hoist_steps() - 1)
-	assert_float(closing.artifact.position.y).is_equal(0xe8 - 17 * 12.0 - 32.0)
-	assert_float(closing.sub.position.y).is_equal(212.0 - 17 * 12.0 - 32.0)
-	assert_float(closing.sub.position.x).is_equal(184.0 - 16.0)
+	assert_float(_frames(closing, &"artifact").position.y).is_equal(0xe8 - 17 * 12.0 - 32.0)
+	assert_float(_frames(closing, &"sub").position.y).is_equal(212.0 - 17 * 12.0 - 32.0)
+	assert_float(_frames(closing, &"sub").position.x).is_equal(184.0 - 16.0)
 
 
 func test_expert_sub_turns_to_face_right_during_the_first_steps() -> void:
 	var closing := _expert()
 	var tuning := Tuning.original().sub
 	_at_step(closing, &"hoist", 0)
-	assert_int(closing.sub.frame).is_equal(tuning.picture_for(5, 0))
+	assert_int(_frames(closing, &"sub").frame).is_equal(tuning.picture_for(5, 0))
 	_at_step(closing, &"hoist", 1)
-	assert_int(closing.sub.frame).is_equal(tuning.picture_for(6, 1))
-	assert_bool(closing.sub.flip_h).is_false()
+	assert_int(_frames(closing, &"sub").frame).is_equal(tuning.picture_for(6, 1))
+	assert_bool(_frames(closing, &"sub").flip_h).is_false()
 
 
 func test_expert_deck_shot_timing_and_rise() -> void:
@@ -242,19 +271,19 @@ func test_expert_deck_shot_timing_and_rise() -> void:
 	assert_float(deck.length).is_equal_approx(146 * 18.0 / 73.0, 0.0001)             # 6 + 140 steps
 	# the sub, the artifact and the cable rise 12 px per step for 6 steps, from 0x123 / 0x137 / 0x133
 	_at_step(closing, &"deck", 0)
-	assert_vector(closing.deck_sub.position).is_equal(Vector2(184 - 16, 0x123 - 12 - 32))
-	assert_vector(closing.deck_artifact.position).is_equal(Vector2(200 - 16, 0x137 - 12 - 32))
-	assert_int(closing.deck_cable.bottom).is_equal(0x133 - 12)
-	assert_int(closing.deck_cable.hook_frame).is_equal(2)
+	assert_vector(_frames(closing, &"deck_sub").position).is_equal(Vector2(184 - 16, 0x123 - 12 - 32))
+	assert_vector(_frames(closing, &"deck_artifact").position).is_equal(Vector2(200 - 16, 0x137 - 12 - 32))
+	assert_int(_chain(closing, &"deck_cable").extent).is_equal(0x133 - 12)
+	assert_int(_chain(closing, &"deck_cable").frame).is_equal(2)
 	_at_step(closing, &"deck", 5)
-	assert_vector(closing.deck_sub.position).is_equal(Vector2(184 - 16, 0x123 - 72 - 32))
-	assert_vector(closing.deck_artifact.position).is_equal(Vector2(200 - 16, 0x137 - 72 - 32))
-	assert_int(closing.deck_cable.bottom).is_equal(0x133 - 72)
+	assert_vector(_frames(closing, &"deck_sub").position).is_equal(Vector2(184 - 16, 0x123 - 72 - 32))
+	assert_vector(_frames(closing, &"deck_artifact").position).is_equal(Vector2(200 - 16, 0x137 - 72 - 32))
+	assert_int(_chain(closing, &"deck_cable").extent).is_equal(0x133 - 72)
 	_at_step(closing, &"deck", 145)                                                   # and stay there
-	assert_vector(closing.deck_sub.position).is_equal(Vector2(184 - 16, 0x123 - 72 - 32))
+	assert_vector(_frames(closing, &"deck_sub").position).is_equal(Vector2(184 - 16, 0x123 - 72 - 32))
 	# the cable is cut at the crane arm (y 154); the deck's pictures keep the original order, the sea on top
-	assert_float(closing.deck_cable.position.y + 32.0).is_equal(154.0)
-	var order := [closing.ship, closing.crew_layer, closing.deck_artifact, closing.deck_sub, closing.deck_cable, closing.pod, closing.sea]
+	assert_float(_chain(closing, &"deck_cable").global_position.y).is_equal(154.0)
+	var order := [_node(closing, &"ship"), _node(closing, &"crew_0"), _node(closing, &"deck_artifact"), _node(closing, &"deck_sub"), _node(closing, &"deck_cable"), _node(closing, &"pod"), _node(closing, &"sea")]
 	for i in range(1, order.size()):
 		assert_int(order[i].get_index()).is_greater(order[i - 1].get_index())
 
@@ -264,19 +293,19 @@ func test_expert_deck_crew_follows_the_six_programs() -> void:
 	# step 0: three sailors are on the deck, three are still off screen (their programs begin with a wait)
 	_at_step(closing, &"deck", 0)
 	var shown := []
-	for sailor in closing.crew_layer.get_children():
-		shown.append((sailor as Sprite2D).visible)
+	for n in 6:
+		shown.append(_sprite(closing, StringName("crew_%d" % n)).visible)
 	assert_array(shown).is_equal([false, true, true, true, false, false])
-	var s1 := closing.crew_layer.get_child(1) as Sprite2D
+	var s1 := _sprite(closing, &"crew_1")
 	assert_vector(s1.position).is_equal(Vector2(332 - 16, 214 - 32))
 	assert_str(Packs.source_of((s1.texture as PictureRef).resolved())).ends_with("ui_2036.png")                     # item 24
-	var s3 := closing.crew_layer.get_child(3) as Sprite2D
+	var s3 := _sprite(closing, &"crew_3")
 	assert_vector(s3.position).is_equal(Vector2(436 - 16, 214 - 32))
 	assert_bool(s3.flip_h).is_true()                                                  # walks to the right, drawn mirrored
 	_at_step(closing, &"deck", 79)
-	assert_bool((closing.crew_layer.get_child(0) as Sprite2D).visible).is_false()      # sailor 0 waits 80 steps
+	assert_bool(_sprite(closing, &"crew_0").visible).is_false()      # sailor 0 waits 80 steps
 	_at_step(closing, &"deck", 80)
-	var s0 := closing.crew_layer.get_child(0) as Sprite2D
+	var s0 := _sprite(closing, &"crew_0")
 	assert_bool(s0.visible).is_true()
 	assert_vector(s0.position).is_equal(Vector2(496 - 16, 214 - 32))
 	assert_str(Packs.source_of((s0.texture as PictureRef).resolved())).ends_with("ui_2025.png")
@@ -336,17 +365,17 @@ func test_expert_pod_blinks_through_its_three_pictures() -> void:
 	var mirrored := []
 	for step in 4:
 		_at_step(closing, &"deck", step)
-		pictures.append(Packs.source_of((closing.pod.texture as PictureRef).resolved()).get_file())
-		mirrored.append(closing.pod.flip_h)
+		pictures.append(Packs.source_of((_sprite(closing, &"pod").texture as PictureRef).resolved()).get_file())
+		mirrored.append(_sprite(closing, &"pod").flip_h)
 	assert_array(pictures).is_equal(["deck_pod_0_2015.png", "deck_pod_1_2016.png", "deck_pod_2_2017.png", "deck_pod_1_2016.png"])
 	assert_array(mirrored).is_equal([false, false, false, true])
-	assert_vector(closing.pod.position).is_equal(Vector2(568 - 16, 104 - 32))
+	assert_vector(_sprite(closing, &"pod").position).is_equal(Vector2(568 - 16, 104 - 32))
 	# the wait goes on from phase 146 % 4 = 2 and repeats for as long as nobody presses a key
 	var wait := closing.animations.get_animation(&"wait")
 	assert_int(wait.loop_mode).is_equal(Animation.LOOP_LINEAR)
 	assert_float(wait.length).is_equal_approx(4 * 18.0 / 73.0, 0.0001)
 	_at_step(closing, &"wait", 0)
-	assert_str(Packs.source_of((closing.pod.texture as PictureRef).resolved())).ends_with("deck_pod_2_2017.png")
+	assert_str(Packs.source_of((_sprite(closing, &"pod").texture as PictureRef).resolved())).ends_with("deck_pod_2_2017.png")
 
 
 func test_expert_keys_are_ignored_until_the_last_stage() -> void:
@@ -360,8 +389,8 @@ func test_expert_keys_are_ignored_until_the_last_stage() -> void:
 	assert_int(count[0]).is_equal(0)
 	_to_stage(closing, ExpertClosing.Stage.DECK)
 	assert_int(closing.stage).is_equal(ExpertClosing.Stage.DECK)
-	assert_bool(closing.deck.visible).is_true()
-	assert_bool(closing.playfield.visible).is_false()
+	assert_bool(_canvas(closing, &"deck").visible).is_true()
+	assert_bool(_canvas(closing, &"playfield").visible).is_false()
 	for event in _key_events():
 		closing._unhandled_input(event)
 	closing.advance()

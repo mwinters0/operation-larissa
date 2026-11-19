@@ -51,6 +51,8 @@ const FILES: Dictionary = {
 	"data/voice_cues.tres": "VoiceCues",
 	"data/music_catalog.tres": "MusicCatalog",
 	"data/story/opening.tres": "OpeningList",
+	"data/story/expert_closing_stage.tres": "CutsceneStage",
+	"data/story/voyager_closing_stage.tres": "CutsceneStage",
 	"data/story/expert_hoist.tres": "CutsceneTimeline",
 	"data/story/expert_deck.tres": "CutsceneTimeline",
 	"data/story/expert_wait.tres": "CutsceneTimeline",

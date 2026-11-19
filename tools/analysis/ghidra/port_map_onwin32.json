@@ -1306,7 +1306,7 @@
  },
  "0x0041c650": {
   "status": "ported",
-  "where": "godot/src/story/expert_closing.gd + expert_closing_cable.gd + closing_crew_actor.gd (extracted/tables/expert_closing.json, data/story/closing_crew.tres; the timelines data/story/expert_hoist / deck / wait.tres by tools/import/step_story.py): 18-tick steps, turn, 20 idle steps, hook down 16 / up 17 steps, deck shot with crew / pod / cable, key / click to end, music 9501 stopped at the end; tests test_closing_sequences.gd, test_flow_fidelity.gd"
+  "where": "godot/src/story/expert_closing.gd + stage_chain.gd + closing_crew_actor.gd (extracted/tables/expert_closing.json, data/story/closing_crew.tres; the stage data/story/expert_closing_stage.tres and the timelines data/story/expert_hoist / deck / wait.tres by tools/import/step_story.py): 18-tick steps, turn, 20 idle steps, hook down 16 / up 17 steps, deck shot with crew / pod / cable, key / click to end, music 9501 stopped at the end; tests test_closing_sequences.gd, test_flow_fidelity.gd"
  },
  "0x0041cbac": {
   "name": "ExpertClosingEraseCable",
@@ -1316,7 +1316,7 @@
  "0x0041cc8d": {
   "name": "ExpertClosingDrawCable",
   "status": "ported",
-  "where": "godot/src/story/expert_closing_cable.gd"
+  "where": "godot/src/story/stage_chain.gd (the pieces and their places: the chain actor and its children in data/story/expert_closing_stage.tres, tools/import/step_story.py crane_cable)"
  },
  "0x0041cd3b": {
   "name": "ExpertClosingEraseArtifact",

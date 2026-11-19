@@ -6,11 +6,11 @@ extends StorySegment
 ## called from `DoAction` in sector 31 on screen 10 once the finale creature has set the semaphore bit 15), with the
 ## closing song 9501.
 ##
-## Teaches: one `AnimationPlayer` with THREE animations played one after the other (`hoist`, `deck`, `wait`), chained
-## with `animation_finished`; each of them built from a `CutsceneTimeline` of the pack (`data/story/expert_hoist.tres`,
-## `expert_deck.tres`, `expert_wait.tres`); in the legacy pack they are the original's loops, one picture update every 18 ticks, played out step by step
-## into keys, the six sailors' programs (`ClosingCrewActor` runs them; the importer ran their twin) included. A looping
-## animation is the "wait for a key" state. This script only says which node plays which actor.
+## Teaches: a closing whose every picture, position and draw order is data. `StageBuilder` makes the nodes of the stage file `expert_closing_stage` (the playfield with the sub, the artifact and the crane's cable, the deck
+## with the ship, the sea, the sailors and the control box); one `AnimationPlayer` plays THREE animations one after the other (`hoist`, `deck`, `wait`), chained with `animation_finished`, each built from a
+## `CutsceneTimeline` of the pack (`expert_hoist`, `expert_deck`, `expert_wait`; in the legacy pack they are the original's loops, one picture update every 18 ticks, played out step by step into keys, the six sailors'
+## programs (`ClosingCrewActor` runs them; the importer ran their twin) included). A looping animation is the "wait for a key" state. This script says only which picture sets the stage may show, when to cut from the
+## sector's shot to the deck, and what ends it.
 ##
 ## The original, step by step (a step is 18 ticks = 0.2466 s; every step draws the sub and the Alien Artifact):
 ##   1. `HOIST`: the sub turns to face right (`ExpertClosingTurnTable`), idles 20 steps, the hook comes down 16 steps of
@@ -22,105 +22,49 @@ extends StorySegment
 ## Every key pressed before the last stage is read and thrown away (`PeekInput` / `WaitForInput` in each step), and
 ## the click area (`AddHotspot` 0xd) exists only in the last stage.
 
-# The three stages are the pack's data (`Catalog.story_timeline`: `expert_hoist`, `expert_deck`, `expert_wait`; the legacy pack's are written by
-# `tools/import/step_story.py` from CLOSING.C: the turn, the idle, the hook's 16 steps down and the 17 steps up, the deck shot's 6 + 140 steps,
-# the box's blinking).
-const PLAYFIELD_ORIGIN := ExpertClosingCable.PLAYFIELD_ORIGIN
-## `ExpertClosingDrawArtifact` (0x41cd84) draws item 0 / 1 of `ZoneFoeBundle`, toggled on every call. In sector 31 that is
-## the Expert finale's zone foe bundle (zone 6: logical resource 461 = bundle 112), pictures 2002 / 2003 (84 x 72, a spiked
-## mine with blinking lights): the Alien Artifact. They are slots 35 and 36 of `foes_zone6` (zone foes start at slot 35).
+## The stage the closing is played on (`Catalog.story_stage`) and the timeline each of its three animations (`hoist`, `deck`, `wait`, played one after the other) plays on it. The legacy pack's are written by `tools/import/step_story.py` from CLOSING.C
+## (the turn, the idle, the hook's 16 steps down and the 17 steps up, the deck shot's 6 + 140 steps, the box's blinking, the places of the pictures), the dev pack's by `tools/dev_pack/dev_story.py`.
+const STAGE := &"expert_closing_stage"
+const TIMELINES: Dictionary[StringName, StringName] = {&"hoist": &"expert_hoist", &"deck": &"expert_deck", &"wait": &"expert_wait"}
+## The two groups of the stage that this script shows and hides (`_show_deck`): the sector's shot and the ship's.
+const PLAYFIELD := &"playfield"
+const DECK := &"deck"
+## The picture sets the closing hands to the stage (`StageActor.frames`): the sub's drawings and the Alien Artifact's, which are the creature pictures of zone 6. `ExpertClosingDrawArtifact` (0x41cd84) draws item 0 / 1
+## of `ZoneFoeBundle`, toggled on every call; in sector 31 that is the Expert finale's zone foe bundle (zone 6: logical resource 461 = bundle 112), pictures 2002 / 2003 (84 x 72, a spiked mine with blinking lights).
+const SET_SUB := &"sub"
+const SET_ARTIFACT := &"artifact"
+const FRAME_SETS: Array[StringName] = [SET_SUB, SET_ARTIFACT]
 const ARTIFACT_ZONE := 6
-const ARTIFACT_PICTURES: Array[StringName] = [&"alien_artifact_0", &"alien_artifact_1"]      # zone 6's slots 35 and 36
-
-# --- the deck shot ---
-const SHIP_PICTURE := &"deck_ship"
-const SHIP_AT := Vector2(232, 32)
-const SEA_PICTURE := &"deck_sea"
-const SEA_AT := Vector2(0, 300)
-const CLOUD_PICTURE := &"deck_cloud"
-const CLOUD_AT := Vector2(80, 108)
-const CREW_COUNT := 6
-## `ExpertClosingDrawPod` (0x41cdba): item 3, 4, 5, 4 of the bundle (pictures 2015-2017, 56 x 28) at (568, 104), the last one
-## mirrored, one phase per step (`deck_pod_0` .. `deck_pod_2`, items 3-5 of the bundle).
-const POD_PICTURES: Array[StringName] = [&"deck_pod_0", &"deck_pod_1", &"deck_pod_2", &"deck_pod_1"]
-const POD_AT := Vector2(568, 104)
 
 enum Stage { HOIST, DECK, WAIT }
 
 var stage: Stage = Stage.HOIST
-var _crew: Array[Sprite2D] = []
+## Which node plays which actor (the stage's actors, bound by `StageBuilder`).
+var cast: CutsceneCast
 
-@onready var playfield: Control = %Playfield
-@onready var sub: AnimatedSprite2D = %Sub
-@onready var artifact: AnimatedSprite2D = %Artifact
-@onready var cable: ExpertClosingCable = %Cable
-@onready var deck: Control = %Deck
-@onready var crew_layer: Node2D = %Crew
-@onready var deck_artifact: AnimatedSprite2D = %DeckArtifact
-@onready var deck_sub: AnimatedSprite2D = %DeckSub
-@onready var deck_cable: ExpertClosingCable = %DeckCable
-@onready var pod: Sprite2D = %Pod
-@onready var ship: Sprite2D = %Ship
-@onready var sea: Sprite2D = %Sea
-@onready var cloud: Sprite2D = %Cloud
+@onready var stage_root: Node2D = %Stage
 @onready var animations: AnimationPlayer = %Animations
 
 
 func _ready() -> void:
-	for animated: AnimatedSprite2D in [sub, deck_sub]:
-		animated.sprite_frames = Catalog.sub_frames()
-		animated.animation = &"all"
-		animated.pause()
-	for animated: AnimatedSprite2D in [artifact, deck_artifact]:
-		animated.sprite_frames = Catalog.foes_frames(ARTIFACT_ZONE)
-		animated.animation = &"all"
-		animated.frame = _artifact_slot(0)
-		animated.pause()
-	ship.texture = Assets.ui_picture(SHIP_PICTURE)
-	ship.position = SHIP_AT - PLAYFIELD_ORIGIN
-	sea.texture = Assets.ui_picture(SEA_PICTURE)
-	sea.position = SEA_AT - PLAYFIELD_ORIGIN
-	cloud.texture = Assets.ui_picture(CLOUD_PICTURE)
-	cloud.position = CLOUD_AT - PLAYFIELD_ORIGIN
-	pod.texture = Assets.ui_picture(POD_PICTURES[0])
-	pod.position = POD_AT - PLAYFIELD_ORIGIN
-	_build_crew()
-	deck.visible = false
-	var cast := _make_cast()
-	for stage_name: StringName in [&"hoist", &"deck", &"wait"]:
-		Cutscene.install_timeline(animations, stage_name, Catalog.story_timeline(StringName("expert_" + stage_name)), cast)
+	cast = make_cast(self)
+	StageBuilder.build(STAGE, stage_root, cast)
+	for animation_name in TIMELINES:
+		var timeline := Catalog.story_timeline(TIMELINES[animation_name])
+		if timeline != null:
+			Cutscene.install_timeline(animations, animation_name, timeline, cast)
 	animations.animation_finished.connect(_on_animation_finished)
 	Audio.play_music(AudioService.SONG_CLOSING)
 	animations.play(&"hoist")
 
 
-## Which node plays which actor of the timelines. The crane's chain calls its properties `bottom` and `hook_frame`.
-func _make_cast() -> CutsceneCast:
-	var cast := CutsceneCast.new(self)
+## The cast of a closing played under `root`, with the sets its stage may show: the one place the sets are handed in (a view that builds the stage by itself calls it too).
+static func make_cast(root: Node) -> CutsceneCast:
+	var cast := CutsceneCast.new(root)
 	cast.sub_tuning = GameState.tuning.sub
 	cast.frame_zone = ARTIFACT_ZONE
-	var chain := {CutsceneTrack.PROP_EXTENT: "bottom", CutsceneTrack.PROP_FRAME: "hook_frame"}
-	cast.bind(&"cable", cable, chain)
-	cast.bind(&"sub", sub)
-	cast.bind(&"artifact", artifact)
-	cast.bind(&"deck_cable", deck_cable, chain)
-	cast.bind(&"deck_sub", deck_sub)
-	cast.bind(&"deck_artifact", deck_artifact)
-	cast.bind(&"pod", pod)
-	for i in _crew.size():
-		cast.bind(StringName("crew_%d" % i), _crew[i])
+	cast.frame_sets = {SET_SUB: Catalog.sub_frames(), SET_ARTIFACT: Catalog.foes_frames(ARTIFACT_ZONE)}
 	return cast
-
-
-## The six sailors: sprites that the `deck` animation moves, re-textures and shows or hides.
-func _build_crew() -> void:
-	for i in CREW_COUNT:
-		var sailor := Sprite2D.new()
-		sailor.name = "Crew%d" % i
-		sailor.centered = false
-		sailor.visible = false
-		crew_layer.add_child(sailor)
-		_crew.append(sailor)
 
 
 # --- the keys ------------------------------------------------------------------------------------
@@ -156,9 +100,10 @@ func finish() -> void:
 	super.finish()
 
 
-## The slot of the artifact's picture `toggle` (0 or 1) in the creature set of `ARTIFACT_ZONE`.
-static func _artifact_slot(toggle: int) -> int:
-	return NameRegistry.original().index_of(&"frame", ARTIFACT_PICTURES[toggle], ARTIFACT_ZONE)
+func _show(actor: StringName, shown: bool) -> void:
+	var node := cast.node_of(actor) as CanvasItem
+	if node != null:
+		node.visible = shown
 
 
 func _on_animation_finished(animation_name: StringName) -> void:
@@ -172,6 +117,6 @@ func _on_animation_finished(animation_name: StringName) -> void:
 ## Cut to the ship: hide the sector, show the deck, play the deck animation.
 func _show_deck() -> void:
 	stage = Stage.DECK
-	playfield.visible = false
-	deck.visible = true
+	_show(PLAYFIELD, false)
+	_show(DECK, true)
 	animations.play(&"deck")

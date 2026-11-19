@@ -25,6 +25,7 @@ REVEAL_HOLD = 100                           # ticks of one hold of the title
 CREW_FIRST_PICTURE = 2012                   # the sailors' items count from this picture of the registry
 STATUS_LIGHTS = 6                           # the console's lights on the news cartoon's stage
 PANEL_LIGHTS = 8
+CRANE_PIECE_HEIGHT = 48                     # the rows of the dev pictures of the hook, a link and the ball
 CREW_ITEMS = 4                              # the items 0-3 the sailors' programs draw
 
 
@@ -269,6 +270,16 @@ def expert_wait() -> st.Timeline:
     return t
 
 
+def expert_closing_stage() -> st.Stage:
+    """The Expert closing's stage: the legacy pack's places for the pictures (`step_story.expert_closing_stage`), the dev pictures' own heights for the cable's pieces and the sailors standing where their programs start."""
+    return st.expert_closing_stage("Dev pack: the places of the original's pictures, the cable stacked of the dev pictures' 48 rows, the sailors at the starts of their programs (tools/dev_pack/dev_story.py).",
+                                   [(300 + 40 * m, 214) for m in range(6)], (CRANE_PIECE_HEIGHT, CRANE_PIECE_HEIGHT, CRANE_PIECE_HEIGHT))
+
+
+def voyager_closing_stage() -> st.Stage:
+    return st.voyager_closing_stage("Dev pack: the playfield, the sub, the helicopter's body and rotor, where the flight's first key finds them (tools/dev_pack/dev_story.py).")
+
+
 # --- the crew, the story and the Voyager's flight (the news cartoon is dev_ui.py's) ---------------------------------------------------------
 
 WAIT, DOWN, UP, LEFT, RIGHT, END, DRAW = -8, -7, -6, -5, -4, -3, -2        # the ops of `ClosingCrewActor.Op`
@@ -360,7 +371,9 @@ def write_all() -> int:
     write_text(story / "news_cartoon.tres", news_cartoon_scene().render())
     write_text(story / "title_stage.tres", title_stage().render())
     write_text(story / "title.tres", title_scene().render())
+    write_text(story / "expert_closing_stage.tres", expert_closing_stage().render())
+    write_text(story / "voyager_closing_stage.tres", voyager_closing_stage().render())
     write_text(story / "closing_crew.tres", closing_crew())
     write_text(story / "story_script.tres", story_script())
     write_text(story / "voyager_closing_script.tres", voyager_closing_script())
-    return 17
+    return 19

@@ -46,7 +46,7 @@ static func _actor_differences(actor: StageActor, node: Node, found: Array[Strin
 			if sprite == null:
 				found.append("%s is a %s, not a Sprite2D" % [actor.name, node.get_class()])
 				return
-			if PictureRef.key_of(sprite.texture) != "ui_picture/" + actor.picture:
+			if actor.picture != &"" and PictureRef.key_of(sprite.texture) != "ui_picture/" + actor.picture:
 				found.append("%s shows %s, the file says ui_picture/%s" % [actor.name, PictureRef.key_of(sprite.texture), actor.picture])
 			if sprite.flip_h != actor.mirror:
 				found.append("%s is mirrored = %s, the file says %s" % [actor.name, sprite.flip_h, actor.mirror])
@@ -72,5 +72,27 @@ static func _actor_differences(actor: StageActor, node: Node, found: Array[Strin
 			if button.action_mode != BaseButton.ACTION_MODE_BUTTON_PRESS:
 				found.append("%s acts on the release: the original's buttons act on the press" % actor.name)
 		StageActor.GROUP:
-			if node.get_class() != "Node2D":
-				found.append("%s is a %s, not a Node2D" % [actor.name, node.get_class()])
+			var boxed := actor.size.x > 0.0 and actor.size.y > 0.0
+			if node.get_class() != ("Control" if boxed else "Node2D"):
+				found.append("%s is a %s, not a %s" % [actor.name, node.get_class(), "Control (a group with a size is a clipping box)" if boxed else "Node2D"])
+			elif boxed and (not (node as Control).clip_contents or (node as Control).size != actor.size):
+				found.append("%s is %s big and clips = %s, the file says a box of %s" % [actor.name, (node as Control).size, (node as Control).clip_contents, actor.size])
+		StageActor.FRAMES:
+			var animated := node as AnimatedSprite2D
+			if animated == null:
+				found.append("%s is a %s, not an AnimatedSprite2D" % [actor.name, node.get_class()])
+			elif animated.sprite_frames == null or animated.is_playing() or animated.centered:
+				found.append("%s shows no picture set, or plays, or is centered: it shows a picture of its set and stands still, by its top-left corner" % actor.name)
+		StageActor.FILL:
+			var fill := node as ColorRect
+			if fill == null:
+				found.append("%s is a %s, not a ColorRect" % [actor.name, node.get_class()])
+			elif fill.size != actor.size or fill.color != actor.color:
+				found.append("%s is %s of %s, the file says %s of %s" % [actor.name, fill.size, fill.color, actor.size, actor.color])
+		StageActor.CHAIN:
+			var chain := node as StageChain
+			if chain == null:
+				found.append("%s is a %s, not a StageChain" % [actor.name, node.get_class()])
+			elif chain.size != actor.size or chain.hooks.size() != actor.pictures.size() or chain.extent != 0 or (chain.get_child_count() > 0 and PictureRef.key_of((chain.get_child(0) as Sprite2D).texture) != "ui_picture/" + actor.pictures[0]):
+				found.append("%s is %s big with %d hook pictures at extent %d, the first piece showing %s: the file says %s big, %s, the hook first showing %s" % [actor.name, chain.size, chain.hooks.size(), chain.extent,
+						PictureRef.key_of((chain.get_child(0) as Sprite2D).texture) if chain.get_child_count() > 0 else "nothing", actor.size, actor.pictures, actor.pictures[0]])

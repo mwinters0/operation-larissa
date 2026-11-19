@@ -153,10 +153,11 @@ func _layouts() -> void:
 		for i in calc.key_names.size():
 			if not picture.encloses(calc.key_rects[i]):
 				_fail("calculator key %s is outside the calculator picture" % calc.key_names[i])
-	for stage_file in ["logo_stage", "news_cartoon_stage", "title_stage"]:
+	var closing_sets: Array[StringName] = ExpertClosing.FRAME_SETS
+	for stage_file in ["logo_stage", "news_cartoon_stage", "title_stage", "expert_closing_stage", "voyager_closing_stage"]:
 		var stage := load(ROOT + "data/story/%s.tres" % stage_file) as CutsceneStage
 		if stage != null:
-			for message in stage.problems():
+			for message in stage.problems(closing_sets if stage_file.ends_with("closing_stage") else []):
 				_fail("%s: %s" % [stage_file, message])
 	var cartoon := load(ROOT + "data/story/news_report.tres") as CutsceneTimeline
 	if cartoon != null:

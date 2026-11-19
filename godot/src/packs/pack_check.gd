@@ -111,6 +111,7 @@ static func _content(live: Pack, report: PackReport, options: Options) -> void:
 	_voice_cues(live, report)
 	_pictures(live, report)
 	_scenes(live, report)
+	_closings(report)
 	_audio(live, report)
 	_durations(live, report)
 	_tuning(live, report)
@@ -334,19 +335,43 @@ static func _scenes(_live: Pack, report: PackReport) -> void:
 		if Catalog.story_stage(scene.stage) == null:
 			report.error("story", "scene '%s' names the stage '%s', which no pack of the chain holds: nothing is drawn" % [part.name, scene.stage])
 		else:
-			_stage(scene.stage, scene.all_timelines(), report)
+			var timelines: Dictionary = {}
+			for timeline_name in scene.all_timelines():
+				timelines[timeline_name] = Catalog.story_timeline(timeline_name)
+			_stage(scene.stage, timelines, [], report)
 
 
-## A stage of the chain: each mistake of the stage itself (`CutsceneStage.problems`), and an actor a timeline played on it names that it does not hold (the scene would leave that track out and nothing would change for the actor,
-## `Cutscene.unplayed_line`), once per actor and timeline. A stage or timeline the chain lacks is the scene's to say.
-static func _stage(stage_name: StringName, timelines: Array[StringName], report: PackReport) -> void:
+## The closings (they play from the game, not from the opening): each plays on a stage and names its actors in timelines. The Expert one plays the three timelines of `ExpertClosing.TIMELINES`, the Voyager one a timeline made from
+## its script (`VoyagerClosingScript.timeline`, here for the sub at the window's origin: the actors it names do not depend on the place). Each stage is judged by `_stage` with the picture sets the closing hands in.
+static func _closings(report: PackReport) -> void:
+	var expert: Dictionary = {}
+	for animation_name in ExpertClosing.TIMELINES:
+		expert[ExpertClosing.TIMELINES[animation_name]] = Catalog.story_timeline(ExpertClosing.TIMELINES[animation_name])
+	_closing_stage("the Expert closing", ExpertClosing.STAGE, expert, ExpertClosing.FRAME_SETS, report)
+	var voyager: Dictionary = {}
+	var script := Catalog.voyager_closing_script()
+	if script != null:
+		voyager[&"voyager_closing_script"] = script.timeline(0, 0, 0)
+	_closing_stage("the Voyager closing", VoyagerClosing.STAGE, voyager, VoyagerClosing.FRAME_SETS, report)
+
+
+static func _closing_stage(closing: String, stage_name: StringName, timelines: Dictionary, offered: Array[StringName], report: PackReport) -> void:
+	if Catalog.story_stage(stage_name) == null:
+		report.error("story", "%s plays on the stage '%s', which no pack of the chain holds: nothing is drawn" % [closing, stage_name])
+	else:
+		_stage(stage_name, timelines, offered, report)
+
+
+## A stage of the chain: each mistake of the stage itself (`CutsceneStage.problems`, given the picture sets the scene hands in), and an actor a timeline played on it names that it does not hold (the scene would leave that track out and nothing
+## would change for the actor, `Cutscene.unplayed_line`), once per actor and timeline. `timelines` is name -> `CutsceneTimeline`; one the chain lacks (null) is the scene's to say.
+static func _stage(stage_name: StringName, timelines: Dictionary, offered: Array[StringName], report: PackReport) -> void:
 	var stage := Catalog.story_stage(stage_name)
 	if stage == null:
 		return
-	for problem in stage.problems():
+	for problem in stage.problems(offered):
 		report.error("story", "stage '%s': %s" % [stage_name, problem])
-	for timeline_name in timelines:
-		var timeline := Catalog.story_timeline(timeline_name)
+	for timeline_name: StringName in timelines:
+		var timeline := timelines[timeline_name] as CutsceneTimeline
 		if timeline == null:
 			continue
 		var told: Dictionary = {}

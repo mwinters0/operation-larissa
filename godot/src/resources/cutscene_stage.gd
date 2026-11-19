@@ -38,12 +38,13 @@ func names() -> Array[StringName]:
 	return found
 
 
-## What is wrong with this stage, one sentence each, or an empty list when it is fine (what `problem_with` says of each actor, the actors that are fine placed in turn).
-func problems() -> PackedStringArray:
+## What is wrong with this stage, one sentence each, or an empty list when it is fine (what `problem_with` says of each actor, the actors that are fine placed in turn). `offered` is the picture sets the scene that builds
+## the stage hands in (`CutsceneCast.frame_sets`).
+func problems(offered: Array[StringName] = []) -> PackedStringArray:
 	var found := PackedStringArray()
 	var placed: Dictionary = {}
 	for actor in actors:
-		var problem := problem_with(actor, placed)
+		var problem := problem_with(actor, placed, offered)
 		if problem.is_empty():
 			placed[actor.name] = actor
 		else:
@@ -52,8 +53,9 @@ func problems() -> PackedStringArray:
 
 
 ## What is wrong with `actor` given the actors `placed` before it (name -> StageActor), or "" when it can be put on the stage: no name or one another has, a kind the builder
-## does not know, a parent that is not an actor placed before it (or that is a text box), a text box with no size, a button with no picture, with no answer of `StageActor.CHOICES` or with a key the engine does not know. The one judgement `problems` and `StageBuilder` share.
-func problem_with(actor: StageActor, placed: Dictionary) -> String:
+## does not know, a parent that is not an actor placed before it (or that is a text box), a text box or a fill with no size, a button with no picture, with no answer of `StageActor.CHOICES` or with a key the engine does not know,
+## a `frames` actor that names no set or one the scene does not hand in (`offered`), a chain with no pictures for its hook. The one judgement `problems` and `StageBuilder` share.
+func problem_with(actor: StageActor, placed: Dictionary, offered: Array[StringName] = []) -> String:
 	if actor == null:
 		return "an actor that is not a StageActor"
 	if actor.name == &"":
@@ -64,6 +66,15 @@ func problem_with(actor: StageActor, placed: Dictionary) -> String:
 		return "actor '%s': unknown kind '%s' (one of %s)" % [actor.name, actor.kind, ", ".join(StageActor.KINDS)]
 	if actor.kind == StageActor.TEXT and (actor.size.x <= 0.0 or actor.size.y <= 0.0):
 		return "actor '%s': a text box needs a size" % actor.name
+	if actor.kind == StageActor.FILL and (actor.size.x <= 0.0 or actor.size.y <= 0.0):
+		return "actor '%s': a fill needs a size" % actor.name
+	if actor.kind == StageActor.FRAMES:
+		if actor.frames == &"":
+			return "actor '%s': a frames actor needs the name of its picture set" % actor.name
+		if not offered.has(actor.frames):
+			return "actor '%s': the picture set '%s' is not one this scene hands in (%s)" % [actor.name, actor.frames, ", ".join(offered) if not offered.is_empty() else "it hands in none"]
+	if actor.kind == StageActor.CHAIN and actor.pictures.is_empty():
+		return "actor '%s': a chain needs the pictures its hook shows" % actor.name
 	if actor.kind == StageActor.BUTTON:
 		if actor.picture == &"":
 			return "actor '%s': a button needs a picture" % actor.name

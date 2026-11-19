@@ -53,12 +53,12 @@ def test_the_scan_finds_the_names_of_every_resolver(scan):
     for lit in scan.literals:
         for kind in lit.kinds:
             by_kind[kind] = by_kind.get(kind, 0) + 1
-    # (the console lights' flicker pictures are in `news_ambient`; the sound and picture names of the cutscenes are in data/story/*.tres and the stages' `data/story/*_stage.tres`, not in the code)
+    # (the closings' pictures and positions are in their stages; the console lights' flicker pictures are in `news_ambient`; the sound and picture names of the cutscenes are in data/story/*.tres and the stages' `data/story/*_stage.tres`, not in the code)
     # (F2 moved the log entries, the supply messages and the sector songs into data/campaigns/*.tres and the sector files: the code builds three fewer runs)
-    floors = {"sound": 16, "music": 2, "voice": 1, "text": 145, "ui_picture": 15, "problem_art": 1, "frame": 3}
+    floors = {"sound": 16, "music": 2, "voice": 1, "text": 145, "ui_picture": 3, "problem_art": 1, "frame": 1}
     for kind, floor in floors.items():
         assert by_kind.get(kind, 0) >= floor, "%s: the scan found %d names, there were at least %d" % (kind, by_kind.get(kind, 0), floor)
-    assert len(scan.patterns) >= 9
+    assert len(scan.patterns) >= 8
 
 
 # Name literals of src/ that the scan does not tie to a resolver but that are a name of the registry anyway. The scan cannot tell

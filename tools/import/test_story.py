@@ -196,6 +196,50 @@ def test_every_actor_a_legacy_timeline_names_is_on_its_stage():
             assert named <= held, (name, named - held)
 
 
+def _closing_stage(crew_starts=((496, 214), (332, 214), (368, 224), (436, 214), (496, 214), (496, 214))):
+    return {a["name"]: a for a in step_story.expert_closing_stage("test", list(crew_starts)).actors}
+
+
+def test_the_expert_closing_stage_lists_the_playfield_then_the_hidden_deck_in_the_originals_draw_order():
+    actors = _closing_stage()
+    order = list(actors)
+    assert order[:3] == ["playfield", "artifact", "sub"] and order.index("cable") == 3
+    deck = order.index("deck")
+    assert [n for n in order[deck:] if "_piece_" not in n] == ["deck", "water", "cloud", "ship"] + ["crew_%d" % i for i in range(6)] + ["deck_artifact", "deck_sub", "deck_cable", "pod", "sea"]
+    assert actors["deck"]["visible"] is False and actors["playfield"]["visible"] is True
+    assert (actors["playfield"]["at"], actors["playfield"]["size"]) == ((16, 32), (608, 288)) and (actors["deck"]["at"], actors["deck"]["size"]) == ((16, 32), (608, 288))
+    assert [(actors[n]["kind"], actors[n]["frames"]) for n in ("artifact", "sub", "deck_artifact", "deck_sub")] == [("frames", "artifact"), ("frames", "sub")] * 2
+    assert (actors["artifact"]["at"], actors["sub"]["at"]) == ((200, 232), (184, 212)) and actors["pod"]["at"] == (568, 104)
+    assert all(actors["crew_%d" % i]["parent"] == "deck" and not actors["crew_%d" % i]["visible"] and not actors["crew_%d" % i]["picture"] for i in range(6))
+    assert actors["crew_2"]["at"] == (368, 224)
+
+
+def test_the_cable_is_a_hook_three_links_a_ball_and_links_stacked_by_their_heights_and_cut_at_the_arm():
+    actors = _closing_stage()
+    for name, top in (("cable", 32), ("deck_cable", 154)):
+        cable = actors[name]
+        assert cable["kind"] == "chain" and len(cable["pictures"]) == 3 and cable["at"] == (16, top) and cable["size"] == (608, 32 + 288 - top)
+        pieces = [a for n, a in actors.items() if n.startswith(name + "_piece_")]
+        assert [p["picture"] for p in pieces[:6]] == ["", "crane_link", "crane_link", "crane_link", "crane_ball", "crane_link"]
+        assert [p["at"] for p in pieces[:6]] == [(220, -25), (236, -37), (236, -49), (236, -61), (228, -83), (236, -95)]        # a piece's top row rests on the one below: the heights 26, 12, 12, 12, 22
+        assert all(p["parent"] == name for p in pieces)
+        assert -pieces[-1]["at"][1] >= step_story.CABLE_REACH - step_story.LINK_HEIGHT       # built as far up as the reach
+    taller = {a["name"]: a for a in step_story.expert_closing_stage("test", [(0, 0)] * 6, (48, 48, 48)).actors}
+    assert [taller["cable_piece_%02d" % i]["at"][1] for i in range(3)] == [-47, -95, -143]
+    assert len([n for n in taller if n.startswith("cable_piece_")]) == 7
+
+
+@pytest.mark.legacy
+def test_every_actor_a_legacy_closing_timeline_names_is_on_its_stage():
+    held = {a["name"] for a in step_story.build_expert_closing_stage().actors}
+    for name in ("expert_hoist", "expert_deck", "expert_wait"):
+        named = {actor for actor, *_ in step_story.timelines()[name].tracks}
+        assert named <= held, (name, named - held)
+    voyager = {a["name"]: a for a in step_story.build_voyager_closing_stage().actors}
+    assert list(voyager) == ["playfield", "sub", "helicopter", "rotor"] and voyager["sub"]["frames"] == "sub" and not voyager["helicopter"]["visible"] and not voyager["rotor"]["visible"]
+    assert set(step_story.stages()) >= {"expert_closing_stage", "voyager_closing_stage"}
+
+
 def test_the_news_cartoon_scene_names_its_stage_timelines_song_and_five_speech_steps_in_order():
     scene = step_story.build_news_scene()
     assert (scene.stage, scene.loops, scene.timelines, scene.song) == ("news_cartoon_stage", ["news_ambient"], ["news_report"], "opening")

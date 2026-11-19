@@ -17,6 +17,8 @@ var root: Node
 var sub_tuning: SubTuning = null
 ## The creature set (a zone) whose picture names `CutsceneTrack.PROP_FRAME` uses; -1 when only numbers are used.
 var frame_zone: int = -1
+## The picture sets the view holds that a stage's `frames` actors show: set name (what `StageActor.frames` says) -> `SpriteFrames`. The view that builds the stage fills it before `StageBuilder.build`.
+var frame_sets: Dictionary[StringName, SpriteFrames] = {}
 ## picture name -> Texture2D
 var pictures: Callable = Assets.ui_picture
 ## text name -> String (the text of the original, perhaps tidied for the screen)
@@ -31,7 +33,7 @@ func _init(scene_root: Node) -> void:
 
 
 ## `node` plays `actor`. `property_names` renames a logical property for this actor when its node calls it something
-## else (the crane's chain has `bottom` and `hook_frame` of its own).
+## else (a node of a view that already has a property of its own for it).
 func bind(actor: StringName, node: Node, property_names: Dictionary = {}) -> void:
 	_nodes[actor] = node
 	_property_names[actor] = property_names

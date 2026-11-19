@@ -79,6 +79,6 @@ def test_the_story_and_console_steps_split_their_files_between_the_project_and_t
     in_project = {p for p in written if p.is_relative_to(common.PROJECT_DATA)}
     in_pack = {p for p in written if p.is_relative_to(common.PACK_DATA)}
     assert in_project == set(step_console.owned_files()) and in_project | in_pack == set(written)
-    assert {p.name for p in in_pack if p.parent.name == "story"} == {"opening.tres", "news_cartoon.tres", "title.tres", "news_report.tres", "news_ambient.tres", "news_cartoon_stage.tres", "title_stage.tres", "title_ship.tres", "title_reveal.tres", "expert_hoist.tres", "expert_deck.tres", "expert_wait.tres", "story_script.tres", "voyager_closing_script.tres", "closing_crew.tres"}
+    assert {p.name for p in in_pack if p.parent.name == "story"} == {"opening.tres", "news_cartoon.tres", "title.tres", "news_report.tres", "news_ambient.tres", "news_cartoon_stage.tres", "title_stage.tres", "expert_closing_stage.tres", "voyager_closing_stage.tres", "title_ship.tres", "title_reveal.tres", "expert_hoist.tres", "expert_deck.tres", "expert_wait.tres", "story_script.tres", "voyager_closing_script.tres", "closing_crew.tres"}
     assert {p.name for p in in_pack if p.parent.name == "ui"} == {"hud_layout.tres", "calculator_layout.tres"}
     assert "story" not in import_all.OWNED_FILES and import_all.OWNED_FILES["console"] is step_console.owned_files

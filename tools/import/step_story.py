@@ -195,7 +195,8 @@ def timeline_digest(timeline: Timeline) -> str:
 
 
 class Stage:
-    """A CutsceneStage being collected: the actors in DRAW ORDER, each (name, kind, picture name, position, mirror, parent, visible, clip, size, and for a button the picture pressed, what it answers and its hotkey)."""
+    """A CutsceneStage being collected: the actors in DRAW ORDER, each (name, kind, picture name, position, mirror, parent, visible, clip, size, for a button the picture pressed, what it answers and its hotkey, for a `frames` actor
+    the picture set it shows, for a `chain` the pictures of its hook, for a `fill` its colour)."""
 
     def __init__(self, provenance: str):
         self.provenance = provenance
@@ -203,11 +204,13 @@ class Stage:
 
     def actor(self, name: str, kind: str = "picture", picture: str = "", at: tuple[float, float] = (0, 0), mirror: bool = False,
               parent: str = "", visible: bool = True, clip: tuple[float, float, float, float] | None = None,
-              size: tuple[float, float] | None = None, pressed_picture: str = "", choice: str = "", hotkey: str = "") -> None:
+              size: tuple[float, float] | None = None, pressed_picture: str = "", choice: str = "", hotkey: str = "",
+              frames: str = "", pictures: Sequence[str] = (), color: tuple[float, float, float] | None = None) -> None:
         assert all(a["name"] != name for a in self.actors), name
         assert not parent or any(a["name"] == parent for a in self.actors), (name, parent)         # a parent is listed before its children
         self.actors.append({"name": name, "kind": kind, "picture": picture, "at": at, "mirror": mirror, "parent": parent,
-                            "visible": visible, "clip": clip, "size": size, "pressed_picture": pressed_picture, "choice": choice, "hotkey": hotkey})
+                            "visible": visible, "clip": clip, "size": size, "pressed_picture": pressed_picture, "choice": choice, "hotkey": hotkey,
+                            "frames": frames, "pictures": list(pictures), "color": color})
 
     def render(self) -> str:
         t = tres.Tres("Resource", "CutsceneStage", SCRIPTS + "cutscene_stage.gd")
@@ -238,6 +241,12 @@ class Stage:
                 props.append(("choice", sn(a["choice"])))
             if a["hotkey"]:
                 props.append(("hotkey", tres.s(a["hotkey"])))
+            if a["frames"]:
+                props.append(("frames", sn(a["frames"])))
+            if a["pictures"]:
+                props.append(("pictures", tres.array("StringName", (sn(n) for n in a["pictures"]))))
+            if a["color"]:
+                props.append(("color", "Color(%s, %s, %s, 1)" % tuple(num(c) for c in a["color"])))
             refs.append(t.sub("Resource", props, script=actor_script, prefix="Actor"))
         t.set("provenance", tres.s(self.provenance))
         t.set("actors", tres.array('ExtResource("%s")' % actor_id, refs))
@@ -836,6 +845,80 @@ def build_expert_wait() -> Timeline:
     return steps.timeline(len(POD_PICTURES) * EXPERT_STEP, PROVENANCE_WAIT, loop=True)
 
 
+# The stage of the Expert closing: where ExpertClosingSequence's drawing routines put each picture (CLOSING.C). Window pixels.
+PLAYFIELD_AT = (16, 32)                      # the clip box of both shots: the playfield (0x10, 0x20), 608 x 288
+PLAYFIELD_SIZE = (608, 288)
+WATER_COLOR = (0, 0, 0.667)                  # ours: the blue behind the deck shot's pictures
+SHIP_AT = (232, 32)                          # ExpertClosingDrawDeck's ship, cloud and sea
+CLOUD_AT = (80, 108)
+SEA_AT = (0, 300)
+POD_AT = (568, 104)                          # ExpertClosingDrawPod
+SHIP_PICTURE, SEA_PICTURE, CLOUD_PICTURE = 2021, 2039, 2040
+HOOK_PICTURES = (2018, 2019, 2020)           # ExpertClosingDrawCable (0x41cc8d): the hook (open, closing, closed), the links, the ball
+LINK_PICTURE, BALL_PICTURE = 2013, 2014
+HOOK_HEIGHT, LINK_HEIGHT, BALL_HEIGHT = 26, 12, 22      # the rows of those pictures
+HOOK_X, BALL_X, LINK_X = 220, 228, 236
+BALL_PIECE = 4                               # piece 0 is the hook, pieces 1-3 links, piece 4 the ball, every further piece a link
+CABLE_REACH = 300                            # the chain is built this long, whatever sticks out above the box is clipped
+CABLE_TOP = 32                               # the cable is cut at the top of the playfield in the hoist ...
+DECK_CABLE_TOP = 154                         # ... and at the crane's arm in the deck shot (ExpertClosingCableTop)
+SUB_FRAMES = "sub"                           # the picture sets the closing hands to its stage (ExpertClosing.FRAME_SETS)
+ARTIFACT_FRAMES = "artifact"
+
+
+def crane_cable(stage: Stage, name: str, parent: str, box_at: tuple[float, float], hooks: Sequence[str], link: str, ball: str,
+                hook_height: int = HOOK_HEIGHT, link_height: int = LINK_HEIGHT, ball_height: int = BALL_HEIGHT) -> None:
+    """The crane's cable as a `chain` actor and its pieces from the hook up (ExpertClosingDrawCable's loop: draw a piece, move up by its height, until the reach is covered), each placed as it stands when the chain's extent is 0:
+    the hook's last pixel row at y 0. The box is the playfield from `box_at` down."""
+    stage.actor(name, kind="chain", at=box_at, size=(PLAYFIELD_SIZE[0], PLAYFIELD_AT[1] + PLAYFIELD_SIZE[1] - box_at[1]), pictures=hooks, parent=parent)
+    covered, index = 0, 0
+    while covered < CABLE_REACH:
+        if index == 0:
+            x, picture_name, height = HOOK_X, "", hook_height
+        elif index == BALL_PIECE:
+            x, picture_name, height = BALL_X, ball, ball_height
+        else:
+            x, picture_name, height = LINK_X, link, link_height
+        stage.actor("%s_piece_%02d" % (name, index), picture=picture_name, at=(x, -(covered + height - 1)), parent=name)
+        covered += height
+        index += 1
+
+
+def build_expert_closing_stage() -> Stage:
+    """The legacy pack's: the sailors start where the original's table says."""
+    return expert_closing_stage(PROVENANCE_EXPERT_STAGE, [tuple(p) for p in load_json(TABLES / "expert_closing.json")["start_positions"]])
+
+
+def expert_closing_stage(provenance: str, crew_starts: Sequence[tuple[int, int]], heights: tuple[int, int, int] = (HOOK_HEIGHT, LINK_HEIGHT, BALL_HEIGHT)) -> Stage:
+    """The Expert closing's two shots in draw order: the playfield (the artifact, the sub, the cable) and the deck (water, cloud, ship, the sailors at `crew_starts`, the artifact, the sub, the cable cut at the crane's arm, the control box, the sea),
+    the deck hidden until the hoist is over. The artifact and the sub are picture sets the closing hands in. `heights` are the rows of the hook, a link and the ball (the pieces of the cable are stacked by them); the dev pack's pictures have their own."""
+    hooks = [picture(n) for n in HOOK_PICTURES]
+    link, ball = picture(LINK_PICTURE), picture(BALL_PICTURE)
+    stage = Stage(provenance)
+    stage.actor("playfield", kind="group", at=PLAYFIELD_AT, size=PLAYFIELD_SIZE)
+    stage.actor("artifact", kind="frames", frames=ARTIFACT_FRAMES, picture=frame_name(ARTIFACT_SLOTS[0], ARTIFACT_ZONE), at=(ARTIFACT_X, ARTIFACT_START_Y), parent="playfield")
+    stage.actor("sub", kind="frames", frames=SUB_FRAMES, at=SUB_AT, parent="playfield")
+    crane_cable(stage, "cable", "playfield", (PLAYFIELD_AT[0], CABLE_TOP), hooks, link, ball, *heights)
+    stage.actor("deck", kind="group", at=PLAYFIELD_AT, size=PLAYFIELD_SIZE, visible=False)
+    stage.actor("water", kind="fill", at=PLAYFIELD_AT, size=PLAYFIELD_SIZE, color=WATER_COLOR, parent="deck")
+    stage.actor("cloud", picture=picture(CLOUD_PICTURE), at=CLOUD_AT, parent="deck")
+    stage.actor("ship", picture=picture(SHIP_PICTURE), at=SHIP_AT, parent="deck")
+    for i, start in enumerate(crew_starts):
+        stage.actor("crew_%d" % i, at=start, visible=False, parent="deck")          # (a program draws its sailor: the timeline gives each its picture)
+    stage.actor("deck_artifact", kind="frames", frames=ARTIFACT_FRAMES, picture=frame_name(ARTIFACT_SLOTS[0], ARTIFACT_ZONE), at=(ARTIFACT_X, DECK_ARTIFACT_Y - HOOK_STEP), parent="deck")
+    stage.actor("deck_sub", kind="frames", frames=SUB_FRAMES, at=(SUB_AT[0], DECK_SUB_Y - HOOK_STEP), parent="deck")
+    crane_cable(stage, "deck_cable", "deck", (PLAYFIELD_AT[0], DECK_CABLE_TOP), hooks, link, ball, *heights)
+    stage.actor("pod", picture=picture(POD_PICTURES[0]), at=POD_AT, parent="deck")
+    stage.actor("sea", picture=picture(SEA_PICTURE), at=SEA_AT, parent="deck")
+    return stage
+
+
+PROVENANCE_EXPERT_STAGE = (
+    "Original: ExpertClosingSequence 0x41c650 (CLOSING.C): the places its drawing routines put the pictures (ExpertClosingDrawArtifact 0x41cd84, ExpertClosingDrawCable 0x41cc8d, ExpertClosingDrawPod 0x41cdba), the playfield "
+    "(16, 32) 608 x 288 that clips both shots, the sailors' start positions (extracted/tables/expert_closing.json), the draw order of the deck shot. The cable's pieces stand as for an extent of 0 and are listed from the hook up. "
+    "Ours: the deck shot's sea colour.")
+
+
 PROVENANCE_HOIST = (
     "Original: ExpertClosingSequence 0x41c650 (CLOSING.C), the first stage: the sub turns (ExpertClosingTurnTable), idles 20 "
     "steps, the hook comes down 16 steps of 12 px and closes, then the cable pulls the sub and the artifact up 17 steps. One "
@@ -961,6 +1044,25 @@ def build_voyager_script() -> str:
 
 # --- the Expert closing's crew -------------------------------------------------------------------------------------------------------
 
+def build_voyager_closing_stage() -> Stage:
+    """The Voyager closing's playfield (a clipped box over the running sector) with the sub and, hidden until the flight shows them, the helicopter's body and rotor; the flight's timeline puts them where the sub is."""
+    return voyager_closing_stage(PROVENANCE_VOYAGER_STAGE)
+
+
+def voyager_closing_stage(provenance: str) -> Stage:
+    stage = Stage(provenance)
+    stage.actor("playfield", kind="group", at=PLAYFIELD_AT, size=PLAYFIELD_SIZE)
+    stage.actor("sub", kind="frames", frames=SUB_FRAMES, at=PLAYFIELD_AT, parent="playfield")
+    stage.actor("helicopter", picture=picture(VOYAGER_BODY_PICTURE), at=PLAYFIELD_AT, visible=False, parent="playfield")
+    stage.actor("rotor", picture=picture(VOYAGER_ROTOR_PICTURES[0]), at=PLAYFIELD_AT, visible=False, parent="playfield")
+    return stage
+
+
+PROVENANCE_VOYAGER_STAGE = (
+    "Original: VoyagerClosingSequence (CLOSING.C): the playfield (16, 32) 608 x 288 that clips the flight, the sub, the helicopter's body and rotor. Ours: where the three stand before the flight's first key "
+    "(the playfield's corner): the flight is made for the place the sub is in (voyager_closing_script).")
+
+
 def build_closing_crew() -> str:
     """The six sailors of the Expert closing's deck shot (CLOSING.C), from extracted/tables/expert_closing.json. Each script is stored flat: 4 numbers
     [op, item, mirror, delay] per record; `pictures` holds the key of item i (the original's picture first_picture + i). `ClosingCrewActor` (src/story/closing_crew_actor.gd) runs them."""
@@ -990,7 +1092,8 @@ def timelines() -> dict[str, Timeline]:
 
 
 def stages() -> dict[str, Stage]:
-    return {"news_cartoon_stage": build_news_stage(), "title_stage": build_title_stage()}
+    return {"news_cartoon_stage": build_news_stage(), "title_stage": build_title_stage(), "expert_closing_stage": build_expert_closing_stage(),
+            "voyager_closing_stage": build_voyager_closing_stage()}
 
 
 def build_news_scene() -> Scene:

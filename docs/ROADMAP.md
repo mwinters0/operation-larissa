@@ -30,16 +30,6 @@ Tools for the technique of [`genai/IMAGES.md`](genai/IMAGES.md).
 - **G2. Slicer.** Cut a finished image of a layout back into the template files (`<kind>/<name>.png`) by the layout's rectangles, at the
   pack's picture scale.
 
-## Animations a pack makes
-
-The opening is pack data: the order of its parts, the scenes (`StoryScene`, `CutsceneStage`s, `CutsceneTimeline`s, `voice_cues`, `durations.json`) and the story pages, so the legacy pack holds the original's opening and another pack an
-opening of its own. The closings' stages are what remains (A6). Each step is one session; the engine verbs stay rules (input, waits, choices) and a pack only arranges them. In every
-step the fidelity pins hold unchanged: `L: test_cutscene_timing` (the timing hashes), `test_opening` / `test_opening_legacy`, the key
-handling by phase.
-
-- **A6. The closings on stages.** `ExpertClosing` and `VoyagerClosing` build from stage files; an actor kind for a picture set the
-  view holds (the sub's frames, the artifact's zone), and the Voyager timeline is still made from its script for the place the sub is in.
-
 ## Open items
 
 Known gaps of the existing systems, by area. The engine's remaining assumptions about the original content are listed in

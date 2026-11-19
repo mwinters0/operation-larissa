@@ -6,18 +6,24 @@ extends StorySegment
 ## creature has set the semaphore bit 15) and `VoyagerClosingPages` (0x41c5f2).
 ##
 ## Teaches: a cutscene laid over the running game. The sector keeps showing underneath (this scene has a
-## transparent background and is added to a `CanvasLayer` by `Game`); a clipped `Control` keeps the helicopter
-## inside the playfield. The choreography is DATA again, but data with a twist: the finale starts wherever the sub is, so
+## transparent background and is added to a `CanvasLayer` by `Game`); the playfield is a clipped box of the stage that keeps the helicopter
+## inside it. The nodes are the stage file's (`voyager_closing_stage`, made by `StageBuilder`) and the choreography is DATA again, but data with a twist: the finale starts wherever the sub is, so
 ## the flight cannot be one fixed file. `data/story/voyager_closing_script.tres` of the pack (a `VoyagerClosingScript`) holds the
 ## loop counts (the original's, in the legacy pack) and `timeline()` runs them for the place the sub is in, giving a `CutsceneTimeline` that the
-## usual `Cutscene.animation()` plays. The three message pages are an ordinary `await` loop on the `MessageQueue`.
-## Coordinates are the original's WINDOW pixels (SubX, SubY = the top-left of the picture); `Playfield` is at (16, 32), and
-## the cast subtracts that for the nodes inside it.
+## usual `Cutscene.animation()` plays on the stage's actors. The three message pages are an ordinary `await` loop on the `MessageQueue`.
+## Coordinates are the original's WINDOW pixels (SubX, SubY = the top-left of the picture); the cast subtracts the playfield's
+## origin for the nodes inside it.
 ##
 ## What the original does, in 6-tick steps (0.082 s): the sub rises 4 px per step for 18 steps; its sprite
 ## turns step by step until it shows cell 2; sound 0x2c and the helicopter appears in three pictures (12 ticks each);
 ## sound 0x2d, 15 steps of 8 px up with spinning rotor; then 8 px to the left per step until the helicopter has left the
 ## playfield. (The music is stopped for the sequence in the Voyager game.)
+
+## The stage the closing is played on (`Catalog.story_stage`); its actors `sub`, `helicopter` and `rotor` are the ones the flight's timeline moves (`PackCheck` tells a stage that lacks one).
+const STAGE := &"voyager_closing_stage"
+## The picture set the stage may show (`StageActor.frames`): the sub's drawings.
+const SET_SUB := &"sub"
+const FRAME_SETS: Array[StringName] = [SET_SUB]
 
 const PAGES := 3
 
@@ -26,26 +32,22 @@ var messages := MessageQueue.new(GameClock)
 var modals: ModalHost
 var _pages_started: bool = false
 
-@onready var playfield: Control = %Playfield
-@onready var sub: AnimatedSprite2D = %Sub
-@onready var heli_body: Sprite2D = %HeliBody
-@onready var heli_rotor: Sprite2D = %HeliRotor
+## Which node plays which actor (the stage's actors, bound by `StageBuilder`); null before `start`.
+var cast: CutsceneCast
+
+@onready var stage_root: Node2D = %Stage
 @onready var animations: AnimationPlayer = %Animations
 @onready var message_view: MessageBoxView = %MessageBox
 
 
 ## Begins the sequence with the sub at window position `sub_x`, `sub_y` showing cell `cell`.
 func start(sub_x: int, sub_y: int, cell: int) -> void:
-	sub.sprite_frames = Catalog.sub_frames()
-	sub.animation = &"all"
-	sub.pause()
 	modals = ModalHost.new(self, [])                                      # (nothing under the box to put to sleep or to focus)
 	modals.attach(messages, message_view)
-	var cast := CutsceneCast.new(self)
+	cast = CutsceneCast.new(self)
 	cast.sub_tuning = GameState.tuning.sub
-	cast.bind(&"sub", sub)
-	cast.bind(&"helicopter", heli_body)
-	cast.bind(&"rotor", heli_rotor)
+	cast.frame_sets = {SET_SUB: Catalog.sub_frames()}
+	StageBuilder.build(STAGE, stage_root, cast)
 	Cutscene.install_timeline(animations, &"closing", Catalog.voyager_closing_script().timeline(sub_x, sub_y, cell), cast)
 	animations.play(&"closing")
 

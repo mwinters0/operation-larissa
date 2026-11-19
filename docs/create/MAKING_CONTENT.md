@@ -637,7 +637,7 @@ Collected from [`EDITORS.md`](../engine/EDITORS.md), the open items of [`ROADMAP
 - **Things with no editor tool, only files or the Inspector on a `.tres`:** a campaign (step 7); the pack source folder (step 9); a finale sector from the template; names for your own sector's creatures, flags and screens; a
   song of your own in a sector's `music_name`; a replacement math problem type; a skin (C2).
 - **Existing creatures only:** a new creature is a copy of an existing one (or a blank record in a sector with none).
-- **The closings are built by the engine from the pack's timelines and scripts** (the sailors, the cable and the sub are nodes it makes; a pack changes when and where, not what is there); the opening, its parts, scenes and stages are the pack's to write (B6).
+- **The closings are built by the engine from the pack's stages, timelines and scripts** (the stage lists the sub, the artifact, the cable, the sailors and the ship, the timelines move them; the engine hands in the sub's and the artifact's picture sets, so those two come from the game, not the pack); the opening, its parts, scenes and stages are the pack's to write (B6).
 - **The pack screen has no export** (that is the editor and the terminal); **there is no per-skin menu for the player.**
 - **The engine still assumes some of the original** (the first free sector number is 32, `voyager` and `expert` are special campaign ids, the durations file holds the original's numbers): the list is
   [`HARD_CODED.md`](../engine/HARD_CODED.md).

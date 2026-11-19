@@ -263,6 +263,7 @@ def test_every_actor_a_dev_timeline_names_is_on_its_stage():
         found = re.search(r'^stage = &"([^"]+)"', scene, re.MULTILINE)
         assert found
         played_on[found.group(1)] = [name for line in re.findall(r"^(?:loops|timelines) = (.*)$", scene, re.MULTILINE) for name in re.findall(r'&"([^"]+)"', line)]
+    played_on["expert_closing_stage"] = ["expert_hoist", "expert_deck", "expert_wait"]          # (ExpertClosing.TIMELINES; the Voyager flight is made from its script)
     for stage_name, timeline_names in played_on.items():
         held = set(re.findall(r'^name = &"([^"]+)"', (DEV / "data" / "story" / (stage_name + ".tres")).read_text(), re.MULTILINE))
         for name in timeline_names:
