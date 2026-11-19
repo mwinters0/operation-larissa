@@ -132,6 +132,29 @@ func test_a_pack_that_holds_an_opening_of_its_own_plays_it_and_nothing_else() ->
 	assert_array(TroubleLog.session.told).is_empty()
 
 
+## Space / Escape skip the whole opening only when the part playing hears them: a scene deaf until `listen` (dev's closing, here as a part of an opening) drops them, and when it later ends by Enter the opening goes on to its next
+## part as after any part that ends by itself.
+func test_space_in_a_part_that_drops_it_does_not_skip_the_opening() -> void:
+	_with(_list([_part(OpeningPart.SCENE, &"dev_closing"), _part(OpeningPart.SCENE, &"logo")]))
+	var opening := _opening()
+	await await_idle_frame()
+	assert_str(_scene_of(opening)).is_equal("dev_closing")
+	opening._unhandled_key_input(_space())
+	await await_idle_frame()
+	assert_str(_scene_of(opening)).override_failure_message("the deaf scene dropped Space: it plays on").is_equal("dev_closing")
+	opening.current.cue(&"listen")
+	opening.current.advance()                                                        # (Enter, heard now: the part ends)
+	await await_idle_frame()
+	assert_str(_scene_of(opening)).override_failure_message("the dropped Space skipped nothing: the opening goes on to its next part").is_equal("logo")
+
+
+func _space() -> InputEventKey:
+	var key := InputEventKey.new()
+	key.keycode = KEY_SPACE
+	key.pressed = true
+	return key
+
+
 func test_an_empty_opening_goes_straight_to_the_sign_in_screen_and_says_nothing() -> void:
 	_with(_list([] as Array[OpeningPart], true))
 	var opening: Opening = auto_free(load(OPENING).instantiate())

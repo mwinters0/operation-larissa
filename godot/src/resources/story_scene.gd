@@ -62,9 +62,7 @@ static func timeline_named(timeline_name: StringName, place: ScenePlace = null) 
 ## here (the builder and `PackCheck` tell of the stage and of the actors a timeline names that it lacks); only what the scene needs of it, a button for its `prompt`. `place` is where the scene is played (null: nowhere): a flight's cues do not depend on it.
 func unresolved(place: ScenePlace = null) -> PackedStringArray:
 	var found := PackedStringArray()
-	var made: Dictionary[StringName, CutsceneTimeline] = {}
-	for timeline_name in all_timelines():
-		made[timeline_name] = timeline_named(timeline_name, place)
+	var made := made_at(place)
 	for timeline_name in loops:
 		var timeline := made[timeline_name]
 		if timeline == null:
@@ -91,26 +89,37 @@ func unresolved(place: ScenePlace = null) -> PackedStringArray:
 		found.append("names the prompt's song '%s', which is neither one of the game's nor audio/music/%s.ogg of a pack: the prompt has no music" % [prompt_song, prompt_song])
 	if song_stops_at != &"" and not timelines.has(song_stops_at):
 		found.append("stops the song at the timeline '%s', which it does not play once: the song plays on" % song_stops_at)
-	if deaf_until_listen and not has_cue(&"listen", place):
+	if deaf_until_listen and not _has_cue_in(made, &"listen"):
 		found.append("drops every key and click until the cue 'listen', which no timeline of it has: no key or click ends it, only the cue 'end'")
-	elif has_cue(&"listen", place) and not deaf_until_listen:
+	elif _has_cue_in(made, &"listen") and not deaf_until_listen:
 		found.append("has the cue 'listen', but does not drop keys until it (deaf_until_listen is off): the cue does nothing")
 	var stage_file := Catalog.story_stage(stage)
-	if stage_file != null and has_cue(&"prompt", place) and not stage_file.actors.any(func(actor: StageActor) -> bool: return actor.kind == StageActor.BUTTON):
+	if stage_file != null and _has_cue_in(made, &"prompt") and not stage_file.actors.any(func(actor: StageActor) -> bool: return actor.kind == StageActor.BUTTON):
 		found.append("has the cue 'prompt', but its stage '%s' has no button: the prompt shows none, and only Enter, a click and the time-out answer it" % stage)
 	for step in speech:
 		if step.group == &"" or Catalog.voice_cues().clips(String(step.group)).is_empty():
 			found.append("speaks the voice group '%s', which no pack of the chain holds in voice_cues: that step is left out" % step.group)
 		if step.pause_ticks < 0:
 			found.append("has a speech step with a pause of %d ticks: it is taken as 0" % step.pause_ticks)
-	found.append_array(_message_lines(place))
+	found.append_array(_message_lines(made))
 	return found
 
 
 ## Does a timeline of the scene have the event cue `cue_name`? (`place`: where the scene is played, null: nowhere.)
 func has_cue(cue_name: StringName, place: ScenePlace = null) -> bool:
+	return _has_cue_in(made_at(place), cue_name)
+
+
+## The scene's timelines as made for `place` (null: nowhere), by name (null for one that is not made, `timeline_named`): what the segment plays, `unresolved` judges and the check of a pack looks at, each made once by the one who asks (a flight file is run each time it is made).
+func made_at(place: ScenePlace) -> Dictionary[StringName, CutsceneTimeline]:
+	var made: Dictionary[StringName, CutsceneTimeline] = {}
 	for timeline_name in all_timelines():
-		var timeline := timeline_named(timeline_name, place)
+		made[timeline_name] = timeline_named(timeline_name, place)
+	return made
+
+
+static func _has_cue_in(made: Dictionary[StringName, CutsceneTimeline], cue_name: StringName) -> bool:
+	for timeline: CutsceneTimeline in made.values():
 		if timeline != null and timeline.cues.any(func(entry: CutsceneCue) -> bool: return entry.kind == CutsceneCue.EVENT and entry.cue_name == cue_name):
 			return true
 	return false
@@ -137,7 +146,7 @@ func _not_made(timeline_name: StringName) -> PackedStringArray:
 
 
 ## What is wrong with the pages of the scene (a text no pack holds, a voice group with no clips) and with the verb that shows them (messages without the cue, the cue without messages).
-func _message_lines(place: ScenePlace) -> PackedStringArray:
+func _message_lines(made: Dictionary[StringName, CutsceneTimeline]) -> PackedStringArray:
 	var found := PackedStringArray()
 	for message in messages:
 		if message == null or not message.has_text():
@@ -146,8 +155,8 @@ func _message_lines(place: ScenePlace) -> PackedStringArray:
 		for group in message.speech:
 			if Catalog.voice_cues().clips(String(group)).is_empty():
 				found.append("speaks the voice group '%s' with the message '%s', which no pack of the chain holds in voice_cues: that group is not spoken" % [group, message.text])
-	if not messages.is_empty() and not has_cue(&"messages", place):
+	if not messages.is_empty() and not _has_cue_in(made, &"messages"):
 		found.append("has messages, but no timeline of it has the cue 'messages': they are never shown")
-	elif messages.is_empty() and has_cue(&"messages", place):
+	elif messages.is_empty() and _has_cue_in(made, &"messages"):
 		found.append("has the cue 'messages', but no messages: the cue shows nothing")
 	return found

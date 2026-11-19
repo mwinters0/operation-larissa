@@ -102,8 +102,7 @@ func _build() -> void:
 	cast = CutsceneCast.of(self, place.zone)
 	cast.texts = _text
 	_wire_buttons(StageBuilder.build(scene.stage, stage, cast))
-	for timeline_name in scene.all_timelines():
-		_timelines[timeline_name] = StoryScene.timeline_named(timeline_name, place)
+	_timelines = scene.made_at(place)
 	for timeline_name in scene.loops:
 		var timeline := _timelines[timeline_name]
 		if timeline != null:

@@ -7,7 +7,7 @@ extends Control
 ##
 ##   Enter            go on to the next part of what is playing (cartoon -> title -> Intro -> next page)
 ##   left click       the same as Enter, anywhere on the screen, in every part (the buttons of the title prompt excepted)
-##   Space / Escape   skip the whole opening and go to the sign-in screen
+##   Space / Escape   skip the whole opening and go to the sign-in screen (unless the part drops the key: a scene deaf until `listen`, `StoryScene.deaf_until_listen`)
 ##
 ## Like the original (`OpeningSequence` 0x42b16b) the legacy pack's opening loops ("attract mode"): when the last story page runs out its time with no key and no click, the whole opening starts over from the news
 ## cartoon, without limit (`OpeningList.starts_over`). Only Space / Escape, the title's Start button, and Enter or a click on the last page lead to sign-in. A part that the chain cannot resolve is told once and skipped; an opening
@@ -170,5 +170,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			current.advance()
 		KEY_SPACE, KEY_ESCAPE:
 			get_viewport().set_input_as_handled()
-			_skipped = true
-			current.skip()
+			var part := current
+			_skipped = true                                       # (first: a part that ends on the skip wakes `_play_parts` inside `skip`)
+			part.skip()
+			_skipped = part.done                                  # a part that drops the key (a scene deaf until `listen`) goes on, and so does the opening

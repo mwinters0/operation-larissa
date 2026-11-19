@@ -340,10 +340,7 @@ static func _scene(scene_name: StringName, offered: Array[StringName], report: P
 	if Catalog.story_stage(scene.stage) == null:
 		report.error("story", "scene '%s' names the stage '%s', which no pack of the chain holds: nothing is drawn" % [scene_name, scene.stage])
 	else:
-		var timelines: Dictionary = {}
-		for timeline_name in scene.all_timelines():
-			timelines[timeline_name] = StoryScene.timeline_named(timeline_name)
-		_stage(scene.stage, timelines, offered, report)
+		_stage(scene.stage, scene.made_at(null), offered, report)
 
 
 ## The closings (they play from the game, not from the opening). The closing scene of each campaign of the chain is judged like a scene of the opening (`_scene`), given the picture sets a scene laid over a sector is offered (`FrameSets.over_a_sector`; a flight file among its timelines is made for the window's origin, cell 0: the actors it names do not depend on the place); a scene two campaigns
