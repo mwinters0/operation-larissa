@@ -1,27 +1,24 @@
 # Operation Larissa
 
-A game engine in Godot 4, capable of playing The Learning Company's *Operation Neptune* 1998
-Windows release.  Larissa was a lover of Neptune.
+A game engine in Godot 4, capable of playing The Learning Company's *Operation Neptune* &copy; 1998
+Windows release.  (Larissa was a lover of Neptune.)
 
 Operation Larissa has several goals (which often compete with each other!):
-- [X] A reimplementation of Operation Neptune's engine, capable of running the (extracted) original
-  data with full fidelity.
-- [X] A learning platform for programming and game dev students -- all code is written to be
-  read, and we have extensive docs.
+- [X] A 100% faithful reimplementation of Operation Neptune's engine.
+- [X] A learning platform for programming and game dev students. All code is written to be
+  read, plus extensive docs.
 - [ ] Facilitate user-made content:
-    - [X] Basic content editing tools (level editors, foe scripting grammar, etc)
-    - [X] "Data packs": packaged art, sounds, levels, scripts, game rules.  These can exist as
-      "overrides" to another pack (for example, keeping the original levels but replacing the art), or as
-      fully-standalone "base" packs.  They contain no code.
-        - [ ] A fully original base content pack should be included!
-    - [ ] Mods -- fully custom problem types, shaders, etc.
-- [ ] Maybe someday
-    - [ ] Support other games of that era which use similar engines.
+    - [X] Basic content (data) editing tools: level editors, foe scripting grammar, etc.
+    - [X] "Data packs": packaged art, sounds, levels, scripts, game rules, animations.
+    - [ ] WIP: Mods: [sandboxed
+      code](https://github.com/libriscv/godot-sandbox) to support custom problem types, shaders, etc.
+    - [ ] Robust content editing suite.
+- [ ] WIP: Original content "out of the box" -- a fully original set of art + levels and campaigns.
 
 **This repository contains none of the original game's content.**  To play it, an importer generates
-the *"legacy pack"* from your copy of the game. Without the legacy pack, the game runs on the *dev
-pack*, which is placeholder content not intended for gameplay -- it mainly exists to give our tests
-something to test.
+the *"legacy pack"* (`legacy.larissa`) from your copy of the game. Without the legacy pack, the game
+runs on the *dev pack*, which is placeholder content not intended for gameplay -- it mainly exists
+to give our tests something to test.
 
 ## Documentation by audience
 
