@@ -3,7 +3,7 @@ extends RefCounted
 ## Which pictures a pack's DATA holds by key, and which rows of its `pictures.json` nothing asks for. A TEST helper for `test_picture_keys.gd` (the dev pack) and `tests/legacy/test_picture_keys_legacy.gd`
 ## (the legacy pack): the two packs are held to one rule.
 ##
-## A KEY IS HELD by the data when a `.tres` of the pack has a `PictureRef` with it, a problem type lists it in `art_keys`, the closing crew in `pictures`, or a campaign in `finale_picture`. A ROW IS JUSTIFIED when something holds
+## A KEY IS HELD by the data when a `.tres` of the pack has a `PictureRef` with it, a problem type lists it in `art_keys`, or a campaign in `finale_picture`. A ROW IS JUSTIFIED when something holds
 ## it, or the game asks for it by NAME (a `ui_picture` or `problem_art` name of the registry; a name the story data says: cutscene tracks, story pages, the Voyager's flight), or a picture nobody named (the original's pictures the game never draws: the importer keeps whole id ranges), or a screen asks for it by place (`background/bg_sNN_MM`), or it is an
 ## alias (it is another name of a row that is justified or not, whatever the target's own row is).
 ##
@@ -26,10 +26,6 @@ static func held(pack: Pack) -> Dictionary:
 		if type != null:
 			for key in type.art_keys:
 				found[key] = "problem type %d" % type_id
-	var crew := Catalog.closing_crew()
-	if crew != null:
-		for key in crew.pictures:
-			found[key] = "the closing crew"
 	for campaign in Catalog.campaigns():
 		if not campaign.finale_picture.is_empty():
 			found[campaign.finale_picture] = "campaign %s" % campaign.id

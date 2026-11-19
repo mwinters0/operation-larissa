@@ -47,7 +47,7 @@ func _load_everything(dir: String) -> void:
 			_fail("%s does not load" % path)
 
 
-## The picture table is sound, and every key the data holds (a `PictureRef`, a problem type's art, the closing crew's pictures) is a row that gives a picture.
+## The picture table is sound, and every key the data holds (a `PictureRef`, a problem type's art, a campaign's finale picture) is a row that gives a picture.
 func _pictures() -> void:
 	var dev := Packs.dev()
 	var table := dev.picture_table()

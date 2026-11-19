@@ -202,7 +202,7 @@ func test_the_dev_flight_closing_is_built_from_the_stage_and_its_flight_is_made_
 
 
 func test_the_closings_need_their_stages_and_the_dev_pack_checks_clean() -> void:
-	assert_bool(PackNeeds.FILES.keys().any(func(rel: String) -> bool: return rel.contains("closing") and rel != "data/story/closing_crew.tres")).is_false()           # (a campaign names its closing scene and its files)
+	assert_bool(PackNeeds.FILES.keys().any(func(rel: String) -> bool: return rel.contains("closing"))).is_false()           # (a campaign names its closing scene and its files)
 	assert_str(PackNeeds.named_by_closings()["data/story/dev_closing_stage.tres"]).is_equal("CutsceneStage")
 	var options := PackCheck.Options.new()
 	options.reach = false

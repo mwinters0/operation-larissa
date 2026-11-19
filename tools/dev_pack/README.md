@@ -20,7 +20,7 @@ changed. `--refresh-inventory` rebuilds `inventory.json` from the file names of 
 
 **Pictures.** The pack names a picture by its KEY (`<kind>/<name>`, `ui_picture/title_sky`, `frame/sub_00`, `tile/zone0_tiles`), and `pictures.json` at the pack's root says which file draws it. Dev keeps the file of a key at `assets/pictures/<kind>/<name>.png`
 (`dev_pictures.rel_of`), so no file name carries a number or a folder of the original; a key with no file of its own (a problem-art id whose picture another part of the game keeps once) is an alias row of the key that has one. The data holds keys,
-never files: a `PictureRef` sub-resource in the sprite frames, the tile set, the layouts and the zone banners (`Tres.picture`, `tools/import/tres.py`), `art_keys` of a problem type, `pictures` of the closing crew, `finale_picture` of a campaign. The keys are the legacy pack's, by the importer's own naming rule
+never files: a `PictureRef` sub-resource in the sprite frames, the tile set, the layouts and the zone banners (`Tres.picture`, `tools/import/tres.py`), `art_keys` of a problem type, `finale_picture` of a campaign. The keys are the legacy pack's, by the importer's own naming rule
 (`tools/import/picture_table.py`, `asset_names.py`).
 
 The generator reads nothing the importer writes (`extracted/`, so no `GENERATED_TABLES` of `tools/import/common.py`), only the committed analysis in `tools/analysis/data/` (`problem_layouts32.json`, `problem_fields.json`, `sprite_slots.json`), so it runs on a checkout with no ISO.
@@ -37,7 +37,7 @@ hand is yours until the next run, so change the generator too. `test_dev_pack.py
 | `dev_tiles.py`, `dev_tables.py` | The tile set; zones and the trigger table. |
 | `dev_sprites.py` | Sprite frames (the pieces' animations are `CANISTER_PICTURES` and `ROCK_PICTURES`), sprite metadata (box hit rectangles that match the pictures), bubble rules. |
 | `dev_ui.py` | HUD and calculator layouts, the news cartoon's timeline. |
-| `dev_story.py` | The opening's list (`opening`: four parts, the first the logo scene `logo` with its stage and timeline, which the original has no counterpart of) and the other cutscene data: the stages of the news cartoon and the title scene (`CutsceneStage`s, laid out by simple rules), the ambient and title timelines, the closing `dev_closing` that `dev_tour` names (a scene of its own shape: its stage, a film and a wait, two timelines where the legacy closing has three), the story pages, the Voyager flight, the closing crew; short and made up, on the actor names and property words the scenes play. |
+| `dev_story.py` | The opening's list (`opening`: four parts, the first the logo scene `logo` with its stage and timeline, which the original has no counterpart of) and the other cutscene data: the stages of the news cartoon and the title scene (`CutsceneStage`s, laid out by simple rules), the ambient and title timelines, the closing `dev_closing` that `dev_tour` names (a scene of its own shape: its stage, a film and a wait, two timelines where the legacy closing has three), the story pages, the Voyager flight; short and made up, on the actor names and property words the scenes play. |
 | `dev_problems.py` | The 34 problem types (a few made-up records per level), the problem screen layout, the text tables. |
 | `dev_sectors.py` | Sectors, campaigns, and the `dev_tour` campaign. |
 | `dev_rules.py` | `rules/tuning.json`: dev's rule values (below). |

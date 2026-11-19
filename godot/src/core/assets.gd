@@ -20,7 +20,7 @@ extends RefCounted
 ## `music` is `MusicCatalog.stream_named`, `voice` is `VoiceIndex.stream_named`, `text` is `Catalog.text`, and the creature
 ## and decoration pictures are slots of the SpriteFrames sets, whose frames hold their keys (`PictureRef`).
 ##
-## A few pictures are chosen by DATA, which holds their keys (`ClosingCrewScripts.pictures`, `ProblemType.art_keys`, `Campaign.finale_picture`);
+## A few pictures are chosen by DATA, which holds their keys (`ProblemType.art_keys`, `Campaign.finale_picture`);
 ## the cutscene timelines hold NAMES. Code never writes a number itself (tests/engine/test_no_asset_numbers.gd checks that).
 
 

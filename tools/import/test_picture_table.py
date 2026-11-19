@@ -171,5 +171,7 @@ def test_the_problem_types_hold_their_art_by_key_in_the_order_of_their_pictures(
         assert keys is not None and re.findall(r'"(problem_art/[^"]+)"', keys.group(1)), n
     lock = (common.PACK_DATA / "problems" / "problem_type_00.tres").read_text()
     assert asset_names.problem_art_key(1803) in lock
-    crew = (common.PACK_DATA / "story" / "closing_crew.tres").read_text()
-    assert "first_picture" not in crew and '"ui_picture/' in crew
+    table = _table()
+    first = common.load_json(common.TABLES / "expert_closing.json")["first_picture"]
+    for pid in range(first + 10, first + 27):                # the sailors' pictures (item 10 to 26): the deck timeline names them, the table answers their keys
+        assert asset_names.ui_key(pid) in table and _ends_in_a_file(table, asset_names.ui_key(pid)), pid

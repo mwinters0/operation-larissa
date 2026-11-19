@@ -37,7 +37,7 @@ const SCREENS_PER_SECTOR := 12
 ## sectors and campaigns the designers make (under every pack of the chain). The cutscenes' choreography is a pack's (`story_timeline`).
 const PROJECT_DATA_DIR := "res://data/"
 ## Where the story files of a pack are, by name: the opening (`opening`: the order of its parts), the scenes (`story_scene`), the cutscene timelines (`story_timeline`) and stages (`story_stage`), the story scripts (`story_script`), the flight files (`story_flight`),
-## `closing_crew` (`PackNeeds.FILES` lists the files the engine always asks for; the opening names the scenes and stories, and a campaign's `closing_scene` its closing scene).
+## `PackNeeds.FILES` lists the files the engine always asks for; the opening names the scenes and stories, and a campaign's `closing_scene` its closing scene.
 const STORY_REL := "data/story/%s.tres"
 ## The string tables, in the order they are searched for a string id (the ids of all of them are one number space).
 const TEXT_TABLES: Array[String] = ["ui_strings", "story", "hints", "log_entries", "supply_messages", "closing",
@@ -559,11 +559,6 @@ static func _story(story_name: StringName) -> Resource:
 static func story_pack_id(story_name: StringName) -> String:
 	var holder := Packs.holder(STORY_REL % story_name)
 	return String(holder.id) if holder != null else "?"
-
-
-## The six sailors of the Expert closing's deck shot (`ExpertCraneTable`): `closing_crew` of the pack. The importer bakes their programs into `expert_deck` (`ClosingCrewActor` is its twin, which the tests hold to the timeline); the game does not read them.
-static func closing_crew() -> ClosingCrewScripts:
-	return _story(&"closing_crew") as ClosingCrewScripts
 
 
 ## The cutscene timeline `timeline_name` (`news_report`, `news_ambient`, `title_ship`, `title_reveal`, `expert_hoist`, `expert_deck`, `expert_wait`, or one a scene file names; a flight file is no timeline, `story_flight`): the

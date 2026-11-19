@@ -10,7 +10,7 @@ extends RefCounted
 ##   * PICTURES that code asks for by name: every `ui_picture` and `problem_art` name of the registry, as the KEY `Assets` asks for (`ui_picture/title_sky`): a row of some pack's `pictures.json` answers it; and the pictures of the game a mod of the chain names
 ##     (`ModSpec.needed_pictures`: the keys its manifest declares for its draw lists, the pictures of its theme; a mod `ModHost` refused draws nothing and counts for none): they count among `picture_keys`, so a set of packs of a higher picture scale must hold them (`PictureScale`); a key no pack
 ##     holds is no gap (`PackCheck` warns of it, a draw list that names it draws nothing).
-##   * THINGS THE DATA NAMES: the sounds a required resource refers to (`ResourceLoader.get_dependencies`), the keys of the pictures it holds (a `PictureRef` of a `.tres`, `{"$picture": key}` of the data form, a problem type's `art_keys`: each needs a row
+##   * THINGS THE DATA NAMES: the sounds a required resource refers to (`ResourceLoader.get_dependencies`), the keys of the pictures it holds (a `PictureRef` of a `.tres`, `{"$picture": key}` of the data form, a problem type's `art_keys`, the pictures the timelines of the scenes the opening and the campaigns name draw: each needs a row
 ##     in some pack of the chain), the songs of the music catalog, the clips of the voice index. The files live inside the pack that holds the resource, so no other pack can fill them in; a key is answered by the whole chain.
 ##   * WHAT THE CONTENT BRINGS: each campaign `Catalog` finds in the chain: its sectors (and what a `.tres` sector refers to, a JSON sector's script), its finale picture, the
 ##     speech groups of its log and supply messages. The tiles, creature pictures and sounds a sector uses are slots of its zone's sets and of the sound catalog, already
@@ -51,7 +51,6 @@ const FILES: Dictionary = {
 	"data/voice_cues.tres": "VoiceCues",
 	"data/music_catalog.tres": "MusicCatalog",
 	"data/story/opening.tres": "OpeningList",
-	"data/story/closing_crew.tres": "ClosingCrewScripts",
 	"data/ui/hud_layout.tres": "HudLayout",
 	"data/ui/calculator_layout.tres": "CalculatorLayout",
 	"data/problems/screen_layout.tres": "ProblemScreenLayout",
@@ -184,7 +183,7 @@ static func _name_scene(scene_name: StringName, named: Dictionary) -> void:
 	if scene == null:
 		return
 	named[Catalog.STORY_REL % scene.stage] = "CutsceneStage"
-	for timeline_name in scene.all_timelines():
+	for timeline_name: StringName in scene.loops + scene.timelines:                    # (properties only: this runs in the editor too, where a scene's script has no methods)
 		named[Catalog.STORY_REL % timeline_name] = "SubFlight" if Catalog.story_flight(timeline_name) != null else "CutsceneTimeline"
 
 
@@ -353,6 +352,7 @@ static func _content(chain: Array[Pack], scan: Scan) -> void:
 	_scale_one_pictures(chain, scan)
 	_references(chain, scan)
 	_problem_art(chain, scan)
+	_timeline_pictures(chain, scan)
 	_audio(chain, scan)
 	_campaigns(chain, scan)
 
@@ -462,6 +462,31 @@ static func _problem_art(chain: Array[Pack], scan: Scan) -> void:
 			continue
 		for key in problem.art_keys:
 			scan.need_picture(key, stem + ".tres")
+
+
+## The pictures the cutscene timelines of the scenes the chain names draw (`CutsceneTrack.PROP_PICTURE`: a `ui_picture` NAME, as `Cutscene` hands it to `Assets.ui_picture`): each as the key a row of some pack of the chain must answer. The pictures the registry names are asked
+## already; these are the ones it does not (the original's pictures nobody gave a name, a pack's own), such as the six sailors of the Expert closing's deck shot, whose pictures the importer bakes into the timeline `expert_deck`. A scene goes on without a picture it lacks (nothing is drawn, the reference says so once), so the gap is soft.
+static func _timeline_pictures(_chain: Array[Pack], scan: Scan) -> void:
+	var named := named_by_opening().duplicate()
+	named.merge(named_by_closings())
+	for rel: String in named:
+		var timeline_name := StringName(rel.get_file().get_basename())
+		var picture_names: Array[StringName] = []
+		if named[rel] == "SubFlight":                                       # (a flight's timeline is made at the start of its scene: the pictures it draws are the helicopter's, read from the file)
+			var flight := Catalog.story_flight(timeline_name)
+			if flight != null:
+				picture_names.append(flight.body_picture)
+				picture_names.append_array(flight.change_pictures)
+				picture_names.append_array(flight.rotor_pictures)
+		elif named[rel] == "CutsceneTimeline":
+			var timeline := Catalog.story_timeline(timeline_name)
+			if timeline != null:
+				for track in timeline.tracks:
+					if track.property == CutsceneTrack.PROP_PICTURE:
+						for value in track.values:
+							picture_names.append(StringName(value))
+		for picture_name in picture_names:
+			scan.need_picture("ui_picture/%s" % picture_name, rel, GROUP_PICTURES, "", true)
 
 
 ## The songs of the music catalog (the General MIDI set; the AdLib set falls back to it) and the clips of the voice index.

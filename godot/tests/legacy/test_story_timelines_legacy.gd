@@ -5,7 +5,9 @@ extends GdUnitTestSuite
 ## importer from `extracted/tables/opening.json` (the opening's tables, decompiled from OPENING.C) and from the decompiled loops of
 ## CLOSING.C; these tests re-read the JSON and compare in GDScript, with their own small copy of the rules (a crew member's
 ## script repeats, only the man on the left walks), so a mistake in the Python cannot make its own test agree. The sailors of the
-## Expert closing are checked against `ClosingCrewActor`, the GDScript twin of the importer's interpreter.
+## Expert closing are checked against the original's table (`extracted/tables/expert_closing.json`: where they start, which programs
+## they run, which pictures those draw, what a step may do); the importer's interpreter of the programs has its own tests
+## (`tools/import/test_story.py`).
 ##
 ## (The length and every moment of every cutscene, as hashes: `test_cutscene_timing.gd`.)
 
@@ -31,6 +33,7 @@ var STORY: StoryScript = _legacy("story_script")
 var VOYAGER: SubFlight = _legacy("voyager_flight")
 
 var _json: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../extracted/tables/opening.json"))
+var _closing: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://../extracted/tables/expert_closing.json"))
 
 
 ## The `ui_picture` name of the original's picture number.
@@ -278,22 +281,54 @@ func test_the_reveal_holds_each_picture_for_292_ticks() -> void:
 
 # --- the Expert closing -------------------------------------------------------------------------------------
 
-func test_the_deck_sailors_are_what_closing_crew_actor_draws() -> void:
-	var crew := Catalog.closing_crew()
-	var actors: Array[ClosingCrewActor] = []
+## What the baked deck shot may show of the six sailors, read against the table of programs: each stands at its start and draws only the pictures of its program, a step moves it by 4 pixels along x or 10 along y or not at all, a sailor whose program begins with a wait appears after that many steps, and all of them stand still at the end of the shot.
+func test_the_deck_sailors_are_the_programs_of_the_original_table() -> void:
+	var starts: Array = _closing.start_positions
+	var scripts: Array = _closing.scripts
+	assert_int(scripts.size()).is_equal(6)
+	assert_array(starts).is_equal([[496.0, 214.0], [332.0, 214.0], [368.0, 224.0], [436.0, 214.0], [496.0, 214.0], [496.0, 214.0]])
+	assert_array(scripts.map(func(program: Array) -> int: return program.size())).is_equal([38, 47, 47, 50, 28, 26])
+	var all_pictures := {}
 	for n in 6:
-		actors.append(ClosingCrewActor.new(crew, n))
-	for step in 146:
-		var tick := step * 18.0
-		for n in 6:
-			var actor := actors[n]
-			actor.step()
-			var name := StringName("crew_%d" % n)
-			assert_bool(_at(DECK, name, CutsceneTrack.PROP_VISIBLE, tick)).is_equal(actor.visible)
-			if actor.visible:
-				assert_vector(_at(DECK, name, CutsceneTrack.PROP_POSITION, tick)).is_equal(Vector2(actor.x, actor.y))
-				assert_str(_at(DECK, name, CutsceneTrack.PROP_PICTURE, tick)).is_equal(StringName(actor.picture.trim_prefix("ui_picture/")))
-				assert_bool(_at(DECK, name, CutsceneTrack.PROP_MIRROR, tick)).is_equal(actor.mirrored)
+		var program: Array = scripts[n]
+		var name := StringName("crew_%d" % n)
+		var own := {}
+		for record: Array in program:
+			if record[0] != -8 and record[0] != -3:                                                   # a wait and the end op draw nothing of their own
+				own[_name(int(_closing.first_picture) + int(record[1]))] = true
+		var first_seen := -1
+		var last: Vector2 = Vector2(starts[n][0], starts[n][1])
+		for step in 146:
+			var tick := step * 18.0
+			if not _at(DECK, name, CutsceneTrack.PROP_VISIBLE, tick):                                 # (a wait draws nothing: the sailor is not there in that step)
+				continue
+			if first_seen < 0:
+				first_seen = step
+			var at: Vector2 = _at(DECK, name, CutsceneTrack.PROP_POSITION, tick)
+			var moved := at - last
+			assert_bool((absf(moved.x) == 4.0 and moved.y == 0.0) or (moved.x == 0.0 and absf(moved.y) == 10.0) or moved == Vector2.ZERO).override_failure_message("sailor %d step %d moved %s" % [n, step, moved]).is_true()
+			last = at
+			var picture: StringName = _at(DECK, name, CutsceneTrack.PROP_PICTURE, tick)
+			assert_bool(own.has(picture)).override_failure_message("sailor %d draws %s, which its program does not" % [n, picture]).is_true()
+			all_pictures[picture] = true
+		var lead: Array = program[0]
+		assert_int(first_seen).is_equal(int(lead[3]) if lead[0] == -8 else 0)                         # the leading wait draws nothing for as many steps as it says
+		assert_vector(Vector2(_at(DECK, name, CutsceneTrack.PROP_POSITION, 145 * 18.0))).is_equal(Vector2([368, 408, 432, 456, 480, 504][n], 214))
+		assert_bool(_at(DECK, name, CutsceneTrack.PROP_VISIBLE, 145 * 18.0)).is_true()
+	# the sailors draw all 17 pictures 2022 to 2038, every one imported (the game asks for them as the keys of the registry)
+	assert_array(all_pictures.keys()).contains_exactly_in_any_order(range(2022, 2039).map(func(id: int) -> StringName: return _name(id)))
+	for picture_name: StringName in all_pictures:
+		assert_bool(Assets.holds("ui_picture/" + picture_name)).override_failure_message(picture_name).is_true()
+
+
+## The sailors' pictures have no name in the registry (the original names none of them): the game asks for them through the timeline that draws them, as the keys `ui_picture/<name>`.
+func test_the_legacy_chain_asks_for_the_sailors_pictures_and_holds_them() -> void:
+	var scan := PackNeeds.inspect(Packs.chain())
+	for id in range(2022, 2039):
+		var key := "ui_picture/" + _name(id)
+		assert_bool(scan.pictures.has(key)).override_failure_message("%s is not asked for" % key).is_true()
+		assert_bool(Pictures.has(key)).override_failure_message("%s is asked for and the chain holds no picture" % key).is_true()
+	assert_array(scan.gaps.filter(func(gap: PackNeeds.Gap) -> bool: return gap.group == PackNeeds.GROUP_PICTURES)).is_empty()
 
 
 func test_the_expert_stages_are_whole_steps_of_18_ticks() -> void:

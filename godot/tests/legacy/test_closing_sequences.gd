@@ -404,50 +404,20 @@ func test_expert_deck_crew_follows_the_six_programs() -> void:
 	assert_vector(s0.position).is_equal(Vector2(368 - 16, 214 - 32))                   # 32 steps of 4 px to the left
 
 
-func test_expert_crew_programs_come_from_the_data() -> void:
-	var crew := Catalog.closing_crew()
-	assert_int(crew.scripts.size()).is_equal(6)
-	assert_array(crew.start_x).is_equal(PackedInt32Array([496, 332, 368, 436, 496, 496]))
-	assert_array(crew.start_y).is_equal(PackedInt32Array([214, 214, 224, 214, 214, 214]))
-	var counts := []
-	var pictures := {}
+func test_expert_crew_stands_where_the_programs_end_the_deck_shot() -> void:
+	var closing := _expert()
+	_at_step(closing, &"deck", 81)                                                     # sailor 0's wait is over: a draw, then 28 moves of 4 px left
+	var s0 := _sprite(closing, &"crew_0")
+	assert_vector(s0.position).is_equal(Vector2(492 - 16, 214 - 32))
+	assert_str(Packs.source_of((s0.texture as PictureRef).resolved())).ends_with("ui_2024.png")
+	# the last step of the deck shot (step 145 counted from 0): every sailor stands still where the program has brought him (the programs end at step 152, after the shot)
+	_at_step(closing, &"deck", 145)
+	var places := []
 	for n in 6:
-		var actor := ClosingCrewActor.new(crew, n)
-		counts.append(actor.record_count())
-		var program := crew.scripts[n]
-		assert_int(program[program.size() - 4]).is_equal(ClosingCrewActor.Op.END)       # every program ends with the end op
-		for r in actor.record_count():
-			if program[r * 4] != ClosingCrewActor.Op.WAIT and program[r * 4] != ClosingCrewActor.Op.END:   # draws or moves
-				pictures[crew.pictures[program[r * 4 + 1]]] = true
-	assert_array(counts).is_equal([38, 47, 47, 50, 28, 26])
-	# the sailors use all 17 pictures 2022-2038 (the story's, by key), every one imported
-	assert_array(pictures.keys()).contains_exactly_in_any_order(range(2022, 2039).map(func(id: int) -> String: return "ui_picture/" + NameRegistry.original().name_of(&"ui_picture", id)))
-	for key: String in pictures:
-		assert_bool(Assets.holds(key)).override_failure_message(key).is_true()
-
-
-func test_expert_crew_actor_runs_the_step_rules() -> void:
-	var actor := ClosingCrewActor.new(Catalog.closing_crew(), 0)
-	for step in 80:                                                                    # record 0: wait 80 steps, nothing drawn
-		actor.step()
-		assert_bool(actor.visible).is_false()
-	actor.step()                                                                       # then a draw, then 28 moves of 4 px left
-	assert_bool(actor.visible).is_true()
-	assert_str(actor.picture).is_equal("ui_picture/ui_2025")
-	assert_int(actor.x).is_equal(496)
-	actor.step()
-	assert_int(actor.x).is_equal(492)
-	assert_str(actor.picture).is_equal("ui_picture/ui_2024")
-	# the last step of the deck shot (step 145 counted from 0): every sailor stands still
-	var crew := Catalog.closing_crew()
-	var all: Array[ClosingCrewActor] = []
-	for n in 6:
-		all.append(ClosingCrewActor.new(crew, n))
-	for step in 146:
-		for a in all:
-			a.step()
-	assert_array(all.map(func(a: ClosingCrewActor) -> int: return a.x)).is_equal([368, 408, 432, 456, 480, 504])
-	assert_bool(all.all(func(a: ClosingCrewActor) -> bool: return a.visible)).is_true()
+		var sailor := _sprite(closing, StringName("crew_%d" % n))
+		assert_bool(sailor.visible).override_failure_message("sailor %d" % n).is_true()
+		places.append(sailor.position + Vector2(16, 32))
+	assert_array(places).is_equal([Vector2(368, 214), Vector2(408, 214), Vector2(432, 214), Vector2(456, 214), Vector2(480, 214), Vector2(504, 214)])
 
 
 func test_expert_pod_blinks_through_its_three_pictures() -> void:

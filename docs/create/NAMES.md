@@ -180,8 +180,7 @@ The numbers of the original are an implementation detail of the registry; the re
 * **One resolver per kind.** `sound`: `SfxCatalog.stream_named`; `music`: `MusicCatalog.stream_named`; `voice`: `VoiceIndex.stream_named`;
   `text`: `Catalog.text(name)`; `ui_picture` and `problem_art`: `Assets.ui_picture(name)` and `Assets.problem_art(name)` (`src/core/assets.gd`),
   which turn the name into a key (`ui_picture/<name>`) that the chain's picture tables answer (`Pictures`); creature pictures: `NameRegistry.index_of(&"frame", name, zone)`.
-  A picture is found by its key only, the file the key's row names is the pack's own business; the legacy pack's files carry the name and the number (`lock_tick_38.wav`, `title_sky_1039.png`, "Asset file names" below): the importer's own convention, which the game never reads. The closing crew's pictures are `ui_picture` keys
-  (`ClosingCrewScripts.pictures`); no data file holds a picture's number.
+  A picture is found by its key only, the file the key's row names is the pack's own business; the legacy pack's files carry the name and the number (`lock_tick_38.wav`, `title_sky_1039.png`, "Asset file names" below): the importer's own convention, which the game never reads. The deck shot's sailors are `ui_picture` names in the `expert_deck` timeline; no data file holds a picture's number.
 * **Cutscene timelines hold names, not numbers.** The tracks of a cutscene (`data/story/*.tres`) say
   `ship_radar_1`, `opening_scene`, `news_bulletin_0`, `alien_artifact_0`: the importer finds each name from the original's number (`step_story.py`,
   `picture()`, `sound()`, `text_name()`, `frame_name()`) and the view turns it into a texture, a sound or a text with the usual resolver

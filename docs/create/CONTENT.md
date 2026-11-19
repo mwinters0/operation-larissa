@@ -163,8 +163,7 @@ measured once by the importer. For a pack's own clips the game measures each cli
 
 The opening, the title and the two closings are timed tracks of data in a pack's `data/story/` (a `CutsceneTimeline`: when each picture, text or sound
 happens, in ticks): `news_report`, `news_ambient`, `title_ship`, `title_reveal`, `expert_hoist`, `expert_deck`, `expert_wait`; with them `story_script` (the
-pages of the opening story and how long each one holds), `voyager_flight` (a flight file: the loop counts of the Voyager flight, run for the place the sub is in) and
-`closing_crew` (the Expert closing's six sailors' programs), and the stages the timelines play on (`CutsceneStage`s, below). The scenes only play them, and take each from the first pack of the chain that holds it. A
+pages of the opening story and how long each one holds), `voyager_flight` (a flight file: the loop counts of the Voyager flight, run for the place the sub is in), and the stages the timelines play on (`CutsceneStage`s, below). The scenes only play them, and take each from the first pack of the chain that holds it. A
 complete pack holds the opening and the closings' files (`PackNeeds`; the dev pack's are short ones of its own, `tools/dev_pack/dev_story.py`). A campaign without a closing of its own gets the
 **generic finale** (section 3).
 

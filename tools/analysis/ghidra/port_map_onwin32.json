@@ -1306,7 +1306,7 @@
  },
  "0x0041c650": {
   "status": "ported",
-  "where": "godot/src/story/timeline_segment.gd plays the scene data/story/expert_closing.tres (which the Expert campaign names, game.gd:show_closing) over the sector, with stage_chain.gd and closing_crew_actor.gd (extracted/tables/expert_closing.json, data/story/closing_crew.tres; the stage data/story/expert_closing_stage.tres and the timelines data/story/expert_hoist / deck / wait.tres by tools/import/step_story.py): 18-tick steps, turn, 20 idle steps, hook down 16 / up 17 steps, deck shot with crew / pod / cable, every key dropped until the verb listen of expert_wait and then a key / click ends it, music 9501 stopped at the end; tests test_closing_sequences.gd, test_closing_scene.gd, test_flow_fidelity_legacy.gd"
+  "where": "godot/src/story/timeline_segment.gd plays the scene data/story/expert_closing.tres (which the Expert campaign names, game.gd:show_closing) over the sector, with stage_chain.gd (the stage data/story/expert_closing_stage.tres and the timelines data/story/expert_hoist / deck / wait.tres [tools/import/step_story.py:build_expert_deck] from extracted/tables/expert_closing.json): 18-tick steps, turn, 20 idle steps, hook down 16 / up 17 steps, deck shot with crew / pod / cable, every key dropped until the verb listen of expert_wait and then a key / click ends it, music 9501 stopped at the end; tests test_closing_sequences.gd, test_closing_scene.gd, test_flow_fidelity_legacy.gd"
  },
  "0x0041cbac": {
   "name": "ExpertClosingEraseCable",
@@ -1346,12 +1346,12 @@
  "0x0041ce8f": {
   "name": "ExpertClosingDrawCrewPicture",
   "status": "ported",
-  "where": "godot/src/story/closing_crew_actor.gd"
+  "where": "data/story/expert_deck.tres [tools/import/step_story.py:CrewActor] (each sailor's picture, mirror and position per step are keys of the deck timeline)"
  },
  "0x0041ceb7": {
   "name": "ExpertClosingCrewStep",
   "status": "ported",
-  "where": "godot/src/story/closing_crew_actor.gd + extracted/tables/expert_closing.json"
+  "where": "tools/import/step_story.py:CrewActor (the importer runs the six programs of extracted/tables/expert_closing.json and bakes them into data/story/expert_deck.tres [tools/import/step_story.py:build_expert_deck])"
  },
  "0x0041d088": {
   "name": "CollideAddRect",

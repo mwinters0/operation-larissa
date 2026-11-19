@@ -457,9 +457,9 @@ a pack's data/story/<stage>.tres   CutsceneStage: the actors of a scene or a clo
 a pack's data/story/<scene>.tres   StoryScene: the stage, the looping and the one-shot timelines, the song and the speech (SpeechStep: a pause and a voice group) of a scene, whether it has a backdrop, whether it drops keys until `listen`, and its `messages` (SceneMessage: a text and the voice groups read with it, shown by the verb `messages`). `news_cartoon`, `title`, `expert_closing`, `voyager_closing`
 a pack's data/story/opening.tres   OpeningList: the parts of the opening in order (OpeningPart: kind scene | story, the name of the file it plays, the answer that leads on), and whether it starts over
 a campaign's closing_scene          the name of the StoryScene that ends the game (Game.show_closing plays it over the sector; empty: the generic finale)
-  |   (+ story_script: the story pages; closing_crew: the Expert closing's six sailors' programs)
+  |   (+ story_script: the story pages)
   v
-Catalog.opening / story_timeline / story_stage / story_scene / story_script(name) / story_flight(name) / closing_crew     the first pack of the chain that holds the file (`Packs.resource`)
+Catalog.opening / story_timeline / story_stage / story_scene / story_script(name) / story_flight(name)     the first pack of the chain that holds the file (`Packs.resource`)
   v
 src/story/stage_builder.gd   StageBuilder.build(stage name, container, cast): the ONE builder of a stage's nodes; makes them in the order of the list and binds the cast (the closings and the scenes alike)
 src/story/stage_chain.gd     StageChain: the node of a chain actor (the crane's cable), moved by the `extent` and `frame` of a timeline

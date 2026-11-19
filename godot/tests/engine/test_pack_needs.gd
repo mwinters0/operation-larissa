@@ -12,6 +12,7 @@ const TIME_BOUND_MS := 2000.0
 
 var _shelves: Array[PackShelf] = []
 var _real_chain: Dictionary
+var _campaigns: CampaignShelf
 
 
 func before_test() -> void:
@@ -19,6 +20,9 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	if _campaigns != null:
+		_campaigns.remove()
+		_campaigns = null
 	for shelf in _shelves:
 		shelf.remove()
 	_shelves.clear()
@@ -136,7 +140,7 @@ func test_a_pack_that_lacks_files_is_reported_as_exactly_those() -> void:
 	held.sort()
 	assert_array(held).is_equal([
 		"data/problems/problem_type_00.tres", "data/problems/problem_type_01.tres", "data/problems/problem_type_02.tres", "ui_picture/title_sky"])
-	assert_array(missing).contains(["data/zones.tres", "data/problems/problem_type_03.tres", "data/problems/problem_type_33.tres", "data/story/opening.tres", "data/story/closing_crew.tres"])
+	assert_array(missing).contains(["data/zones.tres", "data/problems/problem_type_03.tres", "data/problems/problem_type_33.tres", "data/story/opening.tres"])
 	assert_array(missing).not_contains(["data/problems/problem_type_02.tres", "ui_picture/title_sky"])
 	assert_array(missing).contains([Catalog.problem_type(0).art_keys[0]])                  # (the types of the pack name pictures the pack's table does not hold)
 	var groups := PackNeeds.by_group(PackNeeds.gaps(chain))
@@ -237,6 +241,35 @@ func test_a_row_of_a_pictures_table_answers_for_the_key_the_game_asks_for() -> v
 	var covered := PackNeeds.missing(_chain_of(Pack.open(shelf.root)))
 	assert_array(covered).not_contains(["ui_picture/title_sky", "ui_picture/title_sea"])
 	assert_array(covered).contains(["ui_picture/title_cloud_0"])                                                      # (what no table says is still missing)
+
+
+## A picture a cutscene timeline draws is needed as its key (`ui_picture/<name>`) even when the registry has no name for it: the six sailors of the Expert closing's deck shot are drawn by the baked timeline `expert_deck`, with pictures the original has no name for (the
+## legacy chain asks for them: tests/legacy/test_story_timelines_legacy.gd). Here a closing scene of a scratch pack draws one, and a pack without a row for it is told (a soft gap: the scene goes on without the picture).
+func test_a_picture_a_timeline_of_a_closing_draws_is_asked_for_by_key_and_a_row_answers_it() -> void:
+	var key := "ui_picture/zz_unnamed_probe"
+	var shelf := _shelf()
+	var film := CutsceneTimeline.made_in_code(36.0, "a probe").track(&"lamp", CutsceneTrack.PROP_PICTURE, [[0.0, &"zz_unnamed_probe"]])
+	shelf.write_json("data/story/zz_probe_film.json", ResourceJson.new().data_of(film))
+	var scene := StoryScene.new()
+	scene.stage = &"dev_closing_stage"
+	scene.timelines = [&"zz_probe_film"]
+	scene.backdrop = false
+	shelf.write_json("data/story/zz_probe_closing.json", ResourceJson.new().data_of(scene))
+	shelf.mount()
+	var orchard := CampaignShelf.orchard()
+	orchard.closing_scene = &"zz_probe_closing"
+	_campaigns = CampaignShelf.new([orchard])
+	var scan := PackNeeds.inspect(Packs.chain())
+	assert_array(scan.pictures.keys()).contains([key])
+	var gap := scan.gaps.filter(func(each: PackNeeds.Gap) -> bool: return each.path == key)
+	assert_array(gap).has_size(1)
+	assert_bool((gap[0] as PackNeeds.Gap).soft).is_true()
+	assert_str((gap[0] as PackNeeds.Gap).needed_by).is_equal("data/story/zz_probe_film.tres")
+	assert_array(PackNeeds.missing(Packs.chain())).contains([key])
+	shelf.add_picture_row(key, Color.RED)
+	Packs.start()
+	shelf.mount()
+	assert_array(PackNeeds.missing(Packs.chain())).not_contains([key])
 
 
 func test_a_picture_a_data_file_names_by_key_is_needed_as_a_key() -> void:

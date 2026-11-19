@@ -24,7 +24,6 @@ belong to the original and the nodes belong to the view.
     voyager_closing     the scene: the Voyager game's closing, over the running sector: the flight, then the surface ship's three pages    (CLOSING.C, constants below)
     voyager_closing_stage  the closing's actors: the playfield, the sub, the helicopter's body and rotor
     voyager_flight      the flight's loop counts (a `SubFlight`); the game makes its timeline at the start of the closing, for the sub's place and cell
-    closing_crew        the six sailors' programs of the deck shot                                       (expert_closing.json)
 
 Provenance (ground rule "Provenance is never lost"): every number is the original's, from extracted/tables/*.json or from the
 constants below, which were read from the decompiled loops and carry their function and address. The few numbers that are
@@ -43,7 +42,6 @@ import math
 from collections.abc import Sequence
 from functools import cache
 
-import asset_names
 import foe_names
 import step_problems
 import tres
@@ -774,8 +772,11 @@ def build_expert_hoist() -> Timeline:
 
 
 class CrewActor:
-    """One sailor's program (the Python twin of ClosingCrewActor, src/story/closing_crew_actor.gd; ExpertClosingCrewStep 0x41ceb7).
-    tests/test_expert_timelines.gd checks that this and the GDScript give the same drawing in every step."""
+    """One sailor's program, the interpreter of ExpertClosingCrewStep (0x41ceb7, CLOSING.C), run once per 18-tick step on a script of `ExpertCraneTable` (0x4415a4; the table's name is misleading, it holds six walk and wave programs;
+    numbers in extracted/tables/expert_closing.json). A program is a list of records [op, item, mirror, delay]: while the current record's delay has run out the program moves on to the next record; the op then acts (WAIT draws nothing,
+    DRAW draws, LEFT / RIGHT / UP / DOWN move the sailor and draw); END draws the previous record's picture once more and restarts the program, the position is NOT reset. A record lasts `delay` steps and a move op moves once in each.
+    The original erases every sailor before each step, so a step that draws nothing leaves the sailor invisible. The deck's timeline (`build_expert_deck`) is the result; the engine plays it and has no interpreter of its own.
+    tests: tools/import/test_story.py (the programs on the table), godot/tests/legacy/test_closing_sequences.gd and test_story_timelines_legacy.gd (the baked timeline against the table)."""
 
     WAIT, DOWN, UP, LEFT, RIGHT, END, DRAW = -8, -7, -6, -5, -4, -3, -2
     STEP_X, STEP_Y = 4, 10
@@ -1094,20 +1095,6 @@ PROVENANCE_VOYAGER_STAGE = (
     "(the playfield's corner): the flight is made for the place the sub is in (voyager_flight).")
 
 
-def build_closing_crew() -> str:
-    """The six sailors of the Expert closing's deck shot (CLOSING.C), from extracted/tables/expert_closing.json. Each script is stored flat: 4 numbers
-    [op, item, mirror, delay] per record; `pictures` holds the key of item i (the original's picture first_picture + i). `ClosingCrewActor` (src/story/closing_crew_actor.gd) runs them."""
-    data = load_json(TABLES / "expert_closing.json")
-    t = tres.Tres("Resource", "ClosingCrewScripts", SCRIPTS + "closing_crew_scripts.gd")
-    items = max(record[1] for script in data["scripts"] for record in script) + 1
-    t.set("pictures", tres.packed_strings([asset_names.ui_key(data["first_picture"] + i) for i in range(items)]))    # item i of a record is this picture
-    t.set("start_x", tres.packed_ints([p[0] for p in data["start_positions"]]))
-    t.set("start_y", tres.packed_ints([p[1] for p in data["start_positions"]]))
-    t.set("scripts", tres.array("PackedInt32Array",
-                                [tres.packed_ints([v for record in script for v in record]) for script in data["scripts"]]))
-    return t.render()
-
-
 # --- run --------------------------------------------------------------------------------------------------------------------------------
 
 def timelines() -> dict[str, Timeline]:
@@ -1190,5 +1177,4 @@ def run() -> None:
     out_text(STORY / "opening.tres", build_opening().render())
     out_text(STORY / "story_script.tres", build_story_script())
     out_text(STORY / (VOYAGER_FLIGHT + ".tres"), build_voyager_flight())
-    out_text(STORY / "closing_crew.tres", build_closing_crew())
-    print("  story: %s, %s, %s, opening, story_script, voyager_flight, closing_crew" % (", ".join(written), ", ".join(stages()), ", ".join(scenes())))
+    print("  story: %s, %s, %s, opening, story_script, voyager_flight" % (", ".join(written), ", ".join(stages()), ", ".join(scenes())))

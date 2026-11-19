@@ -1,7 +1,7 @@
 """The dev pack's cutscenes: choreography of its own, short and plain, played by the same scenes as the original's.
 
 The opening (`data/story/opening.tres`) lists the parts the game plays and the campaign `dev_tour` names its closing scene; the segments that play them (`src/story/`) ask the pack chain for `data/story/<name>.tres` (`Catalog.story_scene`,
-`story_timeline`, `story_flight`, `story_script`, `closing_crew`) and tell a `CutsceneCast` which node plays which actor. These timelines use the same actor names and the same property
+`story_timeline`, `story_flight`, `story_script`) and tell a `CutsceneCast` which node plays which actor. These timelines use the same actor names and the same property
 words as the original's, so every scene finds its nodes, but a few keys each: a ship that sails in and stops, a sub that sinks, a title
 that appears in three holds, a closing of its own shape (a sub and a creature of the zone that rise, a cut to a deck, a lamp that blinks), four story pages. Every number is
 dev's own (a step of 12 ticks, a hold of 100), none is read from the legacy pack; the pictures and sounds are named by the registry,
@@ -15,17 +15,14 @@ from __future__ import annotations
 from devlib import DEV, SCRIPTS, write_text, tres
 
 import step_story as st
-from asset_names import ui_key
 
 STEP = 12                                   # ticks of the closing's and the ship scene's step: ours
 SHIP_FRAMES = 36
 SHIP_STOPS_AT_FRAME = 15
 SHIP_STOPS_AT_X = 40
 REVEAL_HOLD = 100                           # ticks of one hold of the title
-CREW_FIRST_PICTURE = 2012                   # the sailors' items count from this picture of the registry
 STATUS_LIGHTS = 6                           # the console's lights on the news cartoon's stage
 PANEL_LIGHTS = 8
-CREW_ITEMS = 4                              # the items 0-3 the sailors' programs draw
 
 
 def timeline(length: float, why: str, loop: bool = False) -> st.Timeline:
@@ -290,25 +287,7 @@ def dev_flight_scene() -> st.Scene:
                     messages=[("closing_page_0", ["jingle", "closing_page_0"]), ("closing_page_1", ["closing_page_1"])])
 
 
-# --- the crew, the story and the Voyager's flight (the news cartoon is dev_ui.py's) ---------------------------------------------------------
-
-WAIT, DOWN, UP, LEFT, RIGHT, END, DRAW = -8, -7, -6, -5, -4, -3, -2        # the ops of `ClosingCrewActor.Op`
-
-
-def closing_crew() -> str:
-    """Six sailors, each a few records of [op, item, mirror, delay]: wait a little, step right and back, bob up and down, stand."""
-    scripts = []
-    for member in range(6):
-        records = [(WAIT, 0, 0, 2 + member), (DRAW, 1, 0, 2), (RIGHT, 2, 0, 1), (RIGHT, 3, 0, 1), (UP, 1, 0, 1), (DOWN, 1, 0, 1),
-                   (LEFT, 2, 1, 1), (LEFT, 3, 1, 1), (WAIT, 0, 0, 3), (END, 0, 0, 0)]
-        scripts.append([v for record in records for v in record])
-    t = tres.Tres("Resource", "ClosingCrewScripts", SCRIPTS + "closing_crew_scripts.gd")
-    t.set("pictures", tres.packed_strings(ui_key(CREW_FIRST_PICTURE + item) for item in range(CREW_ITEMS)))
-    t.set("start_x", tres.packed_ints([300 + 40 * m for m in range(6)]))
-    t.set("start_y", tres.packed_ints([214] * 6))
-    t.set("scripts", tres.array("PackedInt32Array", [tres.packed_ints(s) for s in scripts]))
-    return t.render()
-
+# --- the story and the Voyager's flight (the news cartoon is dev_ui.py's) ---------------------------------------------------------
 
 def story_script() -> str:
     """Four pages: the stars, the sea, the sub, and the last one that waits for a key. A page holds 120 ticks."""
@@ -386,7 +365,6 @@ def write_all() -> int:
     write_text(story / "dev_closing.tres", dev_closing_scene().render())
     write_text(story / "dev_flight_stage.tres", dev_flight_stage().render())
     write_text(story / "dev_flight_closing.tres", dev_flight_scene().render())
-    write_text(story / "closing_crew.tres", closing_crew())
     write_text(story / "story_script.tres", story_script())
     write_text(story / "dev_flight.tres", dev_flight())
-    return 20
+    return 19

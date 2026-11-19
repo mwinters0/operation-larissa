@@ -51,7 +51,6 @@ func test_every_timeline_and_script_is_the_dev_packs_when_nothing_is_laid_over_i
 		assert_object(Catalog.story_timeline(timeline_name)).is_same(Packs.dev().resource(Catalog.STORY_REL % timeline_name))
 	assert_object(Catalog.story_script(&"story_script")).is_same(Packs.dev().resource(Catalog.STORY_REL % "story_script"))
 	assert_object(Catalog.story_flight(&"dev_flight")).is_same(Packs.dev().resource(Catalog.STORY_REL % "dev_flight"))
-	assert_object(Catalog.closing_crew()).is_same(Packs.dev().resource(Catalog.STORY_REL % "closing_crew"))
 
 
 # --- the scripts that are not timelines ----------------------------------------------------------------------
@@ -79,23 +78,3 @@ func test_a_flight_is_a_timeline_for_every_cell_and_ends_with_its_cue_at_its_mar
 		assert_bool(flight.cues.any(func(cue_entry: CutsceneCue) -> bool: return cue_entry.cue_name == script.end_cue and is_equal_approx(cue_entry.tick, last_step))).is_true()
 		var body := flight.find_track(&"helicopter", CutsceneTrack.PROP_POSITION)
 		assert_float((body.values[body.values.size() - 1] as Vector2).x).is_less_equal(script.fly_until_x)
-
-
-func test_the_sailors_of_the_deck_shot_are_six_programs_that_end_and_run() -> void:
-	var crew := Catalog.closing_crew()
-	assert_int(crew.scripts.size()).is_equal(6)
-	assert_int(crew.start_x.size()).is_equal(6)
-	assert_int(crew.start_y.size()).is_equal(6)
-	for member in 6:
-		var program := crew.scripts[member]
-		assert_int(program.size() % ClosingCrewActor.RECORD_SIZE).is_equal(0)
-		assert_int(program[program.size() - ClosingCrewActor.RECORD_SIZE]).is_equal(ClosingCrewActor.Op.END)
-		var actor := ClosingCrewActor.new(crew, member)
-		assert_int(actor.x).is_equal(crew.start_x[member])
-		var drew := false
-		for step in 3 * actor.record_count() * 4:                      # (a program restarts at its end: run it round a few times)
-			actor.step()
-			drew = drew or actor.visible
-		assert_bool(drew).override_failure_message("sailor %d never draws" % member).is_true()
-	for key in crew.pictures:
-		assert_bool(Assets.holds(key)).override_failure_message("the crew's picture %s" % key).is_true()
