@@ -240,7 +240,7 @@ func test_warnings_do_not_stop_a_pack() -> void:
 
 
 ## The closing scene a campaign names is judged like a scene of the opening: its own lines (`StoryScene.unresolved`) and its stage, given the picture sets a scene laid over a sector is offered. A scene of the chain below the pack
-## (dev's `dev_closing`) is fine, and no `OWN_CLOSINGS` list says which names are the game's own.
+## (dev's `dev_closing`) is fine: any scene file of the chain may end a campaign.
 func test_the_closing_scene_a_campaign_names_is_judged_like_a_scene_of_the_opening() -> void:
 	var shelf := _orchard()
 	var cued: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("%s/campaigns/%s.json" % [shelf.root, ID]))
