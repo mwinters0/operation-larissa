@@ -1,7 +1,7 @@
 class_name StageBuilder
 extends RefCounted
 ## The one builder of a cutscene's stage: it makes the nodes of a `CutsceneStage` under a container and tells the `CutsceneCast` which node plays which actor.
-## Every path that shows a scene's stage (the opening's cartoon and title, a debug scene, a test) calls `build`; none puts a picture, a position or a draw order of its own.
+## Every path that shows a scene's stage (the opening's scenes, the closings, a test) calls `build`; none puts a picture, a position or a draw order of its own.
 ##
 ## What it makes: a picture is a `Sprite2D` (top-left corner, its picture resolved through the cast's `pictures`, mirrored, clipped as the actor says), a text box a `Label` of the
 ## actor's size that wraps the whole text and reveals it a character at a time, a group a `Node2D`, a button a `TextureButton` of its picture's size that acts on the PRESS (a `TimelineSegment` connects it), a frames actor an `AnimatedSprite2D` of the set the cast hands in (`CutsceneCast.frame_sets`),
@@ -33,13 +33,13 @@ static func build(stage_name: StringName, container: Node, cast: CutsceneCast) -
 	for actor in stage.actors:
 		var problem := stage.problem_with(actor, placed, offered)
 		if not problem.is_empty():
-			TroubleLog.session.tell("[story] the stage '%s' of pack '%s': %s; the actor is left out of the scene" % [stage_name, _pack_of(stage_name), problem])
+			TroubleLog.session.tell("[story] the stage '%s' of pack '%s': %s; the actor is left out of the scene" % [stage_name, Catalog.story_pack_id(stage_name), problem])
 			continue
 		var parent: Node = nodes[actor.parent] if actor.parent != &"" else container
 		var origin: Vector2 = (placed[actor.parent] as StageActor).position if actor.parent != &"" else Vector2.ZERO
 		var node := _make(actor, cast)
 		if node is StageChain:
-			(node as StageChain).where = "the chain '%s' of the stage '%s' of pack '%s'" % [actor.name, stage_name, _pack_of(stage_name)]
+			(node as StageChain).where = "the chain '%s' of the stage '%s' of pack '%s'" % [actor.name, stage_name, Catalog.story_pack_id(stage_name)]
 		node.name = actor.node_name()
 		node.position = actor.position - origin
 		node.visible = actor.visible
@@ -119,7 +119,3 @@ static func _box(actor: StageActor) -> Control:
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return box
 
-
-static func _pack_of(stage_name: StringName) -> String:
-	var holder := Packs.holder(Catalog.STORY_REL % stage_name)
-	return String(holder.id) if holder != null else "?"

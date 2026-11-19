@@ -25,18 +25,15 @@ var pictures: Callable = Assets.ui_picture
 var texts: Callable = _plain_text
 
 var _nodes: Dictionary = {}               # actor -> Node
-var _property_names: Dictionary = {}      # actor -> {logical property -> Godot property}
 
 
 func _init(scene_root: Node) -> void:
 	root = scene_root
 
 
-## `node` plays `actor`. `property_names` renames a logical property for this actor when its node calls it something
-## else (a node of a view that already has a property of its own for it).
-func bind(actor: StringName, node: Node, property_names: Dictionary = {}) -> void:
+## `node` plays `actor`.
+func bind(actor: StringName, node: Node) -> void:
 	_nodes[actor] = node
-	_property_names[actor] = property_names
 
 
 func has_actor(actor: StringName) -> bool:
@@ -57,11 +54,6 @@ func path_to(actor: StringName) -> NodePath:
 func origin_of(actor: StringName) -> Vector2:
 	var parent := (_nodes[actor] as Node).get_parent() as CanvasItem
 	return parent.get_global_transform().origin if parent != null else Vector2.ZERO
-
-
-## The name of the Godot property that plays `property` for `actor`.
-func godot_property(actor: StringName, property: StringName, default: String) -> String:
-	return _property_names.get(actor, {}).get(property, default)
 
 
 # --- the resolvers -------------------------------------------------------------------------------------------

@@ -42,7 +42,7 @@ func _run() -> void:
 		TroubleLog.session.tell("[story] no pack of the chain holds the opening (data/story/opening.tres): the game goes straight to the sign-in screen")
 	else:
 		for line in list.unresolved():
-			TroubleLog.session.tell("[story] pack '%s': the opening's %s" % [_pack_id(), line])
+			TroubleLog.session.tell("[story] pack '%s': the opening's %s" % [Catalog.story_pack_id(&"opening"), line])
 		var again := true
 		while again:
 			again = await _play_parts()
@@ -127,10 +127,6 @@ func _play(segment: StorySegment) -> StorySegment:
 	segment.queue_free()
 	return segment
 
-
-func _pack_id() -> String:
-	var holder := Packs.holder(Catalog.STORY_REL % "opening")
-	return String(holder.id) if holder != null else "?"
 
 
 func _leave() -> void:

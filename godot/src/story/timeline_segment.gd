@@ -67,7 +67,7 @@ func _ready() -> void:
 ## The nodes of the scene, all of them: the black backdrop, the stage with the actors, a player for each loop and one for the one-shot timelines, with every animation installed. The one place they are made.
 func _build() -> void:
 	for line in scene.unresolved():
-		TroubleLog.session.tell("[story] pack '%s': the scene '%s' %s" % [_pack_id(), scene_name, line])
+		TroubleLog.session.tell("[story] pack '%s': the scene '%s' %s" % [Catalog.story_pack_id(scene_name), scene_name, line])
 	var backdrop := ColorRect.new()
 	backdrop.name = "Backdrop"
 	backdrop.color = Color.BLACK
@@ -229,10 +229,6 @@ func _text(text_name: StringName) -> String:
 	return tidy(Catalog.text(text_name)) if text_name != &"" else ""
 
 
-func _pack_id() -> String:
-	var holder := Packs.holder(Catalog.STORY_REL % scene_name)
-	return String(holder.id) if holder != null else "?"
-
 
 # --- the verbs ------------------------------------------------------------------------------------------------
 
@@ -240,7 +236,7 @@ func _pack_id() -> String:
 func cue(event: StringName) -> void:
 	var problem := StoryVerbs.problem(event)
 	if not problem.is_empty():
-		TroubleLog.session.tell("[story] pack '%s': the scene '%s' %s" % [_pack_id(), scene_name, StoryVerbs.line(event, problem)])
+		TroubleLog.session.tell("[story] pack '%s': the scene '%s' %s" % [Catalog.story_pack_id(scene_name), scene_name, StoryVerbs.line(event, problem)])
 		return
 	var words := StoryVerbs.parse(event)
 	call("_verb_%s" % words[0], words.slice(1))

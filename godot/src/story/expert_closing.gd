@@ -58,7 +58,7 @@ func _ready() -> void:
 	animations.play(&"hoist")
 
 
-## The cast of a closing played under `root`, with the sets its stage may show: the one place the sets are handed in (a view that builds the stage by itself calls it too).
+## The cast of the closing played under `root`, with the sets its stage may show (`FRAME_SETS`, each with its pictures): the one place the sets are handed in.
 static func make_cast(root: Node) -> CutsceneCast:
 	var cast := CutsceneCast.new(root)
 	cast.sub_tuning = GameState.tuning.sub

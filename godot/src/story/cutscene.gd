@@ -68,14 +68,13 @@ static func _add_track(result: Animation, track: CutsceneTrack, cast: CutsceneCa
 			var flipped := SubTuning.is_flipped((track.values[i] as Vector2i).x)
 			if flips.is_empty() or flips[-1][1] != flipped:           # (the facing changes rarely: a key only when it does)
 				flips.append([t, flipped])
-		values(result, "%s:%s" % [path, cast.godot_property(track.actor, CutsceneTrack.PROP_FRAME, "frame")], frames, track.smooth)
-		values(result, "%s:%s" % [path, cast.godot_property(track.actor, CutsceneTrack.PROP_MIRROR, "flip_h")], flips, track.smooth)
+		values(result, "%s:%s" % [path, "frame"], frames, track.smooth)
+		values(result, "%s:%s" % [path, "flip_h"], flips, track.smooth)
 		return
 	var keys: Array = []
 	for i in track.times.size():
 		keys.append([CutsceneTimeline.seconds(track.times[i]), _node_value(track, track.values[i], cast)])
-	var property := cast.godot_property(track.actor, track.property, PROPERTIES[track.property])
-	values(result, "%s:%s" % [path, property], keys, track.smooth)
+	values(result, "%s:%s" % [path, PROPERTIES[track.property]], keys, track.smooth)
 
 
 ## What is told when a timeline names an actor that no node plays (the stage the scene is built from does not hold it): the track is left out, so that actor does not change.

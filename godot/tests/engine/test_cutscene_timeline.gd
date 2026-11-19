@@ -145,18 +145,6 @@ func test_frame_names_are_looked_up_in_the_zone_of_the_cast() -> void:
 	assert_int(_sub.frame).is_equal(3)                                            # a number passes through
 
 
-func test_an_actor_can_name_a_property_its_own_way() -> void:
-	var chain := Control.new()
-	chain.name = "Chain"
-	_root.add_child(chain)
-	_cast.bind(&"chain", chain, {CutsceneTrack.PROP_VISIBLE: "mouse_filter"})
-	var timeline := CutsceneTimeline.made_in_code(10.0, "test")
-	timeline.track(&"chain", CutsceneTrack.PROP_VISIBLE, [[0.0, 2]])
-	_play(timeline)
-	_player.seek(0.0, true)
-	assert_int(chain.mouse_filter).is_equal(Control.MOUSE_FILTER_IGNORE)
-
-
 # --- the resources themselves ------------------------------------------------------------------------------
 
 func test_problems_are_found() -> void:

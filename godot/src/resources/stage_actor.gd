@@ -18,7 +18,7 @@ const CHAIN := &"chain"          ## a clipped box that carries a stack of pictur
 const FILL := &"fill"            ## a rectangle of one `color` and `size`
 const KINDS: Array[StringName] = [PICTURE, TEXT, GROUP, BUTTON, FRAMES, CHAIN, FILL]
 
-## What a button answers (`choice`): the opening's director asks the title only whether the player wants the story (`TimelineSegment.wants_intro`), so two answers are known.
+## What a button answers (`choice`): the opening's director compares it with the part's `leads_on` (`OpeningPart`), so two answers are known.
 const START := &"start"          ## leave the opening: the game
 const INTRO := &"intro"          ## go on to the story pages
 const CHOICES: Array[StringName] = [START, INTRO]

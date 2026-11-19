@@ -555,6 +555,12 @@ static func _story(story_name: StringName) -> Resource:
 	return _door(STORY_REL % story_name)
 
 
+## The id of the pack whose story file `story_name` the chain plays, for the words of a warning ("?" when none holds it).
+static func story_pack_id(story_name: StringName) -> String:
+	var holder := Packs.holder(STORY_REL % story_name)
+	return String(holder.id) if holder != null else "?"
+
+
 ## The six sailors of the Expert closing's deck shot (`ExpertCraneTable`): `closing_crew` of the pack.
 static func closing_crew() -> ClosingCrewScripts:
 	return _story(&"closing_crew") as ClosingCrewScripts
