@@ -60,6 +60,17 @@ static func _actor_differences(actor: StageActor, node: Node, found: Array[Strin
 				found.append("%s is a %s, not a Label" % [actor.name, node.get_class()])
 			elif label.size != actor.size:
 				found.append("%s is %s big, the file says %s" % [actor.name, label.size, actor.size])
+		StageActor.BUTTON:
+			var button := node as TextureButton
+			if button == null:
+				found.append("%s is a %s, not a TextureButton" % [actor.name, node.get_class()])
+				return
+			if PictureRef.key_of(button.texture_normal) != "ui_picture/" + actor.picture:
+				found.append("%s shows %s, the file says ui_picture/%s" % [actor.name, PictureRef.key_of(button.texture_normal), actor.picture])
+			if actor.pressed_picture != &"" and PictureRef.key_of(button.texture_pressed) != "ui_picture/" + actor.pressed_picture:
+				found.append("%s shows %s pressed, the file says ui_picture/%s" % [actor.name, PictureRef.key_of(button.texture_pressed), actor.pressed_picture])
+			if button.action_mode != BaseButton.ACTION_MODE_BUTTON_PRESS:
+				found.append("%s acts on the release: the original's buttons act on the press" % actor.name)
 		StageActor.GROUP:
 			if node.get_class() != "Node2D":
 				found.append("%s is a %s, not a Node2D" % [actor.name, node.get_class()])

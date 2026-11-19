@@ -318,7 +318,7 @@ static func _is_a_mods_own(live: Pack, rel: String) -> bool:
 
 
 ## The opening's scenes as the chain gives them. A scene file (`Opening.SCENES`, `Catalog.story_scene`) is judged by `StoryScene.unresolved` (a timeline, song or voice group that no pack holds, a loop that does not loop, a cue with a verb the engine lacks), and its stage
-## by `_stage`; the title's stage and timelines are named by `TitleScene`. A scene the chain lacks is `PackNeeds`' to say.
+## by `_stage`. A scene the chain lacks is `PackNeeds`' to say.
 static func _scenes(_live: Pack, report: PackReport) -> void:
 	for scene_name in Opening.SCENES:
 		var scene := Catalog.story_scene(scene_name)
@@ -330,7 +330,6 @@ static func _scenes(_live: Pack, report: PackReport) -> void:
 			report.error("story", "scene '%s' names the stage '%s', which no pack of the chain holds: nothing is drawn" % [scene_name, scene.stage])
 		else:
 			_stage(scene.stage, scene.all_timelines(), report)
-	_stage(TitleScene.STAGE, TitleScene.TIMELINES, report)
 
 
 ## A stage of the chain: each mistake of the stage itself (`CutsceneStage.problems`), and an actor a timeline played on it names that it does not hold (the scene would leave that track out and nothing would change for the actor,

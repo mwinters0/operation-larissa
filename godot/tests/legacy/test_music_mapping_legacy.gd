@@ -25,8 +25,8 @@ func test_the_finale_sectors_play_the_finale_song() -> void:
 
 func test_the_named_songs_match_the_map() -> void:
 	assert_int(MusicCatalog.id_of(AudioService.SONG_CLOSING)).is_equal(9501)
-	assert_int(MusicCatalog.id_of(AudioService.SONG_OPENING)).is_equal(9502)
-	assert_int(MusicCatalog.id_of(AudioService.SONG_TITLE)).is_equal(9503)
+	assert_int(MusicCatalog.id_of(&"opening")).is_equal(9502)
+	assert_int(MusicCatalog.id_of(&"title")).is_equal(9503)
 
 
 func test_the_catalog_is_the_verified_map() -> void:

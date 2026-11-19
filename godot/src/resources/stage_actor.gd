@@ -12,7 +12,13 @@ extends Resource
 const PICTURE := &"picture"      ## a `Sprite2D` showing `picture`
 const TEXT := &"text"            ## a `Label` of `size` that the timeline's `text` and `reveal` tracks fill (the teletype)
 const GROUP := &"group"          ## a `Node2D` that holds other actors and moves them as one (the ship that carries its radar and hook)
-const KINDS: Array[StringName] = [PICTURE, TEXT, GROUP]
+const BUTTON := &"button"        ## a `TextureButton` showing `picture` (pressed: `pressed_picture`) that answers a prompt with its `choice`; hidden until the scene's `prompt` begins
+const KINDS: Array[StringName] = [PICTURE, TEXT, GROUP, BUTTON]
+
+## What a button answers (`choice`): the opening's director asks the title only whether the player wants the story (`TimelineSegment.wants_intro`), so two answers are known.
+const START := &"start"          ## leave the opening: the game
+const INTRO := &"intro"          ## go on to the story pages
+const CHOICES: Array[StringName] = [START, INTRO]
 
 ## The name a timeline gives this actor in its tracks (`radar`, `crew_3`); it is also the actor's node in the scene, written in capitals
 ## (`Radar`, `Crew3`: `node_name`). Unique in a stage.
@@ -34,6 +40,12 @@ const KINDS: Array[StringName] = [PICTURE, TEXT, GROUP]
 @export var clip: Rect2 = Rect2()
 ## A text box: its size in window pixels.
 @export var size: Vector2 = Vector2.ZERO
+## A button: the picture it shows while it is pressed (a NAME like `picture`); empty: it looks the same pressed.
+@export var pressed_picture: StringName = &""
+## A button: what pressing it answers, one of `CHOICES`.
+@export var choice: StringName = &""
+## A button: the key that presses it from the keyboard, as the engine names keys (`I`, `S`); empty: none. Its size is its picture's.
+@export var hotkey: String = ""
 
 
 ## The name of the actor's node: the words of `name` joined, each in capitals (`mini_sub` -> `MiniSub`, `dot_07` -> `Dot07`).

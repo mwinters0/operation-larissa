@@ -2,7 +2,7 @@ class_name Opening
 extends Control
 ## The game's first scene: the opening sequence (news cartoon, title, story) and then the sign-in screen.
 ##
-## Teaches: a DIRECTOR. Each part of the opening is its own scene (a `TimelineSegment` playing the scene file `news_cartoon`, `TitleScene`, `StoryPages`)
+## Teaches: a DIRECTOR. Each part of the opening is its own scene (a `TimelineSegment` playing the scene file `news_cartoon`, another the scene file `title`, then `StoryPages`)
 ## built on the same small interface (`StorySegment`: `finished`, `advance()`, `skip()`). This script
 ## instantiates them one after the other and reads the keys in one place:
 ##
@@ -15,9 +15,10 @@ extends Control
 ## Start button, and Enter or a click on the last page lead to sign-in. Started alone it ends by changing to the sign-in scene
 ## too, so the whole path title -> opening -> sign-in can be tried from this scene.
 
-## The scene files (`StoryScene`, `data/story/<scene>.tres` of the pack chain) the opening plays as `TimelineSegment`s, in order; `PackCheck` reads them.
-const SCENES: Array[StringName] = [&"news_cartoon"]
-const TITLE_SCENE := preload("res://src/story/title_scene.tscn")
+## The scene files (`StoryScene`, `data/story/<scene>.tres` of the pack chain) the opening plays as `TimelineSegment`s, in order: the news cartoon, then the title with its Start / Intro prompt; `PackCheck` reads them.
+const NEWS_SCENE := &"news_cartoon"
+const TITLE_SCENE := &"title"
+const SCENES: Array[StringName] = [NEWS_SCENE, TITLE_SCENE]
 const STORY_PAGES := preload("res://src/story/story_pages.tscn")
 
 ## Set by tests that only want to look at the director: the sequence still runs, but nothing changes scene.
@@ -50,10 +51,10 @@ func _run() -> void:
 ## One pass: the cartoon, the title, the story. True when the pass ends the way that makes the original start over: the last
 ## story page timed out (`OpeningStoryPages` 0x42a9f1 returned 0 with `OpeningEnded` 0x449e98 still 0).
 func _play_parts() -> bool:
-	await _play(TimelineSegment.of(SCENES[0]))
+	await _play(TimelineSegment.of(NEWS_SCENE))
 	if _skipped:
 		return false
-	var title := (await _play(TITLE_SCENE.instantiate())) as TitleScene
+	var title := (await _play(TimelineSegment.of(TITLE_SCENE))) as TimelineSegment
 	if _skipped or not title.wants_intro:
 		return false
 	var story := (await _play(STORY_PAGES.instantiate())) as StoryPages

@@ -26,7 +26,7 @@ PALETTE = {
     "empty": ((0, 0, 0, 0), (255, 255, 255, 255), (255, 255, 255)),
 }
 
-# Sizes (width, height) the engine itself assumes, by (folder, id or stem): see piece_model.gd, prompt_sender.gd, title_scene.gd.
+# Sizes (width, height) the engine itself assumes, by (folder, id or stem): see piece_model.gd, prompt_sender.gd.
 PIECE = (24, 20)
 SUB = (96, 58)
 SENDER = (55, 20)

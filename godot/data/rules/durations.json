@@ -12,6 +12,6 @@
   "speech": {"silent_ticks": 146},
   "calculator": {"key_flash_ticks": 12},
   "surface_ship": {"wait_ticks": 1460},
-  "title": {"prompt_timeout_ticks": 1825, "music_delay_ticks": 292},
+  "prompt": {"timeout_ticks": 1825, "music_delay_ticks": 292},
   "fade": {"ticks": 13}
 }

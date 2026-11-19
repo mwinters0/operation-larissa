@@ -25,7 +25,7 @@ const ORIGINAL := {
 	"speech.silent_ticks": 146,
 	"calculator.key_flash_ticks": 12,
 	"surface_ship.wait_ticks": 1460,
-	"title.prompt_timeout_ticks": 1825, "title.music_delay_ticks": 292,
+	"prompt.timeout_ticks": 1825, "prompt.music_delay_ticks": 292,
 	"fade.ticks": 13,
 }
 
@@ -81,8 +81,7 @@ func test_the_rules_give_the_originals_timing_with_the_default_data() -> void:
 	assert_int(SceneRouter.fade_ticks()).is_equal(13)
 	assert_int(SurfaceShipScreen.wait_ticks()).is_equal(1460)
 	assert_int(CalculatorModel.key_flash_ticks()).is_equal(12)
-	assert_int(TitleScene.prompt_timeout_ticks()).is_equal(1825)
-	assert_int(TitleScene.music_delay_ticks()).is_equal(292)
+	assert_array([Durations.at("prompt.timeout_ticks"), Durations.at("prompt.music_delay_ticks")]).is_equal([1825, 292])
 	assert_array([SignIn.pre_scan_ticks(), SignIn.pressed_ticks()]).is_equal([18, 36])
 
 

@@ -24,7 +24,7 @@ const TICKS_PER_SECOND := 73.0
 @export var tracks: Array[CutsceneTrack] = []
 ## What happens: sounds and events.
 @export var cues: Array[CutsceneCue] = []
-## Named moments (`presents`, `operation`, `neptune`): where a skip may jump to. Name -> ticks.
+## Named moments (`presents`, `operation`, `neptune`): the holds of the timeline. Enter during one jumps to the next mark and does the cues there (`TimelineSegment.advance`). Name -> ticks.
 @export var marks: Dictionary = {}
 ## Where the numbers come from: the original function and file, and which numbers are our own (ground rule "provenance").
 @export_multiline var provenance: String = ""

@@ -14,7 +14,7 @@ const TICKS := 73.0
 const TOLERANCE := 0.0015                      # ticks
 
 const NEWS := &"news_cartoon"          # the scene file the news cartoon is (data/story/news_cartoon.tres)
-const TITLE := "res://src/story/title_scene.tscn"
+const TITLE := &"title"                # the scene file the title is (data/story/title.tres)
 const PAGES := "res://src/story/story_pages.tscn"
 const VOYAGER := "res://src/story/voyager_closing.tscn"
 const EXPERT := "res://src/story/expert_closing.tscn"
@@ -93,10 +93,11 @@ func test_the_news_cartoon_animations_have_the_recorded_lengths_and_moments() ->
 
 
 func test_the_title_scene_animations_have_the_recorded_lengths_and_moments() -> void:
-	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	var title: TimelineSegment = auto_free(TimelineSegment.of(TITLE))
 	add_child(title)
-	_check_animation(title.animations.get_animation(&"ship"), "title_ship")
-	_check_animation(title.animations.get_animation(&"reveal"), "title_reveal")
+	_check_animation(title.script_player.get_animation(&"title_ship"), "title_ship")
+	_check_animation(title.script_player.get_animation(&"title_reveal"), "title_reveal")
+	title.finish()
 
 
 ## The fade of a page is ours (half a second long, a fade of 0.2 s), and the caption follows the pack's delay after the page.

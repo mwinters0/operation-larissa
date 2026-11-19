@@ -162,9 +162,9 @@ func _layouts() -> void:
 	if cartoon != null:
 		for message in cartoon.problems():
 			_fail("news report: " + message)
-	var scene := load(ROOT + "data/story/news_cartoon.tres") as StoryScene
-	if scene == null:
-		_fail("data/story/news_cartoon.tres is not a StoryScene")
+	for scene_file in ["news_cartoon", "title"]:
+		if not load(ROOT + "data/story/%s.tres" % scene_file) is StoryScene:
+			_fail("data/story/%s.tres is not a StoryScene" % scene_file)
 	var screen := load(ROOT + "data/problems/screen_layout.tres") as ProblemScreenLayout
 	if screen != null and screen.palette.size() != 16:
 		_fail("problem screen palette has %d colours" % screen.palette.size())

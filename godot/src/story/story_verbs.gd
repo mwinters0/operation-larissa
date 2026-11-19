@@ -2,7 +2,8 @@ class_name StoryVerbs
 extends RefCounted
 ## The verbs a cue of a scene's timeline may call, and the one judgement of a cue against them. A cue of kind EVENT is a verb and the words after it (`speak news_speech_0`); `TimelineSegment` carries it out by calling `_verb_<verb>`,
 ## `StoryScene.unresolved` and `PackCheck` use `problem` to tell a pack's cue that the engine cannot carry out. A verb is one more entry of `VERBS` and one more method of the segment: what a verb does (input, waits, speech) is the
-## engine's, a pack only arranges the verbs.
+## engine's, a pack only arranges the verbs. What Enter does is not a verb: it goes on to the next timeline of the scene, or, in a timeline that has marks, to the next mark (the timeline's own holds), and once a `prompt` has begun it answers it
+## (`TimelineSegment.advance`).
 ##
 ## Teaches: a small fixed vocabulary as data (a table of verb -> number of words) that both the player of a scene and the check of a pack read, so what the check accepts is what the game does. It is a script of its own, and not
 ## constants of the segment, because the scene resource (which `Catalog` returns) judges its cues against it and must not depend on the node that plays them.
@@ -11,6 +12,7 @@ extends RefCounted
 const VERBS := {
 	&"end": 0,          ## the scene is over
 	&"speak": 1,        ## speak the voice group of the word that follows, and wait for it
+	&"prompt": 0,       ## ask the player: the stage's buttons appear, Enter, a click elsewhere or the time-out choose Intro, the button's key its own answer; the scene's `prompt_song` starts after a delay
 }
 
 

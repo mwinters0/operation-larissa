@@ -181,29 +181,33 @@ scene's **actors**, and the timelines played on the scene move and change those 
 | `parent` | the actor it rides with: it moves and hides with it. The parent is listed BEFORE its children |
 | `clip` | a picture: the part drawn, in the picture's pixels (the mini-sub starts whole and its timeline shrinks it); no area draws the whole picture |
 | `size` | a text box: its size in window pixels |
+| `pressed_picture`, `choice`, `hotkey` | a button (`kind` `button`, a picture of the size of `picture`, hidden until the scene's `prompt`): the picture while it is pressed, what pressing it answers (`start`: leave the opening, `intro`: go on to the story) and the key that presses it (`S`, `I`) |
 
 The actors are listed in **draw order**: each is drawn above the ones listed before it that share its parent. A pack states a stage whole (it replaces the stage of the pack under it), and a timeline
 may only name actors its scene's stage holds: the pack check reports a stage that is wrong (two actors of a name, a parent not listed before, a text box with no size) and an actor a timeline names
 that the stage lacks, and the game, meeting either, leaves that actor or track out and says so in the log once.
 
-**Scenes.** A scene file (`data/story/<scene>.tres`, a `StoryScene`; `.json` in the data form; the opening plays `news_cartoon`) says what one part of the opening plays, by name:
+**Scenes.** A scene file (`data/story/<scene>.tres`, a `StoryScene`; `.json` in the data form; the opening plays `news_cartoon`, then `title`) says what one part of the opening plays, by name:
 
 | Field | Meaning |
 | --- | --- |
 | `stage` | the stage the scene is built on (`news_cartoon_stage`) |
 | `loops` | the timelines that play from the start and start over when they end (`news_ambient`: the alarm lights, the ring, the console lights); each must have `loop` set |
-| `timelines` | the timelines that play once, one after the other (`news_report`); none may loop. The scene ends when a cue says `end` |
+| `timelines` | the timelines that play once, one after the other (`news_report`; the title's `title_ship`, then `title_reveal`); none may loop. The scene ends when a cue says `end`, or after the prompt's answer |
 | `song` | the song that starts with the scene (a name of the game's music, or a file `audio/music/<name>.ogg` of a pack); empty: no song |
+| `song_stops_at` | the timeline of `timelines` at whose start the song stops (the title's song ends when the title is revealed); empty: it plays on |
+| `prompt_song` | the song the `prompt` verb starts `prompt.music_delay_ticks` after the buttons appear; empty: none |
 | `speech` | what is said, in order: each step is `pause_ticks` (the wait before it, in ticks of the original's 73 Hz timer) and `group` (a voice group of `voice_cues`, whose clips are spoken one after the other) |
 
-A cue of a timeline whose kind is `event` calls a **verb** of the engine, written as its name and the words after it: `end` (the scene is over) and `speak <group>` (speak that voice group and wait for it). A pack arranges the verbs;
-what they do is the engine's. The speech is the `speech` steps, not cues, because how long a group takes is the recorded length of its clips: step by step, the scene waits the pause, then speaks the group. The pack check reports,
+A cue of a timeline whose kind is `event` calls a **verb** of the engine, written as its name and the words after it: `end` (the scene is over), `speak <group>` (speak that voice group and wait for it) and `prompt` (the stage's buttons appear: the player chooses Start or Intro, and nobody choosing for `prompt.timeout_ticks` means Intro). A pack arranges the verbs;
+what they do is the engine's.
+Enter is the engine's too: in a timeline that has **marks** (named moments: `presents`, `operation`, `neptune` of `title_reveal`) it ends the hold that runs and goes to the next mark, firing its cues; in a timeline without, it begins the next timeline of the scene (whose first keys set what the stage needs: `title_reveal` hides the ship scene's parts at its first moment); once the prompt is up it answers Intro. Space and Escape leave the opening. The speech is the `speech` steps, not cues, because how long a group takes is the recorded length of its clips: step by step, the scene waits the pause, then speaks the group. The pack check reports,
 and the game, meeting it, tells once in the log and leaves out, a timeline, song or voice group the scene names that no pack of the chain holds, a looping timeline that does not loop or a one-shot one that does, a cue whose verb the engine
-lacks or that has the wrong number of words, and a stage that no pack holds or an actor a timeline names that the stage lacks. The dev pack's scene is `tools/dev_pack/dev_story.py`'s, the legacy pack's the importer's (`step_story.py`).
+lacks or that has the wrong number of words, a `song_stops_at` that is not one of its timelines, a `prompt_song` that does not resolve, a `prompt` with no button on the stage, a button of the stage that cannot be made, and a stage that no pack holds or an actor a timeline names that the stage lacks. The dev pack's scene is `tools/dev_pack/dev_story.py`'s, the legacy pack's the importer's (`step_story.py`).
 
 **What the opening says and flickers.** The console's lights of the news cartoon flicker as `news_ambient` says: its tracks for the stage's `status_NN` and `panel_NN` actors are the flicker, one key per redraw (the legacy pack's is
 baked by the importer and the dev pack's by its generator, both with `step_story.console_flicker`, a seeded generator: in the original the lights flicker at random), and a pack writes its own lights' keys as it writes any timeline.
-The title's waits are `title.prompt_timeout_ticks` (nobody chose Start or Intro: the story begins) and `title.music_delay_ticks` (the story's song starts this long after the buttons appear), also in `rules/durations.json`.
+The prompt's waits are `prompt.timeout_ticks` (nobody chose Start or Intro: the story begins) and `prompt.music_delay_ticks` (the scene's `prompt_song` starts this long after the buttons appear), also in `rules/durations.json`.
 
 ### Durations
 

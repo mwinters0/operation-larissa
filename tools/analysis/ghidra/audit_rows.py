@@ -108,7 +108,7 @@ R("M", "CLOSING.C", "ExpertClosingSequence", "StopSectorMusic,PlayExpertClosingM
 R("M", "CLOSING.C", "ExpertClosingSequence", "StopBackgroundMusic", "song stops when the sequence ends (before the Hall of Fame)", YES, "PORTED",
   "expert_closing.gd:finish (stop_music when the sequence ends, before the Hall of Fame); test_flow_fidelity_legacy.gd test_the_expert_closing_song_ends_with_the_sequence")
 R("M", "OPENING.C", "OpeningMusicCue", "PlayBackgroundMusic,StopBackgroundMusic", "cue 1: 9502 (opening cartoon) ; cue 3: 9503 (title) ; cue 4: stop after the 0x33 sound ; cue 5: stop, play 9502 ; cue 6: stop", YES, "PORTED",
-  "timeline_segment.gd:_ready (9502), title_scene.gd:_ready (9503), _leave_ship_scene (stop), _show_prompt (9502), opening.gd:_ready and _leave (stop)")
+  "timeline_segment.gd:_ready (9502), data/story/title.tres (song 9503, song_stops_at), timeline_segment.gd:_verb_prompt (9502), opening.gd:_ready and _leave (stop)")
 R("M", "SOUNDHI.C", "PlaySectorMusic", "*", "internal: if flag != 0 PlayBackgroundMusic(SectorMusicId)", YES, "PORTED", "audio.gd:play_music")
 R("M", "SOUNDHI.C", "StopSectorMusic", "*", "internal: StopBackgroundMusic", YES, "PORTED", "audio.gd:stop_music")
 R("M", "SOUNDHI.C", "PlayExpertClosingMusic", "*", "internal: PlayBackgroundMusic(DAT_0044b040)", YES, "PORTED", "audio.gd:play_music")
@@ -199,8 +199,8 @@ R("T", "MONITOR.C", "AnimateBarnacles", "DelayTicks", "barnacle intro: two healt
 R("T", "MONITOR.C", "do_ccmonitor_opening", "DelayTicks", "20 ticks after the barnacle animation, before the prompt", YES, "PORTED", "barnacle_diagram.gd:_schedule_intro (end_tick = 3 rounds + plan.tail = 20); test_diagram_animations_legacy.gd test_type_14_barnacles_a_burst_of_sounds_at_the_start_of_each_of_three_rounds")
 R("T", "OPENING.C", "OpeningStoryPages", "*", "story pages: DelayTicks(15) between pages, page min 365 ticks (5 s), last page 3285 ticks (45 s) or key", YES, "PORTED", "story_pages.gd:_script (Catalog.story_script: data/story/story_script.tres)")
 R("T", "OPENING.C", "OpeningSequence", "*", "cartoon redraw every 10 ticks, title scene 12-tick steps; WaitEnterSpaceEscOrTicks(292) holds", YES, "PORTED", "data/story/news_cartoon.tres + news_report.tres + news_ambient.tres (10-tick redraws), data/story/title_ship.tres (12-tick steps), data/story/title_reveal.tres (292-tick holds)")
-R("T", "OPENING.C", "TitleScreenPromptLoop", "*", "title screen: 292-tick hold per picture, 1825-tick (25 s) prompt timeout", YES, "PORTED", "title_scene.gd:prompt_timeout_ticks (title.prompt_timeout_ticks of durations.json), data/story/title_reveal.tres (292-tick holds)")
-R("T", "OPENING.C", "WaitEnterSpaceEscOrTicks", "*", "wait n ticks (292) for Enter / Space / Esc", YES, "PORTED", "data/story/title_reveal.tres (marks, 292 ticks), title_scene.gd:advance / _end_hold")
+R("T", "OPENING.C", "TitleScreenPromptLoop", "*", "title screen: 292-tick hold per picture, 1825-tick (25 s) prompt timeout", YES, "PORTED", "timeline_segment.gd:_verb_prompt (prompt.timeout_ticks of durations.json), data/story/title_reveal.tres (292-tick holds)")
+R("T", "OPENING.C", "WaitEnterSpaceEscOrTicks", "*", "wait n ticks (292) for Enter / Space / Esc", YES, "PORTED", "data/story/title_reveal.tres (marks, 292 ticks), timeline_segment.gd:advance / _end_hold")
 R("T", "OPENING.C", "CartoonTypeLine", "*", "cartoon teletype: 2 + 1 ticks per character (3 ticks)", YES, "PORTED", "timeline_segment.gd header comment, data/story/news_report.tres (3 ticks per character)")
 R("T", "CLOSING.C", "VoyagerClosingSequence", "*", "6-tick steps (rise, turn, fly), 12-tick pictures for the transformation", YES, "PORTED", "voyager_closing_script.gd:step_ticks (6), change_picture_steps")
 R("T", "CLOSING.C", "ExpertClosingSequence", "*", "18-tick steps for the whole choreography", YES, "PORTED", "data/story/expert_hoist.tres, expert_deck.tres, expert_wait.tres (18-tick steps)")
@@ -287,7 +287,7 @@ R("X", "MATHPROB.C", "ShowProblemSolution", "*", "'Click to go on.' under the wo
 R("X", "NEPTUNE.C", "Main", "*", "11249 'FALSE': the INI default string", "boot", "N/A", "-")
 R("X", "NEPTUNE.C", "ShowFirstTimeHint", "*", "11115 'New Player Hint' dialog title; the hint text is bundle 0xf2 item n", YES, "PORTED", "game_flow.gd:show_hint (HintSystem ids 0-6, text 10167 + n)")
 R("X", "ONHELP.C", "RunHelpTopic", "*", "Help menu topic titles (string param_2: 11xxx) and pages (bundle 0xf0)", YES, "PORTED", "help_topics.gd:TOPICS (pages), help_viewer.gd")
-R("X", "OPENING.C", "TitleScreenPromptLoop", "*", "11001 'Copyright 1991,1994-97 TLC Properties Inc.' on the title screen", YES, "PORTED", "help_topics.gd (about); title_scene.gd shows the copyright picture")
+R("X", "OPENING.C", "TitleScreenPromptLoop", "*", "11001 'Copyright 1991,1994-97 TLC Properties Inc.' on the title screen", YES, "PORTED", "help_topics.gd (about); data/story/title_stage.tres shows the copyright picture")
 R("X", "OPENING.C", "OpeningStoryPages", "*", "11003 'Click to go on.' on the story pages", YES, "PORTED", "story_pages.gd:_show_page (click_label on the last page)")
 R("X", "OPTIONS.C", "MenuAboutBox", "*", "About Operation Neptune text (11144-11150) + copyright 11001 + version 11002", YES, "PORTED", "help_topics.gd:ABOUT_TEXTS (11001, 11002, 11144-11146; 11147-11149 are blank lines, 11150 is the menu item), about_text, cleaned by clean")
 R("X", "OPTIONS.C", "MenuReturnToSignInSave", "*", "the IN-GAME menu's File > Return to Sign In (command table at file offset 0x2ddd0): 11126 'Only those sectors you have completed will be saved' / 11127 title, then SaveRosterData", YES, "PORTED",

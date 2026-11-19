@@ -176,14 +176,17 @@ def test_the_stages_put_every_actor_at_its_point_of_the_position_table_in_draw_o
     assert [title[n]["parent"] for n in ("hull", "radar", "hook")] == ["ship"] * 3 and title["ship"]["kind"] == "group" and title["ship"]["at"] == pts[names["ship_hull"]]
     assert title["splash_right"]["at"][0] - title["splash_left"]["at"][0] == 76 and title["splash_right"]["mirror"]
     assert title["mini_sub"]["clip"] == (0, 0, 72, 44)
-    assert not any(title[n]["visible"] for n in ("presents", "operation", "neptune", "copyright", "splash_left", "splash_right"))
+    assert not any(title[n]["visible"] for n in ("presents", "operation", "neptune", "copyright", "splash_left", "splash_right", "start_button", "intro_button"))
+    buttons = {n: title[n] for n in ("start_button", "intro_button")}
+    assert order[-2:] == ["start_button", "intro_button"] and all(b["kind"] == "button" for b in buttons.values())
+    assert [(b["at"], b["choice"], b["hotkey"]) for b in buttons.values()] == [((228, 322), "start", "S"), ((330, 322), "intro", "I")]
+    assert all(b["picture"] and b["pressed_picture"] and b["picture"] != b["pressed_picture"] for b in buttons.values())
 
 
 @pytest.mark.legacy
 def test_every_actor_a_legacy_timeline_names_is_on_its_stage():
     actors = {"news_cartoon_stage": step_story.build_news_stage(), "title_stage": step_story.build_title_stage()}
-    news = step_story.build_news_scene()
-    played_on = {news.stage: news.loops + news.timelines, "title_stage": ["title_ship", "title_reveal"]}          # (the title's pairing is code until it is a scene file)
+    played_on = {scene.stage: scene.loops + scene.timelines for scene in step_story.scenes().values()}
     for stage_name, timeline_names in played_on.items():
         held = {a["name"] for a in actors[stage_name].actors}
         for name in timeline_names:
@@ -203,6 +206,15 @@ def test_the_news_cartoon_scene_names_its_stage_timelines_song_and_five_speech_s
     assert 'script_class="StoryScene"' in text and text.count('script = ExtResource("2_speech_step")') == 5
     assert 'group = &"news_speech_4"' in text and "pause_ticks = 219" in text
     assert scene.render() == step_story.build_news_scene().render()
+
+
+def test_the_title_scene_plays_the_ship_then_the_reveal_stops_its_song_there_and_starts_the_story_song_after_the_prompt():
+    scene = step_story.build_title_scene()
+    assert (scene.stage, scene.loops, scene.timelines, scene.song, scene.speech) == ("title_stage", [], ["title_ship", "title_reveal"], "title", [])
+    assert (scene.song_stops_at, scene.prompt_song) == ("title_reveal", "opening") and scene.stage in step_story.stages()
+    text = scene.render()
+    assert 'script_class="StoryScene"' in text and 'song_stops_at = &"title_reveal"' in text and 'prompt_song = &"opening"' in text
+    assert set(step_story.scenes()) == {"news_cartoon", "title"}
 
 
 # --- the console's flicker: ours, baked into news_ambient --------------------------------------------------------------------------

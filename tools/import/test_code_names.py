@@ -55,7 +55,7 @@ def test_the_scan_finds_the_names_of_every_resolver(scan):
             by_kind[kind] = by_kind.get(kind, 0) + 1
     # (the console lights' flicker pictures are in `news_ambient`; the sound and picture names of the cutscenes are in data/story/*.tres and the stages' `data/story/*_stage.tres`, not in the code)
     # (F2 moved the log entries, the supply messages and the sector songs into data/campaigns/*.tres and the sector files: the code builds three fewer runs)
-    floors = {"sound": 16, "music": 4, "voice": 1, "text": 145, "ui_picture": 15, "problem_art": 1, "frame": 3}
+    floors = {"sound": 16, "music": 2, "voice": 1, "text": 145, "ui_picture": 15, "problem_art": 1, "frame": 3}
     for kind, floor in floors.items():
         assert by_kind.get(kind, 0) >= floor, "%s: the scan found %d names, there were at least %d" % (kind, by_kind.get(kind, 0), floor)
     assert len(scan.patterns) >= 9
@@ -66,6 +66,7 @@ def test_the_scan_finds_the_names_of_every_resolver(scan):
 UNCHECKED_BUT_NAMES = {
     ("voyager_closing.gd", "closing"): "the name of an animation of the closing cutscene (the song `closing` is `Audio.SONG_CLOSING`)",
     ("sim_world.gd", "finale"): "a step of `SimWorld.TICK_ORDER` (the finale check), not the song or the sound `finale`",
+    ("opening.gd", "title"): "the name of the scene file `title` (`data/story/title.tres`), not the song `title`",
     ("sub_model.gd", "message_light"): "a field name in `SubModel.SWITCH_FIELDS` (the beacon), not the sound `message_light`",
 }
 

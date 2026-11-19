@@ -8,11 +8,12 @@ belong to the original and the nodes belong to the view.
 
     news_cartoon        the scene: its stage, its two timelines, its song and its speech (what is said, in which order, after which pause)   (OPENING.C, constants below)
     news_cartoon_stage  the news cartoon's actors and where they stand                                (the position table, extracted/tables/opening.json)
-    title_stage         the title scene's actors and where they stand                                 (the same)
+    title               the scene: its stage, the ship and the reveal played in turn, its song, the song that stops, the prompt's song   (OPENING.C, constants below)
+    title_stage         the title scene's actors (the two buttons of the prompt among them) and where they stand   (the same)
     news_report         the capsule's trail, the bulletins typed, the crew, the alarm lights, the end   (extracted/tables/opening.json)
     news_ambient        the alarm lights' four states, the pulsing ring and the console's flicker, a loop of 64 redraws   (the same; the flicker is ours)
     title_ship          the ship scene, 163 frames of 12 ticks                                           (title_scene.frames)
-    title_reveal        "Presents" / "OPERATION" / "NEPTUNE" with their sounds and the prompt            (reveal_and_prompt)
+    title_reveal        the ship's parts go, "Presents" / "OPERATION" / "NEPTUNE" with their sounds and the prompt   (reveal_and_prompt)
     expert_hoist        the Expert closing: the sub turns, the hook comes down, the cable hoists         (CLOSING.C, constants below)
     expert_deck         the deck shot: the sub rises into the ship, six sailors act, the box blinks      (+ expert_closing.json)
     expert_wait         the box blinks until a key
@@ -193,7 +194,7 @@ def timeline_digest(timeline: Timeline) -> str:
 
 
 class Stage:
-    """A CutsceneStage being collected: the actors in DRAW ORDER, each (name, kind, picture name, position, mirror, parent, visible, clip, size)."""
+    """A CutsceneStage being collected: the actors in DRAW ORDER, each (name, kind, picture name, position, mirror, parent, visible, clip, size, and for a button the picture pressed, what it answers and its hotkey)."""
 
     def __init__(self, provenance: str):
         self.provenance = provenance
@@ -201,11 +202,11 @@ class Stage:
 
     def actor(self, name: str, kind: str = "picture", picture: str = "", at: tuple[float, float] = (0, 0), mirror: bool = False,
               parent: str = "", visible: bool = True, clip: tuple[float, float, float, float] | None = None,
-              size: tuple[float, float] | None = None) -> None:
+              size: tuple[float, float] | None = None, pressed_picture: str = "", choice: str = "", hotkey: str = "") -> None:
         assert all(a["name"] != name for a in self.actors), name
         assert not parent or any(a["name"] == parent for a in self.actors), (name, parent)         # a parent is listed before its children
         self.actors.append({"name": name, "kind": kind, "picture": picture, "at": at, "mirror": mirror, "parent": parent,
-                            "visible": visible, "clip": clip, "size": size})
+                            "visible": visible, "clip": clip, "size": size, "pressed_picture": pressed_picture, "choice": choice, "hotkey": hotkey})
 
     def render(self) -> str:
         t = tres.Tres("Resource", "CutsceneStage", SCRIPTS + "cutscene_stage.gd")
@@ -230,6 +231,12 @@ class Stage:
                 props.append(("clip", rect(*a["clip"])))
             if a["size"]:
                 props.append(("size", v2(*a["size"])))
+            if a["pressed_picture"]:
+                props.append(("pressed_picture", sn(a["pressed_picture"])))
+            if a["choice"]:
+                props.append(("choice", sn(a["choice"])))
+            if a["hotkey"]:
+                props.append(("hotkey", tres.s(a["hotkey"])))
             refs.append(t.sub("Resource", props, script=actor_script, prefix="Actor"))
         t.set("provenance", tres.s(self.provenance))
         t.set("actors", tres.array('ExtResource("%s")' % actor_id, refs))
@@ -237,10 +244,13 @@ class Stage:
 
 
 class Scene:
-    """A StoryScene being collected: the stage, the looping and the one-shot timelines it plays (by name), its song and its speech steps (pause ticks, voice group)."""
+    """A StoryScene being collected: the stage, the looping and the one-shot timelines it plays (by name), its song, the timeline at whose start the song stops, the song of its prompt and its speech steps (pause ticks, voice group)."""
 
-    def __init__(self, provenance: str, stage: str, loops: Sequence[str], timelines: Sequence[str], song: str, speech: Sequence[tuple[int, str]]):
+    def __init__(self, provenance: str, stage: str, loops: Sequence[str], timelines: Sequence[str], song: str, speech: Sequence[tuple[int, str]],
+                 song_stops_at: str = "", prompt_song: str = ""):
         self.provenance = provenance
+        self.song_stops_at = song_stops_at
+        self.prompt_song = prompt_song
         self.stage = stage
         self.loops = list(loops)
         self.timelines = list(timelines)
@@ -250,13 +260,17 @@ class Scene:
     def render(self) -> str:
         t = tres.Tres("Resource", "StoryScene", SCRIPTS + "story_scene.gd")
         step_script = SCRIPTS + "speech_step.gd"
-        step_id = t.ext_id("Script", step_script)
+        step_id = t.ext_id("Script", step_script) if self.speech else ""
         refs = [t.sub("Resource", [("pause_ticks", str(pause)), ("group", sn(group))], script=step_script, prefix="Step") for pause, group in self.speech]
         t.set("stage", sn(self.stage))
         t.set("loops", tres.array("StringName", (sn(n) for n in self.loops)))
         t.set("timelines", tres.array("StringName", (sn(n) for n in self.timelines)))
         if self.song:
             t.set("song", sn(self.song))
+        if self.song_stops_at:
+            t.set("song_stops_at", sn(self.song_stops_at))
+        if self.prompt_song:
+            t.set("prompt_song", sn(self.prompt_song))
         if refs:
             t.set("speech", tres.array('ExtResource("%s")' % step_id, refs))
         t.set("provenance", tres.s(self.provenance))
@@ -558,12 +572,21 @@ def build_title_stage() -> Stage:
     stage.actor("splash_right", picture=picture(SPLASH_IDLE_PICTURE), at=(left[0] + splash["right_dx"], left[1]), mirror=bool(splash["right_mirror"]), visible=False)
     for actor, number, point in (("presents", 1044, "presents"), ("operation", 1045, "operation"), ("neptune", 1046, "neptune"), ("copyright", 1047, "copyright_text")):
         stage.actor(actor, picture=picture(number), at=pts[names[point]], visible=False)
+    for choice, key in (("start", "S"), ("intro", "I")):
+        button = data["reveal_and_prompt"]["prompt"]["buttons"][choice]
+        assert key in data["reveal_and_prompt"]["prompt"]["keys"][choice]
+        stage.actor("%s_button" % choice, kind="button", picture=picture(button["normal"]), pressed_picture=picture(button["pressed"]), at=(button["x"], button["y"]),
+                    choice=choice, hotkey=key, visible=False)
     return stage
 
 
 PROVENANCE_TITLE_STAGE = (
     "Original: the position table of OpeningSequence (NEP.DLL resource 10012; extracted/tables/opening.json, points and point_names) and the order the title scene draws in "
-    "(title_scene.draw_order). The sub's size is the original's; the splash's right half is drawn mirrored 76 px to the right of the left one.")
+    "(title_scene.draw_order). The sub's size is the original's; the splash's right half is drawn mirrored 76 px to the right of the left one. The prompt's two buttons "
+    "stand where TitleScreenPromptLoop 0x42a49a draws them (reveal_and_prompt.prompt) and are hidden until the prompt begins.")
+
+
+SHIP_SCENE_ACTORS = ("ship", "waves_front", "mini_sub", "spray", "splash_left", "splash_right")     # the ship scene's actors, gone when the title is revealed
 
 
 def build_title_reveal() -> Timeline:
@@ -573,6 +596,8 @@ def build_title_reveal() -> Timeline:
     assert [s["t_ticks"] for s in steps] == [0, hold, hold, 2 * hold] and [s.get("sfx") for s in steps] == [51, None, 51, 51]
     wipe = sound(data["steps"][0]["sfx"])
     tl = Timeline(2 * hold + REVEAL_TAIL_TICKS, PROVENANCE_REVEAL)
+    for actor in SHIP_SCENE_ACTORS:
+        tl.track(actor, "visible", [(0, "false")])
     tl.track("presents", "visible", [(0, "true"), (hold, "false")])
     tl.track("operation", "visible", [(0, "false"), (hold, "true")])
     tl.track("neptune", "visible", [(0, "false"), (2 * hold, "true")])
@@ -586,7 +611,8 @@ def build_title_reveal() -> Timeline:
 
 PROVENANCE_REVEAL = (
     "Original: the three title pictures of OpeningSequence (extracted/tables/opening.json, reveal_and_prompt): each appears at once "
-    "with a sound and stays 292 ticks; at the third one the prompt (Start / Intro) begins. Ours: the 7.3 tick tail.")
+    "with a sound and stays 292 ticks; at the third one the prompt (Start / Intro) begins; the ship scene's parts are gone from the first moment (the original draws sky, sea and "
+    "clouds afresh, TitleDrawBackdrop 0x429d09, and the wave strip is drawn only with the ship, TitleWaveStrip 0x42a1d7). Ours: the 7.3 tick tail.")
 
 
 # --- the Expert closing ------------------------------------------------------------------------------------------------------------
@@ -950,8 +976,19 @@ def build_news_scene() -> Scene:
         "news_cartoon_stage", ["news_ambient"], ["news_report"], "opening", [(pause, "news_speech_%d" % i) for i, pause in enumerate(NEWS_SPEECH_PAUSES)])
 
 
+def build_title_scene() -> Scene:
+    """The title as a scene: its stage, the ship and the reveal of the title played in turn (Enter ends the ship scene, and a hold of the reveal), the song 9503 until the title is revealed and, after the prompt's delay, the story's own 9502
+    (`OpeningMusicCue` 0x42b0f9, `TitleScreenPromptLoop` 0x42a49a). The prompt's time-out and delay are `prompt.*` of durations.json."""
+    prompt = load_json(TABLES / "opening.json")["reveal_and_prompt"]["prompt"]
+    assert prompt["music_id"] == 9502
+    return Scene(
+        "Original: OpeningSequence 0x42b16b, the second half: music 9503 (title), the ship scene (title_ship), the title revealed (title_reveal; the song stops, OpeningMusicCue 0x42b0f9), the prompt "
+        "(TitleScreenPromptLoop 0x42a49a), after it music 9502 (opening) (tools/import/step_story.py).",
+        "title_stage", [], ["title_ship", "title_reveal"], "title", [], song_stops_at="title_reveal", prompt_song="opening")
+
+
 def scenes() -> dict[str, Scene]:
-    return {"news_cartoon": build_news_scene()}
+    return {"news_cartoon": build_news_scene(), "title": build_title_scene()}
 
 
 def run() -> None:

@@ -64,6 +64,12 @@ def news_cartoon_scene() -> st.Scene:
                     "news_cartoon_stage", ["news_ambient"], ["news_report"], "opening", [(pause, "news_speech_%d" % i) for i, pause in enumerate(NEWS_SPEECH_PAUSES)])
 
 
+def title_scene() -> st.Scene:
+    """The title's scene: its stage, the ship and the reveal in turn, the song `title` until the title is revealed, the story's song after the prompt."""
+    return st.Scene("Dev pack: the title's scene of our own: the ship, the three holds of the title, the prompt (tools/dev_pack/dev_story.py).",
+                    "title_stage", [], ["title_ship", "title_reveal"], "title", [], song_stops_at="title_reveal", prompt_song="opening")
+
+
 def news_cartoon_stage() -> st.Stage:
     """The news cartoon's stage by simple rules: the map, a diagonal trail of 21 dots, the ring, two consoles, three rows of lights, five crew in a row, the teletype."""
     s = stage("the news cartoon's actors, laid out by simple rules; the teletype is 280 x 120")
@@ -86,7 +92,7 @@ def news_cartoon_stage() -> st.Stage:
 
 
 def title_stage() -> st.Stage:
-    """The title scene's stage: the ship (a group) with its hull, radar and hook, the mini-sub (clipped), the waves, the spray, the splash, the four title pictures."""
+    """The title scene's stage: the ship (a group) with its hull, radar and hook, the mini-sub (clipped), the waves, the spray, the splash, the four title pictures, the two buttons of the prompt."""
     s = stage("the title scene's actors, laid out by simple rules")
     s.actor("sky", picture="title_sky", at=(0, 0))
     s.actor("sea", picture="title_sea", at=(0, 200))
@@ -104,6 +110,8 @@ def title_stage() -> st.Stage:
     for actor, picture, at in (("presents", "title_presents", (40, 20)), ("operation", "title_operation", (100, 80)),
                                ("neptune", "title_neptune", (160, 120)), ("copyright", "title_copyright", (200, 360))):
         s.actor(actor, picture=picture, at=at, visible=False)
+    s.actor("start_button", kind="button", picture="start_button_up", pressed_picture="start_button_down", at=(228, 322), choice="start", hotkey="S", visible=False)
+    s.actor("intro_button", kind="button", picture="intro_button_up", pressed_picture="intro_button_down", at=(330, 322), choice="intro", hotkey="I", visible=False)
     return s
 
 
@@ -158,7 +166,9 @@ def title_ship() -> st.Timeline:
 
 def title_reveal() -> st.Timeline:
     """Three holds of 100 ticks: "Presents", then "OPERATION", then "NEPTUNE" with the copyright and the prompt."""
-    t = timeline(2 * REVEAL_HOLD + 7.3, "the title in three holds of %d ticks" % REVEAL_HOLD)
+    t = timeline(2 * REVEAL_HOLD + 7.3, "the title in three holds of %d ticks; the ship scene's parts are gone from the first moment" % REVEAL_HOLD)
+    for actor in st.SHIP_SCENE_ACTORS:
+        t.track(actor, "visible", [(0, "false")])
     t.track("presents", "visible", [(0, "true"), (REVEAL_HOLD, "false")])
     t.track("operation", "visible", [(0, "false"), (REVEAL_HOLD, "true")])
     t.track("neptune", "visible", [(0, "false"), (2 * REVEAL_HOLD, "true")])
@@ -311,7 +321,8 @@ def write_all() -> int:
     write_text(story / "news_cartoon_stage.tres", news_cartoon_stage().render())
     write_text(story / "news_cartoon.tres", news_cartoon_scene().render())
     write_text(story / "title_stage.tres", title_stage().render())
+    write_text(story / "title.tres", title_scene().render())
     write_text(story / "closing_crew.tres", closing_crew())
     write_text(story / "story_script.tres", story_script())
     write_text(story / "voyager_closing_script.tres", voyager_closing_script())
-    return 12
+    return 13

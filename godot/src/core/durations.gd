@@ -60,7 +60,7 @@ static func at(path: String) -> int:
 # --- checking a pack's file ----------------------------------------------------------------------------------------------------
 
 ## The keys whose smallest sensible value is 1: the rules take `maxi(value, 1)` of them (a step cannot take no time at all).
-const AT_LEAST_ONE: Array[String] = ["fade.ticks", "title.prompt_timeout_ticks", "log_scan.ticks_per_picture", "sign_in.scan_ticks_per_picture", "sign_in.scan_sweeps"]
+const AT_LEAST_ONE: Array[String] = ["fade.ticks", "prompt.timeout_ticks", "log_scan.ticks_per_picture", "sign_in.scan_ticks_per_picture", "sign_in.scan_sweeps"]
 ## A wait longer than this many ticks (ten minutes) is probably a typo.
 const LONG_TICKS := 73 * 600
 ## A position this far outside the 640 x 400 window (a whole window) is probably a typo.

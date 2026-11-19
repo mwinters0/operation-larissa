@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="StoryScene" format=3]
+
+[ext_resource type="Script" path="res://src/resources/story_scene.gd" id="1_story_scene"]
+
+[resource]
+script = ExtResource("1_story_scene")
+stage = &"title_stage"
+loops = Array[StringName]([])
+timelines = Array[StringName]([&"title_ship", &"title_reveal"])
+song = &"title"
+song_stops_at = &"title_reveal"
+prompt_song = &"opening"
+provenance = "Dev pack: the title's scene of our own: the ship, the three holds of the title, the prompt (tools/dev_pack/dev_story.py)."

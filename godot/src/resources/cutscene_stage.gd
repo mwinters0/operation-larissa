@@ -52,7 +52,7 @@ func problems() -> PackedStringArray:
 
 
 ## What is wrong with `actor` given the actors `placed` before it (name -> StageActor), or "" when it can be put on the stage: no name or one another has, a kind the builder
-## does not know, a parent that is not an actor placed before it (or that is a text box), a text box with no size. The one judgement `problems` and `StageBuilder` share.
+## does not know, a parent that is not an actor placed before it (or that is a text box), a text box with no size, a button with no picture, with no answer of `StageActor.CHOICES` or with a key the engine does not know. The one judgement `problems` and `StageBuilder` share.
 func problem_with(actor: StageActor, placed: Dictionary) -> String:
 	if actor == null:
 		return "an actor that is not a StageActor"
@@ -64,6 +64,13 @@ func problem_with(actor: StageActor, placed: Dictionary) -> String:
 		return "actor '%s': unknown kind '%s' (one of %s)" % [actor.name, actor.kind, ", ".join(StageActor.KINDS)]
 	if actor.kind == StageActor.TEXT and (actor.size.x <= 0.0 or actor.size.y <= 0.0):
 		return "actor '%s': a text box needs a size" % actor.name
+	if actor.kind == StageActor.BUTTON:
+		if actor.picture == &"":
+			return "actor '%s': a button needs a picture" % actor.name
+		if not StageActor.CHOICES.has(actor.choice):
+			return "actor '%s': a button answers '%s', not one of %s" % [actor.name, actor.choice, ", ".join(StageActor.CHOICES)]
+		if actor.hotkey != "" and OS.find_keycode_from_string(actor.hotkey) == KEY_NONE:
+			return "actor '%s': '%s' is not a key the engine knows" % [actor.name, actor.hotkey]
 	if actor.parent != &"":
 		if not placed.has(actor.parent):
 			return "actor '%s': its parent '%s' is not an actor listed before it" % [actor.name, actor.parent]

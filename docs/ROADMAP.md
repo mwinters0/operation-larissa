@@ -33,15 +33,11 @@ Tools for the technique of [`genai/IMAGES.md`](genai/IMAGES.md).
 ## Animations a pack makes
 
 The opening's timing, stage and the news cartoon's scene are pack data (`CutsceneTimeline`s, `CutsceneStage`s, `StoryScene`, `voice_cues`, `durations.json`); what is code is the order of the
-parts and the behaviour around the timelines (`TitleScene`, `Opening`). These steps move the rest into the pack, so the legacy pack holds the original's opening and another pack can hold an
+parts and the behaviour around the timelines (`Opening`). These steps move the rest into the pack, so the legacy pack holds the original's opening and another pack can hold an
 opening of its own. Each is one session; the engine verbs stay rules (input, waits, choices) and a pack only arranges them. In every
 step the fidelity pins hold unchanged: `L: test_cutscene_timing` (the timing hashes), `test_opening` / `test_opening_legacy`, the key
 handling by phase.
 
-- **A4. The title on the same segment.** The verbs the title needs: timelines played in a chain (`ship`, then `reveal`; Enter during
-  one goes on to the next, whose first keys set the stage it needs, so `_leave_ship_scene` becomes keys), `hold` (Enter seeks to the
-  next mark and fires its cues: `_end_hold`), and `prompt` (the Start / Intro choice, its keys and buttons, the time-out and the
-  song after it). `TitleScene` becomes the legacy pack's `title` scene file; the segment's `wants_intro` answers the director.
 - **A5. The opening is a list.** `data/story/opening.json` names the parts in order (scene files and the story pages), which part's
   choice leads on, and whether a timed-out last part starts it over (attract mode, `OpeningSequence`). `Opening` plays what the chain
   holds; a pack may hold an opening of its own or an empty one (straight to sign-in). A part that does not resolve is told once

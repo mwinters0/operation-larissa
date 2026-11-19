@@ -18,10 +18,10 @@ readable examples of how to check the same idea.
 |---|---|
 | The main scene, `change_scene_to_file` | `main.tscn`, `src/main.gd`, `src/autoload/scene_router.gd` |
 | Instancing scenes in code (`PackedScene.instantiate()`), `queue_free` | `src/gameplay/original_presenter.gd` (a new screen rebuilds the layers' children), `src/gameplay/ink_pellet.tscn`, `src/problems/problem_runner.gd` |
-| Draw order is tree order (instead of `z_index`) | `src/gameplay/original_presenter.tscn` (the node order IS the layering), `src/story/title_scene.gd` (`move_child` for the ship) |
+| Draw order is tree order (instead of `z_index`) | `src/gameplay/original_presenter.tscn` (the node order IS the layering), `src/story/stage_builder.gd` (the stage's list order) |
 | `%UniqueName` nodes and `@onready` | almost every scene script, e.g. `src/ui/hud.gd` |
 | A scene that is only a container for a flow ("director"); in `Game` the flow itself is a plain object and the scene is its view | `src/gameplay/game.gd` (and `src/rules/game_flow.gd`), `src/story/opening.gd` |
-| A common base class for different scenes | `src/story/story_segment.gd` (`TimelineSegment`, `TitleScene`, `StoryPages`, `VoyagerClosing`, `ExpertClosing`) |
+| A common base class for different scenes | `src/story/story_segment.gd` (`TimelineSegment`, `StoryPages`, `VoyagerClosing`, `ExpertClosing`) |
 | Debug tools kept out of the game, `OS.is_debug_build()` | `src/debug/game_debug.gd`, `src/debug/*.tscn` (every debug scene runs with F6) |
 | `CanvasLayer` for overlays | `src/gameplay/game.tscn` (`ProblemLayer`, `DialogLayer`), `src/autoload/scene_router.gd` (the fade) |
 
@@ -155,7 +155,7 @@ readable examples of how to check the same idea.
 | `AnimationPlayer` authored in a scene | `src/problems/problem_screen.tscn` (open / wrong / right), `src/ui/hud.tscn` (blinking lights) |
 | `AnimationPlayer` with animations built in code (tracks and keys) | `src/story/cutscene.gd` (what an `Animation` is made of: `values`, the method tracks of `_add_cues`, markers) |
 | A cutscene as DATA, played by an `AnimationPlayer` that is built from it at run time: the timeline names actors, pictures and sounds, never a node path | `src/resources/cutscene_timeline.gd`, `cutscene_track.gd`, `cutscene_cue.gd` (the data), `src/story/cutscene_cast.gd` (which node plays which actor), a pack's `data/story/*.tres` (`Catalog.story_timeline`; the legacy pack's are written by `tools/import/step_story.py`, the dev pack's by `tools/dev_pack/dev_story.py`) |
-| The cutscenes' value tracks, method tracks, `visible_ratio` for typing, `region_rect` for wipes, as the views of a timeline | `src/story/timeline_segment.gd`, `src/story/title_scene.gd`, `src/story/voyager_closing.gd`, `src/story/expert_closing.gd` |
+| The cutscenes' value tracks, method tracks, `visible_ratio` for typing, `region_rect` for wipes, as the views of a timeline | `src/story/timeline_segment.gd`, `src/story/voyager_closing.gd`, `src/story/expert_closing.gd` |
 | Making the same kind of data when nothing in the original is behind it: a seeded flicker baked into the pack's timeline by a generator that reproduces Godot's own (`Pcg32`), a fade made in code | `tools/import/step_story.py` (`console_flicker`), `StoryPages._fade_in_timeline` |
 | Why a choreography that depends on run-time numbers is data too: the rules as numbers, a function that runs them | `src/resources/voyager_closing_script.gd` |
 | A scene as a list of names in a file, and a small vocabulary of verbs read by both the player and the check | `src/resources/story_scene.gd`, `src/story/story_verbs.gd`, `src/story/timeline_segment.gd` |

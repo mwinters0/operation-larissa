@@ -5,6 +5,7 @@ extends GdUnitTestSuite
 ## (`Cutscene`, `PackCheck`), each once and naming what the player sees instead. The opening's own stages are checked against its nodes in `test_opening` and `test_opening_legacy`.
 
 const PROBE := &"probe_stage"
+const TITLE_STAGE := &"title_stage"          # the stage the title scene names
 
 var _shelf: PackShelf
 
@@ -139,31 +140,73 @@ func test_a_timeline_that_names_an_actor_the_stage_does_not_hold_is_told_once_an
 
 
 func test_the_check_of_a_pack_tells_an_actor_a_timeline_names_that_no_stage_holds() -> void:
-	var title := Catalog.story_stage(TitleScene.STAGE).duplicate(true) as CutsceneStage
+	var title := Catalog.story_stage(TITLE_STAGE).duplicate(true) as CutsceneStage
 	var kept: Array[StageActor] = []
 	for actor in title.actors:
 		if actor.name != &"spray":
 			kept.append(actor)
 	title.actors = kept
 	_shelf = PackShelf.new()
-	_shelf.write_json("data/story/%s.json" % TitleScene.STAGE, ResourceJson.new().data_of(title))
+	_shelf.write_json("data/story/%s.json" % TITLE_STAGE, ResourceJson.new().data_of(title))
 	var options := PackCheck.Options.new()
 	options.reach = false
 	var report := PackCheck.run(Pack.open(_shelf.root), options)
 	var lines := report.findings.filter(func(finding: PackReport.Finding) -> bool: return finding.area == "story").map(func(finding: PackReport.Finding) -> String: return finding.message)
-	assert_array(lines).has_size(1)
-	assert_str(lines[0]).is_equal("timeline 'title_ship' names the actor 'spray', which stage 'title_stage' does not hold: nothing moves or changes for it")
+	assert_array(lines).is_equal(["timeline 'title_ship' names the actor 'spray', which stage 'title_stage' does not hold: nothing moves or changes for it",
+			"timeline 'title_reveal' names the actor 'spray', which stage 'title_stage' does not hold: nothing moves or changes for it"])
 	assert_bool(report.passes()).is_false()
 	# a pack that leaves the stages alone has no such finding, and a stage with a mistake of its own is one
 	var clean := PackCheck.run(Packs.dev(), options)
 	assert_bool(clean.findings.any(func(finding: PackReport.Finding) -> bool: return finding.area == "story")).is_false()
 	title.actors.append(_actor(&"dup"))
 	title.actors.append(_actor(&"dup"))
-	_shelf.write_json("data/story/%s.json" % TitleScene.STAGE, ResourceJson.new().data_of(title))
+	_shelf.write_json("data/story/%s.json" % TITLE_STAGE, ResourceJson.new().data_of(title))
 	report = PackCheck.run(Pack.open(_shelf.root), options)
 	assert_bool(report.findings.any(func(finding: PackReport.Finding) -> bool: return finding.area == "story" and finding.message.contains("stage 'title_stage': two actors are called 'dup'"))).is_true()
 
 
-func test_the_chain_needs_the_news_scene_and_the_titles_stage() -> void:
-	assert_str(PackNeeds.FILES["data/story/%s.tres" % Opening.SCENES[0]]).is_equal("StoryScene")
-	assert_str(PackNeeds.FILES["data/story/%s.tres" % TitleScene.STAGE]).is_equal("CutsceneStage")
+func test_the_chain_needs_the_scenes_the_opening_plays_and_the_stages_they_name() -> void:
+	var named := PackNeeds.named_by_scenes()
+	for scene_name in Opening.SCENES:
+		assert_str(PackNeeds.FILES["data/story/%s.tres" % scene_name]).is_equal("StoryScene")
+		assert_str(named["data/story/%s.tres" % Catalog.story_scene(scene_name).stage]).is_equal("CutsceneStage")
+	assert_str(Catalog.story_scene(&"title").stage).is_equal(TITLE_STAGE)
+
+
+func test_a_button_is_a_texture_button_of_its_pictures_size_that_acts_on_the_press_and_has_no_focus() -> void:
+	var stage := CutsceneStage.new()
+	var button := _button(&"go", Vector2(40, 50), StageActor.INTRO, "I")
+	stage.actors = [button]
+	_with_stage(stage)
+	var container: Node2D = auto_free(Node2D.new())
+	add_child(container)
+	var cast := CutsceneCast.new(container)
+	StageBuilder.build(PROBE, container, cast)
+	var node := cast.node_of(&"go") as TextureButton
+	assert_object(node).is_not_null()
+	assert_vector(node.size).is_equal(Vector2(Assets.ui_picture(&"intro_button_up").get_size()))
+	assert_vector(node.get_global_rect().position).is_equal(Vector2(40, 50))
+	assert_int(node.action_mode).is_equal(BaseButton.ACTION_MODE_BUTTON_PRESS)
+	assert_int(node.focus_mode).is_equal(Control.FOCUS_NONE)
+	assert_bool(node.visible).is_false()
+	assert_array(StageNodes.differences(stage, container)).is_empty()
+
+
+func test_a_button_with_no_picture_no_answer_or_a_key_the_engine_does_not_know_is_a_problem() -> void:
+	var stage := CutsceneStage.new()
+	var plain := _button(&"plain", Vector2.ZERO, StageActor.START, "")
+	var no_picture := _button(&"no_picture", Vector2.ZERO, StageActor.START, "")
+	no_picture.picture = &""
+	stage.actors = [plain, no_picture, _button(&"maybe", Vector2.ZERO, &"maybe", ""), _button(&"odd_key", Vector2.ZERO, StageActor.INTRO, "Nonsense")]
+	assert_array(stage.problems()).is_equal(["actor 'no_picture': a button needs a picture", "actor 'maybe': a button answers 'maybe', not one of start, intro",
+			"actor 'odd_key': 'Nonsense' is not a key the engine knows"])
+
+
+func _button(button_name: StringName, at: Vector2, answer: StringName, key: String) -> StageActor:
+	var actor := _actor(button_name, StageActor.BUTTON, at)
+	actor.picture = &"intro_button_up"
+	actor.pressed_picture = &"intro_button_down"
+	actor.visible = false
+	actor.choice = answer
+	actor.hotkey = key
+	return actor

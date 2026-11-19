@@ -25,7 +25,7 @@ func test_the_midi_file_of_a_song_follows_the_sound_set() -> void:
 	var catalog := Catalog.music_catalog()
 	assert_str(catalog.midi_file_of(SONG, MusicCatalog.SoundSet.GENERAL_MIDI)).is_equal("ESECT1.MID")
 	assert_str(catalog.midi_file_of(SONG, MusicCatalog.SoundSet.ADLIB)).is_equal("BSECT1.MID")
-	assert_str(catalog.midi_file_of(AudioService.SONG_TITLE)).is_equal("ENEPT2.MID")
+	assert_str(catalog.midi_file_of(&"title")).is_equal("ENEPT2.MID")
 	assert_str(catalog.midi_file_of(&"no_such_song")).is_equal("")
 
 

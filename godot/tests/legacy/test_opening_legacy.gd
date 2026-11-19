@@ -7,7 +7,7 @@ extends GdUnitTestSuite
 ## `skip`, `finished`), and that the director leads to the sign-in screen.
 
 const NEWS := &"news_cartoon"          # the scene file the news cartoon is (data/story/news_cartoon.tres)
-const TITLE := "res://src/story/title_scene.tscn"
+const TITLE := &"title"               # the scene file the title is (data/story/title.tres)
 const PAGES := "res://src/story/story_pages.tscn"
 const OPENING := "res://src/story/opening.tscn"
 
@@ -69,16 +69,16 @@ func test_news_cartoon_builds_and_every_track_finds_its_node() -> void:
 func test_the_nodes_of_both_scenes_are_what_their_stage_files_say() -> void:
 	var news: TimelineSegment = auto_free(TimelineSegment.of(NEWS))
 	add_child(news)
-	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	var title: TimelineSegment = auto_free(TimelineSegment.of(TITLE))
 	add_child(title)
-	for scene: Array in [[Catalog.story_scene(NEWS).stage, news.stage], [TitleScene.STAGE, title.stage]]:
+	for scene: Array in [[Catalog.story_scene(NEWS).stage, news.stage], [Catalog.story_scene(TITLE).stage, title.stage]]:
 		var stage := Catalog.story_stage(scene[0])
 		assert_object(stage).override_failure_message("%s: no stage" % scene[0]).is_not_null()
 		assert_array(stage.problems()).override_failure_message("%s: %s" % [scene[0], stage.problems()]).is_empty()
 		assert_array(StageNodes.differences(stage, scene[1])).override_failure_message("%s: %s" % [scene[0], StageNodes.differences(stage, scene[1])]).is_empty()
 	# the cast knows every actor of the stage: the same names the timelines use
 	assert_int(news.stage.find_children("*", "", true, false).size()).is_equal(Catalog.story_stage(Catalog.story_scene(NEWS).stage).actors.size())
-	assert_array(_unresolved_tracks(title.animations)).is_empty()
+	assert_array(_unresolved_tracks(title.script_player)).is_empty()
 
 
 func test_the_six_bulletins_are_the_original_wording() -> void:
@@ -99,72 +99,72 @@ func test_news_cartoon_skip_ends_it_once() -> void:
 
 
 func test_title_scene_phases_and_choice() -> void:
-	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	var title: TimelineSegment = auto_free(TimelineSegment.of(TITLE))
 	add_child(title)
-	assert_array(_unresolved_tracks(title.animations)).is_empty()
-	assert_int(title.phase).is_equal(TitleScene.Phase.SHIP)
-	assert_float(title.animations.get_animation(&"ship").length).is_equal_approx(163.0 * 12.0 / 73.0, 0.01)
+	assert_array(_unresolved_tracks(title.script_player)).is_empty()
+	assert_str(TitleView.phase(title)).is_equal(TitleView.SHIP)
+	assert_float(title.script_player.get_animation(&"title_ship").length).is_equal_approx(163.0 * 12.0 / 73.0, 0.01)
 	# the ship sails right across the screen and stands still (x = 56) while the sub is dropped
-	title.animations.seek(57.0 * TITLE_STEP, true)
-	assert_float(title.ship.position.x).is_equal(56.0)
-	title.animations.seek(80.0 * TITLE_STEP, true)
-	assert_float(title.ship.position.x).is_equal(56.0)
+	title.script_player.seek(57.0 * TITLE_STEP, true)
+	assert_float(TitleView.ship(title).position.x).is_equal(56.0)
+	title.script_player.seek(80.0 * TITLE_STEP, true)
+	assert_float(TitleView.ship(title).position.x).is_equal(56.0)
 	# Enter leaves the ship scene for the reveal, each further Enter ends one hold; at the prompt it means Intro
 	# (G30: `TitleRevealText` 0x42a211 / `WaitEnterSpaceEscOrTicks` 0x428fbe wait twice up to 292 ticks)
 	title.advance()
-	assert_int(title.phase).is_equal(TitleScene.Phase.REVEAL)
-	assert_bool(title.prompt.visible).is_false()
+	assert_str(TitleView.phase(title)).is_equal(TitleView.REVEAL)
+	assert_bool(TitleView.prompt_visible(title)).is_false()
 	var count := [0]
 	title.finished.connect(func() -> void: count[0] += 1)
 	title.advance()                                       # "Presents" -> "OPERATION"
-	assert_int(title.phase).is_equal(TitleScene.Phase.REVEAL)
+	assert_str(TitleView.phase(title)).is_equal(TitleView.REVEAL)
 	assert_int(count[0]).is_equal(0)
 	title.advance()                                       # "OPERATION" -> "NEPTUNE" + the prompt
-	assert_int(title.phase).is_equal(TitleScene.Phase.PROMPT)
-	assert_bool(title.prompt.visible).is_true()
+	assert_str(TitleView.phase(title)).is_equal(TitleView.PROMPT)
+	assert_bool(TitleView.prompt_visible(title)).is_true()
 	assert_int(count[0]).is_equal(0)
 	title.advance()
 	assert_bool(title.wants_intro).is_true()
 	assert_int(count[0]).is_equal(1)
 
 
-func _title_visible(title: TitleScene) -> Array:
+func _title_visible(title: TimelineSegment) -> Array:
 	var names := ["Presents", "Operation", "Neptune", "Copyright"]
 	return names.map(func(n: String) -> bool: return (title.stage.get_node(n) as Sprite2D).visible)
 
 
 ## G30: Enter ends only the hold that is running; it never skips a picture and never jumps to the finished title.
 func test_enter_in_the_reveal_ends_one_hold_at_a_time() -> void:
-	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	var title: TimelineSegment = auto_free(TimelineSegment.of(TITLE))
 	add_child(title)
 	title.advance()                                       # out of the ship scene: "Presents" first
-	title.animations.seek(0.1, true)
+	title.script_player.seek(0.1, true)
 	assert_array(_title_visible(title)).is_equal([true, false, false, false])
 	title.advance()                                       # 1st hold over: "OPERATION" alone
 	assert_array(_title_visible(title)).is_equal([false, true, false, false])
-	assert_int(title.phase).is_equal(TitleScene.Phase.REVEAL)
-	assert_float(title.animations.current_animation_position).is_greater(HOLD_SECONDS)
-	assert_float(title.animations.current_animation_position).is_less(HOLD_SECONDS + 0.1)
+	assert_str(TitleView.phase(title)).is_equal(TitleView.REVEAL)
+	assert_float(title.script_player.current_animation_position).is_greater(HOLD_SECONDS)
+	assert_float(title.script_player.current_animation_position).is_less(HOLD_SECONDS + 0.1)
 	title.advance()                                       # 2nd hold over: "NEPTUNE", the copyright and the prompt
 	assert_array(_title_visible(title)).is_equal([false, true, true, true])
-	assert_int(title.phase).is_equal(TitleScene.Phase.PROMPT)
-	assert_bool(title.prompt.visible).is_true()
+	assert_str(TitleView.phase(title)).is_equal(TitleView.PROMPT)
+	assert_bool(TitleView.prompt_visible(title)).is_true()
 	assert_bool(title.done).is_false()
 
 
 func test_enter_in_the_middle_of_the_second_hold_goes_straight_to_the_prompt() -> void:
-	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	var title: TimelineSegment = auto_free(TimelineSegment.of(TITLE))
 	add_child(title)
 	title.advance()
-	title.animations.seek(HOLD_SECONDS + 1.5, true)
+	title.script_player.seek(HOLD_SECONDS + 1.5, true)
 	title.advance()
-	assert_int(title.phase).is_equal(TitleScene.Phase.PROMPT)
+	assert_str(TitleView.phase(title)).is_equal(TitleView.PROMPT)
 	assert_array(_title_visible(title)).is_equal([false, true, true, true])
 
 
 func test_space_and_escape_leave_the_opening_from_every_part_of_the_title() -> void:
 	for steps in 3:
-		var title: TitleScene = auto_free(load(TITLE).instantiate())
+		var title: TimelineSegment = auto_free(TimelineSegment.of(TITLE))
 		add_child(title)
 		for i in steps:
 			title.advance()
@@ -174,7 +174,7 @@ func test_space_and_escape_leave_the_opening_from_every_part_of_the_title() -> v
 
 
 func test_title_scene_start_means_no_story() -> void:
-	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	var title: TimelineSegment = auto_free(TimelineSegment.of(TITLE))
 	add_child(title)
 	title.advance()
 	title.skip()
@@ -234,7 +234,7 @@ func test_a_click_goes_on_in_every_story_page() -> void:
 	await await_idle_frame()
 	opening.current.skip()                                # (the director would go on to the title: play the parts by hand)
 	await await_idle_frame()
-	var title := opening.current as TitleScene
+	var title := opening.current as TimelineSegment
 	assert_object(title).is_not_null()
 	title.advance()
 	title.advance()
@@ -269,29 +269,29 @@ func test_a_click_is_enter_in_the_cartoon_and_the_ship_scene_and_the_reveal() ->
 	_mouse(opening, Vector2(100, 100), false)
 	assert_bool(cartoon.done).is_true()
 	await await_idle_frame()
-	var title := opening.current as TitleScene
-	assert_int(title.phase).is_equal(TitleScene.Phase.SHIP)
+	var title := opening.current as TimelineSegment
+	assert_str(TitleView.phase(title)).is_equal(TitleView.SHIP)
 	_mouse(opening, Vector2(600, 20), false)
-	assert_int(title.phase).is_equal(TitleScene.Phase.REVEAL)
+	assert_str(TitleView.phase(title)).is_equal(TitleView.REVEAL)
 	_mouse(opening, Vector2(600, 20), false)
 	_mouse(opening, Vector2(600, 20), false)
-	assert_int(title.phase).is_equal(TitleScene.Phase.PROMPT)
+	assert_str(TitleView.phase(title)).is_equal(TitleView.PROMPT)
 	assert_bool(title.done).is_false()
 
 
 func test_the_prompt_buttons_act_on_the_press_and_a_click_elsewhere_is_intro() -> void:
-	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	var title: TimelineSegment = auto_free(TimelineSegment.of(TITLE))
 	add_child(title)
 	title.advance()
 	title.advance()
 	title.advance()
 	await await_idle_frame()
-	assert_int(title.phase).is_equal(TitleScene.Phase.PROMPT)
-	assert_int(title.start_button.action_mode).is_equal(BaseButton.ACTION_MODE_BUTTON_PRESS)    # 0x8975 = the left DOWN code
-	assert_int(title.intro_button.action_mode).is_equal(BaseButton.ACTION_MODE_BUTTON_PRESS)
+	assert_str(TitleView.phase(title)).is_equal(TitleView.PROMPT)
+	assert_int(title.buttons[&"start"].action_mode).is_equal(BaseButton.ACTION_MODE_BUTTON_PRESS)    # 0x8975 = the left DOWN code
+	assert_int(title.buttons[&"intro"].action_mode).is_equal(BaseButton.ACTION_MODE_BUTTON_PRESS)
 	# the release over a button is the button's own hotspot (0x975 / 0x977): nobody answers it
-	title.click(title.start_button.get_global_rect().get_center())
-	title.click(title.intro_button.get_global_rect().get_center())
+	title.click(title.buttons[&"start"].get_global_rect().get_center())
+	title.click(title.buttons[&"intro"].get_global_rect().get_center())
 	assert_bool(title.done).is_false()
 	title.click(Vector2(320, 100))                        # anywhere else: hotspot 0xd = Enter = Intro
 	assert_bool(title.done).is_true()
@@ -299,13 +299,13 @@ func test_the_prompt_buttons_act_on_the_press_and_a_click_elsewhere_is_intro() -
 
 
 func test_a_press_on_the_start_button_chooses_start() -> void:
-	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	var title: TimelineSegment = auto_free(TimelineSegment.of(TITLE))
 	add_child(title)
 	title.advance()
 	title.advance()
 	title.advance()
-	title.start_button.button_down.emit()
-	title.start_button.pressed.emit()
+	title.buttons[&"start"].button_down.emit()
+	title.buttons[&"start"].pressed.emit()
 	assert_bool(title.done).is_true()
 	assert_bool(title.wants_intro).is_false()
 
@@ -318,13 +318,13 @@ func test_the_release_after_the_intro_press_does_not_skip_story_page_1() -> void
 	await await_idle_frame()
 	opening.current.advance()
 	await await_idle_frame()
-	var title := opening.current as TitleScene
+	var title := opening.current as TimelineSegment
 	title.advance()
 	title.advance()
 	title.advance()
-	var intro_at := title.intro_button.get_global_rect().get_center()
+	var intro_at := title.buttons[&"intro"].get_global_rect().get_center()
 	_mouse(opening, intro_at, true)                       # the press (the button reacts to it) ...
-	title.intro_button.pressed.emit()
+	title.buttons[&"intro"].pressed.emit()
 	await await_idle_frame()
 	var story := opening.current as StoryPages
 	assert_object(story).is_not_null()
@@ -426,7 +426,7 @@ func test_opening_enter_walks_through_the_parts() -> void:
 	enter.pressed = true
 	opening._unhandled_key_input(enter)                    # the cartoon ends
 	await await_idle_frame()
-	assert_object(opening.current).is_instanceof(TitleScene)
+	assert_object(opening.current).is_instanceof(TimelineSegment)
 	opening._unhandled_key_input(enter)                    # the ship scene ends: "Presents"
 	opening._unhandled_key_input(enter)                    # "OPERATION"
 	opening._unhandled_key_input(enter)                    # "NEPTUNE" and the prompt
@@ -444,12 +444,12 @@ func test_opening_enter_walks_through_the_parts() -> void:
 
 # --- the drop of the mini-sub (user report: "the submarine follows the ship impossibly") -----------------
 
-func _title_at(title: TitleScene, frame: int) -> void:
-	title.animations.seek(frame * TITLE_STEP, true)
+func _title_at(title: TimelineSegment, frame: int) -> void:
+	title.script_player.seek(frame * TITLE_STEP, true)
 
 
 func test_the_sub_hangs_then_falls_and_sinks_out_of_sight() -> void:
-	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	var title: TimelineSegment = auto_free(TimelineSegment.of(TITLE))
 	add_child(title)
 	var sub: Sprite2D = title.stage.get_node("MiniSub")
 	_title_at(title, 60)                                  # hanging from the crane, fully drawn
@@ -469,26 +469,26 @@ func test_the_sub_hangs_then_falls_and_sinks_out_of_sight() -> void:
 
 
 func test_the_sub_does_not_move_with_the_ship_once_dropped() -> void:
-	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	var title: TimelineSegment = auto_free(TimelineSegment.of(TITLE))
 	add_child(title)
 	var sub: Sprite2D = title.stage.get_node("MiniSub")
 	_title_at(title, 76)                                  # sinking while the ship stands still
 	var dropped_y := sub.global_position.y
-	var ship_y := title.ship.position.y
+	var ship_y := TitleView.ship(title).position.y
 	_title_at(title, 78)
-	assert_float(title.ship.position.y).is_equal(ship_y)
+	assert_float(TitleView.ship(title).position.y).is_equal(ship_y)
 	assert_float(sub.global_position.y).is_equal(dropped_y + 12.0)   # its own y, not the ship's
 	_title_at(title, 120)                                 # ship moving on, 8 px per frame, wobbling 2 px
-	assert_float(title.ship.position.x).is_greater(56.0)
+	assert_float(TitleView.ship(title).position.x).is_greater(56.0)
 	assert_float(sub.global_position.y).is_greater_equal(318.0)      # still below the waterline: it never rose again
 	assert_bool(sub.visible).is_false()
 
 
 func test_the_splash_follows_the_sub_and_has_its_sound() -> void:
-	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	var title: TimelineSegment = auto_free(TimelineSegment.of(TITLE))
 	add_child(title)
 	var left: Sprite2D = title.stage.get_node("SplashLeft")
-	var animation := title.animations.get_animation(&"ship")
+	var animation := title.script_player.get_animation(&"title_ship")
 	var sound_times := PackedFloat32Array()
 	for track in animation.get_track_count():
 		if animation.track_get_type(track) == Animation.TYPE_METHOD:
@@ -506,31 +506,31 @@ func test_the_splash_follows_the_sub_and_has_its_sound() -> void:
 
 
 func test_enter_during_the_ship_scene_leaves_no_ship_part_behind() -> void:
-	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	var title: TimelineSegment = auto_free(TimelineSegment.of(TITLE))
 	add_child(title)
 	_title_at(title, 76)                                  # the splash is showing and the spray is visible
 	title.advance()
-	assert_bool(title.ship.visible).is_false()
+	assert_bool(TitleView.ship(title).visible).is_false()
 	assert_bool((title.stage.get_node("Spray") as Sprite2D).visible).is_false()
 	assert_bool((title.stage.get_node("SplashLeft") as Sprite2D).visible).is_false()
 	assert_bool((title.stage.get_node("SplashRight") as Sprite2D).visible).is_false()
 
 
 func test_the_title_pictures_appear_at_once_without_a_wipe() -> void:
-	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	var title: TimelineSegment = auto_free(TimelineSegment.of(TITLE))
 	add_child(title)
-	var reveal := title.animations.get_animation(&"reveal")
+	var reveal := title.script_player.get_animation(&"title_reveal")
 	assert_float(reveal.length).is_greater(2.0 * HOLD_SECONDS)
 	for track in reveal.get_track_count():
 		assert_str(String(reveal.track_get_path(track)).get_slice(":", 1)).is_not_equal("region_rect")
-	title.animations.play(&"reveal")
-	title.animations.seek(0.1, true)
+	title.script_player.play(&"title_reveal")
+	title.script_player.seek(0.1, true)
 	assert_bool((title.stage.get_node("Presents") as Sprite2D).visible).is_true()
 	assert_bool((title.stage.get_node("Operation") as Sprite2D).visible).is_false()
-	title.animations.seek(HOLD_SECONDS + 0.1, true)
+	title.script_player.seek(HOLD_SECONDS + 0.1, true)
 	assert_bool((title.stage.get_node("Presents") as Sprite2D).visible).is_false()
 	assert_bool((title.stage.get_node("Operation") as Sprite2D).visible).is_true()
-	title.animations.seek(2.0 * HOLD_SECONDS + 0.05, true)
+	title.script_player.seek(2.0 * HOLD_SECONDS + 0.05, true)
 	assert_bool((title.stage.get_node("Neptune") as Sprite2D).visible).is_true()
 	assert_bool((title.stage.get_node("Copyright") as Sprite2D).visible).is_true()
 

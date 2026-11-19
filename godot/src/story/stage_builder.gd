@@ -4,7 +4,7 @@ extends RefCounted
 ## Every path that shows a scene's stage (the opening's cartoon and title, a debug scene, a test) calls `build`; none puts a picture, a position or a draw order of its own.
 ##
 ## What it makes: a picture is a `Sprite2D` (top-left corner, its picture resolved through the cast's `pictures`, mirrored, clipped as the actor says), a text box a `Label` of the
-## actor's size that wraps the whole text and reveals it a character at a time, a group a `Node2D`. The nodes are named by the actors (`StageActor.node_name`), made in the
+## actor's size that wraps the whole text and reveals it a character at a time, a group a `Node2D`, a button a `TextureButton` of its picture's size that acts on the PRESS (a `TimelineSegment` connects it). The nodes are named by the actors (`StageActor.node_name`), made in the
 ## order of the list so that the list is the draw order, and an actor with a parent is made inside the parent's node at the place that is its window position less the parent's.
 ## The container stands at the window's origin.
 ##
@@ -56,6 +56,16 @@ static func _make(actor: StageActor, cast: CutsceneCast) -> Node:
 			return label
 		StageActor.GROUP:
 			return Node2D.new()
+		StageActor.BUTTON:
+			var button := TextureButton.new()
+			button.texture_normal = cast.pictures.call(actor.picture)
+			if actor.pressed_picture != &"":
+				button.texture_pressed = cast.pictures.call(actor.pressed_picture)
+			if button.texture_normal != null:
+				button.size = button.texture_normal.get_size()
+			button.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS        # the original's buttons answer the left button DOWN
+			button.focus_mode = Control.FOCUS_NONE
+			return button
 	var sprite := Sprite2D.new()
 	sprite.centered = false
 	sprite.texture = cast.pictures.call(actor.picture)

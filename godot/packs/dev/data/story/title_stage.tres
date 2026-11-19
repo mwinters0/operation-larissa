@@ -116,7 +116,29 @@ picture = &"title_copyright"
 position = Vector2(200, 360)
 visible = false
 
+[sub_resource type="Resource" id="Actor_18"]
+script = ExtResource("2_stage_actor")
+name = &"start_button"
+kind = &"button"
+picture = &"start_button_up"
+position = Vector2(228, 322)
+visible = false
+pressed_picture = &"start_button_down"
+choice = &"start"
+hotkey = "S"
+
+[sub_resource type="Resource" id="Actor_19"]
+script = ExtResource("2_stage_actor")
+name = &"intro_button"
+kind = &"button"
+picture = &"intro_button_up"
+position = Vector2(330, 322)
+visible = false
+pressed_picture = &"intro_button_down"
+choice = &"intro"
+hotkey = "I"
+
 [resource]
 script = ExtResource("1_cutscene_stage")
 provenance = "Dev pack: the title scene's actors, laid out by simple rules (tools/dev_pack/dev_story.py)."
-actors = Array[ExtResource("2_stage_actor")]([SubResource("Actor_1"), SubResource("Actor_2"), SubResource("Actor_3"), SubResource("Actor_4"), SubResource("Actor_5"), SubResource("Actor_6"), SubResource("Actor_7"), SubResource("Actor_8"), SubResource("Actor_9"), SubResource("Actor_10"), SubResource("Actor_11"), SubResource("Actor_12"), SubResource("Actor_13"), SubResource("Actor_14"), SubResource("Actor_15"), SubResource("Actor_16"), SubResource("Actor_17")])
+actors = Array[ExtResource("2_stage_actor")]([SubResource("Actor_1"), SubResource("Actor_2"), SubResource("Actor_3"), SubResource("Actor_4"), SubResource("Actor_5"), SubResource("Actor_6"), SubResource("Actor_7"), SubResource("Actor_8"), SubResource("Actor_9"), SubResource("Actor_10"), SubResource("Actor_11"), SubResource("Actor_12"), SubResource("Actor_13"), SubResource("Actor_14"), SubResource("Actor_15"), SubResource("Actor_16"), SubResource("Actor_17"), SubResource("Actor_18"), SubResource("Actor_19")])
