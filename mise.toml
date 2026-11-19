@@ -145,7 +145,9 @@ run = "uv run tools/import/tool_check.py"
 description = "Build the legacy pack from NEPTUNE.ISO (it checks its tools first); importer options go after --"
 run = "uv run tools/import/import_all.py"
 
-# ---- A release of the game to play: an exported game with legacy.larissa beside it (docs/play/LEGACY.md, "Quick start")
+# ---- A build of the game to play: an exported game with legacy.larissa beside it (docs/play/LEGACY.md, "Quick start").
+# release:* and debug:* export the same presets with Godot's release or debug template. A file's name carries its mode
+# (operation-larissa-release.x86_64, operation-larissa-debug.x86_64; index-release.html, index-debug.html), so both share a folder and its legacy.larissa.
 
 [tasks."godot:fetch_templates"]
 description = "Fetch Godot's export templates (the pinned Godot's, only what our presets use; a 1.3 GB download) unless they are in place"
@@ -156,45 +158,99 @@ description = "Export every release build: release:build_linux and release:build
 run = ["mise run release:build_linux", "mise run release:build_web"]
 
 [tasks."release:build_linux"]
-description = "Export the game (Linux, release) into build/game with legacy.larissa beside it (the legacy pack must be built: mise run legacy:import); fetches the templates first when missing"
-depends = ["setup", "godot:fetch_templates"]
-usage = '''
-flag "--out <dir>" help="the folder of the game (default build/game in the repository)"
-'''
-run = '''
-set -e
-out="${usage_out:-{{config_root}}/build/game}"
-case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
-mise run godot:pack legacy --no-reach --out "$out"
-tools/godot.sh --headless --path godot --export-release "Linux" "$out/operation-larissa.x86_64"
-echo "the game is $out/operation-larissa.x86_64, legacy.larissa beside it: mise run release:play"
-'''
+description = "Export the game (Linux, release) into build/game as operation-larissa-release.x86_64 with legacy.larissa beside it (the legacy pack must be built: mise run legacy:import); fetches the templates first when missing"
+usage = 'flag "--out <dir>" help="the folder of the game (default build/game in the repository)"'
+run = 'mise run export:linux release "{{cwd}}" ${usage_out:+--out "$usage_out"}'
 run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."release:build_web"]
-description = "Export the game (Web, release) into build/web with legacy.larissa beside index.html (the legacy pack must be built: mise run legacy:import); fetches the templates first when missing"
-depends = ["setup", "godot:fetch_templates"]
-usage = '''
-flag "--out <dir>" help="the folder of the page (default build/web in the repository)"
-'''
-run = '''
-set -e
-out="${usage_out:-{{config_root}}/build/web}"
-case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
-mise run godot:pack legacy --no-reach --out "$out"
-tools/godot.sh --headless --path godot --export-release "Web" "$out/index.html"
-echo "the page is $out/index.html, legacy.larissa beside it: serve the folder (uv run python -m http.server -d $out 8080) and open http://localhost:8080"
-'''
+description = "Export the game (Web, release) into build/web as index-release.html with legacy.larissa beside it (the legacy pack must be built: mise run legacy:import); fetches the templates first when missing"
+usage = 'flag "--out <dir>" help="the folder of the page (default build/web in the repository)"'
+run = 'mise run export:web release "{{cwd}}" ${usage_out:+--out "$usage_out"}'
 run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 
 [tasks."release:play"]
 description = "Play the game that release:build_linux exported (build/game, or --out <dir>)"
 usage = 'flag "--out <dir>" help="the folder of the game (default build/game in the repository)"'
+run = 'mise run export:play release "{{cwd}}" ${usage_out:+--out "$usage_out"}'
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
+
+[tasks."debug:build"]
+description = "Export every debug build: debug:build_linux and debug:build_web"
+run = ["mise run debug:build_linux", "mise run debug:build_web"]
+
+[tasks."debug:build_linux"]
+description = "Export the game (Linux, debug) into build/game as operation-larissa-debug.x86_64 with legacy.larissa beside it (the legacy pack must be built: mise run legacy:import); fetches the templates first when missing"
+usage = 'flag "--out <dir>" help="the folder of the game (default build/game in the repository)"'
+run = 'mise run export:linux debug "{{cwd}}" ${usage_out:+--out "$usage_out"}'
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
+
+[tasks."debug:build_web"]
+description = "Export the game (Web, debug) into build/web as index-debug.html with legacy.larissa beside it (the legacy pack must be built: mise run legacy:import); fetches the templates first when missing"
+usage = 'flag "--out <dir>" help="the folder of the page (default build/web in the repository)"'
+run = 'mise run export:web debug "{{cwd}}" ${usage_out:+--out "$usage_out"}'
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
+
+[tasks."debug:play"]
+description = "Play the game that debug:build_linux exported (build/game, or --out <dir>)"
+usage = 'flag "--out <dir>" help="the folder of the game (default build/game in the repository)"'
+run = 'mise run export:play debug "{{cwd}}" ${usage_out:+--out "$usage_out"}'
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
+
+# The steps release:* and debug:* share. <from> is the caller's folder: a relative --out is read from it.
+
+[tasks."export:linux"]
+description = "Export the Linux game in a mode (release or debug) with legacy.larissa beside it; release:build_linux and debug:build_linux run it"
+hide = true
+depends = ["setup", "godot:fetch_templates"]
+usage = '''
+arg "<mode>" help="release or debug" { choices "release" "debug"; }
+arg "<from>" help="the folder a relative --out is read from"
+flag "--out <dir>" help="the folder of the game (default build/game in the repository)"
+'''
+run = '''
+set -e
+out="${usage_out:-{{config_root}}/build/game}"
+case "$out" in /*) ;; *) out="$usage_from/$out" ;; esac
+mise run godot:pack legacy --no-reach --out "$out"
+tools/godot.sh --headless --path godot "--export-$usage_mode" "Linux" "$out/operation-larissa-$usage_mode.x86_64"
+echo "the game is $out/operation-larissa-$usage_mode.x86_64, legacy.larissa beside it: mise run $usage_mode:play"
+'''
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
+
+[tasks."export:web"]
+description = "Export the Web game in a mode (release or debug) with legacy.larissa beside its page; release:build_web and debug:build_web run it"
+hide = true
+depends = ["setup", "godot:fetch_templates"]
+usage = '''
+arg "<mode>" help="release or debug" { choices "release" "debug"; }
+arg "<from>" help="the folder a relative --out is read from"
+flag "--out <dir>" help="the folder of the page (default build/web in the repository)"
+'''
+run = '''
+set -e
+out="${usage_out:-{{config_root}}/build/web}"
+case "$out" in /*) ;; *) out="$usage_from/$out" ;; esac
+mise run godot:pack legacy --no-reach --out "$out"
+tools/godot.sh --headless --path godot "--export-$usage_mode" "Web" "$out/index-$usage_mode.html"
+echo "the page is $out/index-$usage_mode.html, legacy.larissa beside it: serve the folder (uv run python -m http.server -d $out 8080) and open http://localhost:8080/index-$usage_mode.html"
+'''
+run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
+
+[tasks."export:play"]
+description = "Play the Linux game exported in a mode (release or debug); release:play and debug:play run it"
+hide = true
+usage = '''
+arg "<mode>" help="release or debug" { choices "release" "debug"; }
+arg "<from>" help="the folder a relative --out is read from"
+flag "--out <dir>" help="the folder of the game (default build/game in the repository)"
+'''
 run = '''
 out="${usage_out:-{{config_root}}/build/game}"
-case "$out" in /*) ;; *) out="{{cwd}}/$out" ;; esac
-[ -x "$out/operation-larissa.x86_64" ] || { echo "no game in $out: mise run release:build_linux" >&2; exit 1; }
-exec "$out/operation-larissa.x86_64"
+case "$out" in /*) ;; *) out="$usage_from/$out" ;; esac
+game="$out/operation-larissa-$usage_mode.x86_64"
+[ -x "$game" ] || { echo "no $usage_mode game in $out: mise run $usage_mode:build_linux" >&2; exit 1; }
+exec "$game"
 '''
 run_windows = "echo This task runs a bash script and is not supported on Windows (docs/SETUP.md, On Windows) && exit /b 1"
 

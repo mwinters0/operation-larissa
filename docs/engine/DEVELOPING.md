@@ -110,27 +110,33 @@ next to the executable, read where they lie (`Packs.bundled`; [`PACKS.md`](PACKS
 [`../play/LEGACY.md`](../play/LEGACY.md), "Playing legacy in an exported game"; [`../create/CONTENT.md`](../create/CONTENT.md), "Shipping", for the player and creator downloads).
 A release build without `legacy.larissa` refuses to play; a debug build without `legacy.larissa` but with
 `dev.larissa` next to it opens on the pack warning and plays the dev pack's `dev_tour`. The Web preset uses the shell `godot/export/web_shell.html`
-(Godot 4.7.2's `full-size.html` plus a step that preloads `dev.larissa` and `legacy.larissa` from next to `index.html` into `/packs/` of the virtual file
+(Godot 4.7.2's `full-size.html` plus a step that preloads `dev.larissa` and `legacy.larissa` from next to the page into `/packs/` of the virtual file
 system; `PACK_IDS` at its top lists the ids).
 
 1. Install the export templates once: `mise run godot:fetch_templates` ([`../SETUP.md`](../SETUP.md)). `mise run release:build_linux` is the player's
-   path once the legacy pack is built (the templates, `legacy.larissa` by `godot:pack`, the Linux release export into `build/game/`;
-   [`../play/LEGACY.md`](../play/LEGACY.md), "Quick start"); `release:build_web` does the same for the Web preset into `build/web/`, and
-   `release:build` runs both.
+   path once the legacy pack is built (the templates, `legacy.larissa` by `godot:pack`, the Linux release export into
+   `build/game/operation-larissa-release.x86_64`; [`../play/LEGACY.md`](../play/LEGACY.md), "Quick start"); `release:build_web` does the same for the
+   Web preset into `build/web/index-release.html`, and `release:build` runs both. `debug:build_linux`, `debug:build_web` and `debug:build` export the
+   same presets with Godot's debug template (`OS.is_debug_build()` is true: the F3 debug overlay, `Packs.dev_fallback`) into
+   `operation-larissa-debug.x86_64` and `index-debug.html` of the same folders, beside the same `legacy.larissa`; `release:play` and `debug:play`
+   run the Linux one of their mode. The Web export names its other files after the page (`index-debug.js`, `index-debug.wasm`, ...), so the
+   page of a mode is opened by its name. A Linux debug export also writes `operation-larissa-debug.sh`, Godot's launcher that runs it in a terminal.
+   The tasks share the hidden tasks `export:linux`, `export:web` and `export:play`, which take the mode.
 2. Export from the editor (Project > Export...; the Linux and Windows presets' own `export_path` is outside the repository) or from the
    command line:
 
 ```sh
-tools/godot.sh --headless --path godot --export-release "Linux"           build/linux/operation-larissa.x86_64
-tools/godot.sh --headless --path godot --export-release "Windows Desktop" build/windows/operation-larissa.exe
-tools/godot.sh --headless --path godot --export-release "Web"             build/web/index.html
+tools/godot.sh --headless --path godot --export-release "Linux"           build/linux/operation-larissa-release.x86_64
+tools/godot.sh --headless --path godot --export-debug   "Linux"           build/linux/operation-larissa-debug.x86_64
+tools/godot.sh --headless --path godot --export-release "Windows Desktop" build/windows/operation-larissa-release.exe
+tools/godot.sh --headless --path godot --export-release "Web"             build/web/index-release.html
 tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --export-pack=dev    --archive --out=build/linux --no-reach
 tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --export-pack=legacy --archive --out=build/linux --no-reach
 ```
 
    An export prints no `ERROR` or `SCRIPT ERROR` line (`tests/engine/test_editor_runs_quietly.gd` exports the game's resources and fails on one).
-3. Try it: `godot/build/linux/operation-larissa.x86_64` (add `--headless --quit-after 600` for a smoke test), or for the web build
-   `uv run python -m http.server -d godot/build/web 8080` and open `http://localhost:8080` (copy `dev.larissa` or `legacy.larissa` into that folder to have the page preload it).
+3. Try it: `godot/build/linux/operation-larissa-release.x86_64` (add `--headless --quit-after 600` for a smoke test), or for the web build
+   `uv run python -m http.server -d godot/build/web 8080` and open `http://localhost:8080/index-release.html` (copy `dev.larissa` or `legacy.larissa` into that folder to have the page preload it).
    A headless run reads the `user://packs/` of your account: to see the refusal, set `XDG_DATA_HOME` to an empty folder under your home; to see dev chosen,
    put `dev.larissa` beside the binary and add `-- --pack=dev`. Saves go to `user://` (Project > Open User
    Data Folder in the editor shows it). The Windows export has not been run, and the Web export has not been tried in a browser. A Linux export with a mod pack has been run (`--pack=<id>` of a mod pack logs from its mod).

@@ -6,8 +6,8 @@ this engine can play.
 
 ## Quick start: from a clone to playing
 
-When you're done, you'll have three files in `game/build/`:
-- The game engine executable `operation-larissa.x86_64`.
+When you're done, you'll have three files in `build/game/`:
+- The game engine executable `operation-larissa-release.x86_64`.
 - A `legacy.larissa` content pack.
 - A `.so` file which allows the engine to play mods.  This file is not needed if you're only playing content packs like
  `legacy.larissa`.
@@ -481,7 +481,7 @@ repository never ships one: you make it from your own legacy pack, on your own m
 
    That checks the pack first (add `--no-reach` to skip the reachability search of the sectors) and writes `<folder of the executable>/legacy.larissa`; a pack with errors
    leaves nothing behind. An export again writes over the earlier `legacy.larissa`. `--version=` sets the version in the manifest, which the pack screen shows (`1.0` by default). A Web build looks in `/packs/` of the page's virtual file system (`Packs.WEB_ARCHIVES_DIR`): its page
-   (`godot/export/web_shell.html`) preloads `legacy.larissa` and `dev.larissa` from next to `index.html`, so you copy `legacy.larissa` there. Anyone who can load that
+   (`godot/export/web_shell.html`) preloads `legacy.larissa` and `dev.larissa` from next to the page, so you copy `legacy.larissa` there. Anyone who can load that
    page can download the pack file, which is the original game's content: use it for a private or self-hosted deployment only. The editor never looks next to
    its own executable.
 4. Run the exported game. `legacy` is the only pack found, so it is chosen by itself: no warning, no flag, no dev. With other packs

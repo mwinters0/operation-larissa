@@ -924,7 +924,7 @@ of the game.**
   - **The creator download** is a debug binary and `dev.larissa` next to the executable (`pack_tool --export-pack=dev --archive`): the dev pack in the data form. With
     it a debug build opens on the warning screen and plays `dev_tour`, and a pack laid over `dev` has its base. `dev` can also be installed from the pack screen
     or `pack_tool --install=dev.larissa`.
-  - **The Web build** preloads `dev.larissa` and `legacy.larissa` when they sit next to `index.html` (the shell `godot/export/web_shell.html`, the Web
+  - **The Web build** preloads `dev.larissa` and `legacy.larissa` when they sit next to the page (the shell `godot/export/web_shell.html`, the Web
     preset's custom HTML shell; a missing file is skipped). The deployer puts them there. Hosting `legacy.larissa` where the public can fetch it
     redistributes the original game's content, so do that only for a private or self-hosted deployment.
 - **Copies of originals** hold the original's bytes, so keep them out of git, or

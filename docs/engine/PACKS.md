@@ -53,7 +53,7 @@ is [`../create/CONTENT.md`](../create/CONTENT.md), section 4; this page is the c
   - **Bundled.** A game carries `legacy` and `dev` as pack files next to it (`Packs.bundled`). They are looked for in `Packs.archive_folders`, which is
     `Packs.default_archive_folders(web, in_editor, executable)`: the folder of the executable on a desktop build (none in the editor, whose executable is Godot's), and
     `Packs.WEB_ARCHIVES_DIR` (`/packs`) on the Web, where the page (the export shell `export/web_shell.html`, `PACK_IDS`) preloads the `<id>.larissa` files that sit next to
-    `index.html` into the virtual file system. They are read where they lie, and are the last place `Packs._places` looks, so a pack of the same id in the project or in
+    the page into the virtual file system. They are read where they lie, and are the last place `Packs._places` looks, so a pack of the same id in the project or in
     `user://packs/` is used instead.
   - **Installed.** `PackInstall.install` copies a pack file whole to `user://packs/<id>.larissa` ("Pack tools"); an id is installed in one form, folder or file, at a time.
 - **Chosen.** `main.gd` calls `Packs.start(args, PackChoice.remembered())` once: `--pack=<id>` after `--`, else the pack the player chose on

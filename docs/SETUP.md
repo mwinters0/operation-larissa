@@ -45,10 +45,14 @@ mise run legacy:import                  # NEPTUNE.ISO -> the legacy pack (about 
 mise run test:legacy                    # the tests of the original game, on the legacy pack
 mise run godot:play legacy              # play the original
 mise run godot:pack legacy              # ./legacy.larissa, for an exported game (any pack id works; --out <dir>)
-mise run release:build_linux            # the exported Linux game in build/game, legacy.larissa beside it (fetches the export templates)
-mise run release:build_web              # the exported Web game in build/web, legacy.larissa beside index.html
+mise run release:build_linux            # the exported Linux game, build/game/operation-larissa-release.x86_64, legacy.larissa beside it (fetches the export templates)
+mise run release:build_web              # the exported Web game, build/web/index-release.html, legacy.larissa beside it
 mise run release:build                  # both
 mise run release:play                   # play the Linux one
+mise run debug:build_linux              # the same with Godot's debug template: build/game/operation-larissa-debug.x86_64
+mise run debug:build_web                # build/web/index-debug.html
+mise run debug:build                    # both
+mise run debug:play                     # play the Linux one
 ```
 
 Importer options go after `--`: `mise run legacy:import -- --only audio`. What the importer does,
