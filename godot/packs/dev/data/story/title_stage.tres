@@ -1,0 +1,122 @@
+[gd_resource type="Resource" script_class="CutsceneStage" format=3]
+
+[ext_resource type="Script" path="res://src/resources/cutscene_stage.gd" id="1_cutscene_stage"]
+[ext_resource type="Script" path="res://src/resources/stage_actor.gd" id="2_stage_actor"]
+
+[sub_resource type="Resource" id="Actor_1"]
+script = ExtResource("2_stage_actor")
+name = &"sky"
+picture = &"title_sky"
+
+[sub_resource type="Resource" id="Actor_2"]
+script = ExtResource("2_stage_actor")
+name = &"sea"
+picture = &"title_sea"
+position = Vector2(0, 200)
+
+[sub_resource type="Resource" id="Actor_3"]
+script = ExtResource("2_stage_actor")
+name = &"cloud_left"
+picture = &"title_cloud_0"
+position = Vector2(400, 20)
+
+[sub_resource type="Resource" id="Actor_4"]
+script = ExtResource("2_stage_actor")
+name = &"cloud_right"
+picture = &"title_cloud_1"
+position = Vector2(500, 40)
+
+[sub_resource type="Resource" id="Actor_5"]
+script = ExtResource("2_stage_actor")
+name = &"ship"
+kind = &"group"
+position = Vector2(-200, 120)
+
+[sub_resource type="Resource" id="Actor_6"]
+script = ExtResource("2_stage_actor")
+name = &"hull"
+picture = &"ship_idle"
+position = Vector2(-200, 120)
+parent = &"ship"
+
+[sub_resource type="Resource" id="Actor_7"]
+script = ExtResource("2_stage_actor")
+name = &"radar"
+picture = &"ship_radar_0"
+position = Vector2(0, 100)
+parent = &"ship"
+
+[sub_resource type="Resource" id="Actor_8"]
+script = ExtResource("2_stage_actor")
+name = &"hook"
+picture = &"ship_hook_0"
+position = Vector2(40, 140)
+mirror = true
+parent = &"ship"
+
+[sub_resource type="Resource" id="Actor_9"]
+script = ExtResource("2_stage_actor")
+name = &"mini_sub"
+picture = &"ship_mini_sub"
+position = Vector2(60, 200)
+clip = Rect2(0, 0, 72, 44)
+
+[sub_resource type="Resource" id="Actor_10"]
+script = ExtResource("2_stage_actor")
+name = &"waves_front"
+picture = &"title_waves_front"
+position = Vector2(0, 160)
+
+[sub_resource type="Resource" id="Actor_11"]
+script = ExtResource("2_stage_actor")
+name = &"spray"
+picture = &"spray_1"
+position = Vector2(20, 150)
+
+[sub_resource type="Resource" id="Actor_12"]
+script = ExtResource("2_stage_actor")
+name = &"splash_left"
+picture = &"spray_0"
+position = Vector2(80, 170)
+visible = false
+
+[sub_resource type="Resource" id="Actor_13"]
+script = ExtResource("2_stage_actor")
+name = &"splash_right"
+picture = &"spray_0"
+position = Vector2(156, 170)
+mirror = true
+visible = false
+
+[sub_resource type="Resource" id="Actor_14"]
+script = ExtResource("2_stage_actor")
+name = &"presents"
+picture = &"title_presents"
+position = Vector2(40, 20)
+visible = false
+
+[sub_resource type="Resource" id="Actor_15"]
+script = ExtResource("2_stage_actor")
+name = &"operation"
+picture = &"title_operation"
+position = Vector2(100, 80)
+visible = false
+
+[sub_resource type="Resource" id="Actor_16"]
+script = ExtResource("2_stage_actor")
+name = &"neptune"
+picture = &"title_neptune"
+position = Vector2(160, 120)
+visible = false
+
+[sub_resource type="Resource" id="Actor_17"]
+script = ExtResource("2_stage_actor")
+name = &"copyright"
+picture = &"title_copyright"
+position = Vector2(200, 360)
+visible = false
+
+[resource]
+script = ExtResource("1_cutscene_stage")
+provenance = "Dev pack: the title scene's actors, laid out by simple rules (tools/dev_pack/dev_story.py)."
+actors = Array[ExtResource("2_stage_actor")]([SubResource("Actor_1"), SubResource("Actor_2"), SubResource("Actor_3"), SubResource("Actor_4"), SubResource("Actor_5"), SubResource("Actor_6"), SubResource("Actor_7"), SubResource("Actor_8"), SubResource("Actor_9"), SubResource("Actor_10"), SubResource("Actor_11"), SubResource("Actor_12"), SubResource("Actor_13"), SubResource("Actor_14"), SubResource("Actor_15"), SubResource("Actor_16"), SubResource("Actor_17")])

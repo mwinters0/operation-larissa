@@ -168,7 +168,7 @@ func test_the_loaders_that_ask_the_skin_are_presentation_only() -> void:
 	# went through `_skinned` would let a skin replace it, so it fails here until somebody decides it should not.
 	var source := FileAccess.get_file_as_string(CATALOG_SOURCE)
 	var asked := RegEx.create_from_string("_skinned(?:_project)?\\(\"(?:data/)?([^\"]+)\"").search_all(source)
-	assert_int(asked.size()).is_greater(4)
+	assert_int(asked.size()).is_greater(3)
 	for found in asked:
 		var path := found.get_string(1)
 		var data_key := path.get_basename().replace("%02d", "00").replace("%d", "0")

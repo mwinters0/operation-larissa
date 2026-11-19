@@ -32,20 +32,12 @@ Tools for the technique of [`genai/IMAGES.md`](genai/IMAGES.md).
 
 ## Animations a pack makes
 
-The opening's timing is pack data (`CutsceneTimeline`s, `StoryLayout`, `voice_cues`, `durations.json`); what is code is the stage (which
-pictures exist, where, in what order), the order of the parts, and the behaviour around the timelines (`NewsCartoon`, `TitleScene`,
-`Opening`). These steps move the rest into the pack, so the legacy pack holds the original's opening and another pack can hold an
+The opening's timing and stage are pack data (`CutsceneTimeline`s, `CutsceneStage`s, `voice_cues`, `durations.json`); what is code is the order of the
+parts and the behaviour around the timelines (`NewsCartoon`, `TitleScene`, `Opening`). These steps move the rest into the pack, so the legacy pack holds the original's opening and another pack can hold an
 opening of its own. Each is one session; the engine verbs stay rules (input, waits, choices) and a pack only arranges them. In every
 step the fidelity pins hold unchanged: `L: test_cutscene_timing` (the timing hashes), `test_opening` / `test_opening_legacy`, the key
 handling by phase.
 
-- **A1. The stage is data.** A `CutsceneStage` resource (data form `data/story/<scene>_stage.json`): its actors, each with a name, a kind
-  (picture, text box), a starting picture key, a position in window pixels, mirror, parent actor (the ship's radar and hook ride the
-  ship), draw order and starting visibility. One builder makes the nodes and binds the `CutsceneCast`; `NewsCartoon._build_stage` and
-  `TitleScene._build_stage` call it. The importer writes the legacy stages from NEP.DLL resource 10012 (`step_console.py` /
-  `step_story.py`), `dev_story.py` the dev pack's; `StoryLayout` and its users (`Catalog.story_layout`, `PackNeeds`, `GameSkin`,
-  `dev_ui.py`, `test_skin`, `test_data_form`) go. `PackNeeds` requires the stages; `PackCheck` tells an actor a timeline names that
-  no stage holds. `test_opening` checks the built nodes against the stage file.
 - **A2. What is ours becomes data too.** The importer bakes the console lights' flicker (the generator seeded with 73,
   `NewsCartoon._flicker_timeline`) into the legacy `news_ambient` with its provenance "ours", and the dev pack's into its own; the
   speech groups (`NewsCartoon.SPEECH_GROUP_CLIPS`) join their pauses in the pack's data; the title's `PROMPT_TIMEOUT` and

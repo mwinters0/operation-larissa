@@ -2001,17 +2001,17 @@
  "0x0042907e": {
   "name": "CartoonCapsuleTrail",
   "status": "ported",
-  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (21 dots from call 11, one per 11 calls, ring 6 calls after, ring pictures 1003-1006 in news_ambient.tres) with StoryLayout points 27-47 / 21"
+  "where": "data/story/news_cartoon.tres [tools/import/step_story.py:build_news] (21 dots from call 11, one per 11 calls, ring 6 calls after, ring pictures 1003-1006 in news_ambient.tres) with the stage data/story/news_cartoon_stage.tres [step_story.py:build_news_stage] actors dot_00-dot_20 (points 27-47) / ring (point 21)"
  },
  "0x004291cd": {
   "name": "CartoonDrawMap",
   "status": "ported",
-  "where": "godot/src/story/news_cartoon.gd:_build_stage (map picture 1000)"
+  "where": "data/story/news_cartoon_stage.tres [tools/import/step_story.py:build_news_stage] actor map (picture 1000), made by godot/src/story/stage_builder.gd:build"
  },
  "0x00429231": {
   "name": "CartoonDrawConsole",
   "status": "ported",
-  "where": "godot/src/story/news_cartoon.gd:_build_stage (console left / right)"
+  "where": "data/story/news_cartoon_stage.tres [tools/import/step_story.py:build_news_stage] actors console_left / console_right (the right one mirrored)"
  },
  "0x004292aa": {
   "name": "CartoonDrawAlarmLight",
@@ -2086,7 +2086,7 @@
  "0x00429d09": {
   "name": "TitleDrawBackdrop",
   "status": "ported",
-  "where": "godot/src/story/title_scene.gd:_build_stage (sky, sea, clouds)"
+  "where": "data/story/title_stage.tres [tools/import/step_story.py:build_title_stage] actors sky, sea, cloud_left, cloud_right, made by godot/src/story/stage_builder.gd:build"
  },
  "0x00429dbb": {
   "name": "TitleDrawHull",
@@ -2121,7 +2121,7 @@
  "0x0042a1d7": {
   "name": "TitleWaveStrip",
   "status": "ported",
-  "where": "godot/src/story/title_scene.gd:_build_stage WavesFront (picture 1041 over the ship parts, point 53); hidden by _leave_ship_scene (the reveal repaints the backdrop without the strip)"
+  "where": "data/story/title_stage.tres [tools/import/step_story.py:build_title_stage] actor waves_front (picture 1041 over the ship parts, point 53); hidden by title_scene.gd:_leave_ship_scene (the reveal repaints the backdrop without the strip)"
  },
  "0x0042a211": {
   "name": "TitleRevealText",

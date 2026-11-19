@@ -36,8 +36,8 @@ hand is yours until the next run, so change the generator too. `test_dev_pack.py
 | `dev_pictures.py` | Every PNG (flat shape, 1 px outline, its key's name written on it) at `assets/pictures/<kind>/<name>.png` and its `.import` stub (path-derived uid). Sizes are in `spec(key)`. `make_dev_pack.py` writes `pictures.json`. |
 | `dev_tiles.py`, `dev_tables.py` | The tile set; zones and the trigger table. |
 | `dev_sprites.py` | Sprite frames (the pieces' animations are `CANISTER_PICTURES` and `ROCK_PICTURES`), sprite metadata (box hit rectangles that match the pictures), bubble rules. |
-| `dev_ui.py` | HUD, calculator and story layouts, the news cartoon. |
-| `dev_story.py` | The other cutscene data: the ambient, title and Expert closing timelines, the story pages, the Voyager flight, the closing crew; short and made up, on the actor names and property words the scenes play. |
+| `dev_ui.py` | HUD and calculator layouts, the news cartoon's timeline. |
+| `dev_story.py` | The other cutscene data: the stages of the news cartoon and the title scene (`CutsceneStage`s, laid out by simple rules), the ambient, title and Expert closing timelines, the story pages, the Voyager flight, the closing crew; short and made up, on the actor names and property words the scenes play. |
 | `dev_problems.py` | The 34 problem types (a few made-up records per level), the problem screen layout, the text tables. |
 | `dev_sectors.py` | Sectors, campaigns, and the `dev_tour` campaign. |
 | `dev_rules.py` | `rules/tuning.json`: dev's rule values (below). |

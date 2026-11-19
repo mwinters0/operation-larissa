@@ -204,8 +204,8 @@ Then it makes the legacy pack's folder and its `pack.json` (below, "Where the le
 | `sprites` | `assets/sprites/`, `data/sprite_frames/`, `sprite_meta/`, `bubble_rules.tres` in the pack; the `sprite_meta.json` hash fixture. |
 | `sectors` | The 32 original sectors in the pack's `data/sectors/sector_00..31/` (header, creature script, 12 screens each), `zones.tres`, `trigger_table.tres`, the original bytes behind the fixtures (below) and their hash fixtures (`screens.json`, `foe_scripts.json`, `foe_records.json`, `sector_headers.json`, `trigger_table.json`, `zones.json`). |
 | `problems` | The pack's `data/problems/` (the 34 problem types and their text tables), the problem pictures, and the `problem_tables.json` hash fixture. |
-| `console` | The pack's `data/ui/` (HUD, calculator and story layouts); the menu layout is the project's `godot/data/ui/menu_layout.tres` (committed). |
-| `story` | The pack's `data/story/`: the cutscene timelines (`news_cartoon`, `news_ambient`, `title_ship`, `title_reveal`, `expert_hoist`, `expert_deck`, `expert_wait`), `story_script`, `voyager_closing_script` and `closing_crew`. |
+| `console` | The pack's `data/ui/` (HUD and calculator layouts); the menu layout is the project's `godot/data/ui/menu_layout.tres` (committed). |
+| `story` | The pack's `data/story/`: the cutscene timelines (`news_cartoon`, `news_ambient`, `title_ship`, `title_reveal`, `expert_hoist`, `expert_deck`, `expert_wait`), the stages of the opening's two scenes (`news_cartoon_stage`, `title_stage`), `story_script`, `voyager_closing_script` and `closing_crew`. |
 | `campaigns` | The pack's `data/campaigns/voyager.tres` and `expert.tres`. |
 | `transcripts` | Turns the 423 voice clips into text: see "Voice transcripts". Writes `extracted/sounds/voice_transcripts.json` and `voice_transcripts_machine.json`. |
 | `audio` | The 52 sound effects and 371 speech clips (`assets/audio/`), the music rendered from MIDI (both sets), the catalogs (`sfx_catalog`, `music_catalog`, `voice_index`, `voice_cues`), and a copy of the MIDI files in the pack's `midi/`. The speech text in `voice_index.tres` comes from the transcripts; after a run without them the clips have no text. |
@@ -545,7 +545,7 @@ packs/legacy/
 | `<legacy>/data/zones.tres`, `trigger_table.tres`, `neptune_tileset.tres`, `bubble_rules.tres` | Zones, triggers, tileset, bubble rules. | `sectors`, `tiles`, `sprites` |
 | `<legacy>/data/campaigns/voyager.tres`, `expert.tres` | The original's two games. Campaigns of your own go to `godot/data/campaigns/` and are committed. | `campaigns` |
 | `<legacy>/data/{sfx,music}_catalog.tres`, `voice_index.tres`, `voice_cues.tres` | The sound catalogs. | `audio` |
-| `<legacy>/data/ui/{hud,calculator,story}_layout.tres`, `<legacy>/data/story/*.tres` | Layouts, and the choreography of the cutscenes. | `console`, `story` |
+| `<legacy>/data/ui/{hud,calculator}_layout.tres`, `<legacy>/data/story/*.tres` | Layouts, and the choreography and stages of the cutscenes. | `console`, `story` |
 | `<legacy>/midi/` | The original MIDI songs, for playing the music through a soundfont at runtime. | `audio` |
 | `godot/tests/fixtures/original/` | The original bytes behind the committed hash fixtures: sector headers, creature records and scripts, screens, sprite metadata, trigger table, zones, problem tables. The reset tools and the fidelity tests read them. Rebuilt on every import; never edit. | `sectors`, `sprites`, `problems` |
 | `godot/data/legacy/` | Your own hand data about the legacy pack (it stays in the project, not in the pack: it is an input of the importer). It holds `voice_corrections.json`. The importer never writes it; `transcripts.py --correct` does. `$NEP_LEGACY` puts the folder elsewhere. | you |

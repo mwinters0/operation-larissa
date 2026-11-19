@@ -10,7 +10,7 @@ extends Resource
 ##
 ## WHAT A SKIN MAPS
 ##  * `resources`: a whole LAYOUT instead of the original's, by its path under the data folder (a pack's `res://packs/<id>/data/`, or the project's `res://data/`) without `.tres`:
-##    `ui/hud_layout`, `ui/story_layout`, `problems/screen_layout`. For a skin whose HUD or screens are laid out differently (the layouts are data). ONLY layouts can be
+##    `ui/hud_layout`, `ui/menu_layout`, `problems/screen_layout`. For a skin whose HUD or screens are laid out differently (the layouts are data). ONLY layouts can be
 ##    replaced (`REPLACEABLE`): a key that names rules or content (`zones`, `trigger_table`, `problems/problem_type_07` with
 ##    its records and answers, `sprite_meta/...` with the hit rectangles, a sector) is ignored, and so is one that names a picture bundle (`sprite_frames/...`, `neptune_tileset`: the pictures are the packs'), so a skin cannot change what the game
 ##    does by dressing up as a data file; and a layout that holds a picture of its own, a `Texture2D` that is not a `PictureRef`, is ignored too (`refused_resources` lists such keys for the author, and a lookup that meets one warns once per run, `refusal_line`; `test_skins_dont_change_the_game.gd`, `test_skin.gd`).

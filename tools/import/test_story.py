@@ -156,3 +156,37 @@ def test_the_text_names_are_the_registrys():
 def test_a_picture_nobody_named_gets_its_made_up_name():
     unnamed = next(n for n in range(1000, 2500) if not foe_names.original().real_name("ui_picture", n))
     assert step_story.picture(unnamed) == "ui_%d" % unnamed
+
+
+@pytest.mark.legacy
+def test_the_stages_put_every_actor_at_its_point_of_the_position_table_in_draw_order():
+    data = common.load_json(common.TABLES / "opening.json")
+    pts, names = data["points"], data["point_names"]
+    news = {a["name"]: a for a in step_story.build_news_stage().actors}
+    assert list(news)[:2] == ["map", "dot_00"] and list(news)[-1] == "teletype"
+    assert [news["dot_%02d" % i]["at"] for i in range(21)] == [pts[i] for i in range(names["capsule_trail"][0], names["capsule_trail"][1] + 1)]
+    assert news["ring"]["at"] == pts[names["crash_site"]] and news["console_right"]["mirror"] and not news["console_left"]["mirror"]
+    assert [news["status_%02d" % i]["mirror"] for i in range(6)] == [False] * 3 + [True] * 3
+    assert [news["panel_%02d" % i]["mirror"] for i in range(8)] == [False] * 4 + [True] * 4
+    assert [news["crew_%d" % i]["visible"] for i in range(5)] == [True] * 4 + [False]          # the man on the left walks in later
+    assert news["teletype"]["kind"] == "text" and news["teletype"]["at"] == pts[names["teletype"]]
+    title = {a["name"]: a for a in step_story.build_title_stage().actors}
+    order = list(title)
+    assert order.index("ship") < order.index("hull") < order.index("radar") < order.index("hook") < order.index("mini_sub") < order.index("waves_front") < order.index("spray")
+    assert [title[n]["parent"] for n in ("hull", "radar", "hook")] == ["ship"] * 3 and title["ship"]["kind"] == "group" and title["ship"]["at"] == pts[names["ship_hull"]]
+    assert title["splash_right"]["at"][0] - title["splash_left"]["at"][0] == 76 and title["splash_right"]["mirror"]
+    assert title["mini_sub"]["clip"] == (0, 0, 72, 44)
+    assert not any(title[n]["visible"] for n in ("presents", "operation", "neptune", "copyright", "splash_left", "splash_right"))
+
+
+@pytest.mark.legacy
+def test_every_actor_a_legacy_timeline_names_is_on_its_stage():
+    actors = {"news_cartoon_stage": step_story.build_news_stage(), "title_stage": step_story.build_title_stage()}
+    played_on = {"news_cartoon_stage": ("news_cartoon", "news_ambient"), "title_stage": ("title_ship", "title_reveal")}
+    for stage_name, timeline_names in played_on.items():
+        held = {a["name"] for a in actors[stage_name].actors}
+        for name in timeline_names:
+            if name == "news_cartoon":
+                continue                                        # (its builder reads the game's texts; the stage test above covers its actors)
+            named = {actor for actor, *_ in step_story.timelines()[name].tracks}
+            assert named <= held, (name, named - held)

@@ -61,9 +61,24 @@ func test_news_cartoon_builds_and_every_track_finds_its_node() -> void:
 	assert_array(_unresolved_tracks(news.script_player)).is_empty()
 	assert_array(_unresolved_tracks(news.ambient)).is_empty()
 	# 21 dots of the capsule's trail, 6 bulletins typed after the empty first 3.4 s, 11 speech clips
-	assert_int(news._dots.size()).is_equal(21)
+	assert_int(news.stage.get_children().filter(func(node: Node) -> bool: return node.name.begins_with("Dot")).size()).is_equal(21)
 	assert_float(news.script_player.get_animation(&"news").length).is_greater(40.0)
 	assert_int(Catalog.voice_cues().clips("opening_cartoon").size()).is_equal(11)
+
+
+func test_the_nodes_of_both_scenes_are_what_their_stage_files_say() -> void:
+	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	add_child(news)
+	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	add_child(title)
+	for scene: Array in [[NewsCartoon.STAGE, news.stage], [TitleScene.STAGE, title.stage]]:
+		var stage := Catalog.story_stage(scene[0])
+		assert_object(stage).override_failure_message("%s: no stage" % scene[0]).is_not_null()
+		assert_array(stage.problems()).override_failure_message("%s: %s" % [scene[0], stage.problems()]).is_empty()
+		assert_array(StageNodes.differences(stage, scene[1])).override_failure_message("%s: %s" % [scene[0], StageNodes.differences(stage, scene[1])]).is_empty()
+	# the cast knows every actor of the stage: the same names the timelines use
+	assert_int(news.stage.find_children("*", "", true, false).size()).is_equal(Catalog.story_stage(NewsCartoon.STAGE).actors.size())
+	assert_array(_unresolved_tracks(title.animations)).is_empty()
 
 
 func test_the_six_bulletins_are_the_original_wording() -> void:
@@ -576,13 +591,13 @@ func test_the_capsule_trail_and_ring_follow_the_originals_calls() -> void:
 	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
 	add_child(news)
 	_news_at(news, 9.0 * NEWS_STEP)
-	assert_bool((news._dots[0] as Sprite2D).visible).is_false()
+	assert_bool((news.stage.get_node("Dot00") as Sprite2D).visible).is_false()
 	_news_at(news, 10.0 * NEWS_STEP + 0.01)        # the first dot is drawn in call 11 (t = 10 steps)
-	assert_bool((news._dots[0] as Sprite2D).visible).is_true()
-	assert_bool((news._dots[1] as Sprite2D).visible).is_false()
+	assert_bool((news.stage.get_node("Dot00") as Sprite2D).visible).is_true()
+	assert_bool((news.stage.get_node("Dot01") as Sprite2D).visible).is_false()
 	var last_dot := (21 * 11 - 1) * NEWS_STEP
 	_news_at(news, last_dot + 0.01)
-	assert_bool((news._dots[20] as Sprite2D).visible).is_true()
-	assert_bool(news._ring.visible).is_false()
+	assert_bool((news.stage.get_node("Dot20") as Sprite2D).visible).is_true()
+	assert_bool((news.stage.get_node("Ring") as Sprite2D).visible).is_false()
 	_news_at(news, last_dot + 6.0 * NEWS_STEP + 0.01)
-	assert_bool(news._ring.visible).is_true()
+	assert_bool((news.stage.get_node("Ring") as Sprite2D).visible).is_true()

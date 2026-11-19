@@ -41,7 +41,7 @@ static func ticks(count: float) -> float:
 static func animation(timeline: CutsceneTimeline, cast: CutsceneCast) -> Animation:
 	var result := make(timeline.length_seconds(), timeline.loop)
 	for track in timeline.tracks:
-		_add_track(result, track, cast)
+		_add_track(result, track, cast, timeline)
 	_add_cues(result, timeline)
 	for mark: StringName in timeline.marks:
 		result.add_marker(mark, CutsceneTimeline.seconds(timeline.marks[mark]))
@@ -53,9 +53,9 @@ static func install_timeline(player: AnimationPlayer, name: StringName, timeline
 	install(player, name, animation(timeline, cast))
 
 
-static func _add_track(result: Animation, track: CutsceneTrack, cast: CutsceneCast) -> void:
+static func _add_track(result: Animation, track: CutsceneTrack, cast: CutsceneCast, timeline: CutsceneTimeline) -> void:
 	if not cast.has_actor(track.actor):
-		push_error("Cutscene: no node plays the actor '%s'" % track.actor)
+		TroubleLog.session.tell(unplayed_line(track, timeline))
 		return
 	var path := String(cast.path_to(track.actor))
 	if track.property == CutsceneTrack.PROP_POSE:
@@ -76,6 +76,13 @@ static func _add_track(result: Animation, track: CutsceneTrack, cast: CutsceneCa
 		keys.append([CutsceneTimeline.seconds(track.times[i]), _node_value(track, track.values[i], cast)])
 	var property := cast.godot_property(track.actor, track.property, PROPERTIES[track.property])
 	values(result, "%s:%s" % [path, property], keys, track.smooth)
+
+
+## What is told when a timeline names an actor that no node plays (the stage the scene is built from does not hold it): the track is left out, so that actor does not change.
+static func unplayed_line(track: CutsceneTrack, timeline: CutsceneTimeline) -> String:
+	var source := Packs.source_of(timeline)
+	return "[story] the timeline %s names the actor '%s' (its %s), which the scene's stage does not hold: nothing moves or changes for it" % [
+			"'%s'" % source if not source.is_empty() else "made in code", track.actor, track.property]
 
 
 ## A key's value of the timeline as the value Godot sets: names become textures, texts, frame numbers, and a window position

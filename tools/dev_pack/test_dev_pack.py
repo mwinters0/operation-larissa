@@ -253,3 +253,13 @@ def test_nothing_of_the_original_was_copied_into_the_pack():
         same += [key for key, rel in table().items() if isinstance(rel, str) and isinstance(theirs.get(key), str)
                  and (DEV / rel).read_bytes() == (devlib.LEGACY / theirs[key]).read_bytes()]
     assert not same, same[:3]
+
+
+def test_every_actor_a_dev_timeline_names_is_on_its_stage():
+    """The pack check says it of any pack; this keeps the generator from writing a dev timeline for an actor its own stage lacks."""
+    played_on = {"news_cartoon_stage": ("news_cartoon", "news_ambient"), "title_stage": ("title_ship", "title_reveal")}
+    for stage_name, timeline_names in played_on.items():
+        held = set(re.findall(r'^name = &"([^"]+)"', (DEV / "data" / "story" / (stage_name + ".tres")).read_text(), re.MULTILINE))
+        for name in timeline_names:
+            named = set(re.findall(r'^actor = &"([^"]+)"', (DEV / "data" / "story" / (name + ".tres")).read_text(), re.MULTILINE))
+            assert named and named <= held, (name, named - held)

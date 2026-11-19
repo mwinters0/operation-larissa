@@ -9,7 +9,7 @@ for the skin classes). What a skin author is given is [`../create/SKIN_API.md`](
 ## What a skin maps
 
 - **No picture.** A skin maps no picture: the pictures are the pack layer's, `pictures.json` of each pack of the chain (`Pictures`, [`PACKS.md`](PACKS.md)). The data holds pictures by key (`PictureRef` in `data/sprite_frames`, `data/ui`, the tile set; `ProblemType.art_keys`), so no skin and no copy of the data has a part in which picture shows: a skin cannot even carry a picture, `resources` takes layouts only and not one that holds a texture of its own.
-- **`resources`**: a whole layout by its path under `data/` (`ui/hud_layout`, `ui/story_layout`, `problems/screen_layout`), for a skin that lays the screens out differently. Only `GameSkin.REPLACEABLE` keys are
+- **`resources`**: a whole layout by its path under `data/` (`ui/hud_layout`, `ui/menu_layout`, `problems/screen_layout`), for a skin that lays the screens out differently. Only `GameSkin.REPLACEABLE` keys are
   taken (`ui/`, the problem screen's layout); a key that names rules, content or a picture bundle
   (`zones`, `trigger_table`, `problems/problem_type_NN`, `sprite_meta/*`, a sector, the texts, `sprite_frames/*`, `neptune_tileset`) is ignored, and so is a layout that carries a picture of its own (a `Texture2D` that is not a `PictureRef`,
   `GameSkin.holds_a_picture`); they are listed by `GameSkin.refused_resources()`, and a lookup that meets one warns once per run, naming the skin and the key (`GameSkin.refusal_line`, `TroubleLog.session`). The sprite sets and the tile set are the pack's, whatever skin is worn.
@@ -17,7 +17,7 @@ for the skin classes). What a skin author is given is [`../create/SKIN_API.md`](
   **`fallback`** (another skin to build on).
 
 **Resolution.** `Assets` (`ui_picture`, `problem_art`, `background`, `picture_by_key`) hands out the chain's pictures by key, and `Catalog`
-(`screen_layout`, `hud_layout`, `calculator_layout`, `menu_layout`, `story_layout`, `skinned(resource)`) returns the skin's version of a layout: its
+(`screen_layout`, `hud_layout`, `calculator_layout`, `menu_layout`, `skinned(resource)`) returns the skin's version of a layout: its
 own resource, or the pack's resource as loaded (it holds its pictures by key, `PictureRef`, so the chain's pictures show through it).
 The sprite sets and the tile set (`foes_frames`, `decos_frames`, `sub_frames`, `fx_frames`, `pieces_frames`, `station_frames`, `tileset`) are the pack's: a skin has no say in them, and the state a mod is told (`SkinState`) and the
 presenter that draws read the same set. Catalog asks the skin only for layouts (a test reads

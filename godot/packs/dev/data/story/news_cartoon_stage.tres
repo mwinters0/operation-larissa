@@ -1,0 +1,328 @@
+[gd_resource type="Resource" script_class="CutsceneStage" format=3]
+
+[ext_resource type="Script" path="res://src/resources/cutscene_stage.gd" id="1_cutscene_stage"]
+[ext_resource type="Script" path="res://src/resources/stage_actor.gd" id="2_stage_actor"]
+
+[sub_resource type="Resource" id="Actor_1"]
+script = ExtResource("2_stage_actor")
+name = &"map"
+picture = &"radar_map"
+
+[sub_resource type="Resource" id="Actor_2"]
+script = ExtResource("2_stage_actor")
+name = &"dot_00"
+picture = &"capsule_dot"
+position = Vector2(20, 40)
+visible = false
+
+[sub_resource type="Resource" id="Actor_3"]
+script = ExtResource("2_stage_actor")
+name = &"dot_01"
+picture = &"capsule_dot"
+position = Vector2(40, 44)
+visible = false
+
+[sub_resource type="Resource" id="Actor_4"]
+script = ExtResource("2_stage_actor")
+name = &"dot_02"
+picture = &"capsule_dot"
+position = Vector2(60, 48)
+visible = false
+
+[sub_resource type="Resource" id="Actor_5"]
+script = ExtResource("2_stage_actor")
+name = &"dot_03"
+picture = &"capsule_dot"
+position = Vector2(80, 52)
+visible = false
+
+[sub_resource type="Resource" id="Actor_6"]
+script = ExtResource("2_stage_actor")
+name = &"dot_04"
+picture = &"capsule_dot"
+position = Vector2(100, 56)
+visible = false
+
+[sub_resource type="Resource" id="Actor_7"]
+script = ExtResource("2_stage_actor")
+name = &"dot_05"
+picture = &"capsule_dot"
+position = Vector2(120, 60)
+visible = false
+
+[sub_resource type="Resource" id="Actor_8"]
+script = ExtResource("2_stage_actor")
+name = &"dot_06"
+picture = &"capsule_dot"
+position = Vector2(140, 64)
+visible = false
+
+[sub_resource type="Resource" id="Actor_9"]
+script = ExtResource("2_stage_actor")
+name = &"dot_07"
+picture = &"capsule_dot"
+position = Vector2(160, 68)
+visible = false
+
+[sub_resource type="Resource" id="Actor_10"]
+script = ExtResource("2_stage_actor")
+name = &"dot_08"
+picture = &"capsule_dot"
+position = Vector2(180, 72)
+visible = false
+
+[sub_resource type="Resource" id="Actor_11"]
+script = ExtResource("2_stage_actor")
+name = &"dot_09"
+picture = &"capsule_dot"
+position = Vector2(200, 76)
+visible = false
+
+[sub_resource type="Resource" id="Actor_12"]
+script = ExtResource("2_stage_actor")
+name = &"dot_10"
+picture = &"capsule_dot"
+position = Vector2(220, 80)
+visible = false
+
+[sub_resource type="Resource" id="Actor_13"]
+script = ExtResource("2_stage_actor")
+name = &"dot_11"
+picture = &"capsule_dot"
+position = Vector2(240, 84)
+visible = false
+
+[sub_resource type="Resource" id="Actor_14"]
+script = ExtResource("2_stage_actor")
+name = &"dot_12"
+picture = &"capsule_dot"
+position = Vector2(260, 88)
+visible = false
+
+[sub_resource type="Resource" id="Actor_15"]
+script = ExtResource("2_stage_actor")
+name = &"dot_13"
+picture = &"capsule_dot"
+position = Vector2(280, 92)
+visible = false
+
+[sub_resource type="Resource" id="Actor_16"]
+script = ExtResource("2_stage_actor")
+name = &"dot_14"
+picture = &"capsule_dot"
+position = Vector2(300, 96)
+visible = false
+
+[sub_resource type="Resource" id="Actor_17"]
+script = ExtResource("2_stage_actor")
+name = &"dot_15"
+picture = &"capsule_dot"
+position = Vector2(320, 100)
+visible = false
+
+[sub_resource type="Resource" id="Actor_18"]
+script = ExtResource("2_stage_actor")
+name = &"dot_16"
+picture = &"capsule_dot"
+position = Vector2(340, 104)
+visible = false
+
+[sub_resource type="Resource" id="Actor_19"]
+script = ExtResource("2_stage_actor")
+name = &"dot_17"
+picture = &"capsule_dot"
+position = Vector2(360, 108)
+visible = false
+
+[sub_resource type="Resource" id="Actor_20"]
+script = ExtResource("2_stage_actor")
+name = &"dot_18"
+picture = &"capsule_dot"
+position = Vector2(380, 112)
+visible = false
+
+[sub_resource type="Resource" id="Actor_21"]
+script = ExtResource("2_stage_actor")
+name = &"dot_19"
+picture = &"capsule_dot"
+position = Vector2(400, 116)
+visible = false
+
+[sub_resource type="Resource" id="Actor_22"]
+script = ExtResource("2_stage_actor")
+name = &"dot_20"
+picture = &"capsule_dot"
+position = Vector2(420, 120)
+visible = false
+
+[sub_resource type="Resource" id="Actor_23"]
+script = ExtResource("2_stage_actor")
+name = &"ring"
+picture = &"crash_ring_0"
+position = Vector2(400, 120)
+visible = false
+
+[sub_resource type="Resource" id="Actor_24"]
+script = ExtResource("2_stage_actor")
+name = &"console_left"
+picture = &"control_console"
+position = Vector2(0, 320)
+
+[sub_resource type="Resource" id="Actor_25"]
+script = ExtResource("2_stage_actor")
+name = &"console_right"
+picture = &"control_console"
+position = Vector2(520, 320)
+mirror = true
+
+[sub_resource type="Resource" id="Actor_26"]
+script = ExtResource("2_stage_actor")
+name = &"alarm_0"
+picture = &"alarm_light_0"
+position = Vector2(100, 300)
+
+[sub_resource type="Resource" id="Actor_27"]
+script = ExtResource("2_stage_actor")
+name = &"alarm_1"
+picture = &"alarm_light_0"
+position = Vector2(120, 300)
+
+[sub_resource type="Resource" id="Actor_28"]
+script = ExtResource("2_stage_actor")
+name = &"alarm_2"
+picture = &"alarm_light_0"
+position = Vector2(140, 300)
+
+[sub_resource type="Resource" id="Actor_29"]
+script = ExtResource("2_stage_actor")
+name = &"status_00"
+picture = &"status_light_0"
+position = Vector2(160, 300)
+
+[sub_resource type="Resource" id="Actor_30"]
+script = ExtResource("2_stage_actor")
+name = &"status_01"
+picture = &"status_light_0"
+position = Vector2(180, 300)
+
+[sub_resource type="Resource" id="Actor_31"]
+script = ExtResource("2_stage_actor")
+name = &"status_02"
+picture = &"status_light_0"
+position = Vector2(200, 300)
+
+[sub_resource type="Resource" id="Actor_32"]
+script = ExtResource("2_stage_actor")
+name = &"status_03"
+picture = &"status_light_0"
+position = Vector2(220, 300)
+mirror = true
+
+[sub_resource type="Resource" id="Actor_33"]
+script = ExtResource("2_stage_actor")
+name = &"status_04"
+picture = &"status_light_0"
+position = Vector2(240, 300)
+mirror = true
+
+[sub_resource type="Resource" id="Actor_34"]
+script = ExtResource("2_stage_actor")
+name = &"status_05"
+picture = &"status_light_0"
+position = Vector2(260, 300)
+mirror = true
+
+[sub_resource type="Resource" id="Actor_35"]
+script = ExtResource("2_stage_actor")
+name = &"panel_00"
+picture = &"panel_light_0"
+position = Vector2(300, 320)
+
+[sub_resource type="Resource" id="Actor_36"]
+script = ExtResource("2_stage_actor")
+name = &"panel_01"
+picture = &"panel_light_0"
+position = Vector2(320, 320)
+
+[sub_resource type="Resource" id="Actor_37"]
+script = ExtResource("2_stage_actor")
+name = &"panel_02"
+picture = &"panel_light_0"
+position = Vector2(340, 320)
+
+[sub_resource type="Resource" id="Actor_38"]
+script = ExtResource("2_stage_actor")
+name = &"panel_03"
+picture = &"panel_light_0"
+position = Vector2(360, 320)
+
+[sub_resource type="Resource" id="Actor_39"]
+script = ExtResource("2_stage_actor")
+name = &"panel_04"
+picture = &"panel_light_0"
+position = Vector2(380, 320)
+mirror = true
+
+[sub_resource type="Resource" id="Actor_40"]
+script = ExtResource("2_stage_actor")
+name = &"panel_05"
+picture = &"panel_light_0"
+position = Vector2(400, 320)
+mirror = true
+
+[sub_resource type="Resource" id="Actor_41"]
+script = ExtResource("2_stage_actor")
+name = &"panel_06"
+picture = &"panel_light_0"
+position = Vector2(420, 320)
+mirror = true
+
+[sub_resource type="Resource" id="Actor_42"]
+script = ExtResource("2_stage_actor")
+name = &"panel_07"
+picture = &"panel_light_0"
+position = Vector2(440, 320)
+mirror = true
+
+[sub_resource type="Resource" id="Actor_43"]
+script = ExtResource("2_stage_actor")
+name = &"crew_0"
+picture = &"crew_walk_0"
+position = Vector2(100, 260)
+
+[sub_resource type="Resource" id="Actor_44"]
+script = ExtResource("2_stage_actor")
+name = &"crew_1"
+picture = &"crew_walk_0"
+position = Vector2(160, 260)
+
+[sub_resource type="Resource" id="Actor_45"]
+script = ExtResource("2_stage_actor")
+name = &"crew_2"
+picture = &"crew_walk_0"
+position = Vector2(220, 260)
+
+[sub_resource type="Resource" id="Actor_46"]
+script = ExtResource("2_stage_actor")
+name = &"crew_3"
+picture = &"crew_walk_0"
+position = Vector2(280, 260)
+
+[sub_resource type="Resource" id="Actor_47"]
+script = ExtResource("2_stage_actor")
+name = &"crew_4"
+picture = &"crew_walk_0"
+position = Vector2(340, 260)
+visible = false
+
+[sub_resource type="Resource" id="Actor_48"]
+script = ExtResource("2_stage_actor")
+name = &"teletype"
+kind = &"text"
+position = Vector2(150, 200)
+size = Vector2(280, 120)
+
+[resource]
+script = ExtResource("1_cutscene_stage")
+provenance = "Dev pack: the news cartoon's actors, laid out by simple rules; the teletype is 280 x 120 (tools/dev_pack/dev_story.py)."
+actors = Array[ExtResource("2_stage_actor")]([SubResource("Actor_1"), SubResource("Actor_2"), SubResource("Actor_3"), SubResource("Actor_4"), SubResource("Actor_5"), SubResource("Actor_6"), SubResource("Actor_7"), SubResource("Actor_8"), SubResource("Actor_9"), SubResource("Actor_10"), SubResource("Actor_11"), SubResource("Actor_12"), SubResource("Actor_13"), SubResource("Actor_14"), SubResource("Actor_15"), SubResource("Actor_16"), SubResource("Actor_17"), SubResource("Actor_18"), SubResource("Actor_19"), SubResource("Actor_20"), SubResource("Actor_21"), SubResource("Actor_22"), SubResource("Actor_23"), SubResource("Actor_24"), SubResource("Actor_25"), SubResource("Actor_26"), SubResource("Actor_27"), SubResource("Actor_28"), SubResource("Actor_29"), SubResource("Actor_30"), SubResource("Actor_31"), SubResource("Actor_32"), SubResource("Actor_33"), SubResource("Actor_34"), SubResource("Actor_35"), SubResource("Actor_36"), SubResource("Actor_37"), SubResource("Actor_38"), SubResource("Actor_39"), SubResource("Actor_40"), SubResource("Actor_41"), SubResource("Actor_42"), SubResource("Actor_43"), SubResource("Actor_44"), SubResource("Actor_45"), SubResource("Actor_46"), SubResource("Actor_47"), SubResource("Actor_48")])

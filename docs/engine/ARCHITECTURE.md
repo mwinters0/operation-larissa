@@ -449,13 +449,25 @@ tools/dev_pack/dev_story.py (the dev pack's own, short and made up)
 a pack's data/story/*.tres   CutsceneTimeline: a length, tracks (actor name, property word, moments in ticks of the 73 Hz timer, values with
   |                 picture / sound / text NAMES of the registry) and cues (sounds, events). No node, no path, no Animation in it.
   |   news_cartoon, news_ambient, title_ship, title_reveal, expert_hoist, expert_deck, expert_wait
+a pack's data/story/<scene>_stage.tres   CutsceneStage: the actors of a scene (StageActor: name, kind, picture name, position in window pixels, mirror, parent, visibility,
+  |                 clip, size), listed in draw order. `news_cartoon_stage`, `title_stage`
   |   (+ story_script: the story pages; voyager_closing_script: the Voyager flight's loop counts; closing_crew: the Expert closing's six sailors' programs)
   v
-Catalog.story_timeline / story_script / voyager_closing_script / closing_crew     the first pack of the chain that holds the file (`Packs.resource`)
+Catalog.story_timeline / story_stage / story_script / voyager_closing_script / closing_crew     the first pack of the chain that holds the file (`Packs.resource`)
   v
+src/story/stage_builder.gd   StageBuilder.build(stage name, container, cast): the ONE builder of a stage's nodes; makes them in the order of the list and binds the cast
 src/story/cutscene.gd        Cutscene.animation(timeline, cast) builds an Animation; the scene's AnimationPlayer plays it
 src/story/cutscene_cast.gd   CutsceneCast: "the actor crew_4 is the Crew4 sprite", and how a name becomes a texture (a picture key the chain's tables answer)
 ```
+
+A **stage** is where things stand, a **timeline** is when they move, and the scene (`NewsCartoon`, `TitleScene`) only asks `StageBuilder` for the nodes and plays the timelines on them: no position, picture
+or draw order of a scene is in its script or `.tscn`. `StageBuilder` makes a `Sprite2D` of each picture actor (top-left corner, its picture through the cast's `pictures` resolver, mirrored, clipped to `clip`
+when that has an area), a `Label` of each text box (the whole text wrapped, revealed a character at a time) and a `Node2D` of each group (the ship that carries its hull, radar and hook). An actor's `position` is in
+window pixels whatever its parent: the node's own place is that less the parent actor's (the container, a scene's `Stage` node, stands at the window's origin), so a timeline's `position` keys stay in window pixels too.
+The nodes are named by the actors (`StageActor.node_name`: `mini_sub` is `MiniSub`) and an actor's parent is listed before it (`CutsceneStage.problem_with` is the one judgement `problems` and the builder share). An actor
+that cannot be made (a parent not listed before it, an unknown kind) is left out and told once (`TroubleLog`, naming the pack); a stage no pack holds builds nothing and says so; a timeline track that names an actor
+no node plays is left out and told once (`Cutscene.unplayed_line`), and `PackCheck` reports both as errors of the pack's `story` area (`_stages`: each stage's `problems()`, and each actor a timeline of the scene names that the
+stage lacks). Each scene names its stage and the timelines it plays (`NewsCartoon.STAGE` / `TIMELINES`, `TitleScene.STAGE` / `TIMELINES`), which is what `PackCheck` reads. `tests/stage_nodes.gd` (`StageNodes.differences`) reads a built scene against its stage file.
 
 A timeline is the same on every skin: a skin redraws a cutscene by binding its own nodes and resolvers and takes exactly as long,
 because the time is in the data. The choreography is the pack's: the original's is in the legacy pack, never committed; the dev pack has its own,
@@ -465,7 +477,7 @@ the original is behind them (the fade of a story page, the flicker of the consol
 original's. `SurfaceShipScreen` has no timeline: it counts `surface_ship.wait_ticks` from `Durations`. Tests: `tests/legacy/test_cutscene_timing.gd`
 (the hash of each cutscene's timing record, from the timeline and from the animation a scene builds, against `tests/fixtures/cutscene_timing.json`), `tests/legacy/test_story_timelines_legacy.gd` (re-derives the timelines
 from the analysis), `tests/engine/test_story_timelines.gd` (well formed, every name exists, the scripts run), `tests/engine/test_opening.gd` (the
-scenes play the dev pack's timelines: the nodes show what the tracks say), `tests/engine/test_cutscene_timeline.gd` (the machinery).
+scenes play the dev pack's timelines on its stages: the nodes are what the stage files say and show what the tracks say), `tests/engine/test_cutscene_stage.gd` (the builder, the stage's problems, the warnings, the check), `tests/engine/test_cutscene_timeline.gd` (the machinery).
 
 ## Autoloads
 

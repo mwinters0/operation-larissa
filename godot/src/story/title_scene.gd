@@ -8,8 +8,8 @@ extends StorySegment
 ## of the pack; the legacy pack's are written by the importer) played by one `AnimationPlayer` this script builds: stepped movement (`position` keys that JUMP,
 ## because the original redraws every 12 ticks and moves 8 px per redraw), picture swaps (discrete `texture` keys), a CLIPPED
 ## picture (the `region_rect` of the sinking sub shrinks until nothing is left), sounds and events (method tracks) -- plus how
-## to hand the player a choice at the end (`TextureButton`s and keys). The script only says which node plays which actor of the
-## timeline (`CutsceneCast`); where and when is in the data. It is a state machine with three phases:
+## to hand the player a choice at the end (`TextureButton`s and keys). The stage builder says which node plays which actor of the
+## timeline (`CutsceneCast`); where and when is in the data, and where things STAND is in the pack's stage (`data/story/title_stage.tres`, a `CutsceneStage` that `StageBuilder` makes the nodes of). It is a state machine with three phases:
 ##
 ##   SHIP     26.8 s: the ship sails across the sky, stops, drops the mini-sub into the sea with a splash
 ##   REVEAL   "presents", "OPERATION", "NEPTUNE" and the copyright appear, one after the other (no fading)
@@ -25,10 +25,13 @@ extends StorySegment
 
 enum Phase { SHIP, REVEAL, PROMPT }
 
-# The ship scene (`title_ship`) and the reveal of the title (`title_reveal`) are the pack's data (`Catalog.story_timeline`).
-
-const SUB_SIZE := Vector2(72, 44)
-const SPLASH_FIRST_PICTURE := &"spray_0"    # five 76 x 50 pictures (`spray_0` .. `spray_4`)
+## The stage the scene plays on (`Catalog.story_stage`) and the timelines played on it: the ship scene (`title_ship`) and the reveal of the title (`title_reveal`).
+const STAGE := &"title_stage"
+const SHIP_TIMELINE := &"title_ship"
+const REVEAL_TIMELINE := &"title_reveal"
+const TIMELINES: Array[StringName] = [SHIP_TIMELINE, REVEAL_TIMELINE]
+## The actors of the stage that belong to the ship scene and are gone when the title is revealed (the strip of waves and the sub, spray and splashes are not parts of the ship's node).
+const SHIP_SCENE_ACTORS: Array[StringName] = [&"ship", &"waves_front", &"mini_sub", &"spray", &"splash_left", &"splash_right"]
 
 const PROMPT_TIMEOUT := 25.0          # 1825 ticks
 const MUSIC_DELAY_AFTER_PROMPT := 4.0
@@ -38,30 +41,25 @@ var wants_intro: bool = false
 var phase: Phase = Phase.SHIP
 
 @onready var stage: Node2D = %Stage
-@onready var ship: Node2D = %Ship
 @onready var animations: AnimationPlayer = %Animations
 @onready var prompt: Control = %Prompt
 @onready var start_button: TextureButton = %Start
 @onready var intro_button: TextureButton = %Intro
 @onready var prompt_timer: Timer = %PromptTimer
 
-var _ship_sub: Sprite2D
-var _ship_radar: Sprite2D
-var _ship_hook: Sprite2D
-var _ship_spray: Sprite2D
-var _waves_front: Sprite2D
-var _splashes: Array[Sprite2D] = []
-var _titles: Dictionary = {}          # name -> Sprite2D, shown one after the other during REVEAL
+## The ship: the stage's group actor `ship`, which carries the hull, the radar and the hook.
+var ship: Node2D
 var _cast: CutsceneCast
 var _reveal: CutsceneTimeline
 
 
 func _ready() -> void:
 	_cast = CutsceneCast.new(self)
-	_build_stage()
+	StageBuilder.build(STAGE, stage, _cast)
+	ship = _cast.node_of(&"ship") as Node2D
 	_build_prompt()
-	_reveal = Catalog.story_timeline(&"title_reveal")
-	Cutscene.install_timeline(animations, &"ship", Catalog.story_timeline(&"title_ship"), _cast)
+	_reveal = Catalog.story_timeline(REVEAL_TIMELINE)
+	Cutscene.install_timeline(animations, &"ship", Catalog.story_timeline(SHIP_TIMELINE), _cast)
 	Cutscene.install_timeline(animations, &"reveal", _reveal, _cast)
 	animations.animation_finished.connect(_on_animation_finished)
 	prompt_timer.wait_time = PROMPT_TIMEOUT
@@ -71,60 +69,7 @@ func _ready() -> void:
 	animations.play(&"ship")
 
 
-# --- the picture ---------------------------------------------------------------------------
-
-## A picture node with a NAME (its place in the scene tree) that plays the actor `actor` of the timeline (if it has one).
-func _sprite(parent: Node, node_name: String, picture: StringName, at: Vector2, flip: bool = false, actor: StringName = &"") -> Sprite2D:
-	var sprite := Sprite2D.new()
-	sprite.name = node_name
-	sprite.texture = Assets.ui_picture(picture)
-	sprite.centered = false
-	sprite.position = at
-	sprite.flip_h = flip
-	parent.add_child(sprite)
-	if actor != &"":
-		_cast.bind(actor, sprite)
-	return sprite
-
-
-## Sky, sea and clouds; then the ship with its parts (placed RELATIVE to the hull, so that the ship is one node that moves
-## as a whole), the mini-sub (which does NOT move with the ship once it is dropped, so its place is its own, in window
-## pixels), the waves in front of it, the splash and the title pictures. Each picture that the timeline moves or changes
-## is told to the cast as an actor.
-func _build_stage() -> void:
-	_sprite(stage, "Sky", &"title_sky", Catalog.story_layout().at(StoryLayout.SKY))
-	_sprite(stage, "Sea", &"title_sea", Catalog.story_layout().at(StoryLayout.SEA))
-	_sprite(stage, "CloudLeft", &"title_cloud_0", Catalog.story_layout().at(StoryLayout.CLOUD_LEFT))
-	_sprite(stage, "CloudRight", &"title_cloud_1", Catalog.story_layout().at(StoryLayout.CLOUD_RIGHT))
-	var origin := Catalog.story_layout().at(StoryLayout.SHIP)
-	stage.move_child(ship, -1)                         # the Ship node comes from the scene file: draw it after the sky, sea and clouds
-	ship.position = origin
-	_cast.bind(&"ship", ship)
-	_sprite(ship, "Hull", &"ship_idle", Vector2.ZERO)
-	_ship_radar = _sprite(ship, "Radar", &"ship_radar_0", Catalog.story_layout().at(StoryLayout.SHIP_RADAR) - origin, false, &"radar")
-	_ship_hook = _sprite(ship, "Hook", &"ship_hook_0", Catalog.story_layout().at(StoryLayout.SHIP_HOOK) - origin, true, &"hook")
-	# The sub is drawn clipped: its `region_rect` shows only the rows above the waterline. It is drawn right after the ship's parts.
-	_ship_sub = _sprite(stage, "MiniSub", &"ship_mini_sub", Catalog.story_layout().at(StoryLayout.SHIP_SUB), false, &"mini_sub")
-	_ship_sub.region_enabled = true
-	_ship_sub.region_rect = Rect2(Vector2.ZERO, SUB_SIZE)
-	_waves_front = _sprite(stage, "WavesFront", &"title_waves_front", Catalog.story_layout().at(StoryLayout.WAVES_FRONT))
-	# The bow spray is drawn after the waves (in front of them); it moves with the hull at a fixed offset.
-	_ship_spray = _sprite(stage, "Spray", &"spray_1", Catalog.story_layout().at(StoryLayout.SHIP_BOW_SPRAY), false, &"spray")
-	var splash_at := Catalog.story_layout().at(StoryLayout.SPLASH)
-	_splashes.append(_sprite(stage, "SplashLeft", SPLASH_FIRST_PICTURE, splash_at, false, &"splash_left"))
-	_splashes.append(_sprite(stage, "SplashRight", SPLASH_FIRST_PICTURE, splash_at + Vector2(76, 0), true, &"splash_right"))
-	for splash in _splashes:
-		splash.visible = false
-	# The title pictures just appear, one after the other (a single blit each in the original: no wipe).
-	_titles = {
-		"Presents": _sprite(stage, "Presents", &"title_presents", Catalog.story_layout().at(StoryLayout.PRESENTS), false, &"presents"),
-		"Operation": _sprite(stage, "Operation", &"title_operation", Catalog.story_layout().at(StoryLayout.OPERATION), false, &"operation"),
-		"Neptune": _sprite(stage, "Neptune", &"title_neptune", Catalog.story_layout().at(StoryLayout.NEPTUNE), false, &"neptune"),
-		"Copyright": _sprite(stage, "Copyright", &"title_copyright", Catalog.story_layout().at(StoryLayout.COPYRIGHT), false, &"copyright"),
-	}
-	for sprite: Sprite2D in _titles.values():
-		sprite.visible = false
-
+# --- the prompt ---------------------------------------------------------------------------
 
 ## The two buttons of the prompt: the pictures of Start and Intro, up and down.
 func _build_prompt() -> void:
@@ -161,12 +106,12 @@ func _on_animation_finished(animation_name: StringName) -> void:
 ## 0x429d09), which has no strip.
 func _leave_ship_scene() -> void:
 	phase = Phase.REVEAL
-	ship.visible = false
-	_waves_front.visible = false
-	_ship_sub.visible = false                             # (the sub is not a part of the ship node: it has a place of its own)
-	_ship_spray.visible = false
-	for splash in _splashes:
-		splash.visible = false
+	for actor in SHIP_SCENE_ACTORS:
+		var node := _cast.node_of(actor) as CanvasItem
+		if node == null:
+			TroubleLog.session.tell("[story] the stage '%s' of the title has no actor '%s', which the ship scene hides when the title is revealed: nothing is hidden for it" % [STAGE, actor])
+		else:
+			node.visible = false
 	Audio.stop_music()                                    # the original stops the song when the title appears
 
 

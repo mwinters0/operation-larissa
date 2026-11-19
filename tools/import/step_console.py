@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from common import PACK_DATA, PROJECT_DATA, ANALYSIS_DATA, TABLES, load_json, out_text, png_size, raw_table, res_path
+from common import PACK_DATA, PROJECT_DATA, ANALYSIS_DATA, TABLES, load_json, out_text, png_size, res_path
 import asset_names
 from pictures import problem_art_file, problem_art_held_key, ui_file
 import tres
@@ -156,19 +156,6 @@ def build_menu_layout() -> str:
     return t.render()
 
 
-def build_story_layout() -> str:
-    """The opening cartoon's position table: NEP.DLL resource 10012, 68 (x, y) pairs of 16 bit numbers that the
-    original's `OpeningSequence` doubles at load time. The meaning of each index is documented in
-    `src/resources/story_layout.gd` (found in the decompilation of OPENING.C, see docs/port/DESIGN.md section 2)."""
-    raw = raw_table(10012)
-    raw += b"\0" * (-len(raw) % 4)                      # the resource length is rounded down by one byte
-    values = [int.from_bytes(raw[i:i + 2], "little", signed=True) * 2 for i in range(0, len(raw), 2)]
-    points = list(zip(values[0::2], values[1::2]))
-    t = tres.Tres("Resource", "StoryLayout", SCRIPTS + "story_layout.gd")
-    t.set("points", _slots(points))
-    return t.render()
-
-
 def owned_files() -> list[Path]:
     """The files this step writes into the project (not the legacy pack): the menu layout, which commits. `import_all.py --clean` deletes them."""
     return [PROJECT_DATA / "ui" / "menu_layout.tres"]
@@ -181,5 +168,4 @@ def run() -> None:
     out_text(PACK_DATA / "ui" / "hud_layout.tres", build_hud_layout(gauges, console, colors))
     out_text(PACK_DATA / "ui" / "calculator_layout.tres", build_calculator_layout(console))
     out_text(PROJECT_DATA / "ui" / "menu_layout.tres", build_menu_layout())
-    out_text(PACK_DATA / "ui" / "story_layout.tres", build_story_layout())
-    print("  console: hud_layout.tres, calculator_layout.tres, menu_layout.tres, story_layout.tres")
+    print("  console: hud_layout.tres, calculator_layout.tres, menu_layout.tres")

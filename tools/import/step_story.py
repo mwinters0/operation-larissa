@@ -6,6 +6,8 @@ moments in ticks of the original's 73 Hz timer, values with picture and sound NA
 events). A view plays it by building an `AnimationPlayer` animation at run time (`src/story/cutscene.gd`), so the numbers
 belong to the original and the nodes belong to the view.
 
+    news_cartoon_stage  the news cartoon's actors and where they stand                                (the position table, extracted/tables/opening.json)
+    title_stage         the title scene's actors and where they stand                                 (the same)
     news_cartoon        the capsule's trail, the bulletins typed, the crew, the alarm lights, the end   (extracted/tables/opening.json)
     news_ambient        the alarm lights' four states and the pulsing ring, a loop of 64 redraws          (the same)
     title_ship          the ship scene, 163 frames of 12 ticks                                           (title_scene.frames)
@@ -183,8 +185,48 @@ def timeline_digest(timeline: Timeline) -> str:
     return timing_digest(timeline.length, timeline.loop, timeline.key_times(), timeline.cues)
 
 
-def points() -> list[tuple[int, int]]:
-    return [tuple(p) for p in load_json(TABLES / "opening.json")["points"]]
+class Stage:
+    """A CutsceneStage being collected: the actors in DRAW ORDER, each (name, kind, picture name, position, mirror, parent, visible, clip, size)."""
+
+    def __init__(self, provenance: str):
+        self.provenance = provenance
+        self.actors: list[dict] = []
+
+    def actor(self, name: str, kind: str = "picture", picture: str = "", at: tuple[float, float] = (0, 0), mirror: bool = False,
+              parent: str = "", visible: bool = True, clip: tuple[float, float, float, float] | None = None,
+              size: tuple[float, float] | None = None) -> None:
+        assert all(a["name"] != name for a in self.actors), name
+        assert not parent or any(a["name"] == parent for a in self.actors), (name, parent)         # a parent is listed before its children
+        self.actors.append({"name": name, "kind": kind, "picture": picture, "at": at, "mirror": mirror, "parent": parent,
+                            "visible": visible, "clip": clip, "size": size})
+
+    def render(self) -> str:
+        t = tres.Tres("Resource", "CutsceneStage", SCRIPTS + "cutscene_stage.gd")
+        actor_script = SCRIPTS + "stage_actor.gd"
+        actor_id = t.ext_id("Script", actor_script)
+        refs = []
+        for a in self.actors:
+            props = [("name", sn(a["name"]))]
+            if a["kind"] != "picture":
+                props.append(("kind", sn(a["kind"])))
+            if a["picture"]:
+                props.append(("picture", sn(a["picture"])))
+            if tuple(a["at"]) != (0, 0):
+                props.append(("position", v2(*a["at"])))
+            if a["mirror"]:
+                props.append(("mirror", "true"))
+            if a["parent"]:
+                props.append(("parent", sn(a["parent"])))
+            if not a["visible"]:
+                props.append(("visible", "false"))
+            if a["clip"]:
+                props.append(("clip", rect(*a["clip"])))
+            if a["size"]:
+                props.append(("size", v2(*a["size"])))
+            refs.append(t.sub("Resource", props, script=actor_script, prefix="Actor"))
+        t.set("provenance", tres.s(self.provenance))
+        t.set("actors", tres.array('ExtResource("%s")' % actor_id, refs))
+        return t.render()
 
 
 # --- the news cartoon -------------------------------------------------------------------------------------------------------
@@ -296,6 +338,44 @@ def build_news_ambient() -> Timeline:
     return tl
 
 
+STAGE_PICTURES = {"map": 1000, "console": 1001, "dot": 1002, "ring": 1003, "alarm": 1007, "status": 1010, "panel": 1013, "crew": 1016}
+TELETYPE_SIZE = (280, 120)                   # ours: the box the port types the bulletins into (the original's wrap width is not read from the table)
+
+
+def build_news_stage() -> Stage:
+    """The news cartoon's actors, in the order the original draws them, each at its point of the position table (`point_names`): the map, the capsule's
+    21 dots (hidden until the timeline shows them), the ring, the two consoles (the right one mirrored), the alarm, status and panel lights (the right
+    half of a row mirrored, as the table says), the five crew members (the one who walks in later is hidden) and the teletype."""
+    data = load_json(TABLES / "opening.json")
+    news = data["news_cartoon"]
+    pts = data["points"]
+    names = data["point_names"]
+    pic = {k: picture(n) for k, n in STAGE_PICTURES.items()}
+    stage = Stage(PROVENANCE_NEWS_STAGE)
+    stage.actor("map", picture=pic["map"], at=pts[names["map"]])
+    first, last = names["capsule_trail"]
+    for i in range(first, last + 1):
+        stage.actor("dot_%02d" % (i - first), picture=pic["dot"], at=pts[i], visible=False)
+    stage.actor("ring", picture=pic["ring"], at=pts[names["crash_site"]], visible=False)
+    stage.actor("console_left", picture=pic["console"], at=pts[names["console_left"]])
+    stage.actor("console_right", picture=pic["console"], at=pts[names["console_right"]], mirror=True)
+    for i, point in enumerate(names["alarm_lights"]):
+        stage.actor("alarm_%d" % i, picture=pic["alarm"], at=pts[point])
+    for i, point in enumerate(names["status_lights"]):
+        stage.actor("status_%02d" % i, picture=pic["status"], at=pts[point], mirror=bool(news["status_lights"]["mirror"][i]))
+    for i, point in enumerate(names["panel_lights"]):
+        stage.actor("panel_%02d" % i, picture=pic["panel"], at=pts[point], mirror=bool(news["panel_lights"]["mirror"][i]))
+    for i, point in enumerate(names["crew"]):
+        walks_in = news["crew"]["members"][i]["dx_per_cycle"] != 0          # only the man on the left walks, and he is not there for the first 30 s
+        stage.actor("crew_%d" % i, picture=pic["crew"], at=pts[point], visible=not walks_in)
+    stage.actor("teletype", kind="text", at=pts[names["teletype"]], size=TELETYPE_SIZE)
+    return stage
+
+
+PROVENANCE_NEWS_STAGE = (
+    "Original: the position table of OpeningSequence (NEP.DLL resource 10012, 68 points doubled at load; extracted/tables/opening.json, points and point_names) "
+    "and the order its news cartoon draws in. Ours: the teletype's size.")
+
 PROVENANCE_NEWS = (
     "Original: OpeningSequence 0x42b16b, the news cartoon (extracted/tables/opening.json, news_cartoon): redraw every 10 ticks; "
     "the trail's dots and the ring at their calls; the bulletins typed at 3 ticks a character, each read for 25 redraws; "
@@ -365,6 +445,42 @@ PROVENANCE_TITLE_SHIP = (
     "Original: the ship scene of OpeningSequence 0x42b16b (extracted/tables/opening.json, title_scene.frames): frame r is drawn at "
     "r x 12 ticks and every part is where the original drew it in that frame; the splash sound plays in frame 73. "
     "Hidden parts keep a picture and a place (the spray and splash show their first picture, the spray follows the hull).")
+
+
+def build_title_stage() -> Stage:
+    """The title scene's actors in the order of its draws: sky, sea, the clouds, the ship (a group at the hull's point, carrying the hull, radar and hook), the
+    mini-sub (clipped: it starts whole), the strip of waves, the bow spray, the two halves of the splash (the right one mirrored, 76 px on) and the four title
+    pictures. Every part of the ship stands at its point of the position table, in window pixels, and rides with the ship."""
+    data = load_json(TABLES / "opening.json")
+    title = data["title_scene"]
+    pts = data["points"]
+    names = data["point_names"]
+    sub_w, sub_h = title["sub"]["size"]
+    stage = Stage(PROVENANCE_TITLE_STAGE)
+    stage.actor("sky", picture=picture(1039), at=pts[names["sky"]])
+    stage.actor("sea", picture=picture(1040), at=pts[names["sea"]])
+    stage.actor("cloud_left", picture=picture(1042), at=pts[names["cloud_left"]])
+    stage.actor("cloud_right", picture=picture(1043), at=pts[names["cloud_right"]])
+    hull = pts[names["ship_hull"]]
+    stage.actor("ship", kind="group", at=hull)
+    stage.actor("hull", picture=picture(1027), at=hull, parent="ship")
+    stage.actor("radar", picture=picture(1028), at=pts[names["ship_radar"]], parent="ship")
+    stage.actor("hook", picture=picture(1031), at=pts[names["ship_hook"]], parent="ship", mirror=True)
+    stage.actor("mini_sub", picture=picture(1033), at=pts[names["ship_sub"]], clip=(0, 0, sub_w, sub_h))
+    stage.actor("waves_front", picture=picture(1041), at=pts[names["waves_front"]])
+    stage.actor("spray", picture=picture(SPRAY_IDLE_PICTURE), at=pts[names["ship_bow_spray"]])
+    splash = title["splash"]
+    left = pts[names["splash"]]
+    stage.actor("splash_left", picture=picture(SPLASH_IDLE_PICTURE), at=left, visible=False)
+    stage.actor("splash_right", picture=picture(SPLASH_IDLE_PICTURE), at=(left[0] + splash["right_dx"], left[1]), mirror=bool(splash["right_mirror"]), visible=False)
+    for actor, number, point in (("presents", 1044, "presents"), ("operation", 1045, "operation"), ("neptune", 1046, "neptune"), ("copyright", 1047, "copyright_text")):
+        stage.actor(actor, picture=picture(number), at=pts[names[point]], visible=False)
+    return stage
+
+
+PROVENANCE_TITLE_STAGE = (
+    "Original: the position table of OpeningSequence (NEP.DLL resource 10012; extracted/tables/opening.json, points and point_names) and the order the title scene draws in "
+    "(title_scene.draw_order). The sub's size is the original's; the splash's right half is drawn mirrored 76 px to the right of the left one.")
 
 
 def build_title_reveal() -> Timeline:
@@ -738,12 +854,18 @@ def timelines() -> dict[str, Timeline]:
     }
 
 
+def stages() -> dict[str, Stage]:
+    return {"news_cartoon_stage": build_news_stage(), "title_stage": build_title_stage()}
+
+
 def run() -> None:
     written = []
     for name, timeline in timelines().items():
         out_text(STORY / (name + ".tres"), timeline.render())
         written.append(name)
+    for name, stage in stages().items():
+        out_text(STORY / (name + ".tres"), stage.render())
     out_text(STORY / "story_script.tres", build_story_script())
     out_text(STORY / "voyager_closing_script.tres", build_voyager_script())
     out_text(STORY / "closing_crew.tres", build_closing_crew())
-    print("  story: %s, story_script, voyager_closing_script, closing_crew" % ", ".join(written))
+    print("  story: %s, %s, story_script, voyager_closing_script, closing_crew" % (", ".join(written), ", ".join(stages())))

@@ -165,8 +165,26 @@ The opening, the title and the two closings are timed tracks of data in a pack's
 happens, in ticks): `news_cartoon`, `news_ambient`, `title_ship`, `title_reveal`, `expert_hoist`, `expert_deck`, `expert_wait`; with them `story_script` (the
 pages of the opening story and how long each one holds), `voyager_closing_script` (the loop counts of the Voyager flight, run for the place the sub is in) and
 `closing_crew` (the Expert closing's six sailors' programs). The scenes only play them, and take each from the first pack of the chain that holds it. A
-complete pack holds all ten (`PackNeeds`; the dev pack's are short ones of its own, `tools/dev_pack/dev_story.py`). A campaign without a closing of its own gets the
+complete pack holds all of them (`PackNeeds`; the dev pack's are short ones of its own, `tools/dev_pack/dev_story.py`). A campaign without a closing of its own gets the
 **generic finale** (section 3).
+
+**Stages.** Where the opening's pictures stand is data as well: `news_cartoon_stage` and `title_stage` (`data/story/<scene>_stage.tres`, a `CutsceneStage`; `.json` in the data form) list the
+scene's **actors**, and the timelines played on the scene move and change those actors by name. An actor is a `StageActor`:
+
+| Field | Meaning |
+| --- | --- |
+| `name` | what a timeline's tracks call it (`radar`, `crew_3`); also its node, in capitals (`Radar`, `Crew3`) |
+| `kind` | `picture` (the default), `text` (a text box that a timeline's `text` and `reveal` tracks fill) or `group` (carries other actors and moves them as one) |
+| `picture` | a picture NAME (`ship_radar_0`, a `ui_picture` of the registry, as a timeline's `picture` track writes it) the actor starts with; a group and a text box have none |
+| `position` | the top-left corner in window pixels (the screen is 640 x 400), whatever the parent |
+| `mirror`, `visible` | drawn mirrored; there when the scene starts (default true) |
+| `parent` | the actor it rides with: it moves and hides with it. The parent is listed BEFORE its children |
+| `clip` | a picture: the part drawn, in the picture's pixels (the mini-sub starts whole and its timeline shrinks it); no area draws the whole picture |
+| `size` | a text box: its size in window pixels |
+
+The actors are listed in **draw order**: each is drawn above the ones listed before it that share its parent. A pack states a stage whole (it replaces the stage of the pack under it), and a timeline
+may only name actors its scene's stage holds: the pack check reports a stage that is wrong (two actors of a name, a parent not listed before, a text box with no size) and an actor a timeline names
+that the stage lacks, and the game, meeting either, leaves that actor or track out and says so in the log once.
 
 ### Durations
 

@@ -153,9 +153,11 @@ func _layouts() -> void:
 		for i in calc.key_names.size():
 			if not picture.encloses(calc.key_rects[i]):
 				_fail("calculator key %s is outside the calculator picture" % calc.key_names[i])
-	var story := load(ROOT + "data/ui/story_layout.tres") as StoryLayout
-	if story != null and story.points.size() != 68:
-		_fail("story layout has %d points, 68 expected" % story.points.size())
+	for stage_file in ["news_cartoon_stage", "title_stage"]:
+		var stage := load(ROOT + "data/story/%s.tres" % stage_file) as CutsceneStage
+		if stage != null:
+			for message in stage.problems():
+				_fail("%s: %s" % [stage_file, message])
 	var cartoon := load(ROOT + "data/story/news_cartoon.tres") as CutsceneTimeline
 	if cartoon != null:
 		for message in cartoon.problems():

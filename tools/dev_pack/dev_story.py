@@ -49,6 +49,53 @@ def flags(step_ticks: float, values: list[bool]) -> list[tuple[float, str]]:
 
 # --- the opening -------------------------------------------------------------------------------------------------
 
+def stage(why: str) -> st.Stage:
+    return st.Stage("Dev pack: %s (tools/dev_pack/dev_story.py)." % why)
+
+
+def news_cartoon_stage() -> st.Stage:
+    """The news cartoon's stage by simple rules: the map, a diagonal trail of 21 dots, the ring, two consoles, three rows of lights, five crew in a row, the teletype."""
+    s = stage("the news cartoon's actors, laid out by simple rules; the teletype is 280 x 120")
+    s.actor("map", picture="radar_map", at=(0, 0))
+    for i in range(21):
+        s.actor("dot_%02d" % i, picture="capsule_dot", at=(20 + 20 * i, 40 + 4 * i), visible=False)
+    s.actor("ring", picture="crash_ring_0", at=(400, 120), visible=False)
+    s.actor("console_left", picture="control_console", at=(0, 320))
+    s.actor("console_right", picture="control_console", at=(520, 320), mirror=True)
+    for i in range(3):
+        s.actor("alarm_%d" % i, picture="alarm_light_0", at=(100 + 20 * i, 300))
+    for i in range(6):
+        s.actor("status_%02d" % i, picture="status_light_0", at=(160 + 20 * i, 300), mirror=i >= 3)
+    for i in range(8):
+        s.actor("panel_%02d" % i, picture="panel_light_0", at=(300 + 20 * i, 320), mirror=i >= 4)
+    for i in range(5):
+        s.actor("crew_%d" % i, picture="crew_walk_0", at=(100 + 60 * i, 260), visible=i != 4)      # the fifth is the one who walks in, so he starts hidden
+    s.actor("teletype", kind="text", at=(150, 200), size=(280, 120))
+    return s
+
+
+def title_stage() -> st.Stage:
+    """The title scene's stage: the ship (a group) with its hull, radar and hook, the mini-sub (clipped), the waves, the spray, the splash, the four title pictures."""
+    s = stage("the title scene's actors, laid out by simple rules")
+    s.actor("sky", picture="title_sky", at=(0, 0))
+    s.actor("sea", picture="title_sea", at=(0, 200))
+    s.actor("cloud_left", picture="title_cloud_0", at=(400, 20))
+    s.actor("cloud_right", picture="title_cloud_1", at=(500, 40))
+    s.actor("ship", kind="group", at=(-200, 120))
+    s.actor("hull", picture="ship_idle", at=(-200, 120), parent="ship")
+    s.actor("radar", picture="ship_radar_0", at=(0, 100), parent="ship")
+    s.actor("hook", picture="ship_hook_0", at=(40, 140), parent="ship", mirror=True)
+    s.actor("mini_sub", picture="ship_mini_sub", at=(60, 200), clip=(0, 0, 72, 44))
+    s.actor("waves_front", picture="title_waves_front", at=(0, 160))
+    s.actor("spray", picture="spray_1", at=(20, 150))
+    s.actor("splash_left", picture="spray_0", at=(80, 170), visible=False)
+    s.actor("splash_right", picture="spray_0", at=(156, 170), mirror=True, visible=False)
+    for actor, picture, at in (("presents", "title_presents", (40, 20)), ("operation", "title_operation", (100, 80)),
+                               ("neptune", "title_neptune", (160, 120)), ("copyright", "title_copyright", (200, 360))):
+        s.actor(actor, picture=picture, at=at, visible=False)
+    return s
+
+
 def news_ambient() -> st.Timeline:
     """The alarm lights and the ring: a loop of 16 redraws of 10 ticks."""
     steps = 16
@@ -248,7 +295,9 @@ def write_all() -> int:
     for name, build in (("news_ambient", news_ambient), ("title_ship", title_ship), ("title_reveal", title_reveal),
                         ("expert_hoist", expert_hoist), ("expert_deck", expert_deck), ("expert_wait", expert_wait)):
         write_text(story / (name + ".tres"), build().render())
+    write_text(story / "news_cartoon_stage.tres", news_cartoon_stage().render())
+    write_text(story / "title_stage.tres", title_stage().render())
     write_text(story / "closing_crew.tres", closing_crew())
     write_text(story / "story_script.tres", story_script())
     write_text(story / "voyager_closing_script.tres", voyager_closing_script())
-    return 9
+    return 11

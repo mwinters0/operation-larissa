@@ -50,11 +50,26 @@ func test_news_cartoon_builds_and_every_track_finds_its_node() -> void:
 	add_child(news)
 	assert_array(_unresolved_tracks(news.script_player)).is_empty()
 	assert_array(_unresolved_tracks(news.ambient)).is_empty()
-	# the capsule's trail has a dot for each point of the story layout it is drawn on; the animation lasts as long as the pack's timeline says
+	# the capsule's trail has a dot on the stage for each dot the timeline shows; the animation lasts as long as the pack's timeline says
 	var timeline := Catalog.story_timeline(&"news_cartoon")
-	assert_int(news._dots.size()).is_equal(timeline.tracks.filter(func(track: CutsceneTrack) -> bool: return String(track.actor).begins_with("dot_")).size())
+	assert_int(_dots_of(news).size()).is_equal(timeline.tracks.filter(func(track: CutsceneTrack) -> bool: return String(track.actor).begins_with("dot_")).size())
 	assert_float(news.script_player.get_animation(&"news").length).is_equal_approx(timeline.length_seconds(), 0.001)
 	assert_int(Catalog.voice_cues().clips("opening_cartoon").size()).is_equal(NewsCartoon.SPEECH_GROUP_CLIPS.reduce(func(sum: int, each: int) -> int: return sum + each, 0))
+
+
+func test_the_nodes_of_both_scenes_are_what_their_stage_files_say() -> void:
+	var news: NewsCartoon = auto_free(load(NEWS).instantiate())
+	add_child(news)
+	var title: TitleScene = auto_free(load(TITLE).instantiate())
+	add_child(title)
+	for scene: Array in [[NewsCartoon.STAGE, news.stage], [TitleScene.STAGE, title.stage]]:
+		var stage := Catalog.story_stage(scene[0])
+		assert_object(stage).override_failure_message("%s: no stage" % scene[0]).is_not_null()
+		assert_array(stage.problems()).override_failure_message("%s: %s" % [scene[0], stage.problems()]).is_empty()
+		assert_array(StageNodes.differences(stage, scene[1])).override_failure_message("%s: %s" % [scene[0], StageNodes.differences(stage, scene[1])]).is_empty()
+	# the cast knows every actor of the stage: the same names the timelines use
+	assert_int(news.stage.find_children("*", "", true, false).size()).is_equal(Catalog.story_stage(NewsCartoon.STAGE).actors.size())
+	assert_array(_unresolved_tracks(title.animations)).is_empty()
 
 
 func test_a_bulletin_is_a_text_of_the_pack_printed_clean_and_the_speech_has_a_clip_for_each_group_slot() -> void:
@@ -657,6 +672,11 @@ func test_the_title_pictures_appear_at_once_without_a_wipe() -> void:
 
 # --- the news cartoon's crew and lights ----------------------------------------------------------------
 
+## The dots of the capsule's trail on the cartoon's stage.
+func _dots_of(news: NewsCartoon) -> Array:
+	return news.stage.get_children().filter(func(node: Node) -> bool: return node.name.begins_with("Dot"))
+
+
 func _news_at(news: NewsCartoon, seconds: float) -> void:
 	news.script_player.seek(seconds, true)
 
@@ -669,11 +689,11 @@ func test_each_dot_of_the_capsule_trail_appears_at_the_moment_its_track_says() -
 	for track in timeline.tracks:
 		if not String(track.actor).begins_with("dot_") or track.property != &"visible":
 			continue
-		var dot: Sprite2D = news._dots[int(String(track.actor).trim_prefix("dot_"))]
+		var dot: Sprite2D = news.stage.get_node("Dot%02d" % int(String(track.actor).trim_prefix("dot_")))
 		var shown_at: float = track.times[track.values.find(true)]
 		_news_at(news, CutsceneTimeline.seconds(shown_at) - 0.01)
 		assert_bool(dot.visible).override_failure_message("%s early" % track.actor).is_false()
 		_news_at(news, CutsceneTimeline.seconds(shown_at) + 0.01)
 		assert_bool(dot.visible).override_failure_message("%s late" % track.actor).is_true()
 		checked += 1
-	assert_int(checked).is_equal(news._dots.size())
+	assert_int(checked).is_equal(_dots_of(news).size())

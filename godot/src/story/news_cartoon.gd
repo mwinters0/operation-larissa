@@ -5,8 +5,8 @@ extends StorySegment
 ## COURSE ..."). Original: the first loop of `OpeningSequence` (OPENING.C).
 ##
 ## Teaches: a cutscene whose choreography is DATA (`data/story/news_cartoon.tres`, a `CutsceneTimeline` of the pack; the legacy pack's is written by the importer from
-## the original's tables) and whose view is this script: it builds the pictures, tells a `CutsceneCast` which node plays
-## which actor ("crew_4" is the `Crew4` sprite), and has `Cutscene.animation()` turn the timeline into `Animation`s. There are
+## the original's tables) and whose stage is data too (`data/story/news_cartoon_stage.tres`, a `CutsceneStage`: which pictures stand where). The script asks `StageBuilder` for the
+## nodes, which tells a `CutsceneCast` which node plays which actor ("crew_4" is the `Crew4` sprite), and has `Cutscene.animation()` turn the timeline into `Animation`s. There are
 ## TWO `AnimationPlayer`s, because one player plays one animation at a time:
 ##
 ##   * `Ambient` loops forever: the alarm lights and the pulsing radar ring (`news_ambient.tres`) and the flickering console
@@ -28,8 +28,14 @@ extends StorySegment
 
 ## The ambient animation's step: the original's redraw every 10 ticks (the flicker of the console lights changes at that rate).
 const REDRAW_TICKS := 10.0
-## The crew member who walks in from the left edge (his script starts at call 220, 30 s).
-const WALKER := 4
+## The stage the cartoon plays on (`Catalog.story_stage`), and the timelines played on it: the alarm lights and the ring, which loop, and the cartoon itself.
+const STAGE := &"news_cartoon_stage"
+const AMBIENT := &"news_ambient"
+const TIMELINE := &"news_cartoon"
+const TIMELINES: Array[StringName] = [AMBIENT, TIMELINE]
+## The names of the console's lights on the stage (`status_00`, `panel_00`).
+const STATUS_LIGHT_PREFIX := "status_"
+const PANEL_LIGHT_PREFIX := "panel_"
 
 ## The speech: groups of the 11 clips (how many clips in each) with the pause before each group, in ticks of the original's 1/73 s (the
 ## original's `CartoonSpeech` (0x42984d): a pause precedes clips 1, 3, 6 and 7, the others follow their predecessor at once). The pauses
@@ -54,33 +60,22 @@ static func speech_groups() -> Array[Array]:
 
 
 @onready var stage: Node2D = %Stage
-@onready var teletype: Label = %Teletype
 @onready var ambient: AnimationPlayer = %Ambient
 @onready var script_player: AnimationPlayer = %Script
 
-var _crew: Array[Sprite2D] = []
-var _alarms: Array[Sprite2D] = []
-var _status_lights: Array[Sprite2D] = []
-var _panel_lights: Array[Sprite2D] = []
-var _dots: Array[Sprite2D] = []
-var _ring: Sprite2D
+## The teletype, the text box the stage holds as the actor `teletype`.
+var teletype: Label
 var _cast: CutsceneCast
 
 
 func _ready() -> void:
 	_cast = CutsceneCast.new(self)
 	_cast.texts = _bulletin_text
-	_build_stage()
-	teletype.position = Catalog.story_layout().at(StoryLayout.TELETYPE)
-	teletype.text = ""
-	_cast.bind(&"teletype", teletype)
-	# The bulletin is wrapped as a whole and only REVEALED character by character: with the default
-	# (characters hidden before shaping) the label wraps the part typed so far, and a word that reaches the
-	# edge jumps to the next line.
-	teletype.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
-	var alarms := Catalog.story_timeline(&"news_ambient")
-	Cutscene.install_timeline(ambient, &"ambient", alarms.merged_with(_flicker_timeline(alarms)), _cast)
-	Cutscene.install_timeline(script_player, &"news", Catalog.story_timeline(&"news_cartoon"), _cast)
+	var stage_data := StageBuilder.build(STAGE, stage, _cast)
+	teletype = _cast.node_of(&"teletype") as Label
+	var alarms := Catalog.story_timeline(AMBIENT)
+	Cutscene.install_timeline(ambient, &"ambient", alarms.merged_with(_flicker_timeline(alarms, stage_data)), _cast)
+	Cutscene.install_timeline(script_player, &"news", Catalog.story_timeline(TIMELINE), _cast)
 	ambient.play(&"ambient")
 	script_player.play(&"news")
 	Audio.play_music(AudioService.SONG_OPENING)
@@ -102,57 +97,20 @@ func cue(event: StringName) -> void:
 		finish()
 
 
-# --- the picture ---------------------------------------------------------------------------
-
-## A picture node with a NAME (its place in the scene tree) that plays the actor `actor` of the timeline.
-func _sprite(node_name: String, actor: String, picture: StringName, at: Vector2, flip: bool = false) -> Sprite2D:
-	var sprite := Sprite2D.new()
-	sprite.name = node_name
-	sprite.texture = Assets.ui_picture(picture)
-	sprite.centered = false
-	sprite.position = at
-	sprite.flip_h = flip
-	stage.add_child(sprite)
-	_cast.bind(StringName(actor), sprite)
-	return sprite
-
-
-## Places every picture at the original's coordinates (`StoryLayout`).
-func _build_stage() -> void:
-	_sprite("Map", "map", &"radar_map", Catalog.story_layout().at(StoryLayout.MAP))
-	for i in range(StoryLayout.CAPSULE_TRAIL_FIRST, StoryLayout.CAPSULE_TRAIL_LAST + 1):
-		var dot := _sprite("Dot%02d" % _dots.size(), "dot_%02d" % _dots.size(), &"capsule_dot", Catalog.story_layout().at(i))
-		dot.visible = false
-		_dots.append(dot)
-	_ring = _sprite("Ring", "ring", &"crash_ring_0", Catalog.story_layout().at(StoryLayout.CRASH_SITE))
-	_ring.visible = false
-	_sprite("ConsoleLeft", "console_left", &"control_console", Catalog.story_layout().at(StoryLayout.CONSOLE_LEFT))
-	_sprite("ConsoleRight", "console_right", &"control_console", Catalog.story_layout().at(StoryLayout.CONSOLE_RIGHT), true)
-	for index in StoryLayout.ALARM_LIGHTS:
-		_alarms.append(_sprite("Alarm%d" % _alarms.size(), "alarm_%d" % _alarms.size(), &"alarm_light_0", Catalog.story_layout().at(index)))
-	# The right half of each row of lights is drawn mirrored by the original.
-	for i in StoryLayout.STATUS_LIGHTS.size():
-		_status_lights.append(_sprite("Status%02d" % i, "status_%02d" % i, &"status_light_0", Catalog.story_layout().at(StoryLayout.STATUS_LIGHTS[i]), i >= 3))
-	for i in StoryLayout.PANEL_LIGHTS.size():
-		_panel_lights.append(_sprite("Panel%02d" % i, "panel_%02d" % i, &"panel_light_0", Catalog.story_layout().at(StoryLayout.PANEL_LIGHTS[i]), i >= 4))
-	for index in StoryLayout.CREW:
-		_crew.append(_sprite("Crew%d" % _crew.size(), "crew_%d" % _crew.size(), &"crew_walk_0", Catalog.story_layout().at(index)))
-	_crew[WALKER].visible = false                        # he is not there yet
-
-
 # --- what the timeline does not have -----------------------------------------------------------
 
 ## The little lights flicker at random, like the console of the original (a seeded generator keeps it the same every
 ## time), so there is no original timeline for them: this one is ours, baked into a loop as long as the alarm lights'
 ## (`news_ambient.tres`) and merged with it. Status lights: each redraw a light is on with probability 100 / 299 and shows
 ## one of three pictures; panel lights are always on and show one of three pictures.
-func _flicker_timeline(alarms: CutsceneTimeline) -> CutsceneTimeline:
+func _flicker_timeline(alarms: CutsceneTimeline, stage_data: CutsceneStage) -> CutsceneTimeline:
 	var flicker := CutsceneTimeline.made_in_code(alarms.length,
 			"Ours: the console's lights flicker at random in the original (CartoonStatusLights, CartoonPanelLights); a generator seeded with 73 bakes it into a loop.", true)
 	var steps := roundi(alarms.length / REDRAW_TICKS)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 73
-	for i in _status_lights.size():
+	var lights := _lights(stage_data, STATUS_LIGHT_PREFIX)
+	for i in lights:
 		var visible_keys: Array = []
 		var picture_keys: Array = []
 		for step in steps:
@@ -161,12 +119,20 @@ func _flicker_timeline(alarms: CutsceneTimeline) -> CutsceneTimeline:
 			picture_keys.append([step * REDRAW_TICKS, StringName("status_light_%d" % (r % 3))])
 		flicker.track(StringName("status_%02d" % i), CutsceneTrack.PROP_VISIBLE, visible_keys)
 		flicker.track(StringName("status_%02d" % i), CutsceneTrack.PROP_PICTURE, picture_keys)
-	for i in _panel_lights.size():
+	for i in _lights(stage_data, PANEL_LIGHT_PREFIX):
 		var picture_keys: Array = []
 		for step in steps:
 			picture_keys.append([step * REDRAW_TICKS, StringName("panel_light_%d" % (rng.randi() % 299 % 3))])
 		flicker.track(StringName("panel_%02d" % i), CutsceneTrack.PROP_PICTURE, picture_keys)
 	return flicker
+
+
+## How many actors of the stage are called `<prefix>NN` (the console's lights of one kind): the flicker is baked for each.
+static func _lights(stage_data: CutsceneStage, prefix: String) -> int:
+	var count := 0
+	while stage_data != null and stage_data.has_actor(StringName("%s%02d" % [prefix, count])):
+		count += 1
+	return count
 
 
 ## Bulletin `index` (0-5) as the teletype prints it: the original's text with its odd characters cleaned.

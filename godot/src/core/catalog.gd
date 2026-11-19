@@ -36,7 +36,7 @@ const SCREENS_PER_SECTOR := 12
 ## The project's own data, committed in `res://data/`: the rules (`rules/durations.json`, `rules/tuning.json`), the menu layout, and the
 ## sectors and campaigns the designers make (under every pack of the chain). The cutscenes' choreography is a pack's (`story_timeline`).
 const PROJECT_DATA_DIR := "res://data/"
-## Where the story files of a pack are, by name: the cutscene timelines (`story_timeline`), `story_script`, `voyager_closing_script`, `closing_crew`
+## Where the story files of a pack are, by name: the cutscene timelines (`story_timeline`) and stages (`story_stage`), `story_script`, `voyager_closing_script`, `closing_crew`
 ## (`PackNeeds.FILES` lists the same files).
 const STORY_REL := "data/story/%s.tres"
 ## The string tables, in the order they are searched for a string id (the ids of all of them are one number space).
@@ -504,7 +504,7 @@ static func screen_layout() -> ProblemScreenLayout:
 	return _skinned("data/problems/screen_layout.tres") as ProblemScreenLayout
 
 
-## The layouts of the console, the calculator, the menu bar and the story screens (where everything goes, and which pictures).
+## The layouts of the console, the calculator and the menu bar (where everything goes, and which pictures).
 static func hud_layout() -> HudLayout:
 	return _skinned("data/ui/hud_layout.tres") as HudLayout
 
@@ -517,8 +517,6 @@ static func menu_layout() -> MenuBarLayout:
 	return _skinned_project("ui/menu_layout.tres") as MenuBarLayout
 
 
-static func story_layout() -> StoryLayout:
-	return _skinned("data/ui/story_layout.tres") as StoryLayout
 
 
 static func tileset() -> TileSet:
@@ -567,6 +565,12 @@ static func closing_crew() -> ClosingCrewScripts:
 ## of the chain always answers). Not skinned: how long a cutscene lasts is not a skin's to change.
 static func story_timeline(timeline_name: StringName) -> CutsceneTimeline:
 	return _story(timeline_name) as CutsceneTimeline
+
+
+## The stage `stage_name` (`news_cartoon_stage`, `title_stage`): the actors of a scene and where they stand, the first pack's of the chain that holds it (`STORY_REL`; `PackNeeds`
+## requires every one of them). Not skinned: where a scene's pictures stand is the pack's content, as the timeline is. `StageBuilder` makes the nodes of it.
+static func story_stage(stage_name: StringName) -> CutsceneStage:
+	return _story(stage_name) as CutsceneStage
 
 
 ## The pages of the opening story (`StoryPages`): `story_script` of the pack.

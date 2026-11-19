@@ -6,7 +6,7 @@ extends GdUnitTestSuite
 ## (`ResourceCompare`). Then the small facts a hand-written file depends on: a shared sub-resource, a value that keeps its kind inside a dictionary,
 ## a path that is relative to the pack, a `$ref` that looks down the chain and never up, an engine class that is not on the list.
 
-const SCRIPT_CLASSES := ["ZoneTable", "TriggerTable", "SpriteMetaTable", "CutsceneTimeline", "HudLayout", "CalculatorLayout", "StoryLayout", "ProblemScreenLayout",
+const SCRIPT_CLASSES := ["ZoneTable", "TriggerTable", "SpriteMetaTable", "CutsceneTimeline", "CutsceneStage", "HudLayout", "CalculatorLayout", "ProblemScreenLayout",
 		"TextTable", "SfxCatalog", "MusicCatalog", "VoiceIndex", "VoiceCues", "BubbleRules", "ProblemType", "Campaign", "ScreenData"]
 
 

@@ -1,4 +1,4 @@
-"""Dev layouts (HUD, calculator, story) and the dev news cartoon: dev's own rectangles on the 640 x 400 window.
+"""Dev layouts (HUD, calculator) and the dev news cartoon: dev's own rectangles on the 640 x 400 window.
 
 The pictures that play each role are held by key, the key of their number in the console bundles (the order of the pictures, as in the
 importer); where they go and how big they are is dev's own, and `dev_pictures` draws them with the sizes used here.
@@ -118,31 +118,6 @@ def calculator_layout_tres() -> str:
     return t.render()
 
 
-def story_points() -> list[tuple[int, int]]:
-    """The 68 points of the story layout (the indices are the engine's: StoryLayout), laid out by simple rules."""
-    pts = [(0, 0)] * 68
-    pts[0] = (0, 0)                                                      # MAP
-    pts[1], pts[2] = (0, 320), (520, 320)                                # the two consoles
-    pts[3:6] = [(100 + 20 * i, 300) for i in range(3)]                   # ALARM_LIGHTS
-    pts[6:12] = [(160 + 20 * i, 300) for i in range(6)]                  # STATUS_LIGHTS
-    pts[12:20] = [(300 + 20 * i, 320) for i in range(8)]                 # PANEL_LIGHTS
-    pts[20] = (150, 200)                                                 # TELETYPE
-    pts[21] = (400, 120)                                                 # CRASH_SITE
-    pts[22:27] = [(100 + 60 * i, 260) for i in range(5)]                 # CREW
-    pts[27:48] = [(20 + 20 * i, 40 + 4 * i) for i in range(21)]          # the capsule's trail
-    pts[48:63] = [(-200, 120), (0, 100), (40, 140), (60, 200), (20, 150), (0, 160), (80, 170), (0, 0), (0, 200),
-                  (400, 20), (500, 40), (40, 20), (100, 80), (160, 120), (200, 360)]
-    for i in range(63, 68):
-        pts[i] = (320, 200)
-    return pts
-
-
-def story_layout_tres() -> str:
-    t = tres.Tres("Resource", "StoryLayout", SCRIPTS + "story_layout.gd")
-    t.set("points", vecs(story_points()))
-    return t.render()
-
-
 # --- the news cartoon ---------------------------------------------------------------------------------------------
 
 def news_cartoon_tres() -> str:
@@ -182,6 +157,5 @@ def news_cartoon_tres() -> str:
 def write_all() -> int:
     write_text(DEV / "data" / "ui" / "hud_layout.tres", hud_layout_tres())
     write_text(DEV / "data" / "ui" / "calculator_layout.tres", calculator_layout_tres())
-    write_text(DEV / "data" / "ui" / "story_layout.tres", story_layout_tres())
     write_text(DEV / "data" / "story" / "news_cartoon.tres", news_cartoon_tres())
-    return 4
+    return 3

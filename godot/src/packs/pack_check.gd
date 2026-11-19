@@ -110,6 +110,7 @@ static func _content(live: Pack, report: PackReport, options: Options) -> void:
 	_texts(live, report)
 	_voice_cues(live, report)
 	_pictures(live, report)
+	_stages(live, report)
 	_audio(live, report)
 	_durations(live, report)
 	_tuning(live, report)
@@ -314,6 +315,27 @@ static func _scaled_row(live: Pack, key: String, file_size: Vector2i, report: Pa
 ## Is `rel` a picture a mod's draw list names by its path (`skin/`, `problems/`)? Those are not rows of the table.
 static func _is_a_mods_own(live: Pack, rel: String) -> bool:
 	return live.mod != null and (rel.begins_with(ModSpec.SKIN_FOLDER) or rel.begins_with(ModSpec.PROBLEM_FOLDER))
+
+
+## The stages of the opening's scenes as the chain gives them (`Catalog.story_stage`): each mistake of a stage itself (`CutsceneStage.problems`), and an actor a timeline played on the stage names that the stage does not hold (the
+## scene would leave that track out and nothing would change for the actor, `Cutscene.unplayed_line`). One finding per actor and timeline. A scene whose stage or timeline the chain lacks is `PackNeeds`' to say.
+static func _stages(_live: Pack, report: PackReport) -> void:
+	for scene: Script in [NewsCartoon, TitleScene]:
+		var stage_name: StringName = scene.STAGE
+		var stage := Catalog.story_stage(stage_name)
+		if stage == null:
+			continue
+		for problem in stage.problems():
+			report.error("story", "stage '%s': %s" % [stage_name, problem])
+		for timeline_name: StringName in scene.TIMELINES:
+			var timeline := Catalog.story_timeline(timeline_name)
+			if timeline == null:
+				continue
+			var told: Dictionary = {}
+			for track in timeline.tracks:
+				if not stage.has_actor(track.actor) and not told.has(track.actor):
+					told[track.actor] = true
+					report.error("story", "timeline '%s' names the actor '%s', which stage '%s' does not hold: nothing moves or changes for it" % [timeline_name, track.actor, stage_name])
 
 
 static func _audio(live: Pack, report: PackReport) -> void:
