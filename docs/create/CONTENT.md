@@ -165,8 +165,18 @@ The opening, the title and the two closings are timed tracks of data in a pack's
 happens, in ticks): `news_report`, `news_ambient`, `title_ship`, `title_reveal`, `expert_hoist`, `expert_deck`, `expert_wait`; with them `story_script` (the
 pages of the opening story and how long each one holds), `voyager_closing_script` (the loop counts of the Voyager flight, run for the place the sub is in) and
 `closing_crew` (the Expert closing's six sailors' programs). The scenes only play them, and take each from the first pack of the chain that holds it. A
-complete pack holds all of them (`PackNeeds`; the dev pack's are short ones of its own, `tools/dev_pack/dev_story.py`). A campaign without a closing of its own gets the
+complete pack holds the opening and the closings' files (`PackNeeds`; the dev pack's are short ones of its own, `tools/dev_pack/dev_story.py`). A campaign without a closing of its own gets the
 **generic finale** (section 3).
+
+**The opening.** `data/story/opening.tres` (an `OpeningList`; `.json` in the data form) lists the parts of the opening in the order they play, and `Opening` plays what the chain holds: the legacy pack's is the news cartoon, the title and the story; the dev pack's has four parts, the first a logo scene of its own.
+
+| Field | Meaning |
+| --- | --- |
+| `parts` | the parts in order. Each is an `OpeningPart`: `kind` (`scene`, the default: a scene file played by the engine, see below; or `story`: a story script, pages of pictures and speech), `name` (the file of `data/story/` it plays, `news_cartoon`, `story_script`) and `leads_on` |
+| `leads_on` (of a part) | the answer of the part (`start` or `intro`, what a scene's `prompt` buttons say) that goes on to the next part; any other answer leaves the opening for the sign-in screen. Empty (the default): the part always goes on. The legacy title says `intro`, so Start leaves |
+| `starts_over` | does the opening start over from its first part when the last part that played ran out its time with no key and no click? Only a story page waits that long (the last page, `last_page_ticks`); this is the original's attract mode, and the legacy pack says `true` |
+
+Enter, a click and Space / Escape are the engine's in every part (Space and Escape leave the opening, wherever it is). An opening with no parts goes straight to the sign-in screen. A part that no pack of the chain holds (a scene or story that is not there, a `kind` that is none of the two) is skipped. A `leads_on` that is none of `start`, `intro`, or that is on a part that asks nothing (a story, or a scene with no `prompt` cue), can never match, so the opening ends after that part. The game tells each such line once in the log, naming the pack and what the player gets instead, and the pack check reports the same lines (area `story`). `PackNeeds` requires `opening` and derives from it the scenes and stories it names, and from the scenes their stages and timelines. [`MAKING_CONTENT.md`](MAKING_CONTENT.md), B6, makes one.
 
 **Stages.** Where the opening's pictures stand is data as well: `news_cartoon_stage` and `title_stage` (`data/story/<scene>_stage.tres`, a `CutsceneStage`; `.json` in the data form) list the
 scene's **actors**, and the timelines played on the scene move and change those actors by name. An actor is a `StageActor`:
@@ -187,7 +197,7 @@ The actors are listed in **draw order**: each is drawn above the ones listed bef
 may only name actors its scene's stage holds: the pack check reports a stage that is wrong (two actors of a name, a parent not listed before, a text box with no size) and an actor a timeline names
 that the stage lacks, and the game, meeting either, leaves that actor or track out and says so in the log once.
 
-**Scenes.** A scene file (`data/story/<scene>.tres`, a `StoryScene`; `.json` in the data form; the opening plays `news_cartoon`, then `title`) says what one part of the opening plays, by name:
+**Scenes.** A scene file (`data/story/<scene>.tres`, a `StoryScene`; `.json` in the data form; the opening names it as a part: `news_cartoon`, `title`) says what one part of the opening plays, by name:
 
 | Field | Meaning |
 | --- | --- |
@@ -199,7 +209,7 @@ that the stage lacks, and the game, meeting either, leaves that actor or track o
 | `prompt_song` | the song the `prompt` verb starts `prompt.music_delay_ticks` after the buttons appear; empty: none |
 | `speech` | what is said, in order: each step is `pause_ticks` (the wait before it, in ticks of the original's 73 Hz timer) and `group` (a voice group of `voice_cues`, whose clips are spoken one after the other) |
 
-A cue of a timeline whose kind is `event` calls a **verb** of the engine, written as its name and the words after it: `end` (the scene is over), `speak <group>` (speak that voice group and wait for it) and `prompt` (the stage's buttons appear: the player chooses Start or Intro, and nobody choosing for `prompt.timeout_ticks` means Intro). A pack arranges the verbs;
+A cue of a timeline whose kind is `event` calls a **verb** of the engine, written as its name and the words after it: `end` (the scene is over), `speak <group>` (speak that voice group and wait for it) and `prompt` (the stage's buttons appear: the player chooses Start or Intro, and nobody choosing for `prompt.timeout_ticks` means Intro; the part's `leads_on` says which answer goes on). A pack arranges the verbs;
 what they do is the engine's.
 Enter is the engine's too: in a timeline that has **marks** (named moments: `presents`, `operation`, `neptune` of `title_reveal`) it ends the hold that runs and goes to the next mark, firing its cues; in a timeline without, it begins the next timeline of the scene (whose first keys set what the stage needs: `title_reveal` hides the ship scene's parts at its first moment); once the prompt is up it answers Intro. Space and Escape leave the opening. The speech is the `speech` steps, not cues, because how long a group takes is the recorded length of its clips: step by step, the scene waits the pause, then speaks the group. The pack check reports,
 and the game, meeting it, tells once in the log and leaves out, a timeline, song or voice group the scene names that no pack of the chain holds, a looping timeline that does not loop or a one-shot one that does, a cue whose verb the engine

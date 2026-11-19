@@ -4,7 +4,7 @@ extends StorySegment
 ## scientists began a top-secret research project in deep space ..."). Original: `OpeningStoryPages` (0x42a9f1) (OPENING.C)
 ## and the page player `PlayStoryPageSpeech` (0x42a817).
 ##
-## Teaches: a data-driven slideshow. `data/story/story_script.tres` of the pack (a `StoryScript`: the legacy pack's is written by the importer) says what each
+## Teaches: a data-driven slideshow. A story script of the pack (`data/story/story_script.tres`, a `StoryScript`: the legacy pack's is written by the importer) says what each
 ## page shows (the heading, the frame picture, the extra pictures) and how long it holds up the story, one function
 ## (`_show_page`) swaps the pictures, an `AnimationPlayer` fades each page in (a small timeline made here: the fade is
 ## ours), and an `AnimatedSprite2D` plays the blinking radar ring of page 5 (contrast: the sprite sheet animation of a
@@ -21,13 +21,14 @@ const FADE_SECONDS := 0.2
 
 signal _page_over
 
-## The pages and how long they hold (`Catalog.story_script`).
+## The story script this plays (`Catalog.story_script`): set by `Opening.pages_of`, before the segment enters the tree.
+var script_name: StringName = &""
+## The pages and how long they hold.
 var _script: StoryScript
 var page_index: int = -1
-## True when the last page ran out its time with no key and no click (not Enter, a click or Space / Escape): the
-## original's opening then starts over (see `Opening`). `OpeningStoryPages` (0x42a9f1) returns 0 for it and for Enter
-## alike; only Enter sets `OpeningEnded` (0x449e98).
-var timed_out: bool = false
+## (`timed_out`, of `StorySegment`, is true when the last page ran out its time with no key and no click (not Enter, a click or Space / Escape): the
+## original's opening then starts over (`OpeningList.starts_over`). `OpeningStoryPages` (0x42a9f1) returns 0 for it and for Enter
+## alike; only Enter sets `OpeningEnded` (0x449e98).)
 ## Bumped whenever a page ends, so that the clock of an earlier page cannot end a later one.
 var _generation: int = 0
 
@@ -42,7 +43,11 @@ var _generation: int = 0
 
 
 func _ready() -> void:
-	_script = Catalog.story_script()
+	_script = Catalog.story_script(script_name)
+	if _script == null:
+		TroubleLog.session.tell("[story] no pack of the chain holds the story '%s' (data/story/%s.tres): that part of the opening is skipped" % [script_name, script_name])
+		finish.call_deferred()                    # (not at once: the director awaits `finished` only after it has added the segment)
+		return
 	%Background.texture = Assets.ui_picture(_script.background)
 	heading.position = _script.heading_position
 	frame.position = _script.frame_position

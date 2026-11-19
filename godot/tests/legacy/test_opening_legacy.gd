@@ -8,7 +8,6 @@ extends GdUnitTestSuite
 
 const NEWS := &"news_cartoon"          # the scene file the news cartoon is (data/story/news_cartoon.tres)
 const TITLE := &"title"               # the scene file the title is (data/story/title.tres)
-const PAGES := "res://src/story/story_pages.tscn"
 const OPENING := "res://src/story/opening.tscn"
 
 ## The three clocks of the opening, in seconds: the cartoon redraws every 10 ticks of the original's 73 Hz timer, the ship scene
@@ -124,7 +123,7 @@ func test_title_scene_phases_and_choice() -> void:
 	assert_bool(TitleView.prompt_visible(title)).is_true()
 	assert_int(count[0]).is_equal(0)
 	title.advance()
-	assert_bool(title.wants_intro).is_true()
+	assert_bool(title.choice == StageActor.INTRO).is_true()
 	assert_int(count[0]).is_equal(1)
 
 
@@ -170,7 +169,7 @@ func test_space_and_escape_leave_the_opening_from_every_part_of_the_title() -> v
 			title.advance()
 		title.skip()
 		assert_bool(title.done).is_true()
-		assert_bool(title.wants_intro).is_false()
+		assert_bool(title.choice == StageActor.INTRO).is_false()
 
 
 func test_title_scene_start_means_no_story() -> void:
@@ -178,15 +177,15 @@ func test_title_scene_start_means_no_story() -> void:
 	add_child(title)
 	title.advance()
 	title.skip()
-	assert_bool(title.wants_intro).is_false()
+	assert_bool(title.choice == StageActor.INTRO).is_false()
 	assert_bool(title.done).is_true()
 
 
 func test_story_pages_show_nine_pages_in_order() -> void:
-	var story: StoryPages = auto_free(load(PAGES).instantiate())
+	var story: StoryPages = auto_free(Opening.pages_of(&"story_script"))
 	add_child(story)
 	assert_array(_unresolved_tracks(story.animations)).is_empty()
-	assert_int(Catalog.story_script().pages.size()).is_equal(9)
+	assert_int(Catalog.story_script(&"story_script").pages.size()).is_equal(9)
 	await await_idle_frame()
 	assert_int(story.page_index).is_equal(0)
 	assert_object(story.caption.texture).is_not_null()
@@ -203,7 +202,7 @@ func test_story_pages_show_nine_pages_in_order() -> void:
 ## (pages 0, 1, 4 and 6 have speech as long as the hold) the page's own clock then ends the page, and `advance` must not end the next one too.
 func test_one_enter_ends_exactly_one_page_also_when_the_speech_already_counted_the_whole_hold() -> void:
 	Audio.apply_profile(null)                              # (the voice on: the page speaks)
-	var story: StoryPages = auto_free(load(PAGES).instantiate())
+	var story: StoryPages = auto_free(Opening.pages_of(&"story_script"))
 	add_child(story)
 	await await_idle_frame()
 	assert_bool(Audio.is_voice_playing()).is_true()
@@ -295,7 +294,7 @@ func test_the_prompt_buttons_act_on_the_press_and_a_click_elsewhere_is_intro() -
 	assert_bool(title.done).is_false()
 	title.click(Vector2(320, 100))                        # anywhere else: hotspot 0xd = Enter = Intro
 	assert_bool(title.done).is_true()
-	assert_bool(title.wants_intro).is_true()
+	assert_bool(title.choice == StageActor.INTRO).is_true()
 
 
 func test_a_press_on_the_start_button_chooses_start() -> void:
@@ -307,7 +306,7 @@ func test_a_press_on_the_start_button_chooses_start() -> void:
 	title.buttons[&"start"].button_down.emit()
 	title.buttons[&"start"].pressed.emit()
 	assert_bool(title.done).is_true()
-	assert_bool(title.wants_intro).is_false()
+	assert_bool(title.choice == StageActor.INTRO).is_false()
 
 
 ## Deliberate deviation from the original (DESIGN 2.1): the release that ends the click on Intro does not skip story page 1.
@@ -388,7 +387,7 @@ func test_no_effect_starts_while_the_window_is_inactive() -> void:
 
 
 func test_every_story_picture_exists() -> void:
-	var script: StoryScript = Catalog.story_script()
+	var script: StoryScript = Catalog.story_script(&"story_script")
 	assert_bool(Assets.holds("ui_picture/" + script.background)).is_true()
 	for picture in script.ring_pictures:
 		assert_bool(Assets.holds("ui_picture/" + picture)).is_true()

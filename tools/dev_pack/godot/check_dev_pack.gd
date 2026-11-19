@@ -153,7 +153,7 @@ func _layouts() -> void:
 		for i in calc.key_names.size():
 			if not picture.encloses(calc.key_rects[i]):
 				_fail("calculator key %s is outside the calculator picture" % calc.key_names[i])
-	for stage_file in ["news_cartoon_stage", "title_stage"]:
+	for stage_file in ["logo_stage", "news_cartoon_stage", "title_stage"]:
 		var stage := load(ROOT + "data/story/%s.tres" % stage_file) as CutsceneStage
 		if stage != null:
 			for message in stage.problems():
@@ -162,9 +162,11 @@ func _layouts() -> void:
 	if cartoon != null:
 		for message in cartoon.problems():
 			_fail("news report: " + message)
-	for scene_file in ["news_cartoon", "title"]:
+	for scene_file in ["logo", "news_cartoon", "title"]:
 		if not load(ROOT + "data/story/%s.tres" % scene_file) is StoryScene:
 			_fail("data/story/%s.tres is not a StoryScene" % scene_file)
+	if not load(ROOT + "data/story/opening.tres") is OpeningList:
+		_fail("data/story/opening.tres is not an OpeningList")
 	var screen := load(ROOT + "data/problems/screen_layout.tres") as ProblemScreenLayout
 	if screen != null and screen.palette.size() != 16:
 		_fail("problem screen palette has %d colours" % screen.palette.size())

@@ -69,7 +69,7 @@ func unresolved() -> PackedStringArray:
 	if song_stops_at != &"" and not timelines.has(song_stops_at):
 		found.append("stops the song at the timeline '%s', which it does not play once: the song plays on" % song_stops_at)
 	var stage_file := Catalog.story_stage(stage)
-	if stage_file != null and _has_cue(&"prompt") and not stage_file.actors.any(func(actor: StageActor) -> bool: return actor.kind == StageActor.BUTTON):
+	if stage_file != null and has_cue(&"prompt") and not stage_file.actors.any(func(actor: StageActor) -> bool: return actor.kind == StageActor.BUTTON):
 		found.append("has the cue 'prompt', but its stage '%s' has no button: the prompt shows none, and only Enter, a click and the time-out answer it" % stage)
 	for step in speech:
 		if step.group == &"" or Catalog.voice_cues().clips(String(step.group)).is_empty():
@@ -80,7 +80,7 @@ func unresolved() -> PackedStringArray:
 
 
 ## Does a timeline of the scene have the event cue `cue_name`?
-func _has_cue(cue_name: StringName) -> bool:
+func has_cue(cue_name: StringName) -> bool:
 	for timeline_name in all_timelines():
 		var timeline := Catalog.story_timeline(timeline_name)
 		if timeline != null and timeline.cues.any(func(entry: CutsceneCue) -> bool: return entry.kind == CutsceneCue.EVENT and entry.cue_name == cue_name):

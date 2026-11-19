@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="CutsceneTimeline" format=3]
+
+[ext_resource type="Script" path="res://src/resources/cutscene_timeline.gd" id="1_cutscene_timeline"]
+[ext_resource type="Script" path="res://src/resources/cutscene_track.gd" id="2_cutscene_track"]
+[ext_resource type="Script" path="res://src/resources/cutscene_cue.gd" id="3_cutscene_cue"]
+
+[sub_resource type="Resource" id="Track_1"]
+script = ExtResource("2_cutscene_track")
+actor = &"emblem"
+property = &"position"
+times = PackedFloat64Array(0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120)
+values = [Vector2(640, 140), Vector2(592, 140), Vector2(544, 140), Vector2(496, 140), Vector2(448, 140), Vector2(400, 140), Vector2(352, 140), Vector2(304, 140), Vector2(256, 140), Vector2(208, 140), Vector2(160, 140)]
+
+[sub_resource type="Resource" id="Track_2"]
+script = ExtResource("2_cutscene_track")
+actor = &"byline"
+property = &"visible"
+times = PackedFloat64Array(0, 132)
+values = [false, true]
+
+[sub_resource type="Resource" id="Cue_3"]
+script = ExtResource("3_cutscene_cue")
+tick = 132
+kind = &"sound"
+cue_name = &"opening_end"
+
+[sub_resource type="Resource" id="Cue_4"]
+script = ExtResource("3_cutscene_cue")
+tick = 150
+kind = &"event"
+cue_name = &"end"
+
+[resource]
+script = ExtResource("1_cutscene_timeline")
+length = 160
+tracks = Array[ExtResource("2_cutscene_track")]([SubResource("Track_1"), SubResource("Track_2")])
+cues = Array[ExtResource("3_cutscene_cue")]([SubResource("Cue_3"), SubResource("Cue_4")])
+provenance = "Dev pack: the logo: the emblem slides in over 10 steps of 12 ticks, the byline shows, the scene says `end` at tick 150 (tools/dev_pack/dev_story.py)."

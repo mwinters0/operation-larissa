@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CutsceneStage" format=3]
+
+[ext_resource type="Script" path="res://src/resources/cutscene_stage.gd" id="1_cutscene_stage"]
+[ext_resource type="Script" path="res://src/resources/stage_actor.gd" id="2_stage_actor"]
+
+[sub_resource type="Resource" id="Actor_1"]
+script = ExtResource("2_stage_actor")
+name = &"emblem"
+picture = &"title_neptune"
+position = Vector2(640, 140)
+
+[sub_resource type="Resource" id="Actor_2"]
+script = ExtResource("2_stage_actor")
+name = &"byline"
+picture = &"title_presents"
+position = Vector2(220, 260)
+visible = false
+
+[resource]
+script = ExtResource("1_cutscene_stage")
+provenance = "Dev pack: the logo scene's two actors (tools/dev_pack/dev_story.py)."
+actors = Array[ExtResource("2_stage_actor")]([SubResource("Actor_1"), SubResource("Actor_2")])

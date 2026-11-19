@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="OpeningList" format=3]
+
+[ext_resource type="Script" path="res://src/resources/opening_list.gd" id="1_opening_list"]
+[ext_resource type="Script" path="res://src/resources/opening_part.gd" id="2_opening_part"]
+
+[sub_resource type="Resource" id="Part_1"]
+script = ExtResource("2_opening_part")
+kind = &"scene"
+name = &"logo"
+
+[sub_resource type="Resource" id="Part_2"]
+script = ExtResource("2_opening_part")
+kind = &"scene"
+name = &"news_cartoon"
+
+[sub_resource type="Resource" id="Part_3"]
+script = ExtResource("2_opening_part")
+kind = &"scene"
+name = &"title"
+leads_on = &"intro"
+
+[sub_resource type="Resource" id="Part_4"]
+script = ExtResource("2_opening_part")
+kind = &"story"
+name = &"story_script"
+
+[resource]
+script = ExtResource("1_opening_list")
+parts = Array[ExtResource("2_opening_part")]([SubResource("Part_1"), SubResource("Part_2"), SubResource("Part_3"), SubResource("Part_4")])
+starts_over = true
+provenance = "Dev pack: an opening of our own, four parts: the logo scene, the news cartoon, the title (its answer Intro goes on to the story, Start leaves) and the story; the last page that runs out its time starts it over (tools/dev_pack/dev_story.py)."

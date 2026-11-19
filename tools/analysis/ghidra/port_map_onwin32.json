@@ -2185,7 +2185,7 @@
  },
  "0x0042b16b": {
   "status": "ported",
-  "where": "godot/src/story/opening.gd (director: TimelineSegment (the scene news_cartoon) -> TimelineSegment (the scene title) -> StoryPages, looping like the original: _run / _play_parts / _start_over start over from the cartoon when StoryPages.timed_out, i.e. the last page ran out its 3285 ticks with no key; Enter = next part, Space / Esc = leave; _input forwards a left-button release anywhere as Enter through StorySegment.click, as the original's whole-screen hotspot 0xd does, except over the title prompt's Start and Intro buttons, which act on the press; a release whose press began in an earlier part is swallowed, a Deliberate deviation) (test_opening.gd)"
+  "where": "godot/src/story/opening.gd (director: plays the parts of data/story/opening.tres [tools/import/step_story.py:build_opening] in order: _play_parts -> TimelineSegment (the scene news_cartoon) -> TimelineSegment (the scene title, leads_on intro: the answer Start leaves) -> StoryPages (story_script), looping like the original: _run / _play_parts / _start_over start over from the first part when the list says starts_over and the last part that played timed_out (StorySegment.timed_out, set by StoryPages), i.e. the last page ran out its 3285 ticks with no key; Enter = next part, Space / Esc = leave; _input forwards a left-button release anywhere as Enter through StorySegment.click, as the original's whole-screen hotspot 0xd does, except over the title prompt's Start and Intro buttons, which act on the press; a release whose press began in an earlier part is swallowed, a Deliberate deviation) (test_opening.gd)"
  },
  "0x0042b74c": {
   "name": "MenuAboutBox",

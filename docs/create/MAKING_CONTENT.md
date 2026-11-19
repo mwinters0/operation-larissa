@@ -436,6 +436,7 @@ The pack format, in case you want to write or edit one by hand, is the tree in [
 | A campaign's own words, pictures, clips, durations | files in a folder | `data/campaigns/<id>/…` | here, step 9 |
 | A pack out of it | Project > Tools > "Export pack..." / "Check pack..." | `<out>/<pack id>/` or a `.larissa` pack file | here, steps 10-11 |
 | A whole game of your own, from the dev pack | Project > Tools > "New pack from dev..." (or `pack_tool --new`) | `godot/packs/<id>/` | here, B4 |
+| The opening: its parts, scenes and stages | JSON files in a pack | `data/story/opening.json` and the scenes it names | here, B6 |
 | How it looks | a `GameSkin` resource | `skins/<id>/` | Part C, [`SKIN_API.md`](SKIN_API.md) |
 
 ## B2. Sector numbers and what each tool lets you do with them
@@ -504,6 +505,46 @@ All from the repository root; the arguments after `--` belong to the scene.
 | `res://src/debug/screen_playtest.tscn` | `--sector= --screen= --oxygen= --ink= --pieces= --flags=` (the rest are in `PlaytestSetup`) |
 | `res://src/debug/skin_compare.tscn` | `--skin= --sector= --screen= --fly --overlay --ticks= --snapshot=PATH` |
 | `res://src/skins/skin_templates_tool.tscn` | `--out=DIR`, `--pack=ID`, `--list` (`mise run skin:templates`; one PNG per replaceable picture, `ui_picture/`, per console layer a script draws, `hud_layer/`, and for a problem-screen mod the frame and panels, `problem_art/`, and the window, `problem_layer/`) |
+
+## B6. Making an opening
+
+The opening is a list of parts (`data/story/opening.tres`, an `OpeningList`: [`CONTENT.md`](CONTENT.md), "Story timelines"), and a pack of its own, over `dev`, can hold any list: more or fewer parts, scenes of its own, the story pages or none. This one
+makes a pack whose opening is a short intro scene of its own, then the title, then the story pages, and does not start over. A pack outside the project writes the data form (`.json`); a pack in `godot/packs/` may hold `.tres`.
+
+1. The pack: `reef_opening/pack.json` `{"id": "reef_opening", "title": "Reef opening", "version": "1.0", "base": "dev"}`. Everything it does not hold, `dev` answers.
+2. The list, `data/story/opening.json`. A part is a scene (the default `kind`) or a `story`; the title says which answer goes on, Intro:
+
+   ```json
+   {"class": "OpeningList", "parts": [
+     {"name": "reef_intro"},
+     {"name": "title", "leads_on": "intro"},
+     {"kind": "story", "name": "story_script"}
+   ]}
+   ```
+
+   `title` and `story_script` are dev's own files, found down the chain; `reef_intro` is the one new scene. Leave `starts_over` out to end after the story (set it `true` to start over when the last page runs out its time, as the original does). Leave `parts` empty
+   (`{"class": "OpeningList"}`) and the game goes straight to the sign-in screen.
+3. The scene, `data/story/reef_intro.json`, names a stage and the timelines it plays, in order: `{"class": "StoryScene", "stage": "reef_intro_stage", "timelines": ["reef_intro_show"]}`. A `song`, `speech` steps and a `prompt_song` are optional ([`CONTENT.md`](CONTENT.md), "Scenes").
+4. The stage, `data/story/reef_intro_stage.json`, lists the actors, in draw order, with their pictures (names of the picture table: dev's are the original's names) and where they stand in window pixels (the screen is 640 x 400):
+
+   ```json
+   {"class": "CutsceneStage", "actors": [
+     {"name": "sky", "picture": "title_sky"},
+     {"name": "emblem", "picture": "title_neptune", "position": [-300, 140]}
+   ]}
+   ```
+5. The timeline, `data/story/reef_intro_show.json`, moves them: a length in ticks (73 to a second), tracks (an actor, a property word and the moments with their values) and cues. The cue of kind `event` named `end` is the verb that finishes the scene; Enter or a click would end it too:
+
+   ```json
+   {"class": "CutsceneTimeline", "length": 120, "tracks": [
+     {"actor": "emblem", "property": "position", "times": [0, 60], "smooth": true,
+      "values": [{"$": "Vector2", "v": [-300, 140]}, {"$": "Vector2", "v": [160, 140]}]}
+   ], "cues": [{"tick": 100, "kind": "event", "cue_name": "end"}]}
+   ```
+6. Check it and play it: `tools/godot.sh --headless --path godot res://src/packs/pack_tool.tscn -- --check=<the folder>`. The report says a part that does not resolve (`opening: part 1 (scene 'reef_intro') names the scene ...: that part is skipped`), a stage that is wrong, an actor a timeline names that the stage lacks, a cue that is no verb.
+   Then install it (`pack_tool --install=<the folder>`) and choose it on the pack screen, or `-- --pack=reef_opening`: the intro slides the emblem in, and the title follows.
+
+`dev`'s own opening (`tools/dev_pack/dev_story.py`: `opening`, `logo_scene`, `logo_stage`, `logo_show`) is the same shape with four parts. The scene verbs are `end`, `speak <group>` and `prompt`; what a verb does is the engine's.
 
 ---
 
@@ -596,7 +637,7 @@ Collected from [`EDITORS.md`](../engine/EDITORS.md), the open items of [`ROADMAP
 - **Things with no editor tool, only files or the Inspector on a `.tres`:** a campaign (step 7); the pack source folder (step 9); a finale sector from the template; names for your own sector's creatures, flags and screens; a
   song of your own in a sector's `music_name`; a replacement math problem type; a skin (C2).
 - **Existing creatures only:** a new creature is a copy of an existing one (or a blank record in a sector with none).
-- **Story timelines are not replaceable by a pack outside the project** (the opening, the news, the closings; a complete pack has its own news cartoon); only the generic finale is yours.
+- **The closings are built by the engine from the pack's timelines and scripts** (the sailors, the cable and the sub are nodes it makes; a pack changes when and where, not what is there); the opening, its parts, scenes and stages are the pack's to write (B6).
 - **The pack screen has no export** (that is the editor and the terminal); **there is no per-skin menu for the player.**
 - **The engine still assumes some of the original** (the first free sector number is 32, `voyager` and `expert` are special campaign ids, the durations file holds the original's numbers): the list is
   [`HARD_CODED.md`](../engine/HARD_CODED.md).

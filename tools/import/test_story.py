@@ -217,6 +217,17 @@ def test_the_title_scene_plays_the_ship_then_the_reveal_stops_its_song_there_and
     assert set(step_story.scenes()) == {"news_cartoon", "title"}
 
 
+def test_the_opening_lists_the_cartoon_the_title_that_leads_on_with_intro_and_the_story_and_starts_over():
+    opening = step_story.build_opening()
+    assert opening.parts == [("scene", "news_cartoon", ""), ("scene", "title", "intro"), ("story", "story_script", "")] and opening.starts_over
+    for kind, name, _leads_on in opening.parts:
+        assert name in step_story.scenes() if kind == "scene" else name == "story_script"
+    text = opening.render()
+    assert 'script_class="OpeningList"' in text and text.count('script = ExtResource("2_opening_part")') == 3
+    assert 'leads_on = &"intro"' in text and "starts_over = true" in text and text.count("leads_on") == 1
+    assert opening.render() == step_story.build_opening().render()
+
+
 # --- the console's flicker: ours, baked into news_ambient --------------------------------------------------------------------------
 
 def flicker_digest(length: float, status_lights: int, panel_lights: int) -> str:

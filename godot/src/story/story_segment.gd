@@ -11,6 +11,10 @@ signal finished
 
 ## Set once the segment is over; the coroutines of a subclass check it after every `await`.
 var done: bool = false
+## What the player answered, when the segment asks (a scene's `prompt`: one of `StageActor.CHOICES`); empty: nobody answered (it was left by a skip or ran out). The director compares it with the part's `leads_on` (`OpeningPart`).
+var choice: StringName = &""
+## True when the segment ran out its time with no key and no click (the last story page): the original's opening then starts over (`OpeningList.starts_over`). Only a segment that waits for a key sets it.
+var timed_out: bool = false
 
 
 ## Enter: go on to the next step of this segment (default: the segment ends).

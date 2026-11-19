@@ -5,7 +5,7 @@ extends StorySegment
 ## and its small speech state machine `CartoonSpeech` (0x42984d) for the news cartoon; the second half of `OpeningSequence` and `TitleScreenPromptLoop` (0x42a49a) for the title.
 ##
 ## The title is such a scene too (the ship, the reveal of the title, the Start / Intro prompt): `advance` (Enter) goes on to the next timeline of the scene, in a timeline with marks to the next mark (a HOLD that Enter cuts short), and once the verb
-## `prompt` has run it answers the prompt; the stage's buttons (`StageActor.BUTTON`) and their keys are the prompt's, `wants_intro` is what the director (`Opening`) asks of it.
+## `prompt` has run it answers the prompt; the stage's buttons (`StageActor.BUTTON`) and their keys are the prompt's, `choice` is the answer the director (`Opening`) compares with the part's `leads_on`.
 ##
 ## Teaches: a scene whose whole content is data, played by one script. Each timeline is an `Animation` made by `Cutscene.animation` on an `AnimationPlayer`: a player plays one animation at a time, so every
 ## LOOPING timeline has a player of its own (the alarm lights, the pulsing ring and the flickering console lights of the news cartoon are one such loop) and the ONE-SHOT timelines share one that plays them in order.
@@ -26,12 +26,6 @@ var loop_players: Array[AnimationPlayer] = []
 var script_player: AnimationPlayer
 ## True from the verb `prompt` on: the buttons are up, Enter / a click elsewhere / the time-out mean Intro, a button's key its own answer.
 var prompting: bool = false
-## The answer of the prompt, one of `StageActor.CHOICES` (empty: nobody answered, the scene was left by Space / Escape or `end`).
-var choice: StringName = &""
-## True when the player asked for the story (`StageActor.INTRO`: Intro, Enter, a click outside the buttons, or nobody chose in time).
-var wants_intro: bool:
-	get:
-		return choice == StageActor.INTRO
 ## The buttons of the stage, by what they answer.
 var buttons: Dictionary[StringName, TextureButton] = {}
 ## How many ticks the prompt waits for an answer before it means Intro (`prompt.timeout_ticks`, read by the verb `prompt`); 0 before the prompt begins.

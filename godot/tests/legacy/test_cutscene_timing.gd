@@ -15,7 +15,6 @@ const TOLERANCE := 0.0015                      # ticks
 
 const NEWS := &"news_cartoon"          # the scene file the news cartoon is (data/story/news_cartoon.tres)
 const TITLE := &"title"                # the scene file the title is (data/story/title.tres)
-const PAGES := "res://src/story/story_pages.tscn"
 const VOYAGER := "res://src/story/voyager_closing.tscn"
 const EXPERT := "res://src/story/expert_closing.tscn"
 
@@ -102,11 +101,11 @@ func test_the_title_scene_animations_have_the_recorded_lengths_and_moments() -> 
 
 ## The fade of a page is ours (half a second long, a fade of 0.2 s), and the caption follows the pack's delay after the page.
 func test_the_story_page_fade_is_made_of_the_fade_and_the_captions_delay() -> void:
-	var story: StoryPages = auto_free(load(PAGES).instantiate())
+	var story: StoryPages = auto_free(Opening.pages_of(&"story_script"))
 	add_child(story)
 	var animation := story.animations.get_animation(&"show")
 	var fade := story.FADE_SECONDS * TICKS
-	var delay := Catalog.story_script().caption_delay_ticks
+	var delay := Catalog.story_script(&"story_script").caption_delay_ticks
 	assert_float(animation.length * TICKS).is_equal_approx(0.5 * TICKS, TOLERANCE)
 	assert_bool(animation.loop_mode == Animation.LOOP_NONE).is_true()
 	var moments := {}

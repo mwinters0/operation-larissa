@@ -66,7 +66,6 @@ def test_the_scan_finds_the_names_of_every_resolver(scan):
 UNCHECKED_BUT_NAMES = {
     ("voyager_closing.gd", "closing"): "the name of an animation of the closing cutscene (the song `closing` is `Audio.SONG_CLOSING`)",
     ("sim_world.gd", "finale"): "a step of `SimWorld.TICK_ORDER` (the finale check), not the song or the sound `finale`",
-    ("opening.gd", "title"): "the name of the scene file `title` (`data/story/title.tres`), not the song `title`",
     ("sub_model.gd", "message_light"): "a field name in `SubModel.SWITCH_FIELDS` (the beacon), not the sound `message_light`",
 }
 

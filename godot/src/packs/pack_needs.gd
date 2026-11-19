@@ -50,12 +50,10 @@ const FILES: Dictionary = {
 	"data/voice_index.tres": "VoiceIndex",
 	"data/voice_cues.tres": "VoiceCues",
 	"data/music_catalog.tres": "MusicCatalog",
-	"data/story/news_cartoon.tres": "StoryScene",
-	"data/story/title.tres": "StoryScene",
+	"data/story/opening.tres": "OpeningList",
 	"data/story/expert_hoist.tres": "CutsceneTimeline",
 	"data/story/expert_deck.tres": "CutsceneTimeline",
 	"data/story/expert_wait.tres": "CutsceneTimeline",
-	"data/story/story_script.tres": "StoryScript",
 	"data/story/voyager_closing_script.tres": "VoyagerClosingScript",
 	"data/story/closing_crew.tres": "ClosingCrewScripts",
 	"data/ui/hud_layout.tres": "HudLayout",
@@ -156,22 +154,27 @@ static func class_of(rel: String) -> String:
 	for folder: String in CLASS_OF_FOLDER:
 		if rel.begins_with(folder):
 			return CLASS_OF_FOLDER[folder]
-	return named_by_scenes().get(rel, "")
+	return named_by_opening().get(rel, "")
 
 
-## The files the scene files of `FILES` name (a test reads it too), with the class each holds: the stage a `CutsceneStage`, each looping or one-shot timeline a `CutsceneTimeline`, as the chain in use gives the scenes (`Catalog.story_scene`). The scene names them,
-## so no second list here says which they are.
-static func named_by_scenes() -> Dictionary:
+## The files the opening names (a test reads it too), with the class each holds: each scene a `StoryScene` and each story a `StoryScript`, and what a scene names: its stage a `CutsceneStage`, each looping or one-shot timeline a `CutsceneTimeline`, as the chain in use
+## gives the opening and the scenes (`Catalog.opening`, `Catalog.story_scene`). The opening names the scenes and stories, so no second list here says which they are; `FILES` holds the opening only.
+static func named_by_opening() -> Dictionary:
 	var named := {}
-	for rel: String in FILES:
-		if FILES[rel] != "StoryScene":
-			continue
-		var scene := Catalog.story_scene(StringName(rel.get_file().get_basename()))
-		if scene == null:
-			continue
-		named[Catalog.STORY_REL % scene.stage] = "CutsceneStage"
-		for timeline_name in scene.all_timelines():
-			named[Catalog.STORY_REL % timeline_name] = "CutsceneTimeline"
+	var opening := Catalog.opening()
+	if opening == null:
+		return named
+	for part in opening.parts:
+		if part.kind == OpeningPart.STORY:
+			named[Catalog.STORY_REL % part.name] = "StoryScript"
+		elif part.kind == OpeningPart.SCENE:
+			named[Catalog.STORY_REL % part.name] = "StoryScene"
+			var scene := Catalog.story_scene(part.name)
+			if scene == null:
+				continue
+			named[Catalog.STORY_REL % scene.stage] = "CutsceneStage"
+			for timeline_name in scene.all_timelines():
+				named[Catalog.STORY_REL % timeline_name] = "CutsceneTimeline"
 	return named
 
 

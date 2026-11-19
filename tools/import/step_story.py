@@ -6,6 +6,7 @@ moments in ticks of the original's 73 Hz timer, values with picture and sound NA
 events). A view plays it by building an `AnimationPlayer` animation at run time (`src/story/cutscene.gd`), so the numbers
 belong to the original and the nodes belong to the view.
 
+    opening             the parts of the opening in order (the news cartoon, the title, the story), which answer leads on, that it starts over   (OPENING.C, constants below)
     news_cartoon        the scene: its stage, its two timelines, its song and its speech (what is said, in which order, after which pause)   (OPENING.C, constants below)
     news_cartoon_stage  the news cartoon's actors and where they stand                                (the position table, extracted/tables/opening.json)
     title               the scene: its stage, the ship and the reveal played in turn, its song, the song that stops, the prompt's song   (OPENING.C, constants below)
@@ -273,6 +274,31 @@ class Scene:
             t.set("prompt_song", sn(self.prompt_song))
         if refs:
             t.set("speech", tres.array('ExtResource("%s")' % step_id, refs))
+        t.set("provenance", tres.s(self.provenance))
+        return t.render()
+
+
+class OpeningList:
+    """An OpeningList being collected: the parts in order (kind `scene` or `story`, the file's name, the answer that leads on or "") and whether the opening starts over when the last part ran out its time."""
+
+    def __init__(self, provenance: str, parts: Sequence[tuple[str, str, str]], starts_over: bool):
+        self.provenance = provenance
+        self.parts = list(parts)
+        self.starts_over = starts_over
+
+    def render(self) -> str:
+        t = tres.Tres("Resource", "OpeningList", SCRIPTS + "opening_list.gd")
+        part_script = SCRIPTS + "opening_part.gd"
+        part_id = t.ext_id("Script", part_script) if self.parts else ""
+        refs = []
+        for kind, name, leads_on in self.parts:
+            props = [("kind", sn(kind)), ("name", sn(name))]
+            if leads_on:
+                props.append(("leads_on", sn(leads_on)))
+            refs.append(t.sub("Resource", props, script=part_script, prefix="Part"))
+        t.set("parts", tres.array('ExtResource("%s")' % part_id, refs))
+        if self.starts_over:
+            t.set("starts_over", "true")
         t.set("provenance", tres.s(self.provenance))
         return t.render()
 
@@ -987,6 +1013,14 @@ def build_title_scene() -> Scene:
         "title_stage", [], ["title_ship", "title_reveal"], "title", [], song_stops_at="title_reveal", prompt_song="opening")
 
 
+def build_opening() -> OpeningList:
+    """The opening as the original plays it: the news cartoon, the title (Intro goes on, Start leaves), the story; when the last story page runs out its time with no key the whole opening starts over (`OpeningSequence` 0x42b16b)."""
+    return OpeningList(
+        "Original: OpeningSequence 0x42b16b: the news cartoon, the title with its prompt (the answer Intro goes on to the story, Start leaves), OpeningStoryPages 0x42a9f1; a last page that runs out its time "
+        "(it returned 0 with OpeningEnded 0x449e98 still 0) starts the sequence over, without limit (tools/import/step_story.py).",
+        [("scene", "news_cartoon", ""), ("scene", "title", "intro"), ("story", "story_script", "")], True)
+
+
 def scenes() -> dict[str, Scene]:
     return {"news_cartoon": build_news_scene(), "title": build_title_scene()}
 
@@ -1000,7 +1034,8 @@ def run() -> None:
         out_text(STORY / (name + ".tres"), stage.render())
     for name, scene in scenes().items():
         out_text(STORY / (name + ".tres"), scene.render())
+    out_text(STORY / "opening.tres", build_opening().render())
     out_text(STORY / "story_script.tres", build_story_script())
     out_text(STORY / "voyager_closing_script.tres", build_voyager_script())
     out_text(STORY / "closing_crew.tres", build_closing_crew())
-    print("  story: %s, %s, %s, story_script, voyager_closing_script, closing_crew" % (", ".join(written), ", ".join(stages()), ", ".join(scenes())))
+    print("  story: %s, %s, %s, opening, story_script, voyager_closing_script, closing_crew" % (", ".join(written), ", ".join(stages()), ", ".join(scenes())))

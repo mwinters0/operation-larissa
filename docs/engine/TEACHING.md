@@ -20,8 +20,9 @@ readable examples of how to check the same idea.
 | Instancing scenes in code (`PackedScene.instantiate()`), `queue_free` | `src/gameplay/original_presenter.gd` (a new screen rebuilds the layers' children), `src/gameplay/ink_pellet.tscn`, `src/problems/problem_runner.gd` |
 | Draw order is tree order (instead of `z_index`) | `src/gameplay/original_presenter.tscn` (the node order IS the layering), `src/story/stage_builder.gd` (the stage's list order) |
 | `%UniqueName` nodes and `@onready` | almost every scene script, e.g. `src/ui/hud.gd` |
-| A scene that is only a container for a flow ("director"); in `Game` the flow itself is a plain object and the scene is its view | `src/gameplay/game.gd` (and `src/rules/game_flow.gd`), `src/story/opening.gd` |
+| A scene that is only a container for a flow ("director"); in `Game` the flow itself is a plain object and the scene is its view | `src/gameplay/game.gd` (and `src/rules/game_flow.gd`), `src/story/opening.gd` (a director that plays the parts of a pack's `OpeningList`) |
 | A common base class for different scenes | `src/story/story_segment.gd` (`TimelineSegment`, `StoryPages`, `VoyagerClosing`, `ExpertClosing`) |
+| The order of a sequence and the rule of its ending as data next to the parts, so a director owns no list | `src/resources/opening_list.gd`, `opening_part.gd`, `src/story/opening.gd` |
 | Debug tools kept out of the game, `OS.is_debug_build()` | `src/debug/game_debug.gd`, `src/debug/*.tscn` (every debug scene runs with F6) |
 | `CanvasLayer` for overlays | `src/gameplay/game.tscn` (`ProblemLayer`, `DialogLayer`), `src/autoload/scene_router.gd` (the fade) |
 

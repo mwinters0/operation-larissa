@@ -258,7 +258,7 @@ def test_nothing_of_the_original_was_copied_into_the_pack():
 def test_every_actor_a_dev_timeline_names_is_on_its_stage():
     """The pack check says it of any pack; this keeps the generator from writing a dev timeline for an actor its own stage lacks."""
     played_on: dict[str, list[str]] = {}
-    for scene_name in ("news_cartoon", "title"):
+    for scene_name in ("logo", "news_cartoon", "title"):
         scene = (DEV / "data" / "story" / (scene_name + ".tres")).read_text()
         found = re.search(r'^stage = &"([^"]+)"', scene, re.MULTILINE)
         assert found
@@ -268,3 +268,16 @@ def test_every_actor_a_dev_timeline_names_is_on_its_stage():
         for name in timeline_names:
             named = set(re.findall(r'^actor = &"([^"]+)"', (DEV / "data" / "story" / (name + ".tres")).read_text(), re.MULTILINE))
             assert named and named <= held, (name, named - held)
+
+
+def test_the_dev_opening_has_a_shape_of_its_own_and_every_part_is_a_file_of_the_pack():
+    """Four parts, the first a scene the legacy opening has no counterpart of (with its own stage and timeline); each part is a file dev holds."""
+    import dev_story
+    import step_story
+    legacy = step_story.build_opening()
+    mine = dev_story.opening()
+    assert len(mine.parts) != len(legacy.parts) and mine.parts[0][1] == "logo" and "logo" not in [name for _kind, name, _lead in legacy.parts]
+    assert (DEV / "data" / "story" / "opening.tres").read_text() == mine.render()
+    for _kind, name, _lead in mine.parts:
+        assert (DEV / "data" / "story" / (name + ".tres")).is_file(), name
+    assert "logo_stage" in (DEV / "data" / "story" / "logo.tres").read_text() and (DEV / "data" / "story" / "logo_show.tres").is_file()

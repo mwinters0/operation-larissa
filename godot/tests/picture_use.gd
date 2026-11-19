@@ -44,7 +44,7 @@ static func story_names() -> Dictionary:
 				for value in track.values:
 					if value is StringName or value is String:
 						found[String(value)] = true
-	for resource: Resource in [Catalog.story_script(), Catalog.voyager_closing_script()]:
+	for resource: Resource in [Catalog.story_script(&"story_script"), Catalog.voyager_closing_script()]:
 		if resource != null:
 			_names_in(resource, found)
 	return found

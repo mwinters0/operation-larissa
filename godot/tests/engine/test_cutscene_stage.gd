@@ -165,11 +165,10 @@ func test_the_check_of_a_pack_tells_an_actor_a_timeline_names_that_no_stage_hold
 	assert_bool(report.findings.any(func(finding: PackReport.Finding) -> bool: return finding.area == "story" and finding.message.contains("stage 'title_stage': two actors are called 'dup'"))).is_true()
 
 
-func test_the_chain_needs_the_scenes_the_opening_plays_and_the_stages_they_name() -> void:
-	var named := PackNeeds.named_by_scenes()
-	for scene_name in Opening.SCENES:
-		assert_str(PackNeeds.FILES["data/story/%s.tres" % scene_name]).is_equal("StoryScene")
-		assert_str(named["data/story/%s.tres" % Catalog.story_scene(scene_name).stage]).is_equal("CutsceneStage")
+func test_the_chain_needs_the_stages_the_scenes_of_the_opening_name() -> void:
+	var named := PackNeeds.named_by_opening()
+	for part in Catalog.opening().parts.filter(func(part: OpeningPart) -> bool: return part.kind == OpeningPart.SCENE):
+		assert_str(named["data/story/%s.tres" % Catalog.story_scene(part.name).stage]).is_equal("CutsceneStage")
 	assert_str(Catalog.story_scene(&"title").stage).is_equal(TITLE_STAGE)
 
 

@@ -1,25 +1,22 @@
 class_name Opening
 extends Control
-## The game's first scene: the opening sequence (news cartoon, title, story) and then the sign-in screen.
+## The game's first scene: the opening sequence the pack lists (the legacy pack's: news cartoon, title, story) and then the sign-in screen.
 ##
-## Teaches: a DIRECTOR. Each part of the opening is its own scene (a `TimelineSegment` playing the scene file `news_cartoon`, another the scene file `title`, then `StoryPages`)
-## built on the same small interface (`StorySegment`: `finished`, `advance()`, `skip()`). This script
-## instantiates them one after the other and reads the keys in one place:
+## Teaches: a DIRECTOR that owns no list. The parts of the opening, in order, and how it ends are the pack's data (`data/story/opening.tres`, an `OpeningList`: scene files and story scripts); each part is a segment (`TimelineSegment`
+## playing a scene file, `StoryPages` playing a story script) built on the same small interface (`StorySegment`: `finished`, `advance()`, `skip()`). This script instantiates them one after the other and reads the keys in one place:
 ##
 ##   Enter            go on to the next part of what is playing (cartoon -> title -> Intro -> next page)
 ##   left click       the same as Enter, anywhere on the screen, in every part (the buttons of the title prompt excepted)
 ##   Space / Escape   skip the whole opening and go to the sign-in screen
 ##
-## Like the original (`OpeningSequence` 0x42b16b) it loops ("attract mode"): when the last story page runs out its time with
-## no key and no click, the whole opening starts over from the news cartoon, without limit. Only Space / Escape, the title's
-## Start button, and Enter or a click on the last page lead to sign-in. Started alone it ends by changing to the sign-in scene
-## too, so the whole path title -> opening -> sign-in can be tried from this scene.
+## Like the original (`OpeningSequence` 0x42b16b) the legacy pack's opening loops ("attract mode"): when the last story page runs out its time with no key and no click, the whole opening starts over from the news
+## cartoon, without limit (`OpeningList.starts_over`). Only Space / Escape, the title's Start button, and Enter or a click on the last page lead to sign-in. A part that the chain cannot resolve is told once and skipped; an opening
+## with no parts goes straight to sign-in. Started alone it ends by changing to the sign-in scene too, so the whole path title -> opening -> sign-in can be tried from this scene.
 
-## The scene files (`StoryScene`, `data/story/<scene>.tres` of the pack chain) the opening plays as `TimelineSegment`s, in order: the news cartoon, then the title with its Start / Intro prompt; `PackCheck` reads them.
-const NEWS_SCENE := &"news_cartoon"
-const TITLE_SCENE := &"title"
-const SCENES: Array[StringName] = [NEWS_SCENE, TITLE_SCENE]
 const STORY_PAGES := preload("res://src/story/story_pages.tscn")
+
+## The opening in play (`Catalog.opening`), null when no pack of the chain holds one.
+var list: OpeningList
 
 ## Set by tests that only want to look at the director: the sequence still runs, but nothing changes scene.
 var go_to_sign_in: bool = true
@@ -40,25 +37,47 @@ func _ready() -> void:
 
 
 func _run() -> void:
-	var again := true
-	while again:
-		again = await _play_parts()
-		if again:
-			_start_over()
+	list = Catalog.opening()
+	if list == null:
+		TroubleLog.session.tell("[story] no pack of the chain holds the opening (data/story/opening.tres): the game goes straight to the sign-in screen")
+	else:
+		for line in list.unresolved():
+			TroubleLog.session.tell("[story] pack '%s': the opening's %s" % [_pack_id(), line])
+		var again := true
+		while again:
+			again = await _play_parts()
+			if again:
+				_start_over()
 	_leave()
 
 
-## One pass: the cartoon, the title, the story. True when the pass ends the way that makes the original start over: the last
-## story page timed out (`OpeningStoryPages` 0x42a9f1 returned 0 with `OpeningEnded` 0x449e98 still 0).
+## One pass over the parts of the list. True when the pass ends the way that makes the original start over: the list says `starts_over` and the last part that played ran out its time (the last story page: `OpeningStoryPages` 0x42a9f1
+## returned 0 with `OpeningEnded` 0x449e98 still 0). A part that is skipped (Space / Escape) or whose answer is not the one that leads on (`OpeningPart.leads_on`: Start, at the title) ends the opening.
 func _play_parts() -> bool:
-	await _play(TimelineSegment.of(NEWS_SCENE))
-	if _skipped:
-		return false
-	var title := (await _play(TimelineSegment.of(TITLE_SCENE))) as TimelineSegment
-	if _skipped or not title.wants_intro:
-		return false
-	var story := (await _play(STORY_PAGES.instantiate())) as StoryPages
-	return story.timed_out and not _skipped
+	var last: StorySegment = null
+	for part in list.parts:
+		if not list.problem(part).is_empty():
+			continue                                            # (told once, in `_run`)
+		last = await _play(_segment_of(part))
+		if _skipped:
+			return false
+		if part.leads_on != &"" and last.choice != part.leads_on:
+			return false
+	return list.starts_over and last != null and last.timed_out
+
+
+## The segment that plays `part` (one `list.problem` found nothing wrong with).
+func _segment_of(part: OpeningPart) -> StorySegment:
+	if part.kind == OpeningPart.STORY:
+		return pages_of(part.name)
+	return TimelineSegment.of(part.name)
+
+
+## A segment that plays the story script `script_name`: the one builder of the story pages, for the director and for whoever looks at a story alone.
+static func pages_of(script_name: StringName) -> StoryPages:
+	var pages := STORY_PAGES.instantiate() as StoryPages
+	pages.script_name = script_name
+	return pages
 
 
 ## The end of a pass that goes round again: `OpeningMusicCue(6)` (0x42b0f9) stops the song and the loop of `OpeningSequence` begins
@@ -107,6 +126,11 @@ func _play(segment: StorySegment) -> StorySegment:
 	current = null
 	segment.queue_free()
 	return segment
+
+
+func _pack_id() -> String:
+	var holder := Packs.holder(Catalog.STORY_REL % "opening")
+	return String(holder.id) if holder != null else "?"
 
 
 func _leave() -> void:

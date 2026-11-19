@@ -1,6 +1,6 @@
 """The dev pack's cutscenes: choreography of its own, short and plain, played by the same scenes as the original's.
 
-The scenes (`src/story/`) ask the pack chain for `data/story/<name>.tres` (`Catalog.story_timeline`, `story_script`, `voyager_closing_script`,
+The opening (`data/story/opening.tres`) lists the parts the game plays, the scenes (`src/story/`) ask the pack chain for `data/story/<name>.tres` (`Catalog.story_timeline`, `story_script`, `voyager_closing_script`,
 `closing_crew`) and tell a `CutsceneCast` which node plays which actor. These timelines use the same actor names and the same property
 words as the original's, so every scene finds its nodes, but a few keys each: a ship that sails in and stops, a sub that sinks, a title
 that appears in three holds, a hook that comes down and hoists, six sailors that step to and fro, four story pages. Every number is
@@ -56,6 +56,41 @@ def stage(why: str) -> st.Stage:
 
 
 NEWS_SPEECH_PAUSES = (200, 200, 200, 200, 0)     # ticks before the five speech groups `news_speech_0`..4 (the first is the wait before the speech)
+
+
+LOGO_STEP = 12                              # ticks between two keys of the logo's slide
+LOGO_SLIDE_STEPS = 10                       # the emblem slides in from the right edge in ten steps
+LOGO_END = 150                              # the tick at which the logo scene says `end`
+
+
+def opening() -> st.OpeningList:
+    """The dev pack's opening, not the original's: four parts, the first a logo scene of its own (a stage and a timeline the legacy pack has no counterpart of), then the news cartoon, the title (Intro goes on) and the story; it starts over."""
+    return st.OpeningList("Dev pack: an opening of our own, four parts: the logo scene, the news cartoon, the title (its answer Intro goes on to the story, Start leaves) and the story; the last page that runs out its time "
+                          "starts it over (tools/dev_pack/dev_story.py).",
+                          [("scene", "logo", ""), ("scene", "news_cartoon", ""), ("scene", "title", "intro"), ("story", "story_script", "")], True)
+
+
+def logo_scene() -> st.Scene:
+    """The logo's scene: its stage and one timeline, no song and no speech; the verb `end` finishes it."""
+    return st.Scene("Dev pack: a logo scene of our own, the first part of dev's opening: the emblem slides in, the byline appears, the scene ends (tools/dev_pack/dev_story.py).", "logo_stage", [], ["logo_show"], "", [])
+
+
+def logo_stage() -> st.Stage:
+    """The logo's stage: the emblem (starts off the right edge of the screen) and the byline (hidden until the emblem has stopped)."""
+    s = stage("the logo scene's two actors")
+    s.actor("emblem", picture="title_neptune", at=(640, 140))
+    s.actor("byline", picture="title_presents", at=(220, 260), visible=False)
+    return s
+
+
+def logo_show() -> st.Timeline:
+    """The emblem slides in from the right in ten steps of 12 ticks and stops, the byline shows with a sound, the scene ends (the cue `end`)."""
+    t = timeline(LOGO_END + 10, "the logo: the emblem slides in over %d steps of %d ticks, the byline shows, the scene says `end` at tick %d" % (LOGO_SLIDE_STEPS, LOGO_STEP, LOGO_END))
+    t.track("emblem", "position", seq(LOGO_STEP, [st.v2(640 - 48 * min(i, LOGO_SLIDE_STEPS), 140) for i in range(LOGO_SLIDE_STEPS + 1)]))
+    t.track("byline", "visible", [(0, "false"), ((LOGO_SLIDE_STEPS + 1) * LOGO_STEP, "true")])
+    t.cue((LOGO_SLIDE_STEPS + 1) * LOGO_STEP, "sound", "opening_end")
+    t.cue(LOGO_END, "event", "end")
+    return t
 
 
 def news_cartoon_scene() -> st.Scene:
@@ -315,9 +350,12 @@ def voyager_closing_script() -> str:
 
 def write_all() -> int:
     story = DEV / "data" / "story"
-    for name, build in (("news_ambient", news_ambient), ("title_ship", title_ship), ("title_reveal", title_reveal),
+    for name, build in (("news_ambient", news_ambient), ("logo_show", logo_show), ("title_ship", title_ship), ("title_reveal", title_reveal),
                         ("expert_hoist", expert_hoist), ("expert_deck", expert_deck), ("expert_wait", expert_wait)):
         write_text(story / (name + ".tres"), build().render())
+    write_text(story / "opening.tres", opening().render())
+    write_text(story / "logo.tres", logo_scene().render())
+    write_text(story / "logo_stage.tres", logo_stage().render())
     write_text(story / "news_cartoon_stage.tres", news_cartoon_stage().render())
     write_text(story / "news_cartoon.tres", news_cartoon_scene().render())
     write_text(story / "title_stage.tres", title_stage().render())
@@ -325,4 +363,4 @@ def write_all() -> int:
     write_text(story / "closing_crew.tres", closing_crew())
     write_text(story / "story_script.tres", story_script())
     write_text(story / "voyager_closing_script.tres", voyager_closing_script())
-    return 13
+    return 17

@@ -49,7 +49,7 @@ func test_every_name_in_the_timelines_exists() -> void:
 func test_every_timeline_and_script_is_the_dev_packs_when_nothing_is_laid_over_it() -> void:
 	for timeline_name in TIMELINES:
 		assert_object(Catalog.story_timeline(timeline_name)).is_same(Packs.dev().resource(Catalog.STORY_REL % timeline_name))
-	assert_object(Catalog.story_script()).is_same(Packs.dev().resource(Catalog.STORY_REL % "story_script"))
+	assert_object(Catalog.story_script(&"story_script")).is_same(Packs.dev().resource(Catalog.STORY_REL % "story_script"))
 	assert_object(Catalog.voyager_closing_script()).is_same(Packs.dev().resource(Catalog.STORY_REL % "voyager_closing_script"))
 	assert_object(Catalog.closing_crew()).is_same(Packs.dev().resource(Catalog.STORY_REL % "closing_crew"))
 
@@ -57,7 +57,7 @@ func test_every_timeline_and_script_is_the_dev_packs_when_nothing_is_laid_over_i
 # --- the scripts that are not timelines ----------------------------------------------------------------------
 
 func test_the_story_pages_hold_and_name_pictures_that_exist() -> void:
-	var script := Catalog.story_script()
+	var script := Catalog.story_script(&"story_script")
 	assert_int(script.pages.size()).is_greater(1)
 	assert_int(script.pages.filter(func(page: StoryPage) -> bool: return page.last).size()).is_equal(1)
 	assert_bool(script.pages[script.pages.size() - 1].last).is_true()

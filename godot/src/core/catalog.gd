@@ -36,8 +36,8 @@ const SCREENS_PER_SECTOR := 12
 ## The project's own data, committed in `res://data/`: the rules (`rules/durations.json`, `rules/tuning.json`), the menu layout, and the
 ## sectors and campaigns the designers make (under every pack of the chain). The cutscenes' choreography is a pack's (`story_timeline`).
 const PROJECT_DATA_DIR := "res://data/"
-## Where the story files of a pack are, by name: the scenes (`story_scene`), the cutscene timelines (`story_timeline`) and stages (`story_stage`), `story_script`, `voyager_closing_script`, `closing_crew`
-## (`PackNeeds.FILES` lists the same files).
+## Where the story files of a pack are, by name: the opening (`opening`: the order of its parts), the scenes (`story_scene`), the cutscene timelines (`story_timeline`) and stages (`story_stage`), the story scripts (`story_script`), `voyager_closing_script`,
+## `closing_crew` (`PackNeeds.FILES` lists the files the engine always asks for; the opening names the scenes and stories).
 const STORY_REL := "data/story/%s.tres"
 ## The string tables, in the order they are searched for a string id (the ids of all of them are one number space).
 const TEXT_TABLES: Array[String] = ["ui_strings", "story", "hints", "log_entries", "supply_messages", "closing",
@@ -572,14 +572,19 @@ static func story_stage(stage_name: StringName) -> CutsceneStage:
 	return _story(stage_name) as CutsceneStage
 
 
-## The scene `scene_name` (`news_cartoon`): the stage, timelines, song and speech a `TimelineSegment` plays, the first pack's of the chain that holds it (`STORY_REL`; `PackNeeds` requires the scenes the opening plays).
+## The scene `scene_name` (`news_cartoon`): the stage, timelines, song and speech a `TimelineSegment` plays, the first pack's of the chain that holds it (`STORY_REL`; the opening names the scenes it plays).
 static func story_scene(scene_name: StringName) -> StoryScene:
 	return _story(scene_name) as StoryScene
 
 
-## The pages of the opening story (`StoryPages`): `story_script` of the pack.
-static func story_script() -> StoryScript:
-	return _story(&"story_script") as StoryScript
+## The pages of a story (`StoryPages`, `story_script` in the packs): the story script `script_name` of the first pack of the chain that holds it (`STORY_REL`). Null for a name no pack holds (`OpeningList.problem` says so).
+static func story_script(script_name: StringName) -> StoryScript:
+	return _story(script_name) as StoryScript
+
+
+## The opening (`Opening`): its parts in order and how it ends, `opening` of the first pack of the chain that holds it (`STORY_REL`; `PackNeeds` requires it). Null when no pack holds it (`Opening` tells so and goes to the sign-in screen).
+static func opening() -> OpeningList:
+	return _story(&"opening") as OpeningList
 
 
 ## The loop counts of the Voyager closing's flight (`VoyagerClosing`): `voyager_closing_script` of the pack.

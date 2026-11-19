@@ -452,9 +452,10 @@ a pack's data/story/*.tres   CutsceneTimeline: a length, tracks (actor name, pro
 a pack's data/story/<stage>.tres   CutsceneStage: the actors of a scene (StageActor: name, kind, picture name, position in window pixels, mirror, parent, visibility,
   |                 clip, size, and for a button its pressed picture, answer and hotkey), listed in draw order. `news_cartoon_stage`, `title_stage`
 a pack's data/story/<scene>.tres   StoryScene: the stage, the looping and the one-shot timelines, the song and the speech (SpeechStep: a pause and a voice group) of a scene. `news_cartoon`, `title`
+a pack's data/story/opening.tres   OpeningList: the parts of the opening in order (OpeningPart: kind scene | story, the name of the file it plays, the answer that leads on), and whether it starts over
   |   (+ story_script: the story pages; voyager_closing_script: the Voyager flight's loop counts; closing_crew: the Expert closing's six sailors' programs)
   v
-Catalog.story_timeline / story_stage / story_scene / story_script / voyager_closing_script / closing_crew     the first pack of the chain that holds the file (`Packs.resource`)
+Catalog.opening / story_timeline / story_stage / story_scene / story_script(name) / voyager_closing_script / closing_crew     the first pack of the chain that holds the file (`Packs.resource`)
   v
 src/story/stage_builder.gd   StageBuilder.build(stage name, container, cast): the ONE builder of a stage's nodes; makes them in the order of the list and binds the cast
 src/story/timeline_segment.gd   TimelineSegment.of(scene name): plays a scene file (the stage through StageBuilder, a player for each loop and one for the one-shot timelines, the song, the speech); cues are verbs (story_verbs.gd)
@@ -477,23 +478,29 @@ play in the scene's order, the next when the one before has ended. What happens 
 of a cue the game and `PackCheck` share): `TimelineSegment.cue` parses it and calls the method `_verb_<verb>`, so a verb the engine gains is one entry of the table and one method. The speech is a sequence, not cues, because how long a group
 speaks is the recorded length of its clips: `_speak` walks the scene's `SpeechStep`s, waits each step's `pause_ticks` and `await`s the verb `speak` for its group (a step whose group holds no clips is left out whole). The pause and the group of a
 step are one record, and the clips of a group are the pack's `voice_cues` alone. A scene no pack holds ends at once (told once); the other things a scene names (a timeline, a song, a voice group, a verb) that the chain lacks are told
-once when the scene starts (`StoryScene.unresolved`, naming the pack and what the player gets instead) and left out. `Opening` plays the scenes `Opening.SCENES` (`news_cartoon`, `title`).
+once when the scene starts (`StoryScene.unresolved`, naming the pack and what the player gets instead) and left out. `Opening` plays the scenes the opening list names.
+
+The **opening** is the list that orders the scenes (`OpeningList`, `data/story/opening.tres`; `OpeningPart`: `kind` `scene` | `story`, `name`, `leads_on`; `starts_over`), and `Opening` is a director that owns no list: `_play_parts` walks the parts of `Catalog.opening()`, makes the segment of each
+(`TimelineSegment.of(name)` for a scene, `Opening.pages_of(name)` for a story script: the one builder of the story pages), awaits its `finished`, and goes on unless Space / Escape ended it or the part has a `leads_on` that is not the segment's `choice`. After the last part it starts over from the first when the list
+says `starts_over` and the segment that played last reports `timed_out` (only the last story page's clock sets it), without limit (`_start_over` stops the song and the speech first). An empty list, or a chain with no opening (told once), leaves for sign-in at once. `OpeningList.problem` and `unresolved` are the one judgement of the list against
+the chain: a part no pack holds, a `kind` that is none of the two, a `leads_on` that is no answer or that nothing in the part asks; `Opening` tells each line once (`TroubleLog`, naming the pack that holds the opening) and skips the part that `problem` names, `PackCheck._scenes` reports the same lines and judges the scenes
+and stages the list names. `PackNeeds` requires the opening only (`FILES`) and derives the rest from it (`named_by_opening`).
 
 What Enter does in a scene is not a verb but one rule (`TimelineSegment.advance`, the director forwards the key): once a `prompt` has begun it answers it with Intro; otherwise, in a timeline with **marks** (its holds: the title's `presents`,
 `operation`, `neptune`) it ends the hold that runs (`_end_hold`: the next mark is reached at once, a hair past it, and the cues at that mark are done by hand because `AnimationPlayer.seek` calls no method track); otherwise it begins the next timeline
 of the scene (the player stops first, which puts the animated properties back, and the next timeline's first keys are applied at once: the title's reveal hides the ship scene's parts at its first moment); after the last timeline it ends the scene.
 The `prompt` verb shows the stage's buttons (`StageActor.BUTTON`, hidden until then), starts the countdown of `prompt.timeout_ticks` (a time-out answers Intro) and, after `prompt.music_delay_ticks`, the scene's `prompt_song`. A button answers its
 `choice` when pressed (the original's buttons act on the press) and from the keyboard by its `hotkey` (`S`, `I`) once the prompt is up; a left-button release over a button is nobody's (it is the button's own hotspot) and anywhere else is Enter; Space
-and Escape end the scene with no answer. `wants_intro` is what the director asks: the answer was Intro. The song a scene starts stops where `song_stops_at` names (the title's song ends when the title is revealed).
+and Escape end the scene with no answer. `choice` (of `StorySegment`) is the answer the director compares with the part's `leads_on`. The song a scene starts stops where `song_stops_at` names (the title's song ends when the title is revealed).
 A timeline is the same on every skin: a skin redraws a cutscene by binding its own nodes and resolvers and takes exactly as long,
 because the time is in the data. The choreography is the pack's: the original's is in the legacy pack, never committed; the dev pack has its own,
-and `PackNeeds.FILES` requires every one of these files of a complete pack, so a chain always answers (the dev pack at its bottom) and a pack that
-lacks one is reported by the start-up check and `PackCheck`. The files a scene file names (its stage, timelines, song, voice groups) are not in `PackNeeds.FILES`: the scene names them, `StoryScene.unresolved` judges them against the chain, the game tells each line that does not resolve once when it plays the scene
+and `PackNeeds.FILES` requires the opening and the closings' files of a complete pack, so a chain always answers (the dev pack at its bottom) and a pack that
+lacks one is reported by the start-up check and `PackCheck`. The scenes and stories the opening names (`PackNeeds.named_by_opening`) and the files a scene file names (its stage, timelines, song, voice groups) are not in `PackNeeds.FILES`: the opening and the scenes name them, `StoryScene.unresolved` judges them against the chain, the game tells each line that does not resolve once when it plays the scene
 and `PackCheck` reports the same lines. One small timeline is made in code because nothing in
 the original is behind it (the fade of a story page); the flicker of the console lights is baked into `news_ambient` by the importer and the dev pack's generator (`step_story.console_flicker`), so `TimelineSegment` plays what the pack holds
 and generates nothing; `CutsceneTimeline.provenance` says which numbers are the original's. `SurfaceShipScreen` has no timeline: it counts `surface_ship.wait_ticks` from `Durations`. Tests: `tests/legacy/test_cutscene_timing.gd`
 (the hash of each cutscene's timing record, from the timeline and from the animation a scene builds, against `tests/fixtures/cutscene_timing.json`), `tests/legacy/test_story_timelines_legacy.gd` (re-derives the timelines
-from the analysis), `tests/engine/test_story_timelines.gd` (well formed, every name exists, the scripts run), `tests/engine/test_opening.gd` (the
+from the analysis), `tests/engine/test_story_timelines.gd` (well formed, every name exists, the scripts run), `tests/engine/test_opening_list.gd` (the list: dev's own shape, a pack's own opening, an empty one, a part that does not resolve told once and reported by the check, the answer that leads on, starting over), `tests/engine/test_opening.gd` (the
 scenes play the dev pack's timelines on its stages: the nodes are what the stage files say and show what the tracks say), `tests/engine/test_cutscene_stage.gd` (the builder, the stage's problems, the warnings, the check), `tests/engine/test_timeline_segment.gd` (a scene file played: stage, loops, the timelines in order, `end`, `speak`, the speech steps and pauses, the chain, the holds and the prompt of a scene that asks, each thing a scene names that the chain lacks, in the game and in `PackCheck`), `tests/engine/test_cutscene_timeline.gd` (the machinery).
 
 ## Autoloads
@@ -657,7 +664,7 @@ Non-obvious choices that the code embodies; the original's side of each is in [`
 - **Answers** are compared with `AnswerChecker.BOUNDARY_SLACK` (1e-9) at range boundaries.
 - **Saves** are written to a `.tmp` file and renamed; the roster is sorted by name in byte order. Volumes and the music set are per
   machine (`user://audio_settings.cfg`); the Sound / Music / Voice switches are per player.
-- **The opening** loops like the original's attract mode: when the last story page times out with no key it starts over from the news cartoon (`Opening._run`). Esc does not skip a math problem.
+- **The opening** of the legacy pack loops like the original's attract mode: when the last story page times out with no key it starts over from the news cartoon (`Opening._run`, the list's `starts_over`). Esc does not skip a math problem.
 - **Hint 10171** has no text in the original; `HintSystem` has a fallback sentence.
 - **Text** uses one project theme with Liberation Sans Bold through a `FontVariation` (`src/ui/theme_builder.gd`), not the original's
   bitmap font.

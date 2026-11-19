@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="StoryScene" format=3]
+
+[ext_resource type="Script" path="res://src/resources/story_scene.gd" id="1_story_scene"]
+
+[resource]
+script = ExtResource("1_story_scene")
+stage = &"logo_stage"
+loops = Array[StringName]([])
+timelines = Array[StringName]([&"logo_show"])
+provenance = "Dev pack: a logo scene of our own, the first part of dev's opening: the emblem slides in, the byline appears, the scene ends (tools/dev_pack/dev_story.py)."

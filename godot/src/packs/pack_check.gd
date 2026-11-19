@@ -60,8 +60,8 @@ static func run(pack: Pack, options: Options = null) -> PackReport:
 			report.error("layout", message)
 	_chain(pack, report)
 	if pack.sector_ids().is_empty() and pack.campaign_ids().is_empty() and pack.mod == null and report.passes():
-		if not pack.has("texts.json") and not pack.has(PictureTable.FILE) and pack.folders_in("audio").is_empty() and not pack.has(Durations.PACK_PATH) and not pack.has(Tuning.PACK_PATH):
-			report.warn("layout", "the pack holds nothing the game reads (no campaign, sector, text, picture, clip, durations, rule values or mod)")
+		if not pack.has("texts.json") and not pack.has(PictureTable.FILE) and pack.folders_in("audio").is_empty() and pack.files_in("data/story").is_empty() and not pack.has(Durations.PACK_PATH) and not pack.has(Tuning.PACK_PATH):
+			report.warn("layout", "the pack holds nothing the game reads (no campaign, sector, text, picture, clip, story file, durations, rule values or mod)")
 	_with_chain(pack, func(live: Pack) -> void:
 		_content(live, report, options)
 		if options.needs:
@@ -317,17 +317,22 @@ static func _is_a_mods_own(live: Pack, rel: String) -> bool:
 	return live.mod != null and (rel.begins_with(ModSpec.SKIN_FOLDER) or rel.begins_with(ModSpec.PROBLEM_FOLDER))
 
 
-## The opening's scenes as the chain gives them. A scene file (`Opening.SCENES`, `Catalog.story_scene`) is judged by `StoryScene.unresolved` (a timeline, song or voice group that no pack holds, a loop that does not loop, a cue with a verb the engine lacks), and its stage
-## by `_stage`. A scene the chain lacks is `PackNeeds`' to say.
+## The opening as the chain gives it. The list is judged by `OpeningList.unresolved` (a part no pack holds, an answer that leads nowhere), each scene it plays by `StoryScene.unresolved` (a timeline, song or voice group that no pack holds, a loop that does not
+## loop, a cue with a verb the engine lacks) and its stage by `_stage`. An opening the chain lacks is `PackNeeds`' to say.
 static func _scenes(_live: Pack, report: PackReport) -> void:
-	for scene_name in Opening.SCENES:
-		var scene := Catalog.story_scene(scene_name)
+	var opening := Catalog.opening()
+	if opening == null:
+		return
+	for line in opening.unresolved():
+		report.error("story", "opening: %s" % line)
+	for part in opening.parts:
+		var scene := Catalog.story_scene(part.name) if part.kind == OpeningPart.SCENE else null
 		if scene == null:
 			continue
 		for line in scene.unresolved():
-			report.error("story", "scene '%s' %s" % [scene_name, line])
+			report.error("story", "scene '%s' %s" % [part.name, line])
 		if Catalog.story_stage(scene.stage) == null:
-			report.error("story", "scene '%s' names the stage '%s', which no pack of the chain holds: nothing is drawn" % [scene_name, scene.stage])
+			report.error("story", "scene '%s' names the stage '%s', which no pack of the chain holds: nothing is drawn" % [part.name, scene.stage])
 		else:
 			_stage(scene.stage, scene.all_timelines(), report)
 

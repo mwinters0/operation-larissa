@@ -7,7 +7,7 @@ extends GdUnitTestSuite
 
 const SCENE := &"probe_scene"
 const STAGE := &"probe_stage"
-const MAIN_SCENE := &"news_cartoon"        # the scene `Opening` plays first: where `PackCheck` looks
+const MAIN_SCENE := &"news_cartoon"        # a scene the opening of dev lists (`PackCheck` looks at the scenes the opening names)
 
 var _shelf: PackShelf
 var _spoken: Array = []                     # [msec, clips] of every voice request while a test listens
@@ -241,7 +241,7 @@ func test_a_scene_that_names_a_missing_stage_is_told_by_the_builder_once() -> vo
 
 # --- the pack check ----------------------------------------------------------------------------------------------
 
-## The findings of the area `story` of a check of the scratch pack, which holds `scene` as the scene the opening plays first, and its stage and timelines as written by `_with_probe`'s files.
+## The findings of the area `story` of a check of the scratch pack, which holds `scene` as a scene the opening of dev names, and its stage and timelines as written by `_with_probe`'s files.
 func _story_findings(scene: StoryScene, stage: CutsceneStage, timelines: Dictionary) -> Array:
 	_shelf = PackShelf.new()
 	var writer := ResourceJson.new()
@@ -299,11 +299,6 @@ func test_a_scene_that_is_fine_has_no_findings_and_the_opening_scene_of_dev_is_f
 	options.reach = false
 	var report := PackCheck.run(Packs.dev(), options)
 	assert_bool(report.findings.any(func(finding: PackReport.Finding) -> bool: return finding.area == "story")).is_false()
-
-
-func test_the_scene_the_opening_plays_is_a_file_the_chain_must_hold() -> void:
-	for scene_name in Opening.SCENES:
-		assert_str(PackNeeds.FILES["data/story/%s.tres" % scene_name]).is_equal("StoryScene")
 
 
 # --- a scene that asks: the chain, the holds, the prompt --------------------------------------------------------
@@ -412,7 +407,7 @@ func test_enter_in_the_last_timeline_with_nothing_to_answer_ends_the_scene() -> 
 	assert_bool(segment.done).is_false()
 	segment.advance()
 	assert_bool(segment.done).is_true()
-	assert_bool(segment.wants_intro).is_false()
+	assert_bool(segment.choice == StageActor.INTRO).is_false()
 
 
 func test_the_prompt_shows_the_buttons_and_enter_a_click_elsewhere_or_the_time_out_mean_intro() -> void:
@@ -427,7 +422,7 @@ func test_the_prompt_shows_the_buttons_and_enter_a_click_elsewhere_or_the_time_o
 	assert_int(segment.prompt_timeout_ticks).is_equal(5000)
 	segment.advance()
 	assert_bool(segment.done).is_true()
-	assert_bool(segment.wants_intro).is_true()
+	assert_bool(segment.choice == StageActor.INTRO).is_true()
 	# a click elsewhere is Enter, the release over a button is nobody's
 	var clicked := _segment()
 	_to_the_prompt(clicked)
@@ -435,7 +430,7 @@ func test_the_prompt_shows_the_buttons_and_enter_a_click_elsewhere_or_the_time_o
 	clicked.click(clicked.buttons[StageActor.INTRO].get_global_rect().get_center())
 	assert_bool(clicked.done).is_false()
 	clicked.click(Vector2(320, 100))
-	assert_bool(clicked.wants_intro).is_true()
+	assert_bool(clicked.choice == StageActor.INTRO).is_true()
 
 
 func test_nobody_choosing_in_time_means_intro_and_an_answer_stops_the_countdown() -> void:
@@ -449,7 +444,7 @@ func test_nobody_choosing_in_time_means_intro_and_an_answer_stops_the_countdown(
 	assert_bool(timed_out.done).is_false()
 	await await_millis(300)                                                      # (8 ticks: 110 ms)
 	assert_bool(timed_out.done).is_true()
-	assert_bool(timed_out.wants_intro).is_true()
+	assert_bool(timed_out.choice == StageActor.INTRO).is_true()
 	var answered := _segment()
 	_to_the_prompt(answered)
 	answered.buttons[StageActor.START].pressed.emit()
@@ -464,7 +459,7 @@ func test_a_button_answers_on_its_press_and_its_key_answers_the_same_once_the_pr
 	pressed.buttons[StageActor.START].pressed.emit()
 	assert_bool(pressed.done).is_true()
 	assert_str(pressed.choice).is_equal("start")
-	assert_bool(pressed.wants_intro).is_false()
+	assert_bool(pressed.choice == StageActor.INTRO).is_false()
 	for entry: Array in [[KEY_S, &"start"], [KEY_I, &"intro"]]:
 		var keyed := _segment()
 		keyed._unhandled_key_input(_key(entry[0]))                              # (no prompt yet: a key is nothing)
@@ -486,7 +481,7 @@ func test_skip_leaves_without_an_answer_from_every_part_of_the_scene() -> void:
 			segment.advance()
 		segment.skip()
 		assert_bool(segment.done).is_true()
-		assert_bool(segment.wants_intro).is_false()
+		assert_bool(segment.choice == StageActor.INTRO).is_false()
 
 
 func test_the_song_stops_where_the_scene_says_and_the_prompts_song_starts_after_its_delay() -> void:
@@ -541,7 +536,7 @@ func test_what_a_scene_that_asks_names_wrongly_is_told_once_and_the_prompt_still
 	_to_the_prompt(segment)
 	assert_bool(segment.buttons.is_empty()).is_true()
 	segment.advance()
-	assert_bool(segment.wants_intro).is_true()
+	assert_bool(segment.choice == StageActor.INTRO).is_true()
 
 
 func test_the_check_of_a_pack_tells_what_a_scene_that_asks_names_wrongly_and_a_button_that_cannot_be_made() -> void:

@@ -32,18 +32,11 @@ Tools for the technique of [`genai/IMAGES.md`](genai/IMAGES.md).
 
 ## Animations a pack makes
 
-The opening's timing, stage and the news cartoon's scene are pack data (`CutsceneTimeline`s, `CutsceneStage`s, `StoryScene`, `voice_cues`, `durations.json`); what is code is the order of the
-parts and the behaviour around the timelines (`Opening`). These steps move the rest into the pack, so the legacy pack holds the original's opening and another pack can hold an
-opening of its own. Each is one session; the engine verbs stay rules (input, waits, choices) and a pack only arranges them. In every
+The opening is pack data: the order of its parts, the scenes (`StoryScene`, `CutsceneStage`s, `CutsceneTimeline`s, `voice_cues`, `durations.json`) and the story pages, so the legacy pack holds the original's opening and another pack an
+opening of its own. The closings' stages are what remains (A6). Each step is one session; the engine verbs stay rules (input, waits, choices) and a pack only arranges them. In every
 step the fidelity pins hold unchanged: `L: test_cutscene_timing` (the timing hashes), `test_opening` / `test_opening_legacy`, the key
 handling by phase.
 
-- **A5. The opening is a list.** `data/story/opening.json` names the parts in order (scene files and the story pages), which part's
-  choice leads on, and whether a timed-out last part starts it over (attract mode, `OpeningSequence`). `Opening` plays what the chain
-  holds; a pack may hold an opening of its own or an empty one (straight to sign-in). A part that does not resolve is told once
-  (`TroubleLog`, naming the pack and what the player sees instead) and skipped. The dev pack's opening differs in shape from the
-  legacy one (another number of parts, actors and verbs), and `create/MAKING_CONTENT.md` walks through making one. The port map's
-  `OpeningSequence` rows follow the code.
 - **A6. The closings on stages.** `ExpertClosing` and `VoyagerClosing` build from stage files; an actor kind for a picture set the
   view holds (the sub's frames, the artifact's zone), and the Voyager timeline is still made from its script for the place the sub is in.
 
